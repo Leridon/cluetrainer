@@ -8,6 +8,7 @@ import {LifetimeManager} from "../../lifetime/LifetimeManager";
 import {LifetimeManaged} from "../../lifetime/LifetimeManaged";
 import TimedValue = AbstractCaptureService.TimedValue;
 import CaptureTime = AbstractCaptureService.CaptureTime;
+import {Vector2} from "../../math";
 
 export type InterestedToken<InterestOptionsT extends AbstractCaptureService.Options = AbstractCaptureService.Options, ValueT = any> = {
   token: AbstractCaptureService.InterestToken<InterestOptionsT, ValueT>,
@@ -359,6 +360,8 @@ export class ScreenCaptureService extends AbstractCaptureService<
           const required_area = ScreenRectangle.union(
             ...interested_in_this_tick.map(t => t?.area ?? {origin: {x: 0, y: 0}, size: {x: alt1.rsWidth, y: alt1.rsHeight}})
           )
+
+          console.log(`Capturing ${required_area.size.x}x${required_area.size.y}`)
 
           const capture = CapturedImage.capture(required_area)
 

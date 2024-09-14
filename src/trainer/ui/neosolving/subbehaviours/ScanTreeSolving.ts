@@ -119,6 +119,8 @@ namespace ScanControlPrototype {
 }
 
 class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
+  private debug_overlay = over()
+
   private capture_interest: AbstractCaptureService.InterestToken<ScreenCaptureService.Options, CapturedImage>
   private interface_finder: Finder<CapturedScan>
   public readonly initialization: AsyncInitialization
@@ -144,6 +146,12 @@ class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Option
     if (this.original_captured_interface) {
       // TODO: This does not work because the text can shift vertically and needs to be realigned after recapturing
       const updated = this.original_captured_interface.updated(capture.value)
+
+      this.debug_overlay.clear()
+
+      updated.body.setName("Scan").debugOverlay(this.debug_overlay)
+
+      this.debug_overlay.render()
 
       return updated
     } else if (this.initialization.isInitialized()) {
