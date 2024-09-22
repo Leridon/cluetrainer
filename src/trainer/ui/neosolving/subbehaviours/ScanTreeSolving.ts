@@ -41,6 +41,10 @@ import ScanMinimapOverlay = ScanSolving.ScanMinimapOverlay;
 import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 import digSpotArea = Clues.digSpotArea;
 import Pulse = Scans.Pulse;
+import A1Color = util.A1Color;
+import hbox = C.hbox;
+import hgrid = C.hgrid;
+import LightButton from "../../widgets/LightButton";
 
 class ScanTreeSolvingLayer extends GameLayer {
 
