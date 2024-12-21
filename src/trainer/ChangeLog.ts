@@ -23,7 +23,7 @@ export namespace Changelog {
     version: 29,
     date: new Date(Date.parse("2024-12-21")),
     title: "Further Zoom Fixes and Configuration Options",
-    notification: "Check out newly options for zoom behaviour",
+    notification: "Check out the new options for zoom behaviour",
     render: layout => {
       layout
         .row(new List()
