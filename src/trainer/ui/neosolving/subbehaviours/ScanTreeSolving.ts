@@ -156,8 +156,6 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
         .forEach(s => bounds.addTile(s))
     }
 
-    console.log(bounds.get())
-
     this.parent.layer.fit(bounds.get())
   }
 

@@ -111,8 +111,6 @@ class NeoSolvingLayer extends GameLayer {
   }
 
   fit(view: TileRectangle): this {
-    console.log(view)
-
     if (!view) return this
 
     let copy = lodash.cloneDeep(view)
