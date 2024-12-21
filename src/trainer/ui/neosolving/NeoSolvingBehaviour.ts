@@ -514,7 +514,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
 
     const sol = Clues.Step.solution(step.step)
 
-    switch (sol.type) {
+    switch (sol?.type) {
       case "talkto":
         let npc_spot_id = 0
         let spot = sol.spots[npc_spot_id]
