@@ -11,6 +11,8 @@ import TeleportGroup = Transportation.TeleportGroup;
 import EntityTransportation = Transportation.EntityTransportation;
 
 export default class TransportLayer extends GameLayer {
+  private teleports: TeleportSpotEntity[] = []
+
   constructor(interactive: boolean, config: TransportLayer.Options = {
     teleport_policy: "all",
     transport_policy: "all"
@@ -55,9 +57,11 @@ export default class TransportLayer extends GameLayer {
           if (config.teleport_policy == "none") break;
 
           trans.spots.forEach(spot => {
-            new TeleportSpotEntity(new TeleportGroup.Spot(trans, spot, trans.access[0]))
-              .setInteractive(interactive)
-              .addTo(this)
+            this.teleports.push(
+              new TeleportSpotEntity(new TeleportGroup.Spot(trans, spot, trans.access[0]))
+                .setInteractive(interactive)
+                .addTo(this)
+            )
           })
 
           if (config.teleport_policy != "target_only") {
@@ -72,15 +76,13 @@ export default class TransportLayer extends GameLayer {
 
           break;
       }
-
-      if (trans.type == "entity" || trans.type == "door") {
-
-      } else if (trans.type == "teleports") {
-
-      }
     }))
 
     this.quad_tree_debug_rendering = false
+  }
+
+  getTeleportSpots(): TeleportGroup.Spot[] {
+    return this.teleports.map(e => e.teleport)
   }
 }
 

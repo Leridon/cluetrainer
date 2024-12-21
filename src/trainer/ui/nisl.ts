@@ -57,6 +57,14 @@ export class NislIcon extends Widget {
   static from(url: string) {
     return new NislIcon().setSource(url)
   }
+
+  static reset(): NislIcon {
+    return new NislIcon().setSource("assets/icons/reset_nis.png")
+  }
+
+  static reset2(): NislIcon {
+    return new NislIcon().setSource("assets/icons/reset.png").css("scale", 0.8)
+  }
 }
 
 export class FavouriteIcon extends NislIcon {

@@ -524,7 +524,22 @@ class ScanSettingsEdit extends Widget {
       "Select the appropriate pixels per tile for your device and minimap zoom level. May require some experimentation to get right. For fully zoomed out minimaps, the value is around 4. Note that overlays sometimes undergo additional scaling by your operating system, so the actual visible pixels per tile may be higher than the value set here."
     )
 
+    this.layout.section("Scan Tree Zoom Behaviour", "Set up how zoom should behave when using a scan tree.")
 
+    this.layout.paragraph("Ensure the following things are visible when the map view moves:")
+
+    this.layout.setting(new Checkbox("Spots within triple pulse range")
+      .setValue(this.value.zoom_behaviour_include_triples)
+      .onCommit(v => this.value.zoom_behaviour_include_triples = v)
+    )
+    this.layout.setting(new Checkbox("Spots within double pulse range")
+      .setValue(this.value.zoom_behaviour_include_doubles)
+      .onCommit(v => this.value.zoom_behaviour_include_doubles = v)
+    )
+    this.layout.setting(new Checkbox("Spots within single pulse range")
+      .setValue(this.value.zoom_behaviour_include_singles)
+      .onCommit(v => this.value.zoom_behaviour_include_singles = v)
+    )
   }
 }
 
@@ -771,7 +786,58 @@ class TowersSettingsEdit extends Widget {
   }
 }
 
-class SolvingSettingsEdit extends Widget {
+class GeneralSolvingSettingsEdit extends Widget {
+  private layout: SettingsLayout
+
+  constructor(private value: NeoSolving.Settings.GeneralSettings) {
+    super()
+
+    this.layout = new SettingsLayout().appendTo(this)
+
+    this.render()
+  }
+
+  render() {
+    this.layout.empty()
+
+    this.layout.section("Zoom Behaviour", "Configure how the solver zooms into paths and clue target spots.")
+
+    this.layout.namedSetting("Max Zoom",
+      hbox(
+        new NumberSlider(0, 7)
+          .modifyPreviewContainer(c => c.css("min-width", "15px"))
+          .setValue(this.value.global_max_zoom)
+          .onCommit(v => this.value.global_max_zoom = v),
+        NislIcon.reset2().withClick(() => {
+          this.value.global_max_zoom = NeoSolving.Settings.GeneralSettings.normalize(undefined).global_max_zoom
+          this.render()
+        }).tooltip("Reset to default"),
+      ),
+      "The maximum allowed zoom level for automatic zoom."
+    )
+
+    this.layout.namedSetting("Minimum Area",
+      hbox(
+        new NumberSlider(1, 64)
+          .modifyPreviewContainer(c => c.css("min-width", "15px"))
+          .setValue(this.value.minimum_view_size)
+          .onCommit(v => this.value.minimum_view_size = v),
+        NislIcon.reset2().withClick(() => {
+          this.value.minimum_view_size = NeoSolving.Settings.GeneralSettings.normalize(undefined).minimum_view_size
+          this.render()
+        }).tooltip("Reset to default"),
+      ),
+      "The minimum size of the target area (in tiles) that the zoom tries to fit when zooming in. Smaller areas are padded accordingly."
+    )
+
+    this.layout.setting(new Checkbox("Include closest teleport")
+        .setValue(this.value.include_closest_teleport)
+        .onCommit(v => this.value.include_closest_teleport = v)
+      , "Include the closest teleport to the target spot when not using a method, up to a reasonable max distance. May produce undesirable results, especially with underground locations.")
+  }
+}
+
+class InterfaceSettingsEdit extends Widget {
 
   private layout: SettingsLayout
 
@@ -786,9 +852,7 @@ class SolvingSettingsEdit extends Widget {
   render() {
     this.layout.empty()
 
-    this.layout.section("Interface")
-
-    this.layout.paragraph("Choose what data about a clue step and its solution is displayed on the interface while solving.")
+    this.layout.section("Interface", "Choose what data about a clue step and its solution is displayed on the interface while solving.")
 
     this.layout.namedSetting("Clue Text", hgrid(
         ...new Checkbox.Group([
@@ -898,14 +962,20 @@ class SolvingSettingsEdit extends Widget {
         .checkboxes()
     ), "A list containing short descriptions for the steps that make up a path if one is active for the current clue step.")
 
-    this.layout.namedSetting("Puzzles", hgrid(
-      ...new Checkbox.Group([
-        {button: new Checkbox("Show"), value: "show" as const},
-        {button: new Checkbox("Hide"), value: "hide" as const},
-        {button: new Checkbox("Hide for Scans/Compasses"), value: "hideforscansandcompasses" as const},
-      ]).onChange(v => this.value.puzzle = v)
-        .setValue(this.value.puzzle)
-        .checkboxes()
+    const hide = new Checkbox("Hide")
+    const show = new Checkbox("Show")
+    const hide_for_scans_compasses = new Checkbox("Hide for Scans/Compasses")
+
+    new Checkbox.Group([
+      {button: show, value: "show" as const},
+      {button: hide, value: "hide" as const},
+      {button: hide_for_scans_compasses, value: "hideforscansandcompasses" as const},
+    ]).onChange(v => this.value.puzzle = v)
+      .setValue(this.value.puzzle)
+
+    this.layout.namedSetting("Puzzles", vbox(
+      hgrid(show, hide),
+      hgrid(hide_for_scans_compasses),
     ), "Shows what puzzle (if any) is given on completion of this clue step.")
 
     this.layout.namedSetting("Challenge", hgrid(
@@ -1339,10 +1409,15 @@ export class SettingsEdit extends Widget {
     new SectionControl<SettingsEdit.section_id>([
       {
         name: "Solving", entries: [{
-          id: "solving_general",
-          name: "Solving",
+          id: "general",
+          name: "General",
           short_name: "General",
-          renderer: () => new SolvingSettingsEdit(this.value.solving.info_panel)
+          renderer: () => new GeneralSolvingSettingsEdit(this.value.solving.general)
+        }, {
+          id: "solving_interface",
+          name: "Interface",
+          short_name: "Interface",
+          renderer: () => new InterfaceSettingsEdit(this.value.solving.info_panel)
         }, {
           id: "sliders",
           name: "Slider Puzzle Solving",

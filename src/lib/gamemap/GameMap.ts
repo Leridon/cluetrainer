@@ -1,5 +1,5 @@
 import * as leaflet from "leaflet";
-import {FitBoundsOptions, MapOptions} from "leaflet";
+import {FitBoundsOptions, MapOptions, Polygon} from "leaflet";
 import {floor_t, TileCoordinates, TileRectangle} from "../runescape/coordinates";
 import Graticule from "./defaultlayers/Graticule";
 import Widget from "../ui/Widget";
@@ -19,6 +19,7 @@ import * as jquery from "jquery";
 import {C} from "../ui/constructors";
 import {Constants} from "../../trainer/constants";
 import cls = C.cls;
+import {boxPolygon} from "../../trainer/ui/polygon_helpers";
 
 export const red_marker = "assets/icons/marker_red.png"
 export const blue_marker = "assets/icons/marker_blue.png"
@@ -322,12 +323,26 @@ export class GameMap extends leaflet.Map {
     return this
   }
 
+  private fitArea: Polygon = null
+  private debug_show_fit_area = false
+
   public fitView(view: TileRectangle, options: FitBoundsOptions = {}): this {
     options.maxZoom ??= 4
 
     this.invalidateSize()
 
-    this.fitBounds(util.convert_bounds(Rectangle.toBounds(view)).pad(0.1), options)
+    const finalbounds = util.convert_bounds(Rectangle.toBounds(view)).pad(0.1)
+
+    this.fitBounds(finalbounds, options)
+
+    if (this.debug_show_fit_area) {
+      this.fitArea?.remove()
+
+      this.fitArea = leaflet.polygon([finalbounds.getNorthEast(), finalbounds.getNorthWest(), finalbounds.getSouthWest(), finalbounds.getSouthEast()]).setStyle({
+        color: "#FFFFFF",
+        weight: 5
+      }).addTo(this)
+    }
 
     this.floor.set(view.level)
     return this

@@ -348,10 +348,11 @@ export default class PathControl extends Behaviour {
       if (!this.section_control.container.is(":empty")) this.section_control.appendTo(w)
     }
 
+    if (this.section_control) this.section_selected.trigger(this.section_control.selected_section)
+
     if (w.container.is(":empty")) return
 
     this.widget = w.appendTo(this.parent.layer.path_container)
 
-    if (this.section_control) this.section_selected.trigger(this.section_control.selected_section)
   }
 }

@@ -22,8 +22,8 @@ import {TextRendering} from "../../TextRendering";
 import {AbstractCaptureService, CapturedImage, DerivedCaptureService, InterestedToken, ScreenCaptureService} from "../../../../lib/alt1/capture";
 import {CapturedScan} from "../cluereader/capture/CapturedScan";
 import {Finder} from "../../../../lib/alt1/capture/Finder";
-import {deps} from "../../../dependencies";
 import {ScanSolving} from "./ScanSolving";
+import {Observable} from "../../../../lib/reactive";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import activate = TileArea.activate;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
@@ -80,8 +80,6 @@ namespace ScanCaptureService {
 }
 
 export class ScanTreeSolving extends NeoSolvingSubBehaviour {
-  settings: ScanSolving.Settings
-
   node: ScanTree.Augmentation.AugmentedScanTreeNode = null
   augmented: ScanTree.Augmentation.AugmentedScanTree = null
   layer: leaflet.FeatureGroup = null
@@ -95,14 +93,13 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
 
   constructor(parent: NeoSolvingBehaviour,
               public method: AugmentedMethod<ScanTreeMethod, Clues.Scan>,
-              private original_interface_capture: CapturedScan
+              private original_interface_capture: CapturedScan,
+              private settings: Observable<ScanSolving.Settings>
   ) {
     super(parent, "method")
 
-    this.settings = deps().app.settings.settings.solving.scans
-
-    if (this.settings.show_minimap_overlay_scantree) {
-      this.minimap_overlay = this.withSub(new ScanMinimapOverlay(this.parent.app.minimapreader, parent.app.settings.observable_settings.map(s => s.solving.scans).structuralEquality(), "scantree").setRange(this.method.method.tree.assumed_range))
+    if (this.settings.value().show_minimap_overlay_scantree) {
+      this.minimap_overlay = this.withSub(new ScanMinimapOverlay(this.parent.app.minimapreader, settings, "scantree").setRange(this.method.method.tree.assumed_range))
     }
 
     this.augmented = ScanTree.Augmentation.basic_augmentation(method.method.tree, method.clue)
@@ -138,6 +135,28 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
         bounds.addArea(node.region.area)
       }
     }
+
+    bounds.setDistanceLimit(320)
+
+    if (this.settings.value().zoom_behaviour_include_triples) {
+      // Add triple spots
+      node.children.filter(c => c.key.pulse == 3).flatMap(c => c.value.remaining_candidates)
+        .forEach(s => bounds.addTile(s))
+    }
+
+    if (this.settings.value().zoom_behaviour_include_doubles) {
+      // Add triple spots
+      node.children.filter(c => c.key.pulse == 2).flatMap(c => c.value.remaining_candidates)
+        .forEach(s => bounds.addTile(s))
+    }
+
+    if (this.settings.value().zoom_behaviour_include_singles) {
+      // Add triple spots
+      node.children.filter(c => c.key.pulse == 1).flatMap(c => c.value.remaining_candidates)
+        .forEach(s => bounds.addTile(s))
+    }
+
+    console.log(bounds.get())
 
     this.parent.layer.fit(bounds.get())
   }

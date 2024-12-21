@@ -18,13 +18,19 @@ export namespace Changelog {
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([{
     version: 29,
-    date: new Date(Date.parse("TODO")),
-    title: "TODO",
+    date: new Date(Date.parse("2024-12-21")),
+    title: "Further Zoom Fixes and Configuration Options",
     render: layout => {
       layout
         .row(new List()
           .item("Fixed a bug where parts of a path were hidden behind the ui after zooming in.")
           .item("Selected path sections will now be remembered even within scan trees.")
+          .item("Added global configuration settings for zoom behaviour in the 'General' section.", new List()
+            .item("Added an option to limit the maximum allowed zoom level.")
+            .item("Added an option to set a minimum size for the area that is zoomed into.")
+            .item("Added an option to include the closest teleport in the zoom when not having a method selected.")
+          )
+          .item("Moved interface options from 'General' to the new 'Interface' section.")
         )
     }
   }, {
