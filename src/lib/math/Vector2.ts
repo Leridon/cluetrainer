@@ -157,4 +157,14 @@ export namespace Vector2 {
   export function hash(c: Vector2, mod: number = 64): number {
     return Math.floor(Math.abs((c.x ^ c.y) % mod))
   }
+
+  /**
+   * Mirrors a point through a given mirror_point.
+   *
+   * @param v The point to mirror
+   * @param mirror_point The center point
+   */
+  export function mirrorThroughPoint(v: Vector2, mirror_point: Vector2): Vector2 {
+    return Vector2.add(mirror_point, sub(mirror_point, v))
+  }
 }

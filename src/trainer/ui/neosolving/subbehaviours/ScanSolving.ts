@@ -9,6 +9,7 @@ import {Transform, Vector2} from "../../../../lib/math";
 import {util} from "../../../../lib/util/util";
 import {deps} from "../../../dependencies";
 import {Observable} from "../../../../lib/reactive";
+import {SettingsNormalization} from "../../../../lib/util/SettingsNormalization";
 
 export namespace ScanSolving {
 
@@ -19,7 +20,6 @@ export namespace ScanSolving {
     private minimap_interest: AbstractCaptureService.InterestToken<AbstractCaptureService.Options, MinimapReader.CapturedMinimap>
     private minimap_overlay: OverlayGeometry = over()
     private range: number = 10
-
 
     constructor(private minimapreader: MinimapReader,
                 private settings: Observable<ScanSolving.Settings>,
@@ -61,7 +61,7 @@ export namespace ScanSolving {
                 {x: -1, y: 1},
               ]
 
-              if(settings.show_triple_ping) {
+              if (settings.show_triple_ping) {
                 const scale = ((this.range * 2 + 1) / 2) * ScanMinimapOverlay.last_known_ppt
 
                 const transform =
@@ -79,7 +79,7 @@ export namespace ScanSolving {
                 )
               }
 
-              if(settings.show_double_ping) {
+              if (settings.show_double_ping) {
                 const scale = ((this.range * 4 + 1) / 2) * ScanMinimapOverlay.last_known_ppt
 
                 const transform2 = Transform.chain(
@@ -116,7 +116,6 @@ export namespace ScanSolving {
   }
 
   export namespace ScanMinimapOverlay {
-
     export let last_known_ppt: number = 4 // Assume mimimum minimap zoom by default
   }
 
@@ -130,29 +129,24 @@ export namespace ScanSolving {
     minimap_overlay_zoom_manual_ppt: number,
     show_triple_ping: boolean,
     show_double_ping: boolean,
+
+    zoom_behaviour_include_triples: boolean
+    zoom_behaviour_include_doubles: boolean
+    zoom_behaviour_include_singles: boolean
   }
 
   export namespace Settings {
-    export const DEFAULT: Settings = {
-      show_minimap_overlay_scantree: true,
-      show_minimap_overlay_simple: true,
-      minimap_overlay_automated_zoom_detection: false,
-      minimap_overlay_zoom_manual_ppt: 4,
-      show_double_ping: true,
-      show_triple_ping: true
-    }
-
-    export function normalize(settings: Settings): Settings {
-      if (!settings) return lodash.cloneDeep(DEFAULT)
-
-      if (![true, false].includes(settings.show_minimap_overlay_scantree)) settings.show_minimap_overlay_scantree = DEFAULT.show_minimap_overlay_scantree
-      if (![true, false].includes(settings.show_minimap_overlay_simple)) settings.show_minimap_overlay_simple = DEFAULT.show_minimap_overlay_simple
-      if (![true, false].includes(settings.minimap_overlay_automated_zoom_detection)) settings.minimap_overlay_automated_zoom_detection = DEFAULT.minimap_overlay_automated_zoom_detection
-      if (typeof settings.minimap_overlay_zoom_manual_ppt != "number") settings.minimap_overlay_zoom_manual_ppt = DEFAULT.minimap_overlay_zoom_manual_ppt
-      if (![true, false].includes(settings.show_double_ping)) settings.show_double_ping = DEFAULT.show_double_ping
-      if (![true, false].includes(settings.show_triple_ping)) settings.show_triple_ping = DEFAULT.show_triple_ping
-
-      return settings
-    }
+    import compose = util.compose;
+    export const normalize: SettingsNormalization.NormalizationFunction<Settings> = SettingsNormalization.normaliz<Settings>({
+      show_minimap_overlay_scantree: SettingsNormalization.bool(true),
+      show_minimap_overlay_simple: SettingsNormalization.bool(true),
+      minimap_overlay_automated_zoom_detection: SettingsNormalization.bool(false),
+      minimap_overlay_zoom_manual_ppt: compose(SettingsNormalization.number(4), SettingsNormalization.clamp(3, 30)),
+      show_double_ping: SettingsNormalization.bool(true),
+      show_triple_ping: SettingsNormalization.bool(true),
+      zoom_behaviour_include_triples: SettingsNormalization.bool(true),
+      zoom_behaviour_include_doubles: SettingsNormalization.bool(false),
+      zoom_behaviour_include_singles: SettingsNormalization.bool(false),
+    })
   }
 }

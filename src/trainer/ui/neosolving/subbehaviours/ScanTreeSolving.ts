@@ -19,13 +19,11 @@ import {SolvingMethods} from "../../../model/methods";
 import {NeoSolvingSubBehaviour} from "../NeoSolvingSubBehaviour";
 import {C} from "../../../../lib/ui/constructors";
 import {TextRendering} from "../../TextRendering";
-import {OverlayGeometry} from "../../../../lib/alt1/OverlayGeometry";
-import * as assert from "assert";
 import {AbstractCaptureService, CapturedImage, DerivedCaptureService, InterestedToken, ScreenCaptureService} from "../../../../lib/alt1/capture";
 import {CapturedScan} from "../cluereader/capture/CapturedScan";
 import {Finder} from "../../../../lib/alt1/capture/Finder";
-import {deps} from "../../../dependencies";
 import {ScanSolving} from "./ScanSolving";
+import {Observable} from "../../../../lib/reactive";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import activate = TileArea.activate;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
@@ -33,8 +31,6 @@ import cls = C.cls;
 import Order = util.Order;
 import span = C.span;
 import spotNumber = ScanTree.spotNumber;
-
-import index = util.index;
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
 import ScanMinimapOverlay = ScanSolving.ScanMinimapOverlay;
@@ -84,8 +80,6 @@ namespace ScanCaptureService {
 }
 
 export class ScanTreeSolving extends NeoSolvingSubBehaviour {
-  settings: ScanSolving.Settings
-
   node: ScanTree.Augmentation.AugmentedScanTreeNode = null
   augmented: ScanTree.Augmentation.AugmentedScanTree = null
   layer: leaflet.FeatureGroup = null
@@ -99,23 +93,22 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
 
   constructor(parent: NeoSolvingBehaviour,
               public method: AugmentedMethod<ScanTreeMethod, Clues.Scan>,
-              private original_interface_capture: CapturedScan
+              private original_interface_capture: CapturedScan,
+              private settings: Observable<ScanSolving.Settings>
   ) {
     super(parent, "method")
 
-    this.settings = deps().app.settings.settings.solving.scans
-
-    if (this.settings.show_minimap_overlay_scantree) {
-      this.minimap_overlay = this.withSub(new ScanMinimapOverlay(this.parent.app.minimapreader, parent.app.settings.observable_settings.map(s => s.solving.scans).structuralEquality(), "scantree").setRange(this.method.method.tree.assumed_range))
+    if (this.settings.value().show_minimap_overlay_scantree) {
+      this.minimap_overlay = this.withSub(new ScanMinimapOverlay(this.parent.app.minimapreader, settings, "scantree").setRange(this.method.method.tree.assumed_range))
     }
 
     this.augmented = ScanTree.Augmentation.basic_augmentation(method.method.tree, method.clue)
   }
 
-  private fit() {
-    let node = this.node
+  private fit(active_path_section: Path.raw) {
+    const node = this.node
 
-    let bounds = new BoundsBuilder()
+    const bounds = new BoundsBuilder()
 
     //1. If no children: All Candidates
     if (node.children.length == 0)
@@ -123,20 +116,44 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
 
     // 2. The path
     if (node.raw.path.length > 0) {
-      const last_section = index(Path.Section.split_into_sections(node.raw.path).children, -1)
+      // TODO: There needs to be a way to remember the preferred section
+      /*
+            const last_section = index(Path.Section.split_into_sections(node.raw.path).children, -1)
 
-      assert(last_section.type == "inner")
+            assert(last_section.type == "inner")
 
-      const path = last_section.children.map(c => {
-        assert(c.type == "leaf")
-        return c.value
-      })
+            const path = last_section.children.map(c => {
+              assert(c.type == "leaf")
+              return c.value
+            })*/
+
+      const path = active_path_section
 
       bounds.addRectangle(Path.bounds(path, true))
     } else {
       if (node.region?.area) {
         bounds.addArea(node.region.area)
       }
+    }
+
+    bounds.setDistanceLimit(320)
+
+    if (this.settings.value().zoom_behaviour_include_triples) {
+      // Add triple spots
+      node.children.filter(c => c.key.pulse == 3).flatMap(c => c.value.remaining_candidates)
+        .forEach(s => bounds.addTile(s))
+    }
+
+    if (this.settings.value().zoom_behaviour_include_doubles) {
+      // Add triple spots
+      node.children.filter(c => c.key.pulse == 2).flatMap(c => c.value.remaining_candidates)
+        .forEach(s => bounds.addTile(s))
+    }
+
+    if (this.settings.value().zoom_behaviour_include_singles) {
+      // Add triple spots
+      node.children.filter(c => c.key.pulse == 1).flatMap(c => c.value.remaining_candidates)
+        .forEach(s => bounds.addTile(s))
     }
 
     this.parent.layer.fit(bounds.get())
@@ -186,11 +203,6 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
     this.node = node
 
     this.tree_widget.empty()
-
-    this.parent.path_control.reset().setPath(node.raw.path)
-
-    this.fit()
-    this.renderLayer()
 
     this.registerSolution(
       TileArea.fromRect(
@@ -268,6 +280,14 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
           ).appendTo(content)
       }
     }
+
+    this.renderLayer()
+
+    // Setting the path in the path control will in turn trigger the section selected event.
+    // This in turn triggers fitting the map, so we do not need to do that here explicitly.
+    this.parent.path_control.reset().setPath(node.raw.path, {method: this.method, node})
+
+    // this.fit()
   }
 
   protected begin() {
@@ -338,6 +358,10 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
       this.layer.remove()
       this.layer = null
     }
+  }
+
+  onSectionSelectedInPathControl(path: Path.raw) {
+    this.fit(path)
   }
 }
 

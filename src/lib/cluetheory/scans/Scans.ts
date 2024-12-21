@@ -24,6 +24,12 @@ export namespace ScanTheory {
     export function equals(a: PulseInformation, b: PulseInformation): boolean {
       return Pulse.equals(a, b) && !(a.pulse == 3 && (b.pulse == 3) && !TileCoordinates.eq2(a?.spot, b.spot))
     }
+
+    export function toString(self: PulseInformation): string {
+      return self.pulse.toString()
+        + (self.different_level ? "l" : "")
+        + (self.pulse == 3 && self.spot ? TileCoordinates.toShortString(self.spot) : "")
+    }
   }
 
   export function spot_narrowing(candidates: TileCoordinates[], area: TileArea, range: number): {

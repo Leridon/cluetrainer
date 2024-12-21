@@ -1,6 +1,5 @@
 import {Path} from "lib/runescape/pathing";
 import {Vector2} from "../../math";
-import {Scans} from "lib/runescape/clues/scans";
 import * as lodash from "lodash";
 import {Clues} from "../../runescape/clues";
 import {util} from "../../util/util";
@@ -9,9 +8,11 @@ import {TileCoordinates} from "../../runescape/coordinates";
 import {PathingGraphics} from "../../../trainer/ui/path_graphics";
 import {TileArea} from "../../runescape/coordinates/TileArea";
 
+/**
+ * Scan Trees are decision trees used to solve scan clues efficiently.
+ */
 export namespace ScanTree {
   import movement_state = Path.movement_state;
-
   import digSpotArea = Clues.digSpotArea;
   import PulseInformation = ScanTheory.PulseInformation;
   import spot_narrowing = ScanTheory.spot_narrowing;
@@ -70,37 +71,63 @@ export namespace ScanTree {
       depth: number,
       remaining_candidates: TileCoordinates[],
       children: {
-        key: Scans.Pulse,
+        key: PulseInformation,
         value: AugmentedScanTreeNode
       }[],
       completeness?: completeness_t,
       correctness?: correctness_t,
     }
 
+    /* NodeId identifies a node within a scan tree by a chain of keys. */
+    export type NodeId = PulseInformation[]
+
+    export namespace NodeId {
+      export function of(node: AugmentedScanTreeNode) {
+        const id: NodeId = new Array(node.depth)
+
+        let i = node.depth - 1
+
+        while (node.parent) {
+          id[i] = node.parent.key
+          node = node.parent.node
+          i--
+        }
+
+        return id
+      }
+
+      export function hash(id: NodeId): string {
+        return id.map(PulseInformation.toString).join("")
+      }
+    }
+
     export type completeness_t = "complete" | "incomplete_children" | "incomplete"
     export type correctness_t = "correct" | "correct_with_warnings" | "error" | "error_in_children"
 
-    export function completeness_meta(completeness: completeness_t | correctness_t): {
-      char: string,
-      cls: string,
-      desc: string
-    } {
-      let meta: Record<completeness_t | correctness_t, {
+    export namespace Correctness {
+      export function meta(completeness: completeness_t | correctness_t): {
         char: string,
         cls: string,
         desc: string
-      }> = {
-        complete: {char: "\u2713", cls: "ctr-correct", desc: "This branch is complete."},
-        correct: {char: "\u2713", cls: "ctr-correct", desc: "All paths are correct."},
-        correct_with_warnings: {char: "\u2713", cls: "ctr-semicorrect", desc: "All paths are correct, but some have warnings."},
-        error: {char: "!", cls: "ctr-incorrect", desc: "There is an error in this path."},
-        error_in_children: {char: "!", cls: "ctr-semiincorrect", desc: "A child path has errors."},
-        incomplete: {char: "?", cls: "ctr-incorrect", desc: "This branch is incomplete."},
-        incomplete_children: {char: "?", cls: "ctr-semiincorrect", desc: "Branch has incomplete children."}
-      }
+      } {
+        const meta: Record<completeness_t | correctness_t, {
+          char: string,
+          cls: string,
+          desc: string
+        }> = {
+          complete: {char: "\u2713", cls: "ctr-correct", desc: "This branch is complete."},
+          correct: {char: "\u2713", cls: "ctr-correct", desc: "All paths are correct."},
+          correct_with_warnings: {char: "\u2713", cls: "ctr-semicorrect", desc: "All paths are correct, but some have warnings."},
+          error: {char: "!", cls: "ctr-incorrect", desc: "There is an error in this path."},
+          error_in_children: {char: "!", cls: "ctr-semiincorrect", desc: "A child path has errors."},
+          incomplete: {char: "?", cls: "ctr-incorrect", desc: "This branch is incomplete."},
+          incomplete_children: {char: "?", cls: "ctr-semiincorrect", desc: "Branch has incomplete children."}
+        }
 
-      return meta[completeness]
+        return meta[completeness]
+      }
     }
+
 
     /**
      * Augments all paths in an (already augmented!) decision tree.
@@ -159,6 +186,14 @@ export namespace ScanTree {
         }
       }
 
+      /**
+       * Recursive helper function passing along context information.
+       * @param node The traversed node.
+       * @param parent The parent node.
+       * @param depth The depth of the node.
+       * @param remaining_candidates Target spots that are still possible at this point in the scan tree.
+       * @param last_known_position The position where the player is before entering this node, if known.
+       */
       function helper(
         node: ScanTreeNode,
         parent: {
@@ -374,12 +409,21 @@ export namespace ScanTree {
     }
   }
 
+  /**
+   * Traverse a given scan tree in a pre-order fashion.
+   * @param tree The tree to traverse.
+   * @param f The function to apply to each node.
+   */
   export function traverse(tree: ScanTreeNode, f: (_: ScanTreeNode) => void): void {
     if (tree) f(tree)
 
     tree.children.forEach(c => traverse(c.value, f))
   }
 
+  /**
+   * Initialize an empty scan tree for the given scan clue.
+   * @param clue The clue the new scan tree is supposed to solve.
+   */
   export function init(clue: Clues.Scan): ScanTree {
     return {
       assumed_range: clue.range,
@@ -388,6 +432,9 @@ export namespace ScanTree {
     }
   }
 
+  /**
+   * Initialize a new leaf node.
+   */
   export function init_leaf(): ScanTreeNode {
     return {
       children: [],
@@ -396,9 +443,20 @@ export namespace ScanTree {
     }
   }
 
+  /**
+   * Scan Tree normalization prunes and sanitizes a given scan tree.
+   * This is used in the scan editor to ensure scan trees remain valid.
+   * @param tree
+   */
   export function normalize(tree: ScanTree): ScanTree {
+    /**
+     * Recursive helper function to traverse the tree
+     * @param node The node to traverse.
+     * @param candidates The set of candidate spots that are still possible at this point in the tree
+     */
     function helper(node: ScanTreeNode, candidates: TileCoordinates[]) {
-      let where = node.region?.area || Path.endsUpArea(node.path)
+      // Find out where the player is at this point in the tree
+      const where = node.region?.area || Path.endsUpArea(node.path)
 
       // Update children to remove all dead branches and add missing branches
       let pruned_children: {
@@ -408,9 +466,10 @@ export namespace ScanTree {
         },
         candidates: TileCoordinates[]
       }[] = !where ? []
-        : spot_narrowing(candidates, where, tree.assumed_range)
+        : spot_narrowing(candidates, where, tree.assumed_range) // Split the remaining candidates by the possible pulses at the current location
           .filter(n => n.narrowed_candidates.length > 0)  // Delete branches that have no candidates left
           .map(({pulse, narrowed_candidates}) => {
+            // For each split that has candidates, create a child node. Reuse existing ones if they exist.
             return {
               child: node.children.find(c => PulseInformation.equals(pulse, c.key)) || {
                 key: pulse,
@@ -422,12 +481,12 @@ export namespace ScanTree {
 
       // When there is only one child, the current position produces no information at all
       // So there is no point in adding children, which is why they are removed by this statement
-      if (pruned_children.length == 1) {
-        pruned_children = []
-      }
+      if (pruned_children.length == 1) pruned_children = []
 
+      // Update the children in the node by the newly pruned children
       node.children = pruned_children.map(c => c.child)
 
+      // Continue traversal
       pruned_children.forEach(({child, candidates}) => {
         // Propagate state recursively
         helper(child.value, candidates)
@@ -441,6 +500,11 @@ export namespace ScanTree {
     return tree
   }
 
+  /**
+   * Gets the spot number for the given target spot as defined in the scan tree.
+   * @param self The reference scan tree.
+   * @param spot The target spot.
+   */
   export function spotNumber(self: ScanTree.ScanTree, spot: TileCoordinates): number {
     return self.ordered_spots.findIndex((s) => Vector2.eq(s, spot)) + 1
   }

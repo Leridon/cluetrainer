@@ -4076,7 +4076,7 @@ export namespace clue_data {
       "type": "emote",
       "tier": "easy",
       "text": ["Twirl at the crossroads north of Rimmington. Equip a Sapphire ring, yellow flowers and leather chaps."],
-      "area": {"origin": {"x": 2953, "y": 3238, "level": 0}, "size": {"x": 4, "y": 6}},
+      "area": {"origin": {"x": 2953, "y": 3238, "level": 0}, "size": {"x": 3, "y": 6}},
       "items": ["Sapphire ring", "Yellow flowers", "Leather chaps"],
       "emotes": ["Twirl"],
       "double_agent": false,

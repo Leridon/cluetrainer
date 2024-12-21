@@ -219,6 +219,11 @@ export class SettingsManagement {
 
   settings: Settings.Settings
   observable_settings: Observable.Simple<Settings.Settings> = observe<Settings.Settings>(null).equality(lodash.isEqual)
+
+  observable = {
+    scans: this.observable_settings.map(s => s?.solving?.scans).structuralEquality()
+  }
+
   active_teleport_customization: Observable<ActiveTeleportCustomization> = observe(null).equality(lodash.isEqual)
 
   constructor() {

@@ -6,7 +6,6 @@ import NeoSolvingBehaviour from "./NeoSolvingBehaviour";
 import {C} from "../../../lib/ui/constructors";
 import {SolvingMethods} from "../../model/methods";
 import {AugmentedMethod} from "../../model/MethodPackManager";
-import MethodSelector from "./MethodSelector";
 import {NislIcon} from "../nisl";
 import {PathStepEntity} from "../map/entities/PathStepEntity";
 import {util} from "../../../lib/util/util";
@@ -18,14 +17,14 @@ import {GameLayer} from "../../../lib/gamemap/GameLayer";
 import KeyValueStore from "../../../lib/util/KeyValueStore";
 import {PathStepHeader} from "../pathing/PathStepHeader";
 import {deps} from "../../dependencies";
+import {lazy} from "../../../lib/properties/Lazy";
+import {ScanTree} from "../../../lib/cluetheory/scans/ScanTree";
 import hbox = C.hbox;
 import span = C.span;
 import GenericPathMethod = SolvingMethods.GenericPathMethod;
 import hboxl = C.hboxl;
 import SectionedPath = Path.SectionedPath;
 import index = util.index;
-import {TileRectangle} from "../../../lib/runescape/coordinates";
-import {lazy} from "../../../lib/properties/Lazy";
 
 export class SectionMemory {
 
@@ -37,18 +36,20 @@ export class SectionMemory {
     }
   }
 
-  private hash(method: AugmentedMethod): string {
+  private hash(method: AugmentedMethod, sub_id?: string): string {
+    if (sub_id) return method.pack.local_id + method.method.id + sub_id
+
     return method.pack.local_id + method.method.id
   }
 
-  async get(method: AugmentedMethod): Promise<number[]> {
-    return (await this.data.get()) ?. [this.hash(method)]
+  async get(method: AugmentedMethod, sub_id?: string): Promise<number[]> {
+    return (await this.data.get()) ?. [this.hash(method, sub_id)]
   }
 
-  async store(method: AugmentedMethod, section: number[]) {
+  async store(method: AugmentedMethod, section: number[], sub_id?: string) {
     const value = (await this.data.get()) ?? {}
 
-    value[this.hash(method)] = section
+    value[this.hash(method, sub_id)] = section
 
     await this.data.set(value)
   }
@@ -60,7 +61,7 @@ export class SectionMemory {
   }
 }
 
-export class PathSectionControl extends Widget {
+export class PathDisplayWithSectionControl extends Widget {
   section_selected = ewent<Path.raw>()
 
   public selected_section: Path.raw = undefined
@@ -133,7 +134,7 @@ export class PathSectionControl extends Widget {
 
           if (graphics_node.value.step.type == "cosmetic") return
 
-          new PathSectionControl.StepRow(
+          new PathDisplayWithSectionControl.StepRow(
             sectionindex,
             step,
             this.template_resolver
@@ -159,7 +160,7 @@ export class PathSectionControl extends Widget {
   }
 }
 
-export namespace PathSectionControl {
+export namespace PathDisplayWithSectionControl {
 
   export class StepRow extends Widget {
     highlighted: Observable<boolean> = observe(false)
@@ -213,8 +214,10 @@ export namespace PathSectionControl {
 
 export default class PathControl extends Behaviour {
   private section_memory = SectionMemory.instance()
+  private section_control: PathDisplayWithSectionControl
 
-  private method: AugmentedMethod<GenericPathMethod> = null
+  private method: AugmentedMethod = null
+  private scan_node: ScanTree.Augmentation.AugmentedScanTreeNode = null
   private sectioned_path: SectionedPath = null
 
   private path_layer: GameLayer = new GameLayer()
@@ -240,9 +243,13 @@ export default class PathControl extends Behaviour {
    * Sets the path displayed in the legend and on the map.
    * Automatically splits it into appropriate sections, use {@link setSections} for more fine-grained control.
    * @param path
+   * @param node The scan tree node this path belongs to, if any
    */
-  setPath(path: Path.raw) {
-    this.set(null, Path.Section.split_into_sections(path))
+  setPath(path: Path.raw, node: {
+    method: AugmentedMethod,
+    node: ScanTree.Augmentation.AugmentedScanTreeNode
+  } = null) {
+    this.set(node?.method, Path.Section.split_into_sections(path), null, node?.node)
   }
 
   setSections(sections: SectionedPath, active_id: number[] = null) {
@@ -273,15 +280,19 @@ export default class PathControl extends Behaviour {
     this.set(method, sectioned)
   }
 
-  private async set(method: AugmentedMethod<GenericPathMethod>,
+  private async set(method: AugmentedMethod,
                     sections: SectionedPath,
-                    active_id: number[] = null
+                    active_id: number[] = null,
+                    node: ScanTree.Augmentation.AugmentedScanTreeNode = null
   ) {
     this.sectioned_path = sections
     this.method = method
-
+    this.scan_node = node
+    
     if (method && !active_id) {
-      active_id = await this.section_memory.get(method)
+      active_id = await this.section_memory.get(method,
+        this.scan_node ? ScanTree.Augmentation.NodeId.hash(ScanTree.Augmentation.NodeId.of(this.scan_node)) : null
+      )
     }
 
     const section_id = TreeArray.fixIndex(this.sectioned_path, active_id || [])
@@ -310,11 +321,12 @@ export default class PathControl extends Behaviour {
   private renderWidget(active_id: number[]) {
     this.widget?.remove()
     this.widget = null
+    this.section_control = null
 
-    let w = c()
+    const w = c()
 
     if (this.sectioned_path) {
-      const section_control = new PathSectionControl(
+      this.section_control = new PathDisplayWithSectionControl(
         this.sectioned_path,
         active_id,
         this.step_graphics,
@@ -322,7 +334,10 @@ export default class PathControl extends Behaviour {
       )
         .onSelection(p => {
           if (this.method) {
-            this.section_memory.store(this.method, section_control.current_section_id)
+
+            this.section_memory.store(this.method, this.section_control.current_section_id,
+              this.scan_node ? ScanTree.Augmentation.NodeId.hash(ScanTree.Augmentation.NodeId.of(this.scan_node)) : null
+            )
           }
 
           this.section_selected.trigger(p)
@@ -330,13 +345,14 @@ export default class PathControl extends Behaviour {
         .addClass("ctr-neosolving-solution-row")
 
       // Only actually add the widget if there is something to show to avoid borders showing up
-      if (!section_control.container.is(":empty")) section_control.appendTo(w)
-
-      this.section_selected.trigger(section_control.selected_section)
+      if (!this.section_control.container.is(":empty")) this.section_control.appendTo(w)
     }
+
+    if (this.section_control) this.section_selected.trigger(this.section_control.selected_section)
 
     if (w.container.is(":empty")) return
 
     this.widget = w.appendTo(this.parent.layer.path_container)
+
   }
 }

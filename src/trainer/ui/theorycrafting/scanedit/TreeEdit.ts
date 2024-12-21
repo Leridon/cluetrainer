@@ -24,6 +24,7 @@ import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
 import {identity} from "lodash";
 import {Path} from "../../../../lib/runescape/pathing";
 import {IssueWidget} from "../../pathedit/EditedPathOverview";
+import {ScanTreeSolving} from "../../neosolving/subbehaviours/ScanTreeSolving";
 import decision_tree = ScanTree.ScanTreeNode;
 import natural_join = util.natural_join;
 import shorten_integer_list = util.shorten_integer_list;
@@ -40,7 +41,6 @@ import hboxl = C.hboxl;
 import collect_issues = Path.collect_issues;
 import scan_tree_template_resolvers = ScanTreeSolving.scan_tree_template_resolvers;
 import cls = C.cls;
-import {ScanTreeSolving} from "../../neosolving/subbehaviours/ScanTreeSolving";
 
 export class DrawRegionAction extends ValueInteraction<ScanRegion> {
   constructor(name: string) {
@@ -362,7 +362,7 @@ class TreeNodeEdit extends Widget {
     }
 
     function render_completeness(completeness: ScanTree.Augmentation.completeness_t | ScanTree.Augmentation.correctness_t): Widget {
-      let {char, cls, desc} = ScanTree.Augmentation.completeness_meta(completeness)
+      let {char, cls, desc} = ScanTree.Augmentation.Correctness.meta(completeness)
 
       return c("<span>").css("width", "10px").addClass(cls).text(char).tooltip(desc)
     }

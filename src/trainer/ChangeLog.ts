@@ -2,9 +2,12 @@ import Properties from "./ui/widgets/Properties";
 import * as lodash from "lodash";
 import {NisModal} from "../lib/ui/NisModal";
 import {List} from "../lib/ui/List";
+import {C} from "../lib/ui/constructors";
 
 export namespace Changelog {
 
+  import hbox = C.hbox;
+  import div = C.div;
   type Layout = Properties
 
   type LogEntry = {
@@ -17,6 +20,25 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([{
+    version: 29,
+    date: new Date(Date.parse("2024-12-21")),
+    title: "Further Zoom Fixes and Configuration Options",
+    notification: "Check out newly options for zoom behaviour",
+    render: layout => {
+      layout
+        .row(new List()
+          .item("Fixed a bug where parts of a path were hidden behind the UI after zooming in.")
+          .item("Selected path sections will now be remembered even within scan trees.")
+          .item("Added global configuration settings for zoom behaviour in the 'General' section.", new List()
+            .item("Added an option to limit the maximum allowed zoom level.")
+            .item("Added an option to set a minimum size for the area that is zoomed into.")
+            .item("Added an option to include the closest teleport in the zoom when not having a method selected.")
+          )
+          .item("Added configuration options to control what to include in the zoom for scan trees.")
+          .item("Moved interface options from 'General' to the new 'Interface' section.")
+        )
+    }
+  }, {
     version: 28,
     date: new Date(Date.parse("2024-12-16")),
     title: "Decluttering Path Displays and Zoom Fixes",
@@ -37,6 +59,7 @@ export namespace Changelog {
           .item("Added an alternative method for the Paul Gower master step.")
           .item("Fixed scan region names hiding teleport icons.")
           .item("Fixed the image url for an easy map clue.")
+          .item("Removed number displays from compass spots.")
         )
     }
   }, {
@@ -603,12 +626,20 @@ export namespace Changelog {
         timeStyle: "short"
       })
 
-      layout.row(
+      /*layout.row(
         "<div style='text-align: center'><a href='https://ko-fi.com/I2I4XY829' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi3.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></div>"
+      )*/
+
+      layout.row(
+        hbox(
+          c("<div style='text-align: center; margin-right: 5px'><a href='https://ko-fi.com/I2I4XY829' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi3.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></div>"),
+          div(
+            'If you enjoy Clue Trainer, please consider supporting continuous development at <a href="https://ko-fi.com/I2I4XY829" target="_blank">Ko-fi</a>.'
+          )
+        )
       )
 
-      layout.paragraph('If you enjoy Clue Trainer, please consider supporting continuous development of Clue Trainer at <a href="https://ko-fi.com/I2I4XY829" target="_blank"><img class="ctr-clickable" height="12px" src="assets/icons/kofi.webp"> KoFi</a>.')
-
+      // layout.paragraph('If you enjoy Clue Trainer, please consider supporting continuous development of Clue Trainer at <a href="https://ko-fi.com/I2I4XY829" target="_blank"><img class="ctr-clickable" height="12px" src="assets/icons/kofi.webp"> KoFi</a>.')
 
       layout.paragraph('You can also join the <a href="https://discord.gg/cluechasers" target="_blank"><img src="assets/icons/cluechasers.png" height="12px">Clue Chasers discord</a> to leave praise and criticism, report issues, request features, get support or just come by and say hi in the <a href="https://discord.com/channels/332595657363685377/1103737270114209825" target="_blank">#clue-trainer</a> channel.')
 

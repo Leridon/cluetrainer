@@ -42,19 +42,19 @@ In-App Wiki
 Issues
     - [Bug, 1] SearchSelection: Very rarely the dropdown remains after the element is already gone
     - [Bug] Knot reader fails: https://discord.com/channels/332595657363685377/1103737270114209825/1241500553805172898
-    - capturehold failed needs to be handled more gracefully, capture interval needs to be respected
     - [Bug, 2] Clue Reader Pausing for knots is bad because it unpauses while the animation is happening.
-    - Zoom for long distance transports is still very bad
     - [Bug, 4] Selecting another method while a scan tree method is active glitches
     - [Bug] Master Compasses reset sometimes to the elite compass (https://discord.com/channels/332595657363685377/1103737270114209825/1287161070645149818)
     - [Bug] Text inputs with the legacy skin are rarely detected as puzzles
+    - Sometimes, the compass calibration is slightly off (https://discord.com/channels/332595657363685377/1103737270114209825/1318205858601107497)
+    - Some slider puzzles are still detected in the desert after the puzzle closed (https://discord.com/channels/332595657363685377/1103737270114209825/1315159104792166490)
+    - For some people, lockboxes desync like crazy (alan mostly)
 
 Path Editor:
     Custom sized square (to help map distances), purely for theorycrafting
     Some sort of parallel world method of displaying steps (with non static teleports), if implemented, preferably differentiatable between absolute and relative step instructions
 
 - Scan Tree Solver
-    - Zoom to path is way too far out.
     - Clicking on a spot on the map needs to do something useful
     - Auto read pulses
 
@@ -69,8 +69,6 @@ Path Editor:
     - Preferences
         - Preferred npc spot
     - Scan Tree Behaviour
-        - Make fit include the entire path
-        - Better render of in-route teleports
         - Spacing in the tree view is bad
 
 - Performance
@@ -118,7 +116,6 @@ Compass solver:
 - General
     - [Styling] ControlHeader title and X are not properly aligned
         - Check modal for how to do it
-    - Clean up cursor on map
 
 - Content
     ✓ Fremmenik Isles

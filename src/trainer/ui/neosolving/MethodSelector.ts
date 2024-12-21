@@ -7,13 +7,17 @@ import {C} from "../../../lib/ui/constructors";
 import {AbstractDropdownSelection} from "../widgets/AbstractDropdownSelection";
 import {Clues} from "../../../lib/runescape/clues";
 import {MethodProperties} from "../MethodProperties";
+import {util} from "../../../lib/util/util";
 import spacer = C.spacer;
 import span = C.span;
 import hbox = C.hbox;
 import ClueSpot = Clues.ClueSpot;
+import async_init = util.async_init;
 
 export default class MethodSelector extends Widget {
   public method: Observable<AugmentedMethod>
+
+  private methods: AugmentedMethod[]
 
   private row: Widget
 
@@ -22,7 +26,11 @@ export default class MethodSelector extends Widget {
 
     this.method = observe(parent.active_method)
 
-    this.method.subscribe(m => this.render(m), true)
+    async_init(async () => {
+      this.methods = (await MethodPackManager.instance().getForClue(this.clue))
+
+      this.method.subscribe(m => this.render(m), true)
+    })
   }
 
   private renderName(method: AugmentedMethod): Widget {
@@ -56,7 +64,6 @@ export default class MethodSelector extends Widget {
   }
 
   private render(method: AugmentedMethod) {
-
     this.row = hbox(
       method
         ? this.renderName(method)
@@ -65,6 +72,7 @@ export default class MethodSelector extends Widget {
       NislIcon.dropdown()
         .css("margin-right", "3px")
         .css("margin-left", "3px"),
+      //`(${this.methods.length})`
     )
       .addClass("ctr-clickable")
       .setAttribute("tabindex", "-1")
@@ -101,6 +109,7 @@ export default class MethodSelector extends Widget {
         .onSelected(m => {
           this.parent.app.favourites.setMethod(this.clue, m)
           this.parent.setMethod(m)
+          if (!m) this.parent.fitToClue()
         })
         .onClosed(() => {
           this.dropdown = null

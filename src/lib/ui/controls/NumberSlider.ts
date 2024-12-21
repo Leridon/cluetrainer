@@ -29,6 +29,11 @@ export default class NumberSlider extends AbstractEditWidget<number> {
     this.enabled.subscribe(v => this.input.setProperty("disabled", !v))
   }
 
+  modifyPreviewContainer(f: (_: Widget) => void): this {
+    f(this.preview_container)
+    return this
+  }
+
   setEnabled(v: boolean): this {
     this.enabled.set(v)
 

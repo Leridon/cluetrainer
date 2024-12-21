@@ -60,4 +60,8 @@ export namespace TileCoordinates {
   export function chunk(coords: TileCoordinates): Vector2 {
     return {x: Math.floor(coords.x / 64), y: Math.floor(coords.y / 64)}
   }
+
+  export function toShortString(coords: TileCoordinates): string {
+    return `${coords.x}.${coords.y}.${coords.level}`
+  }
 }
