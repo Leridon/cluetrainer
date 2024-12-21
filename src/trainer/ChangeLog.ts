@@ -20,6 +20,18 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([{
+    version: 30,
+    date: new Date(Date.parse("2024-12-21")),
+    title: "Crash Hotfix",
+    silent: true,
+    render: layout => {
+      layout
+        .row(new List()
+          .item("Fixed a bug that caused clue trainer to crash internally when reading certain clue steps.")
+          .item("Fixed another bug that caused another internal crash when reading certain clue steps.")
+        )
+    }
+  }, {
     version: 29,
     date: new Date(Date.parse("2024-12-21")),
     title: "Further Zoom Fixes and Configuration Options",

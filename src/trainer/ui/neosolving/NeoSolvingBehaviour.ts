@@ -541,7 +541,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
         break;
     }
 
-    if (this.app.settings.settings.solving.general.include_closest_teleport) {
+    if (bounds.get() && this.app.settings.settings.solving.general.include_closest_teleport) {
       bounds.fixCenter().fixLevel()
 
       const spots = this.layer.transport_layer.getTeleportSpots()
