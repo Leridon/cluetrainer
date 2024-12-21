@@ -324,7 +324,7 @@ export class GameMap extends leaflet.Map {
   }
 
   private fitArea: Polygon = null
-  private debug_show_fit_area = true
+  private debug_show_fit_area = false
 
   public fitView(view: TileRectangle, options: FitBoundsOptions = {}): this {
     options.maxZoom ??= 4

@@ -6,36 +6,55 @@ export default class BoundsBuilder {
   private bounds: Rectangle = null
   private level: floor_t = null
 
-  private limit_distance_center: Vector2 = null
-  private distance_limit: number = null
+  private distance_limit: {
+    center: Vector2
+    limit: number
+  } = null
+
+  private fixed_center: boolean = false
+  private level_fixed: boolean = false
 
   constructor() {}
 
   setDistanceLimit(limit: number): this {
     if (limit != null) {
-      this.distance_limit = limit
-      this.limit_distance_center = Rectangle.center(this.bounds)
+      this.distance_limit = {
+        limit: limit,
+        center: Rectangle.center(this.bounds)
+      }
     } else {
       this.distance_limit = null
-      this.limit_distance_center = null
     }
 
     return this
   }
 
-  addTile(...tiles: (TileCoordinates | Vector2)[]): void {
+  fixCenter(v: boolean = true): this {
+    this.fixed_center = v
 
+    return this
+  }
+
+  fixLevel(v: boolean = true): this {
+    this.level_fixed = v
+
+    return this
+  }
+
+  addTile(...tiles: (TileCoordinates | Vector2)[]): void {
     for (let tile of tiles) {
       if (!tile) continue
-      if (this.distance_limit != null && tiles.some(tile => Vector2.lengthSquared(Vector2.sub(this.limit_distance_center, tile)) > this.distance_limit * this.distance_limit)) continue
+      if (this.distance_limit != null && tiles.some(tile => Vector2.lengthSquared(Vector2.sub(this.distance_limit.center, tile)) > this.distance_limit.limit * this.distance_limit.limit)) continue
 
       if (!this.bounds) {
         this.bounds = {topleft: tile, botright: tile}
       } else {
+        if (this.fixed_center) this.bounds = Rectangle.extendTo(this.bounds, Vector2.mirrorThroughPoint(tile, Rectangle.center(this.bounds)))
+
         this.bounds = Rectangle.extendTo(this.bounds, tile)
       }
 
-      if ("level" in tile) {
+      if ("level" in tile && !this.level_fixed) {
         if (this.level == null) this.level = tile.level
         else this.level = Math.min(this.level, tile.level) as floor_t
       }
@@ -44,12 +63,13 @@ export default class BoundsBuilder {
 
   addRectangle(rect: TileRectangle | Rectangle): void {
     if (!rect) return
-    this.addTile(rect.topleft)
-    this.addTile(rect.botright)
 
     if ("level" in rect) {
-      if (this.level == null) this.level = rect.level
-      else this.level = Math.min(this.level, rect.level) as floor_t
+      this.addTile(TileRectangle.tl(rect))
+      this.addTile(TileRectangle.br(rect))
+    } else {
+      this.addTile(rect.topleft)
+      this.addTile(rect.botright)
     }
   }
 

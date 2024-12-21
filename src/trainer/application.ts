@@ -238,7 +238,6 @@ export class SettingsManagement {
   }
 
   set(settings: Settings.Settings) {
-    debugger
     this.observable_settings.set(settings)
   }
 

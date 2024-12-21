@@ -47,7 +47,9 @@ import {AbstractCaptureService, CapturedImage, CaptureInterval} from "../../../l
 import {SimpleScanSolving} from "./subbehaviours/SimpleScanSolving";
 import {ScanSolving} from "./subbehaviours/ScanSolving";
 import {Transportation} from "../../../lib/runescape/transportation";
-import {Rectangle} from "../../../lib/math";
+import {Rectangle, Vector2} from "../../../lib/math";
+import {SettingsNormalization} from "../../../lib/util/SettingsNormalization";
+import {util} from "../../../lib/util/util";
 import span = C.span;
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import interactionMarker = RenderingUtility.interactionMarker;
@@ -66,9 +68,7 @@ import ClueSpot = Clues.ClueSpot;
 import log = Log.log;
 import default_interactive_area = Transportation.EntityTransportation.default_interactive_area;
 import digSpotArea = Clues.digSpotArea;
-import {SettingsNormalization} from "../../../lib/util/SettingsNormalization";
-import {Polygon} from "leaflet";
-import {boxPolygon} from "../polygon_helpers";
+import findBestMatch = util.findBestMatch;
 
 class NeoSolvingLayer extends GameLayer {
   public clue_container: Widget
@@ -83,10 +83,12 @@ class NeoSolvingLayer extends GameLayer {
 
   private sidebar: GameMapControl
 
+  public transport_layer: TransportLayer
+
   constructor(private behaviour: NeoSolvingBehaviour) {
     super();
 
-    new TransportLayer(true, {transport_policy: "none", teleport_policy: "target_only"}).addTo(this)
+    this.transport_layer = new TransportLayer(true, {transport_policy: "none", teleport_policy: "target_only"}).addTo(this)
 
     this.sidebar = new GameMapControl({
       position: "top-left",
@@ -109,6 +111,8 @@ class NeoSolvingLayer extends GameLayer {
   }
 
   fit(view: TileRectangle): this {
+    console.log(view)
+
     if (!view) return this
 
     let copy = lodash.cloneDeep(view)
@@ -131,14 +135,14 @@ class NeoSolvingLayer extends GameLayer {
     }
 
     // Minimum size the fit bounds should have, expand if necessary.
-    const min = 8
+    const min = this.behaviour.app.settings.settings.solving.general.minimum_view_size
 
     const size = Rectangle.size(copy)
 
     copy = TileRectangle.extend(copy, [Math.max(0, (min - size.x) / 2), Math.max(0, (min - size.y) / 2)])
 
     this.map.fitView(copy, {
-      maxZoom: 20,
+      maxZoom: this.behaviour.app.settings.settings.solving.general.global_max_zoom,
       paddingTopLeft: padding
     })
 
@@ -503,6 +507,63 @@ export default class NeoSolvingBehaviour extends Behaviour {
     state.solution_area = area
   }
 
+  public fitToClue() {
+    if (!this.state.step || this.state.step.type == "puzzle") return
+
+    const step = this.state.step.clue
+
+    const bounds = new BoundsBuilder()
+
+    const sol = Clues.Step.solution(step.step)
+
+    switch (sol.type) {
+      case "talkto":
+        let npc_spot_id = 0
+        let spot = sol.spots[npc_spot_id]
+
+        bounds.addArea(spot.range)
+        break;
+      case "dig":
+        bounds.addTile(sol.spot)
+        break;
+      case "search":
+        bounds.addRectangle(sol.spot)
+        break;
+    }
+
+    switch (step.step.type) {
+      case "emote":
+        bounds.addArea(step.step.area)
+        break;
+      case "skilling":
+        bounds.addRectangle(TileArea.toRect(step.step.areas[0]))
+        break;
+      case "scan":
+        bounds.addTile(...step.step.spots)
+        break;
+    }
+
+    if (this.app.settings.settings.solving.general.include_closest_teleport) {
+      bounds.fixCenter().fixLevel()
+
+      const spots = this.layer.transport_layer.getTeleportSpots()
+
+      const current_center = Rectangle.center(bounds.get())
+
+      const close_enough = spots.filter(e => Vector2.max_axis(Vector2.sub(e.centerOfTarget(), current_center)) < 32)
+
+      close_enough.forEach(s => bounds.addArea(s.targetArea()))
+
+      if (close_enough.length == 0) {
+        const closest = findBestMatch(spots, e => Vector2.max_axis(Vector2.sub(e.centerOfTarget(), current_center)), undefined, true)
+
+        if (closest.score < 320) bounds.addArea(closest.value.targetArea())
+      }
+    }
+
+    this.layer.fit(bounds.get())
+  }
+
   /**
    * Sets the active clue. Builds the ui elements and moves the map view to the appropriate spot.
    *
@@ -543,12 +604,9 @@ export default class NeoSolvingBehaviour extends Behaviour {
       step.step.solution.spots
     }
 
-
     const settings = this.app.settings.settings.solving
 
     const clue = step.step
-
-    const bounds = new BoundsBuilder()
 
     // Render controls and solution on map
     {
@@ -578,7 +636,6 @@ export default class NeoSolvingBehaviour extends Behaviour {
           case "hide":
           // Do nothing
         }
-
       }
 
       const sol = Clues.Step.solution(step.step)
@@ -612,8 +669,6 @@ export default class NeoSolvingBehaviour extends Behaviour {
                 .addTo(this.layer.generic_solution_layer)
             }
 
-            bounds.addArea(spot.range)
-
             break;
           case "search":
             if (sol.key && settings.info_panel.search_key == "show") {
@@ -639,8 +694,6 @@ export default class NeoSolvingBehaviour extends Behaviour {
               ))
             }
 
-            bounds.addRectangle(sol.spot)
-
             new ClueEntities.SearchSolutionEntity(sol)
               .addTo(this.layer.generic_solution_layer)
 
@@ -658,8 +711,6 @@ export default class NeoSolvingBehaviour extends Behaviour {
             }
             new ClueEntities.DigSolutionEntity(sol)
               .addTo(this.layer.generic_solution_layer)
-
-            bounds.addTile(sol.spot)
 
             break;
         }
@@ -730,8 +781,6 @@ export default class NeoSolvingBehaviour extends Behaviour {
         if (clue.hidey_hole) {
           new ClueEntities.HideyHoleEntity(clue, false).addTo(this.layer.generic_solution_layer)
         }
-
-        bounds.addArea(clue.area)
       } else if (clue.type == "skilling") {
         w.append(cls("ctr-neosolving-solution-row").append(
           inlineimg(CursorType.meta(clue.cursor).icon_url),
@@ -739,16 +788,12 @@ export default class NeoSolvingBehaviour extends Behaviour {
           span(clue.answer)
         ))
 
-        bounds.addRectangle(TileArea.toRect(clue.areas[0]))
-
         interactionMarker(activate(clue.areas[0]).center(), clue.cursor)
           .addTo(this.layer.generic_solution_layer)
       } else if (clue.type == "scan") {
         this.layer.scan_layer.marker.setClickable(true)
         this.layer.scan_layer.setSpots(clue.spots)
         this.layer.scan_layer.marker.setRadius(clue.range + 5, true)
-
-        bounds.addTile(...clue.spots)
       } else if (clue.type == "compass") {
         // bounds.addTile(...clue.spots)
       }
@@ -819,9 +864,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
         this.layer.solution_container.append(w)
     }
 
-    if (fit_target) {
-      this.layer.fit(bounds.get())
-    }
+    if (fit_target) this.fitToClue()
 
     if (this.app.settings.settings.teleport_customization.preset_bindings_active) {
       const active_preset = this.app.settings.settings.teleport_customization.active_preset
@@ -1155,15 +1198,17 @@ export namespace NeoSolving {
     }
 
     export type GeneralSettings = {
-      global_max_zoom_method: number,
-      global_max_zoom_no_method: number,
+      global_max_zoom: number,
       minimum_view_size: number,
+      include_closest_teleport: boolean,
     }
 
     export namespace GeneralSettings {
+      import compose = util.compose;
       export const normalize: SettingsNormalization.NormalizationFunction<GeneralSettings> = SettingsNormalization.normaliz({
-        global_max_zoom_method: SettingsNormalization.number(20),
-        global_max_zoom_no_method: SettingsNormalization.number(20),
+        global_max_zoom: compose(SettingsNormalization.number(7), SettingsNormalization.clamp(0, 7)),
+        minimum_view_size: compose(SettingsNormalization.number(8), SettingsNormalization.clamp(1, 64)),
+        include_closest_teleport: SettingsNormalization.bool(true)
       })
     }
 

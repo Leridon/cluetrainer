@@ -800,9 +800,40 @@ class GeneralSolvingSettingsEdit extends Widget {
   render() {
     this.layout.empty()
 
-    this.layout.section("Interface")
+    this.layout.section("Zoom Behaviour", "Configure how the solver zooms into paths and clue target spots.")
 
+    this.layout.namedSetting("Max Zoom",
+      hbox(
+        new NumberSlider(0, 7)
+          .modifyPreviewContainer(c => c.css("min-width", "15px"))
+          .setValue(this.value.global_max_zoom)
+          .onCommit(v => this.value.global_max_zoom = v),
+        NislIcon.reset2().withClick(() => {
+          this.value.global_max_zoom = NeoSolving.Settings.GeneralSettings.normalize(undefined).global_max_zoom
+          this.render()
+        }).tooltip("Reset to default"),
+      ),
+      "The maximum allowed zoom level for automatic zoom."
+    )
 
+    this.layout.namedSetting("Minimum Area",
+      hbox(
+        new NumberSlider(1, 64)
+          .modifyPreviewContainer(c => c.css("min-width", "15px"))
+          .setValue(this.value.minimum_view_size)
+          .onCommit(v => this.value.minimum_view_size = v),
+        NislIcon.reset2().withClick(() => {
+          this.value.minimum_view_size = NeoSolving.Settings.GeneralSettings.normalize(undefined).minimum_view_size
+          this.render()
+        }).tooltip("Reset to default"),
+      ),
+      "The minimum size of the target area (in tiles) that the zoom tries to fit when zooming in. Smaller areas are padded accordingly."
+    )
+
+    this.layout.setting(new Checkbox("Include closest teleport")
+        .setValue(this.value.include_closest_teleport)
+        .onCommit(v => this.value.include_closest_teleport = v)
+      , "Include the closest teleport to the target spot when not using a method, up to a reasonable max distance. May produce undesirable results, especially with underground locations.")
   }
 }
 
