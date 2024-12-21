@@ -34,6 +34,7 @@ export namespace Changelog {
             .item("Added an option to set a minimum size for the area that is zoomed into.")
             .item("Added an option to include the closest teleport in the zoom when not having a method selected.")
           )
+          .item("Added configuration options to control what to include in the zoom for scan trees.")
           .item("Moved interface options from 'General' to the new 'Interface' section.")
         )
     }

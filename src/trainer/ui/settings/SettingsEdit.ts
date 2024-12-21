@@ -834,6 +834,8 @@ class GeneralSolvingSettingsEdit extends Widget {
         .setValue(this.value.include_closest_teleport)
         .onCommit(v => this.value.include_closest_teleport = v)
       , "Include the closest teleport to the target spot when not using a method, up to a reasonable max distance. May produce undesirable results, especially with underground locations.")
+
+    this.layout.paragraph("Additional zoom options can be found in the 'Scans' section.")
   }
 }
 
