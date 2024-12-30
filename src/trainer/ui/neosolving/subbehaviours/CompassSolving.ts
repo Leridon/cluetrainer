@@ -108,8 +108,9 @@ class CompassHandlingLayer extends GameLayer {
 
       if (event.active_entity instanceof TeleportSpotEntity) {
         this.solving.registerSpot(event.active_entity.teleport, false)
+      } else if (event.active_entity instanceof PathStepEntity && event.active_entity.step.type == "teleport") {
+        this.solving.registerSpot(TransportData.resolveTeleport(event.active_entity.step.id), false)
       } else if (event.active_entity instanceof KnownCompassSpot) {
-
         if (this.solving.entries.some(e => e.information) || !this.solving.reader) {
           this.solving.setSelectedSpot(event.active_entity.spot, true)
         } else {

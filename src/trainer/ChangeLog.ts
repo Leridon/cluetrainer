@@ -28,6 +28,7 @@ export namespace Changelog {
         .row(new List()
           .item("Added a new builtin triangulation preset for elite clues only using the normal spellbook (Menaphos House Teleport and South Feldip Hills).")
           .item("Fixed styling issue for triangulation presets with long names.")
+          .item("The compass solver now recognizes clicked teleports when they are part of a previewed path.")
         )
     }
   }, {
