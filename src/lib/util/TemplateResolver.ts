@@ -38,6 +38,7 @@ export class TemplateResolver {
 
 export namespace TemplateResolver {
 
+  import span = C.span;
   export const ExpressionType = ["safestring", "application", "domelement", "error"] as const
   export type ExpressionType = typeof ExpressionType[number]
 
@@ -93,9 +94,11 @@ export namespace TemplateResolver {
   export const Concat: Function = {
     name: "concat",
     apply: args => {
-      const result = []
+      const result: Value[] = []
 
       let concat_buffer: SafeString[] = []
+
+      const contains_dom = args.some(a => a.type == "domelement")
 
       function clear() {
         if (concat_buffer.length > 0) {
@@ -104,10 +107,15 @@ export namespace TemplateResolver {
           s += concat_buffer.map(e => e.value).join(" ")
           s += "&nbsp;"
 
-          result.push({type: "safestring", value: s})
+          if (contains_dom) {
+            result.push({type: "domelement", value: span().setInnerHtml(s).css("white-space", "nowrap")})
+          } else {
+            result.push({type: "safestring", value: s})
+          }
           concat_buffer = []
         }
       }
+
 
       for (const arg of args) {
         switch (arg.type) {
@@ -150,7 +158,7 @@ export namespace TemplateResolver {
 
     type Token = SafeString | "open" | "close"
 
-    function tokenize(input: string) {
+    function tokenize(input: string): Token[] {
       let tokens: Token[] = []
 
       let i = 0;

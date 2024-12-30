@@ -1118,7 +1118,10 @@ class CompassSettingsEdit extends Widget {
       const preset_selector = new DropdownSelection<CompassSolving.TriangulationPreset>({
         type_class: {
           toHTML: (v: CompassSolving.TriangulationPreset) => {
-            if (v) return hboxl(...deps().app.template_resolver.resolve(v.name))
+            if (v) return hboxl(...deps().app.template_resolver.resolve(v.name)).css2({
+              "white-space": "nowrap",
+              "overflow": "hidden"
+            })
             else return italic("None")
           }
         }
@@ -1139,7 +1142,10 @@ class CompassSettingsEdit extends Widget {
       type_class: {
         toHTML: (v: T) => {
           if (v == "create") return "Create New"
-          else if (v) return hboxl(...deps().app.template_resolver.resolve(v.name))
+          else if (v) return hboxl(...deps().app.template_resolver.resolve(v.name)).css2({
+            "white-space": "nowrap",
+            "overflow": "hidden"
+          })
           else return "None selected"
         }
       }

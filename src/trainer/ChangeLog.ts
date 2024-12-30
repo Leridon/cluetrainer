@@ -20,6 +20,17 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([{
+    version: 31,
+    date: new Date(Date.parse("TODO")),
+    title: "TODO",
+    render: layout => {
+      layout
+        .row(new List()
+          .item("Added a new builtin triangulation preset for elite clues only using the normal spellbook (Menaphos House Teleport and South Feldip Hills).")
+          .item("Fixed styling issue for triangulation presets with long names.")
+        )
+    }
+  }, {
     version: 30,
     date: new Date(Date.parse("2024-12-21")),
     title: "Crash Hotfix",

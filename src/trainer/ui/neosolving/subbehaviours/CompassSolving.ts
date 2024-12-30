@@ -1264,13 +1264,25 @@ export namespace CompassSolving {
         {teleport: {group: "arctabs", spot: "whalesmaw"}},
       ]
     }
+
+    export const elite_menaphos_house_south_feldip_hills: TriangulationPreset = {
+      compass_id: [clue_data.gielinor_compass.id, clue_data.tetracompass.id],
+      id: -7,
+      name: "{{teleport houseteleports menaphos}} Menaphos - {{teleport normalspellbook southfeldiphills}} South Feldip Hills",
+      sequence: [
+        {teleport: {group: "houseteleports", spot: "menaphos"}},
+        {teleport: {group: "normalspellbook", spot: "southfeldiphills"}},
+      ]
+    }
+
     export const builtin: TriangulationPreset[] = [
       elite_moonclan_southfeldiphills,
       elite_moonclan_iceplateu,
       master_turtle_island,
       elite_falador,
       master_turtle_island_dock,
-      master_whales_maw
+      master_whales_maw,
+      elite_menaphos_house_south_feldip_hills
     ]
   }
 
