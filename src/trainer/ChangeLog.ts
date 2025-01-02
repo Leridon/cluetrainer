@@ -20,6 +20,19 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([{
+    version: 31,
+    date: new Date(Date.parse("2025-01-02")),
+    title: "Small Compass Fixes",
+    render: layout => {
+      layout
+        .row(new List()
+          .item("Added a new builtin triangulation preset for elite clues only using the normal spellbook (Menaphos House Teleport and South Feldip Hills).")
+          .item("Fixed styling issue for triangulation presets with long names.")
+          .item("The compass solver now recognizes clicked teleports when they are part of a previewed path.")
+          .item("Fixed the precise location of 3 tetracompass spots.")
+        )
+    }
+  }, {
     version: 30,
     date: new Date(Date.parse("2024-12-21")),
     title: "Crash Hotfix",
