@@ -17,7 +17,7 @@ export default class TheoryCraftingSidebar extends MapSideBar {
   private methods: MethodPackManager
 
   constructor(public theorycrafter: TheoryCrafter) {
-    super("Theorycrafter");
+    super("Method Packs");
 
     this.css("width", "300px")
 
@@ -30,24 +30,6 @@ export default class TheoryCraftingSidebar extends MapSideBar {
   render(packs: Pack[]) {
     this.body.empty()
 
-    let grouped = lodash.groupBy(packs, p => p.type)
-
-    h(2, "Default Method-Packs").appendTo(this.body)
-    grouped["default"].forEach(p => {
-      new PackWidget(p, MethodPackManager.instance(), {buttons: true, collapsible: true}).appendTo(this.body)
-    })
-
-    h(2, "Imported Method-Packs").appendTo(this.body)
-    let imported = grouped["imported"] || []
-
-    imported.forEach(p => {
-      new PackWidget(p, MethodPackManager.instance(), {buttons: true, collapsible: true}).appendTo(this.body)
-    })
-
-    if (imported.length == 0) {
-      c().text("No imported method packs.").appendTo(this.body)
-    }
-
     btnrow(
       new LightButton("Import", "rectangle")
         .onClick(async () => {
@@ -56,27 +38,15 @@ export default class TheoryCraftingSidebar extends MapSideBar {
           // TODO: This kinda sucks maybe
 
           if (imported?.imported) this.methods.import(imported.imported)
-        })
-    ).appendTo(this.body)
-
-    let locals = grouped["local"] || []
-
-    h(2, "Local Method-Packs").appendTo(this.body)
-
-    locals.forEach(p => {
-      new PackWidget(p, MethodPackManager.instance(), {buttons: true, collapsible: true}).appendTo(this.body)
-    })
-
-    if (locals.length == 0) {
-      c().text("No local method packs.").appendTo(this.body)
-    }
-
-    btnrow(
+        }),
       new LightButton("+ Create New", "rectangle")
         .onClick(() => {
           new NewMethodPackModal().do()
         })
     ).appendTo(this.body)
 
+    packs.forEach(p => {
+      new PackWidget(p, MethodPackManager.instance(), {buttons: true, collapsible: true}).appendTo(this.body)
+    })
   }
 }

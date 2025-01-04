@@ -23,7 +23,7 @@ export default class ScanTools extends Widget {
     centered(
       c("<div style='font-weight: bold'>Center On</div>"),
       new ButtonRow({align: "center", sizing: "100px", max_center_spacer_width: "20px"}).buttons(
-        new LightButton("Spots", "rectangle")
+        new LightButton("Spots")
           .onClick(() => {
             let bounds = leaflet.latLngBounds([])
 
@@ -33,7 +33,7 @@ export default class ScanTools extends Widget {
 
             this.editor.app.map.fitBounds(bounds)
           }),
-        new LightButton("Complement", "rectangle")
+        new LightButton("Complement")
           .onClick(() => {
             let bounds = leaflet.latLngBounds([])
 

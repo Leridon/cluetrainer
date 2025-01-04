@@ -1,5 +1,5 @@
 import Properties from "../widgets/Properties";
-import {Clues, ClueTier, ClueType} from "../../../lib/runescape/clues";
+import {Clues, ClueType} from "../../../lib/runescape/clues";
 import {Constants} from "../../constants";
 import {GieliCoordinates, TileCoordinates, TileRectangle} from "../../../lib/runescape/coordinates";
 import LightButton from "../widgets/LightButton";
@@ -12,6 +12,7 @@ import {FavouriteIcon} from "../nisl";
 import {ConfirmationModal} from "../widgets/modals/ConfirmationModal";
 import {NewMethodModal} from "./MethodModal";
 import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
+import {Notification} from "../NotificationBar";
 import hbox = C.hbox;
 import spacer = C.spacer;
 import span = C.span;
@@ -19,7 +20,6 @@ import ClueSpot = Clues.ClueSpot;
 import natural_join = util.natural_join;
 import plural = util.plural;
 import activate = TileArea.activate;
-import {Notification} from "../NotificationBar";
 
 export class ClueProperties extends Properties {
   render_promise: Promise<this> = null
@@ -224,7 +224,7 @@ export namespace ClueProperties {
             {
               type: "basic",
               icon: "assets/icons/copy.png",
-              text: "Make Copy",
+              text: "Edit Copy",
               handler: async () => {
                 const new_method = await new NewMethodModal(clue, m).do()
 

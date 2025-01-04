@@ -91,7 +91,7 @@ class MethodEditSideBar extends MapSideBar {
 
           this.parent.is_dirty.set(false)
         }),
-      new LightButton("Make and Edit Copy", "rectangle")
+      new LightButton("Make and Edit Copy")
         .setEnabled(!!this.parent.method.pack)
         .onClick(async () => {
           this.parent.theorycrafter.editMethod({
@@ -100,7 +100,7 @@ class MethodEditSideBar extends MapSideBar {
             method: SolvingMethods.clone(this.parent.method.method)
           })
         }),
-      new LightButton("Close", "rectangle")
+      new LightButton("Close")
         .onClick(async () => {
           const really = await this.parent.requestClosePermission()
 

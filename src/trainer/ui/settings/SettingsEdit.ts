@@ -435,8 +435,7 @@ class TeleportSettingsEdit extends Widget {
         hbox("Reset to ",
           inlineimg("assets/icons/cluechasers.png"),
           " Clue Chasers recommendations"
-        ),
-        "rectangle"
+        )
       )
         .onClick(async () => {
           const really = await ConfirmationModal.simple(
@@ -1393,11 +1392,11 @@ class DataManagementEdit extends Widget {
 
     this.layout.row(
       hgrid(
-        new LightButton("Export", "rectangle")
+        new LightButton("Export")
           .onClick(() => {
             deps().app.data_dump.dump()
           }),
-        new LightButton("Import", "rectangle")
+        new LightButton("Import")
           .onClick(() => {
             deps().app.data_dump.restore()
           })

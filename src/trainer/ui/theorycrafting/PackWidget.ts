@@ -40,6 +40,8 @@ export default class PackWidget extends Widget {
 
     this.append(header, body)
 
+    body.named("Type", pack.type)
+
     body.named("Assumptions", hboxl(...AssumptionProperty.icons(pack.default_assumptions)))
 
     body.named("Author(s)", c().text(pack.author))

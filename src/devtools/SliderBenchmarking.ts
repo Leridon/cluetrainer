@@ -417,7 +417,7 @@ class BenchmarkRunner extends NisModal {
       new BenchmarkProgressWidget(this.settings, progress).appendTo(result_container)
     })
 
-    const stop_button = new LightButton("Stop", "rectangle")
+    const stop_button = new LightButton("Stop")
       .onClick(() => {
         this.process.stop()
       })
