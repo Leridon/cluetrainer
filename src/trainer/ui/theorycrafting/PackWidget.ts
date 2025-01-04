@@ -21,7 +21,7 @@ import spacer = C.spacer;
 
 export default class PackWidget extends Widget {
   constructor(public pack: Pack,
-              manager: MethodPackManager,
+              private manager: MethodPackManager,
               customization: {
                 buttons?: boolean,
                 collapsible?: boolean
@@ -43,6 +43,13 @@ export default class PackWidget extends Widget {
             ? `ctr-pack-widget-header-type-local`
             : `ctr-pack-widget-header-type-${pack.type}`)
         ).css("position", "relative"),
+        customization.buttons ?
+          c().setInnerHtml("&#x22EE;")
+            .addClass("ctr-path-edit-overview-step-options")
+            .addClass("ctr-clickable")
+            .on("click", async (event) => {
+              this.openContextMenu(event)
+            }) : undefined
       )
       .addClass("ctr-pack-widget-header")
       .tooltip(pack.local_id)
@@ -56,103 +63,117 @@ export default class PackWidget extends Widget {
     body.row(c().css("font-style", "italic").text(pack.description))
 
     if (customization.buttons) {
-      this.on("click contextmenu", (event) => {
-        event.preventDefault()
+      this.on("contextmenu", (event) => this.openContextMenu(event))
+    }
+  }
 
-        let menu: Menu = {
-          type: "submenu",
-          text: "",
-          children: []
-        }
+  private openContextMenu(event) {
+    event.preventDefault()
 
-        if (event.ctrlKey && pack.is_real_default) {
-          menu.children.push({
-            type: "basic",
-            text: "Enable Editing",
-            icon: "assets/icons/copy.png",
-            handler: () => MethodPackManager.instance().create(pack, true)
-          })
-        } else {
-          menu.children.push({
-            type: "basic",
-            text: "Clone",
-            icon: "assets/icons/copy.png",
-            handler: () => new NewMethodPackModal(pack).do()
-          })
-        }
+    const pack = this.pack
+    const manager = this.manager
 
-        if (Pack.isEditable(pack)) {
-          menu.children.push({
-            type: "basic",
-            text: "Edit Metainformation",
-            icon: "assets/icons/edit.png",
-            handler: () => {
-              new EditMethodPackModal(pack).do()
-            }
-          })
-        }
+    const menu: Menu = {
+      type: "submenu",
+      text: "",
+      children: []
+    }
 
-        if (Pack.isEditable(pack) || pack.type == "imported") {
-          menu.children.push({
-            type: "basic",
-            text: "Delete",
-            icon: "assets/icons/delete.png",
-            handler: async () => {
-              const really = await new ConfirmationModal<boolean>({
-                body:
-                  pack.type == "imported"
-                    ? `Are you sure you want to remove this imported pack? You will need to reimport it again.`
-                    : `Are you sure you want to delete the local pack ${pack.name}? There is no way to undo this action!`,
-                options: [
-                  {kind: "neutral", text: "Cancel", value: false},
-                  {kind: "cancel", text: "Delete", value: true},
-                ]
-              }).do()
+    menu.children.push({
+      type: "basic",
+      text: "Focus",
+      handler: () => {
 
-              if (really) {
-                await manager.deletePack(pack)
+      }
+    })
 
-                notification(`Deleted pack '${this.pack.name}'`).show()
-              }
-            }
-          })
-
-          const pack_name = pack.name.length > 0 ? pack.name : "Unnamed Pack"
-
-          menu.children.push({
-            type: "basic",
-            text: "Export",
-            handler: () => {
-              ExportStringModal.do(exp({type: "method-pack", version: 1},
-                true,
-                true
-              )(pack), "", `${pack_name}.txt`)
-            }
-          })
-
-          menu.children.push({
-            type: "basic",
-            text: "Export JSON",
-            handler: () => {
-              ExportStringModal.do(cleanedJSON(pack), "",
-                `${pack_name}.json`
-              )
-            }
-          })
-        }
-
-        if (!pack.is_real_default) {
-          menu.children.push({
-            type: "basic",
-            text: "Normalize",
-            handler: () => {
-              new MethodNormalization.Modal(this.pack).show()
-            }
-          })
-        }
-
-        new ContextMenu(menu).showFromEvent2(event.originalEvent as MouseEvent)
+    if (event.ctrlKey && pack.is_real_default) {
+      menu.children.push({
+        type: "basic",
+        text: "Enable Editing",
+        icon: "assets/icons/copy.png",
+        handler: () => MethodPackManager.instance().create(pack, true)
+      })
+    } else {
+      menu.children.push({
+        type: "basic",
+        text: "Clone",
+        icon: "assets/icons/copy.png",
+        handler: () => new NewMethodPackModal(pack).do()
       })
     }
+
+    if (Pack.isEditable(pack)) {
+      menu.children.push({
+        type: "basic",
+        text: "Edit Metainformation",
+        icon: "assets/icons/edit.png",
+        handler: () => {
+          new EditMethodPackModal(pack).do()
+        }
+      })
+    }
+
+    if (Pack.isEditable(pack) || pack.type == "imported") {
+      menu.children.push({
+        type: "basic",
+        text: "Delete",
+        icon: "assets/icons/delete.png",
+        handler: async () => {
+          const really = await new ConfirmationModal<boolean>({
+            body:
+              pack.type == "imported"
+                ? `Are you sure you want to remove this imported pack? You will need to reimport it again.`
+                : `Are you sure you want to delete the local pack ${pack.name}? There is no way to undo this action!`,
+            options: [
+              {kind: "neutral", text: "Cancel", value: false},
+              {kind: "cancel", text: "Delete", value: true},
+            ]
+          }).do()
+
+          if (really) {
+            await manager.deletePack(pack)
+
+            notification(`Deleted pack '${this.pack.name}'`).show()
+          }
+        }
+      })
+
+      const pack_name = pack.name.length > 0 ? pack.name : "Unnamed Pack"
+
+      menu.children.push({
+        type: "basic",
+        text: "Export",
+        handler: () => {
+          ExportStringModal.do(exp({type: "method-pack", version: 1},
+            true,
+            true
+          )(pack), "", `${pack_name}.txt`)
+        }
+      })
+
+      menu.children.push({
+        type: "basic",
+        text: "Export JSON",
+        handler: () => {
+          ExportStringModal.do(cleanedJSON(pack), "",
+            `${pack_name}.json`
+          )
+        }
+      })
+    }
+
+    if (!pack.is_real_default) {
+      menu.children.push({
+        type: "basic",
+        text: "Normalize",
+        handler: () => {
+          new MethodNormalization.Modal(this.pack).show()
+        }
+      })
+    }
+
+    new ContextMenu(menu).showFromEvent2(event.originalEvent as MouseEvent)
+
   }
 }
