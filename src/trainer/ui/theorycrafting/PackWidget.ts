@@ -25,9 +25,11 @@ export default class PackWidget extends Widget {
               customization: {
                 buttons?: boolean,
                 collapsible?: boolean
-              }
+              },
+              private open_handler: (_: Pack) => void = undefined
   ) {
     super();
+
 
     this.addClass("ctr-pack-widget")
 
@@ -65,6 +67,11 @@ export default class PackWidget extends Widget {
     if (customization.buttons) {
       this.on("contextmenu", (event) => this.openContextMenu(event))
     }
+
+    if (open_handler) {
+      this.addClass("ctr-clickable")
+      this.on("click", () => this.open_handler(pack))
+    }
   }
 
   private openContextMenu(event) {
@@ -79,13 +86,13 @@ export default class PackWidget extends Widget {
       children: []
     }
 
-    menu.children.push({
-      type: "basic",
-      text: "Focus",
-      handler: () => {
-
-      }
-    })
+    if (this.open_handler) {
+      menu.children.push({
+        type: "basic",
+        text: "Open",
+        handler: () => this.open_handler(pack)
+      })
+    }
 
     if (event.ctrlKey && pack.is_real_default) {
       menu.children.push({

@@ -27,7 +27,6 @@ export class ControlHeader extends Widget {
           .tapRaw(r => r.on("click", () => close_handle())))
       }
     }, true)
-
   }
 }
 

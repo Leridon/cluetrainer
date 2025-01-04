@@ -1508,7 +1508,6 @@ input[type=checkbox] + span {
 /* Pack widget*/
 
 .ctr-pack-widget {
-    cursor: pointer;
     background-color: #102c3a;
     border: 1px solid gray;
     border-radius: 5px;
