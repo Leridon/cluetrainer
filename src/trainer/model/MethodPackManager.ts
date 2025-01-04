@@ -6,15 +6,16 @@ import {clue_data} from "../../data/clues";
 import {ewent, Ewent} from "../../lib/reactive";
 import * as lodash from "lodash";
 import {util} from "../../lib/util/util";
+import {Log} from "../../lib/util/Log";
 import Method = SolvingMethods.Method;
 import timestamp = util.timestamp;
 import ClueSpot = Clues.ClueSpot;
 import ClueAssumptions = SolvingMethods.ClueAssumptions;
 import uuid = util.uuid;
-import {Log} from "../../lib/util/Log";
 import log = Log.log;
 
 export type Pack = Pack.Meta & {
+  is_real_default?: boolean
   type: "default" | "local" | "imported"
   local_id: string,
   original_id: string,
@@ -47,6 +48,10 @@ export namespace Pack {
       default_assumptions: lodash.cloneDeep(pack.default_assumptions),
       default_method_name: pack.default_method_name
     }
+  }
+
+  export function isEditable(pack: Pack): boolean {
+    return pack.type == "local" || (pack.type == "default" && !pack.is_real_default)
   }
 }
 
@@ -93,6 +98,8 @@ export class MethodPackManager {
     this.initialized = (async () => {
       this.local_packs = (await this.local_pack_store.get()) ?? []
 
+      this.local_packs.forEach(pack => pack.is_real_default = undefined)
+
       this.default_packs = [
         await (await fetch("data/method_packs/scans_zyklop.json")).json(),
         await (await fetch("data/method_packs/easy_ngis.json")).json(),
@@ -102,6 +109,8 @@ export class MethodPackManager {
         await (await fetch("data/method_packs/elite_compass_ngis.json")).json(),
         await (await fetch("data/method_packs/tetras_ngis.json")).json(),
       ]
+
+      this.default_packs.forEach(pack => pack.is_real_default = true)
     })()
 
     this.invalidateIndex()
@@ -137,7 +146,7 @@ export class MethodPackManager {
 
   async all(): Promise<Pack[]> {
     await this.initialized
-    return [...this.default_packs, ...this.local_packs]
+    return [...this.default_packs.filter(pack => !this.local_packs.some(local_pack => local_pack.local_id == pack.local_id)), ...this.local_packs]
   }
 
   /**
@@ -147,13 +156,19 @@ export class MethodPackManager {
    * The copied and modified pack is returned
    *
    * @param pack
+   * @param keep_identity
    */
-  async create(pack: Pack): Promise<Pack> {
+  async create(pack: Pack, keep_identity: boolean = false): Promise<Pack> {
     pack = lodash.cloneDeep(pack)
-    pack.local_id = uuid()
-    pack.original_id = pack.local_id
-    pack.type = "local"
-    pack.timestamp = timestamp()
+
+    pack.is_real_default = undefined
+
+    if (!keep_identity) {
+      pack.local_id = uuid()
+      pack.original_id = pack.local_id
+      pack.type = "local"
+      pack.timestamp = timestamp()
+    }
 
     this.local_packs.push(pack)
 
@@ -175,8 +190,10 @@ export class MethodPackManager {
   async import(pack: Pack): Promise<Pack> {
     pack = lodash.cloneDeep(pack)
 
-    pack.local_id = uuid()
-    pack.type = "imported"
+    if (pack.type != "default") {
+      pack.local_id = uuid()
+      pack.type = "imported"
+    }
 
     this.local_packs.push(pack)
 
@@ -194,7 +211,7 @@ export class MethodPackManager {
   }
 
   async deletePack(pack: Pack) {
-    if (pack.type == "default") {
+    if (pack.is_real_default) {
       log().log("Attempting to delete default pack")
 
       return
@@ -227,9 +244,9 @@ export class MethodPackManager {
   }
 
   async updateMethod(method: AugmentedMethod): Promise<void> {
-    let pack = this.local_packs.find(p => p.type == "local" && p.local_id == method.pack.local_id)
+    const pack = this.local_packs.find(p => Pack.isEditable(p) && p.local_id == method.pack.local_id)
 
-    let i = pack.methods.findIndex(m => m.id == method.method.id)
+    const i = pack.methods.findIndex(m => m.id == method.method.id)
 
     if (i >= 0) {
       pack.methods[i] = method.method
@@ -243,7 +260,7 @@ export class MethodPackManager {
   }
 
   deleteMethod(method: AugmentedMethod) {
-    let pack = this.local_packs.find(p => p.type == "local" && p.local_id == method.pack.local_id)
+    let pack = this.local_packs.find(p => Pack.isEditable(p) && p.local_id == method.pack.local_id)
 
     let i = pack.methods.findIndex(m => m.id == method.method.id)
 

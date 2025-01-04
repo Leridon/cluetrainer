@@ -10,11 +10,14 @@ import {AssumptionProperty} from "./AssumptionProperty";
 import {EditMethodPackModal, NewMethodPackModal} from "./MethodPackModal";
 import {util} from "../../../lib/util/util";
 import {Notification} from "../NotificationBar";
+import {MethodNormalization} from "./MethodNormalization";
+import * as lodash from "lodash"
 import exp = ExportImport.exp;
 import cleanedJSON = util.cleanedJSON;
 import notification = Notification.notification;
 import hboxl = C.hboxl;
-import {MethodNormalization} from "./MethodNormalization";
+import span = C.span;
+import spacer = C.spacer;
 
 export default class PackWidget extends Widget {
   constructor(public pack: Pack,
@@ -28,19 +31,20 @@ export default class PackWidget extends Widget {
 
     this.addClass("ctr-pack-widget")
 
-    let body = new Properties()
+    const body = new Properties()
       .addClass("ctr-pack-widget-body")
 
-    let header = C.div()
-      .append(
+    const header = C.hbox(
         `${pack.name} (${pack.methods.length})`,
+        spacer(),
+        C.div(span(lodash.capitalize(pack.type))
+          .addClass("ctr-pack-widget-header-type")
+        ).css("position", "relative"),
       )
       .addClass("ctr-pack-widget-header")
       .tooltip(pack.local_id)
 
     this.append(header, body)
-
-    body.named("Type", pack.type)
 
     body.named("Assumptions", hboxl(...AssumptionProperty.icons(pack.default_assumptions)))
 
@@ -58,14 +62,23 @@ export default class PackWidget extends Widget {
           children: []
         }
 
-        menu.children.push({
-          type: "basic",
-          text: "Clone",
-          icon: "assets/icons/copy.png",
-          handler: () => new NewMethodPackModal(pack).do()
-        })
+        if (event.ctrlKey && pack.is_real_default) {
+          menu.children.push({
+            type: "basic",
+            text: "Enable Editing",
+            icon: "assets/icons/copy.png",
+            handler: () => MethodPackManager.instance().create(pack, true)
+          })
+        } else {
+          menu.children.push({
+            type: "basic",
+            text: "Clone",
+            icon: "assets/icons/copy.png",
+            handler: () => new NewMethodPackModal(pack).do()
+          })
+        }
 
-        if (pack.type == "local") {
+        if (Pack.isEditable(pack)) {
           menu.children.push({
             type: "basic",
             text: "Edit Metainformation",
@@ -76,7 +89,7 @@ export default class PackWidget extends Widget {
           })
         }
 
-        if (pack.type == "local" || pack.type == "imported") {
+        if (Pack.isEditable(pack) || pack.type == "imported") {
           menu.children.push({
             type: "basic",
             text: "Delete",
@@ -84,9 +97,9 @@ export default class PackWidget extends Widget {
             handler: async () => {
               const really = await new ConfirmationModal<boolean>({
                 body:
-                  pack.type == "local"
-                    ? `Are you sure you want to delete the local pack ${pack.name}? There is no way to undo this action!`
-                    : `Are you sure you want to remove this imported pack? You will need to reimport it again.`,
+                  pack.type == "imported"
+                    ? `Are you sure you want to remove this imported pack? You will need to reimport it again.`
+                    : `Are you sure you want to delete the local pack ${pack.name}? There is no way to undo this action!`,
                 options: [
                   {kind: "neutral", text: "Cancel", value: false},
                   {kind: "cancel", text: "Delete", value: true},
@@ -107,7 +120,7 @@ export default class PackWidget extends Widget {
             type: "basic",
             text: "Export",
             handler: () => {
-             ExportStringModal.do(exp({type: "method-pack", version: 1},
+              ExportStringModal.do(exp({type: "method-pack", version: 1},
                 true,
                 true
               )(pack), "", `${pack_name}.txt`)
@@ -125,13 +138,15 @@ export default class PackWidget extends Widget {
           })
         }
 
-        menu.children.push({
-          type: "basic",
-          text: "Normalize",
-          handler: () => {
-            new MethodNormalization.Modal(this.pack).show()
-          }
-        })
+        if (!pack.is_real_default) {
+          menu.children.push({
+            type: "basic",
+            text: "Normalize",
+            handler: () => {
+              new MethodNormalization.Modal(this.pack).show()
+            }
+          })
+        }
 
         new ContextMenu(menu).showFromEvent2(event.originalEvent as MouseEvent)
       })

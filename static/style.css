@@ -1510,10 +1510,10 @@ input[type=checkbox] + span {
 .ctr-pack-widget {
     cursor: pointer;
     background-color: #102c3a;
-    border: 1px solid white;
-    margin-bottom: 5px;
+    border: 1px solid gray;
     border-radius: 5px;
     margin: 5px;
+    padding: 2px;
 }
 
 .ctr-pack-widget:hover {
@@ -1530,10 +1530,21 @@ input[type=checkbox] + span {
 .ctr-pack-widget-header {
     font-weight: bold;
     text-align: center;
+    border-bottom: 1px solid #41555f;
 }
 
 .ctr-pack-widget-body {
-    border-top: 1px dashed grey;
+    border-top: 1px solid black;
+}
+
+.ctr-pack-widget-header-type {
+    font-size: 0.7rem;
+    border: 1px solid black;
+    border-radius: 3px;
+    background-color: brown;
+    padding: 1px 3px;
+    position: relative;
+    top: -2px;
 }
 
 .nisl-modal {

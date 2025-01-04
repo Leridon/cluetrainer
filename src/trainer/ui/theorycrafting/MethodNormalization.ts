@@ -13,7 +13,6 @@ import ExportStringModal from "../widgets/modals/ExportStringModal";
 import {util} from "../../../lib/util/util";
 import ButtonRow from "../../../lib/ui/ButtonRow";
 import Properties from "../widgets/Properties";
-import * as lodash from "lodash";
 import {NewMethodPackModal} from "./MethodPackModal";
 
 export namespace MethodNormalization {
@@ -164,7 +163,7 @@ export namespace MethodNormalization {
 
       const grp = new Checkbox.Group([
         {button: new Checkbox("Show JSON"), value: "show" as const},
-        {button: new Checkbox("Save").setEnabled(this.pack.type != "default"), value: "save" as const},
+        {button: new Checkbox("Save").setEnabled(!this.pack.is_real_default), value: "save" as const},
         {button: new Checkbox("Save Copy"), value: "savecopy" as const},
       ])
         .setValue(this.mode)
