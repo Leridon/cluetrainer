@@ -39,6 +39,9 @@ export default class PackWidget extends Widget {
         spacer(),
         C.div(span(lodash.capitalize(pack.type))
           .addClass("ctr-pack-widget-header-type")
+          .addClass(Pack.isEditableDefault(pack)
+            ? `ctr-pack-widget-header-type-local`
+            : `ctr-pack-widget-header-type-${pack.type}`)
         ).css("position", "relative"),
       )
       .addClass("ctr-pack-widget-header")

@@ -1547,6 +1547,18 @@ input[type=checkbox] + span {
     top: -2px;
 }
 
+.ctr-pack-widget-header-type-default {
+    background-color: brown;
+}
+
+.ctr-pack-widget-header-type-local {
+    background-color: green;
+}
+
+.ctr-pack-widget-header-type-imported {
+    background-color: #05649d;
+}
+
 .nisl-modal {
     border-radius: 10px;
     border: 2px solid rgb(43, 58, 67);
