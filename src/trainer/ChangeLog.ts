@@ -29,6 +29,7 @@ export namespace Changelog {
           .item("Improved styling of buttons across the app.")
           .item("Improved styling of method packs in the pack editor.")
           .item("Added development utilities to simplify editing builtin methods.")
+          .item("Added a note that explains how to enable the Canifis to Mort´ton shortcut to a hard clue step.")
         )
     }
   }, {
