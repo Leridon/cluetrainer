@@ -51,7 +51,7 @@ export namespace Pack {
   }
 
   export function isEditable(pack: Pack): boolean {
-    return pack.type == "local" || isEditable(pack)
+    return pack.type == "local" || isEditableDefault(pack)
   }
 
   export function isEditableDefault(pack: Pack): boolean {
