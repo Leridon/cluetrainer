@@ -50,7 +50,7 @@ export default class TheoryCraftingSidebar extends MapSideBar {
                     is_cancel: true
                   }, {
                     kind: "confirm" as const,
-                    text: "Create Copy",
+                    text: "Duplicate",
                     value: "copy" as const,
                   }, {
                     kind: "confirm" as const,
