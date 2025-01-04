@@ -22,7 +22,7 @@ export class MethodMetaEdit extends AbstractEditWidget<Method.Meta> {
   private name: TextField
   private description: TextArea
 
-  constructor(private spot: ClueSpot, value: Method.Meta) {
+  constructor(private spot: ClueSpot, value: Method.Meta, private include_assumptions: boolean = true) {
     super();
 
     value.assumptions = ClueAssumptions.filterWithRelevance(value.assumptions, ClueAssumptions.Relevance.forSpot(this.spot))
@@ -51,14 +51,16 @@ export class MethodMetaEdit extends AbstractEditWidget<Method.Meta> {
       })
       .css("height", "80px").setValue(value.description))
 
-    props.header("Clue Assumptions")
-    props.row(new AssumptionProperty()
-      .setValue(value.assumptions)
-      .setRelevantAssumptions(ClueAssumptions.Relevance.forSpot(this.spot))
-      .onCommit(a => {
-        this.commit(copyUpdate(this.get(), meta => meta.assumptions = a))
-      })
-    )
+    if (this.include_assumptions) {
+      props.header("Clue Assumptions")
+      props.row(new AssumptionProperty()
+        .setValue(value.assumptions)
+        .setRelevantAssumptions(ClueAssumptions.Relevance.forSpot(this.spot))
+        .onCommit(a => {
+          this.commit(copyUpdate(this.get(), meta => meta.assumptions = a))
+        })
+      )
+    }
   }
 }
 
@@ -195,7 +197,7 @@ export class EditMethodMetaModal extends FormModal<{
 }> {
   edit: MethodMetaEdit
 
-  constructor(private spot: ClueSpot, private start_value: Method.Meta) {
+  constructor(private spot: ClueSpot, private start_value: Method.Meta, private include_assumptions: boolean = true) {
     super({size: "small"});
   }
 
@@ -203,7 +205,7 @@ export class EditMethodMetaModal extends FormModal<{
     super.render();
 
     this.title.set("Edit Method Metainformation")
-    this.edit = new MethodMetaEdit(this.spot, this.start_value).appendTo(this.body)
+    this.edit = new MethodMetaEdit(this.spot, this.start_value, this.include_assumptions).appendTo(this.body)
   }
 
   getButtons(): BigNisButton[] {

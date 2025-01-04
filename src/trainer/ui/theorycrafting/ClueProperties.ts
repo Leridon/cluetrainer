@@ -10,9 +10,10 @@ import ContextMenu, {Menu, MenuEntry} from "../widgets/ContextMenu";
 import Dependencies from "../../dependencies";
 import {FavouriteIcon} from "../nisl";
 import {ConfirmationModal} from "../widgets/modals/ConfirmationModal";
-import {NewMethodModal} from "./MethodModal";
+import {EditMethodMetaModal, NewMethodModal} from "./MethodModal";
 import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
 import {Notification} from "../NotificationBar";
+import {SolvingMethods} from "../../model/methods";
 import hbox = C.hbox;
 import spacer = C.spacer;
 import span = C.span;
@@ -160,6 +161,7 @@ export class ClueProperties extends Properties {
 export namespace ClueProperties {
 
   import notification = Notification.notification;
+  import Method = SolvingMethods.Method;
 
   export function header(clue: Clues.ClueSpot) {
     return hbox(
@@ -217,6 +219,24 @@ export namespace ClueProperties {
               text: "Edit",
               icon: "assets/icons/edit.png",
               handler: () => edit_handler(m)
+            })
+
+            men.children.push({
+              type: "basic",
+              text: "Edit Metadata",
+              icon: "assets/icons/edit.png",
+              handler: async () => {
+
+                const result = await new EditMethodMetaModal({clue: m.clue, spot: m.method.for.spot},
+                  Method.meta(m.method), false
+                ).do()
+
+                if (result?.result) {
+                  Method.setMeta(m.method, result.result)
+
+                  MethodPackManager.instance().updateMethod(m)
+                }
+              }
             })
           }
 
