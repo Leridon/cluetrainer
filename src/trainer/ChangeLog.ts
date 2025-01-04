@@ -28,9 +28,10 @@ export namespace Changelog {
         .row(new List()
           .item("Improved styling of buttons across the app.")
           .item("Improved styling of method packs in the pack editor.")
+          .item("Added development utilities to simplify editing builtin methods.")
         )
     }
-  },{
+  }, {
     version: 31,
     date: new Date(Date.parse("2025-01-02")),
     title: "Small Compass Fixes",

@@ -149,6 +149,10 @@ export class MethodPackManager {
     return [...this.default_packs.filter(pack => !this.local_packs.some(local_pack => local_pack.local_id == pack.local_id)), ...this.local_packs]
   }
 
+  local(): Pack[] {
+    return [...this.local_packs]
+  }
+
   /**
    * Clones and saves the given pack locally.
    * The pack is copied and gets a new id.
@@ -186,11 +190,12 @@ export class MethodPackManager {
    * The copied pack is returned
    *
    * @param pack
+   * @param keep_identity
    */
-  async import(pack: Pack): Promise<Pack> {
+  async import(pack: Pack, keep_identity: boolean = false): Promise<Pack> {
     pack = lodash.cloneDeep(pack)
 
-    if (pack.type != "default") {
+    if (!keep_identity) {
       pack.local_id = uuid()
       pack.type = "imported"
     }
@@ -210,7 +215,7 @@ export class MethodPackManager {
     return (await this.all()).find(p => p.local_id == local_id)
   }
 
-  async deletePack(pack: Pack) {
+  async deletePack(pack: Pack, save: boolean = true) {
     if (pack.is_real_default) {
       log().log("Attempting to delete default pack")
 
@@ -226,13 +231,15 @@ export class MethodPackManager {
 
     this.local_packs.splice(i, 1)
 
-    await this.save()
+    if (save) {
+      await this.save()
 
-    this.pack_set_changed.trigger(await this.all())
+      this.pack_set_changed.trigger(await this.all())
+    }
   }
 
-  async updatePack(pack: Pack, f: (_: Pack) => any, allow_imported: boolean = false): Promise<Pack> {
-    if (pack.type != "local" && (!allow_imported || pack.type != "imported")) return
+  async updatePack(pack: Pack, f: (_: Pack) => any): Promise<Pack> {
+    if (pack.is_real_default) return
 
     f(pack)
 
@@ -241,6 +248,14 @@ export class MethodPackManager {
     await this.save()
 
     return pack
+  }
+
+  async replacePack(existing: Pack, updated: Pack) {
+    await this.deletePack(existing, false)
+
+    updated.local_id = existing.local_id
+
+    await this.create(updated, true)
   }
 
   async updateMethod(method: AugmentedMethod): Promise<void> {

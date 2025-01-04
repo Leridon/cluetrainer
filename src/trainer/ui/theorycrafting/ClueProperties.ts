@@ -5,7 +5,7 @@ import {GieliCoordinates, TileCoordinates, TileRectangle} from "../../../lib/run
 import LightButton from "../widgets/LightButton";
 import {C} from "../../../lib/ui/constructors";
 import {util} from "../../../lib/util/util";
-import {AugmentedMethod, MethodPackManager} from "../../model/MethodPackManager";
+import {AugmentedMethod, MethodPackManager, Pack} from "../../model/MethodPackManager";
 import ContextMenu, {Menu, MenuEntry} from "../widgets/ContextMenu";
 import Dependencies from "../../dependencies";
 import {FavouriteIcon} from "../nisl";
@@ -211,7 +211,7 @@ export namespace ClueProperties {
             ]
           }
 
-          if (m.pack.type == "local") {
+          if (Pack.isEditable(m.pack)) {
             men.children.push({
               type: "basic",
               text: "Edit",
