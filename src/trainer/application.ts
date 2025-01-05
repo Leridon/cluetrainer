@@ -57,6 +57,11 @@ import entity = C.entity;
 import notification = Notification.notification;
 import log = Log.log;
 import img = C.img;
+import {ConfirmationModal} from "./ui/widgets/modals/ConfirmationModal";
+
+declare global {
+  export var in_bolt: boolean
+}
 
 class PermissionChecker extends NisModal {
   constructor() {
@@ -639,6 +644,10 @@ export class Application extends Behaviour {
           this.startup_settings.update(s => s.earliest_next_cluetrainer_dot_app_migration_notice = Date.now() + remind_later)
         }
       }
+    }
+
+    if(window.in_bolt) {
+      ConfirmationModal.simple("Bolt detected", "Hello Bolt!", "Cancel", "Okay").do()
     }
   }
 
