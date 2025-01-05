@@ -67,6 +67,8 @@ export class FavoriteIndex {
       return candidates.find(c => c.pack.type == "default") ?? candidates[0]
     }
 
+    if (!entry) return undefined
+
     if (!entry?.method) return null
 
     return this.methods.resolve(entry.method)

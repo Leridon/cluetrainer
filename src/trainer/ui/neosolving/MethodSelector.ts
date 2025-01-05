@@ -92,7 +92,7 @@ export default class MethodSelector extends Widget {
         renderItem: m => {
           if (!m) {
             return hbox(
-              new FavouriteIcon().set(!favourite),
+              new FavouriteIcon().set(favourite === null),
               span("None"),
               spacer()
             )
