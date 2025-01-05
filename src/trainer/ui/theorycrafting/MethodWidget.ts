@@ -71,7 +71,7 @@ export class MethodWidget extends Widget {
       })
     )
 
-    layout.named("Time", this.method.method.expected_time.toString() + " ticks")
+    layout.named("Time", (Math.round(this.method.method.expected_time * 10) / 10).toString() + " ticks")
   }
 
   private async openContextMenu(event: JQuery.MouseEventBase) {
