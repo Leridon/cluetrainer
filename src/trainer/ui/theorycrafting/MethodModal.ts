@@ -97,7 +97,7 @@ class PackSelector extends AbstractEditWidget<Pack> {
     }, [])
       .setItems(async () => {
         return [
-          ...(await MethodPackManager.instance().all()).filter(p => p.type == "local").map(p => ({pack: p})),
+          ...(await MethodPackManager.instance().all()).filter(p => Pack.isEditable(p)).map(p => ({pack: p})),
           {pack: null, create_new: true},
           null
         ]
@@ -136,7 +136,7 @@ export class NewMethodModal extends FormModal<{
 
     new Properties().appendTo(this.body)
       .named("Pack", this.pack_selector = new PackSelector()
-        .setValue(this.clone_from?.pack?.type == "local" ? this.clone_from?.pack : null)
+        .setValue(this.clone_from && Pack.isEditable(this.clone_from.pack) ? this.clone_from.pack : null)
         .onCommit(p => {
           if (p) {
             const meta = lodash.cloneDeep(this.edit.get())
