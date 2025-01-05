@@ -9,6 +9,7 @@ import {ClueProperties} from "./ClueProperties";
 import {Clues} from "../../../lib/runescape/clues";
 import {TileRectangle} from "../../../lib/runescape/coordinates";
 import {ClueOverviewMarker} from "./OverviewMarker";
+import {deps} from "../../dependencies";
 import hbox = C.hbox;
 import spacer = C.spacer;
 import space = C.space;
@@ -25,7 +26,7 @@ export class MethodWidget extends Widget {
 
     this.render()
 
-    this.on("click", (event) => {
+    this.on("contextmenu", (event) => {
       this.openContextMenu(event)
     })
   }
@@ -33,7 +34,7 @@ export class MethodWidget extends Widget {
   private async render() {
     const layout = new Properties().appendTo(this)
 
-    const isFavourite = true
+    const isFavourite = (await deps().app.favourites.getMethod(this.method.method.for, false))?.method?.id == this.method.method.id
 
     layout.header(hbox(new FavouriteIcon().set(isFavourite)
         .on("click", () => {
@@ -70,7 +71,7 @@ export class MethodWidget extends Widget {
       })
     )
 
-    layout.named("Time", this.method.method.expected_time.toFixed(1))
+    layout.named("Time", this.method.method.expected_time.toString() + " ticks")
   }
 
   private async openContextMenu(event: JQuery.MouseEventBase) {

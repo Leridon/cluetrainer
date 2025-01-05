@@ -177,8 +177,6 @@ export namespace ClueProperties {
   ): Promise<Menu> {
     const ms = await MethodPackManager.instance().get(clue)
 
-    const favourite = await Dependencies.instance().app.favourites.getMethod(ClueSpot.toId(clue))
-
     return {
       type: "submenu",
       text: "",
@@ -201,7 +199,7 @@ export namespace ClueProperties {
   }
 
   export async function methodSubMenu(m: AugmentedMethod, edit_handler: (_: AugmentedMethod) => any): Promise<SubMenu> {
-    const favourite = await Dependencies.instance().app.favourites.getMethod(ClueSpot.toId(m.clue))
+    const favourite = await Dependencies.instance().app.favourites.getMethod(ClueSpot.toId(m.clue), false)
 
     const isFavourite = AugmentedMethod.isSame(favourite, m)
 

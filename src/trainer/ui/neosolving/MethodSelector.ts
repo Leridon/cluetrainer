@@ -85,7 +85,7 @@ export default class MethodSelector extends Widget {
 
   private async openMethodSelection() {
     if (!this.dropdown) {
-      const favourite = await this.parent.app.favourites.getMethod(this.clue)
+      const favourite = await this.parent.app.favourites.getMethod(this.clue, false)
 
       this.dropdown = new AbstractDropdownSelection.DropDown<AugmentedMethod>({
         dropdownClass: "ctr-neosolving-favourite-dropdown",

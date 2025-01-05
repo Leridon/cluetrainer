@@ -46,7 +46,7 @@ export class FavoriteIndex {
   setChallengeAnswerId(clue: Clues.Step, answer_id: number): void {
     const entry = this.data.value.challenge_answers.find(a => a.clue_id == clue.id)
 
-    if(entry) {
+    if (entry) {
       entry.answer_id = answer_id
     } else {
       this.data.value.challenge_answers.push({clue_id: clue.id, answer_id: answer_id})
@@ -55,10 +55,10 @@ export class FavoriteIndex {
     this.data.save()
   }
 
-  async getMethod(step: Clues.ClueSpot.Id): Promise<AugmentedMethod> {
+  async getMethod(step: Clues.ClueSpot.Id, return_fallback: boolean = true): Promise<AugmentedMethod> {
     const entry = this.data.value.methods.find(v => ClueSpot.Id.equals(step, v.spot))
 
-    if (!entry) {
+    if (!entry && return_fallback) {
       // There is no entry at all for this clue, automatically choose one!
       // Default choice is the fastest builtin method, followed by the fastest custom method if no builtin is available
 
@@ -67,7 +67,7 @@ export class FavoriteIndex {
       return candidates.find(c => c.pack.type == "default") ?? candidates[0]
     }
 
-    if (!entry.method) return null
+    if (!entry?.method) return null
 
     return this.methods.resolve(entry.method)
   }
