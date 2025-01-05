@@ -26,7 +26,6 @@ export class ClueProperties extends Properties {
   render_promise: Promise<this> = null
 
   constructor(private clue: Clues.ClueSpot,
-              private methods: MethodPackManager,
               private edit_handler: (_: AugmentedMethod) => any,
               private include_header: boolean,
               private alternative_index?: number,

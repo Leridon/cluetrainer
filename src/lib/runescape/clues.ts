@@ -111,7 +111,7 @@ export namespace Clues {
   }
 
   export type Anagram = StepShared & { type: "anagram", solution: Solution.TalkTo, anagram: string[] }
-  export type Compass = StepShared & { type: "compass", spots: TileCoordinates[], valid_area: TileRectangle}
+  export type Compass = StepShared & { type: "compass", spots: TileCoordinates[], valid_area: TileRectangle }
   export type Coordinate = StepShared & { type: "coordinates", coordinates: GieliCoordinates }
   export type Cryptic = StepShared & { type: "cryptic", solution: Solution }
   export type Emote = StepShared & {
@@ -186,7 +186,7 @@ export namespace Clues {
     }
 
     export function shortString(spot: Clues.ClueSpot, text_variant: number = 0): string {
-      if (spot.clue.type == "compass") return `Compass spot ${Vector2.toString(spot.spot)}`
+      if (spot.clue.type == "compass") return `Compass spot ${spot.spot ? Vector2.toString(spot.spot) : "???"}`
       else return Step.shortString(spot.clue, text_variant)
     }
 
@@ -206,7 +206,7 @@ export namespace Clues {
         }
       }
 
-      if (spot.clue.type == "emote") return[ spot.clue.area]
+      if (spot.clue.type == "emote") return [spot.clue.area]
 
       if (spot.clue.type == "scan") return [TileArea.fromRect(TileRectangle.from(...spot.clue.spots))]
     }

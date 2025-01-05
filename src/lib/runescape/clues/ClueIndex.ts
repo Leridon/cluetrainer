@@ -103,18 +103,19 @@ export class ClueSpotIndex<T> {
   }
 
   get(clue: ClueSpot.Id): { for: Clues.ClueSpot } & T {
-    let r = this._index[clue.clue]
+    const r = this._index[clue.clue]
 
-    if (!r) debugger
+    if (!r) return null
 
     if (!clue.spot && !r.spot_index) return r.value
+
     if (clue.spot && r.spot_index) {
       const bucket = r.spot_index[Vector2.hash(clue.spot, ClueSpotIndex.BUCKETS)]
 
-      return bucket.find(v => TileCoordinates.eq2(v.spot, clue.spot))?.value
+      return bucket.find(v => TileCoordinates.eq2(v.spot, clue.spot))?.value ?? r.value
     }
 
-    return null
+    return r.value
   }
 
   flat(): ({ for: Clues.ClueSpot } & T)[] {

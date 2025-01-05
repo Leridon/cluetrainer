@@ -26,7 +26,6 @@ export class ClueOverviewMarker extends MapEntity {
 
       return (await new ClueProperties(
         self.clue,
-        self.methods,
         self.edit_handler,
         true,
         self.talk_alternative_index

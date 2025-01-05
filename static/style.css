@@ -1082,6 +1082,7 @@ video {
 
 .nisl-context-menu {
     border: 1px solid white;
+    border-radius: 2px;
     outline: 1px solid rgb(35, 35, 35);
     background: rgb(10, 29, 38);
     color: rgb(198, 184, 139);

@@ -72,7 +72,7 @@ export namespace AugmentedMethod {
     return {
       method: method,
       pack: pack,
-      clue: clue_data.index.get(method.for.clue) as ClueSpot<step_t>
+      clue: clue_data.spot_index.get(method.for).for as ClueSpot<step_t>
     }
   }
 
