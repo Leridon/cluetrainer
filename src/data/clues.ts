@@ -5283,13 +5283,13 @@ export namespace clue_data {
       "id": 303,
       "type": "anagram",
       "tier": "master",
-      "text": ["This anagram reveals who to speak to next: An exile that isn't wholly free WE IRK OVER NA."],
+      "text": ["This anagram reveals who to speak to next: An exile that isn't wholly free WE IRK OVER NAMESAKE."],
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 4644, "y": 5382, "level": 0}, "size": {"x": 5, "y": 5}}, "description": "at the bottom of Polypore Dungeon"}],
         "npc": "Ramokee Skinweaver"
       },
-      "anagram": ["WE IRK OVER NA"]
+      "anagram": ["WE IRK OVER NAMESAKE"]
     }, {
       "id": 306,
       "type": "anagram",

@@ -32,6 +32,7 @@ export namespace Changelog {
           .item("Added a note that explains how to enable the Canifis to Mort´ton shortcut to a hard clue step.")
           .item("Removed impossible compass spots in the Kharazi jungle.")
           .item("Fixed missing paths for recently relocated tetracompass spots (v31).")
+          .item("Fixed wrong clue text for the WE IRK OVER NAMESAKE anagram.")
         )
     }
   }, {
