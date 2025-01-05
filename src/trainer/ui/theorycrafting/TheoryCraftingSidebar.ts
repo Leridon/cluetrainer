@@ -12,6 +12,7 @@ import {observe} from "../../../lib/reactive";
 import {MethodWidget} from "./MethodWidget";
 import btnrow = C.btnrow;
 import imp = ExportImport.imp;
+import {Clues} from "../../../lib/runescape/clues";
 
 export default class TheoryCraftingSidebar extends MapSideBar {
 
@@ -31,6 +32,8 @@ export default class TheoryCraftingSidebar extends MapSideBar {
     this.opened_pack.subscribe(() => this.render(), true)
   }
 
+  private method_widgets: MethodWidget[] = []
+
   async render() {
     this.body.empty()
 
@@ -38,15 +41,16 @@ export default class TheoryCraftingSidebar extends MapSideBar {
 
     const packs = await this.methods.all()
 
+    this.method_widgets = []
+
     if (focus) {
       this.header.name.set(`Pack: ${focus.name}`)
       this.header.close_handler.set(() => this.opened_pack.set(null))
 
-      focus.methods.forEach(method => {
+      this.method_widgets = focus.methods.map(method =>
         new MethodWidget(this.theorycrafter, AugmentedMethod.create(method, focus))
           .appendTo(this.body)
-      })
-
+      )
     } else {
       this.header.name.set("Method Packs")
       this.header.close_handler.set(null)
@@ -103,5 +107,9 @@ export default class TheoryCraftingSidebar extends MapSideBar {
         new PackWidget(p, MethodPackManager.instance(), {buttons: true, collapsible: true}, pack => this.opened_pack.set(pack)).appendTo(this.body)
       })
     }
+  }
+
+  notifyFavouriteChange(change: { clue: Clues.ClueSpot.Id; new: AugmentedMethod }) {
+    this.method_widgets.forEach(w => w.notifyFavouriteChange(change))
   }
 }
