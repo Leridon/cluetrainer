@@ -213,7 +213,7 @@ export namespace ClueProperties {
           text: isFavourite ? "Unset Favourite" : "Make Favourite",
           icon: () => new FavouriteIcon().set(isFavourite),
           handler: () => {
-            Dependencies.instance().app.favourites.setMethod(ClueSpot.toId(m.clue), isFavourite ? null : m)
+            Dependencies.instance().app.favourites.setMethod(ClueSpot.toId(m.clue), isFavourite ? undefined : m)
           }
         },
       ]
@@ -260,7 +260,7 @@ export namespace ClueProperties {
         }
       })
 
-    if (m.pack.type == "local") {
+    if (Pack.isEditable(m.pack)) {
       men.children.push({
         type: "basic",
         text: "Delete",

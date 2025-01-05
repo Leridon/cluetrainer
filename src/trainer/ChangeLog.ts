@@ -27,12 +27,16 @@ export namespace Changelog {
       layout
         .row(new List()
           .item("Improved styling of buttons across the app.")
-          .item("Improved styling of method packs in the pack editor.")
-          .item("Added development utilities to simplify editing builtin methods.")
           .item("Added a note that explains how to enable the Canifis to Mort´ton shortcut to a hard clue step.")
           .item("Removed impossible compass spots in the Kharazi jungle.")
           .item("Fixed missing paths for recently relocated tetracompass spots (v31).")
           .item("Fixed wrong clue text for the WE IRK OVER NAMESAKE anagram.")
+          .item("Improved navigation surrounding method packs in the 'Methods' tab.", new List()
+            .item("Method packs are now shown in a single section with improved styling.")
+            .item("Control Buttons were moved to the top.")
+            .item("You can now open method packs like folders to see and manage their included methods.")
+            .item("Added development utilities to simplify editing builtin methods.")
+          )
         )
     }
   }, {
