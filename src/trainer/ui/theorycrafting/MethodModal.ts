@@ -177,11 +177,7 @@ export class NewMethodModal extends FormModal<{
           base.assumptions = ClueAssumptions.filterWithRelevance(base.assumptions, ClueAssumptions.Relevance.forSpot(this.spot))
 
           this.confirm({
-            created: {
-              pack: this.pack_selector.get(),
-              method: base,
-              clue: this.spot.clue
-            }
+            created: AugmentedMethod.create(base, this.pack_selector.get())
           })
         }),
     ]

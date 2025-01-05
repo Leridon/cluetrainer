@@ -1,7 +1,6 @@
 import Behaviour from "../../../lib/ui/Behaviour";
 import {AugmentedMethod, MethodPackManager} from "../../model/MethodPackManager";
 import MapSideBar from "../MapSideBar";
-import Properties from "../widgets/Properties";
 import ScanEditor from "./scanedit/ScanEditor";
 import {SolvingMethods} from "../../model/methods";
 import {Clues} from "../../../lib/runescape/clues";
@@ -9,7 +8,6 @@ import MethodSubEditor from "./MethodSubEditor";
 import LightButton from "../widgets/LightButton";
 import SelectPackModal from "./SelectPackModal";
 import {GenericPathMethodEditor} from "./GenericPathMethodEditor";
-import {AssumptionProperty} from "./AssumptionProperty";
 import ButtonRow from "../../../lib/ui/ButtonRow";
 import {observe} from "../../../lib/reactive";
 import {ConfirmationModal} from "../widgets/modals/ConfirmationModal";
@@ -17,28 +15,24 @@ import {EditMethodMetaModal} from "./MethodModal";
 import TheoryCrafter from "./TheoryCrafter";
 import Dependencies from "../../dependencies";
 import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
+import {Notification} from "../NotificationBar";
+import {MethodProperties} from "../MethodProperties";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import GenericPathMethod = SolvingMethods.GenericPathMethod;
 import Method = SolvingMethods.Method;
 import ClueSpot = Clues.ClueSpot;
-import {Notification} from "../NotificationBar";
 import notification = Notification.notification;
-import {MethodProperties} from "../MethodProperties";
 
 class MethodEditSideBar extends MapSideBar {
   save_row: ButtonRow
   meta_props: MethodProperties
 
   constructor(private parent: MethodEditor) {
-    super("Method Editor");
+    super("Editing Method");
 
     this.save_row = new ButtonRow().appendTo(this.body)
 
-    /*this.header.close_handler.set(() => {
-        // TODO: Confirm for unsaved changes
-
-        parent.stop()
-    })*/
+    this.header.close_handler.set(() => this.close())
 
     this.parent.is_dirty.subscribe(() => this.renderSaveRow())
     this.meta_props = new MethodProperties(this.parent.method).appendTo(this.body)
@@ -51,7 +45,7 @@ class MethodEditSideBar extends MapSideBar {
     this.meta_props.render()
 
     this.meta_props.row(new LightButton("Edit Metainformation", "rectangle").onClick(async () => {
-      const result = await new EditMethodMetaModal({clue: this.parent.method.clue, spot: this.parent.method.method.for.spot},
+      const result = await new EditMethodMetaModal(this.parent.method.clue,
         Method.meta(this.parent.method.method)
       ).do()
 
@@ -101,14 +95,15 @@ class MethodEditSideBar extends MapSideBar {
           })
         }),
       new LightButton("Close")
-        .onClick(async () => {
-          const really = await this.parent.requestClosePermission()
-
-          if (really) this.parent.stop()
-        })
+        .onClick(async () => this.close())
       ,
     )
+  }
 
+  private async close() {
+    const really = await this.parent.requestClosePermission()
+
+    if (really) this.parent.stop()
   }
 }
 
@@ -143,7 +138,7 @@ export default class MethodEditor extends Behaviour {
 
     this.sub_editor.setAssumptions(this.method.method.assumptions)
 
-    const bounds = ClueSpot.targetArea({clue: this.method.clue, spot: this.method.method.for.spot})
+    const bounds = ClueSpot.targetArea(this.method.clue)
 
     if (bounds) {
       this.sub_editor.layer.getMap().fitView(TileArea.toRect(bounds[0]))

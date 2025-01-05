@@ -1,7 +1,7 @@
 import MapSideBar from "../MapSideBar";
 import TheoryCrafter from "./TheoryCrafter";
 import PackWidget from "./PackWidget";
-import {MethodPackManager, Pack} from "../../model/MethodPackManager";
+import {AugmentedMethod, MethodPackManager, Pack} from "../../model/MethodPackManager";
 import {C} from "../../../lib/ui/constructors";
 import LightButton from "../widgets/LightButton";
 import ImportStringModal from "../widgets/modals/ImportStringModal";
@@ -9,6 +9,7 @@ import {ExportImport} from "../../../lib/util/exportString";
 import {NewMethodPackModal} from "./MethodPackModal";
 import {ConfirmationModal} from "../widgets/modals/ConfirmationModal";
 import {observe} from "../../../lib/reactive";
+import {MethodWidget} from "./MethodWidget";
 import btnrow = C.btnrow;
 import imp = ExportImport.imp;
 
@@ -38,8 +39,14 @@ export default class TheoryCraftingSidebar extends MapSideBar {
     const packs = await this.methods.all()
 
     if (focus) {
-      this.header.name.set("Focused Method Pack")
+      this.header.name.set(`Pack: ${focus.name}`)
       this.header.close_handler.set(() => this.opened_pack.set(null))
+
+      focus.methods.forEach(method => {
+        new MethodWidget(this.theorycrafter, AugmentedMethod.create(method, focus))
+          .appendTo(this.body)
+      })
+
     } else {
       this.header.name.set("Method Packs")
       this.header.close_handler.set(null)
@@ -95,7 +102,6 @@ export default class TheoryCraftingSidebar extends MapSideBar {
       packs.forEach(p => {
         new PackWidget(p, MethodPackManager.instance(), {buttons: true, collapsible: true}, pack => this.opened_pack.set(pack)).appendTo(this.body)
       })
-
     }
   }
 }

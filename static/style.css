@@ -1448,19 +1448,19 @@ input[type=checkbox] + span {
     font-style: italic;
 }
 
+/* Theorycrafter Method Widget */
+
 .ctr-method-widget {
-    background-color: #1b364d;
-    border: 1px solid white;
+    background-color: #102c3a;
+    border: 1px solid gray;
+    border-radius: 2px;
+    margin-bottom: 5px;
 }
 
-.ctr-method-widget-header {
-    border-top: 1px solid grey;
-    cursor: pointer;
+.ctr-method-widget:hover {
+    background-color: #0d3548;
 }
 
-.ctr-method-widget-body {
-    border-top: 1px dashed grey;
-}
 
 .ctr-method-widget-pack-header {
     text-align: center;
@@ -1783,6 +1783,10 @@ input[type=checkbox] + span {
 
 .ctr-filtered-clue-result {
     border: 1px solid grey;
+    padding: 0 2px;
+    border-radius: 2px;
+    background-color: #102c3a;
+
 }
 
 .ctr-filtered-clue-result:not(:last-child) {

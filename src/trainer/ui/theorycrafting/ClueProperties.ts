@@ -162,6 +162,7 @@ export namespace ClueProperties {
 
   import notification = Notification.notification;
   import Method = SolvingMethods.Method;
+  import SubMenu = MenuEntry.SubMenu;
 
   export function header(clue: Clues.ClueSpot) {
     return hbox(
@@ -194,94 +195,98 @@ export namespace ClueProperties {
             }
           }
         },
-        ...ms.map((m): MenuEntry => {
-          const isFavourite = AugmentedMethod.isSame(favourite, m)
-
-          const men: MenuEntry.SubMenu = {
-            type: "submenu",
-            text: m.method.name,
-            icon: () => new FavouriteIcon().set(isFavourite),
-            children: [
-              {
-                type: "basic",
-                text: isFavourite ? "Unset Favourite" : "Make Favourite",
-                icon: () => new FavouriteIcon().set(isFavourite),
-                handler: () => {
-                  Dependencies.instance().app.favourites.setMethod(ClueSpot.toId(clue), isFavourite ? null : m)
-                }
-              },
-            ]
-          }
-
-          if (Pack.isEditable(m.pack)) {
-            men.children.push({
-              type: "basic",
-              text: "Edit",
-              icon: "assets/icons/edit.png",
-              handler: () => edit_handler(m)
-            })
-
-            men.children.push({
-              type: "basic",
-              text: "Edit Metadata",
-              icon: "assets/icons/edit.png",
-              handler: async () => {
-
-                const result = await new EditMethodMetaModal({clue: m.clue, spot: m.method.for.spot},
-                  Method.meta(m.method), false
-                ).do()
-
-                if (result?.result) {
-                  Method.setMeta(m.method, result.result)
-
-                  MethodPackManager.instance().updateMethod(m)
-                }
-              }
-            })
-          }
-
-          men.children.push(
-            {
-              type: "basic",
-              icon: "assets/icons/copy.png",
-              text: "Edit Copy",
-              handler: async () => {
-                const new_method = await new NewMethodModal(clue, m).do()
-
-                if (new_method?.created) {
-                  edit_handler(new_method.created)
-                }
-              }
-            })
-
-          if (m.pack.type == "local") {
-            men.children.push({
-              type: "basic",
-              text: "Delete",
-              icon: "assets/icons/delete.png",
-              handler: async () => {
-                const really = await new ConfirmationModal<boolean>({
-                  body: "Are you sure you want to delete this method? There is no way to undo it!",
-                  options: [
-                    {kind: "neutral", text: "Cancel", value: false},
-                    {kind: "cancel", text: "Delete", value: true},
-                  ]
-                }).do()
-
-                if (really) {
-                  MethodPackManager.instance().deleteMethod(m)
-
-                  notification("Deleted").show()
-                }
-              }
-            })
-          }
-
-          return men
-        })
+        ...(await Promise.all(ms.map(async (m) => await methodSubMenu(m, edit_handler))))
 
       ]
     }
+  }
+
+  export async function methodSubMenu(m: AugmentedMethod, edit_handler: (_: AugmentedMethod) => any): Promise<SubMenu> {
+    const favourite = await Dependencies.instance().app.favourites.getMethod(ClueSpot.toId(m.clue))
+
+    const isFavourite = AugmentedMethod.isSame(favourite, m)
+
+    const men: MenuEntry.SubMenu = {
+      type: "submenu",
+      text: m.method.name,
+      icon: () => new FavouriteIcon().set(isFavourite),
+      children: [
+        {
+          type: "basic",
+          text: isFavourite ? "Unset Favourite" : "Make Favourite",
+          icon: () => new FavouriteIcon().set(isFavourite),
+          handler: () => {
+            Dependencies.instance().app.favourites.setMethod(ClueSpot.toId(m.clue), isFavourite ? null : m)
+          }
+        },
+      ]
+    }
+
+    if (Pack.isEditable(m.pack)) {
+      men.children.push({
+        type: "basic",
+        text: "Edit",
+        icon: "assets/icons/edit.png",
+        handler: () => edit_handler(m)
+      })
+
+      men.children.push({
+        type: "basic",
+        text: "Edit Metadata",
+        icon: "assets/icons/edit.png",
+        handler: async () => {
+
+          const result = await new EditMethodMetaModal(m.clue,
+            Method.meta(m.method), false
+          ).do()
+
+          if (result?.result) {
+            Method.setMeta(m.method, result.result)
+
+            MethodPackManager.instance().updateMethod(m)
+          }
+        }
+      })
+    }
+
+    men.children.push(
+      {
+        type: "basic",
+        icon: "assets/icons/copy.png",
+        text: "Edit Copy",
+        handler: async () => {
+          const new_method = await new NewMethodModal(m.clue, m).do()
+
+          if (new_method?.created) {
+            edit_handler(new_method.created)
+          }
+        }
+      })
+
+    if (m.pack.type == "local") {
+      men.children.push({
+        type: "basic",
+        text: "Delete",
+        icon: "assets/icons/delete.png",
+        handler: async () => {
+          const really = await new ConfirmationModal<boolean>({
+            body: "Are you sure you want to delete this method? There is no way to undo it!",
+            options: [
+              {kind: "neutral", text: "Cancel", value: false},
+              {kind: "cancel", text: "Delete", value: true},
+            ]
+          }).do()
+
+          if (really) {
+            MethodPackManager.instance().deleteMethod(m)
+
+            notification("Deleted").show()
+          }
+        }
+      })
+    }
+
+    return men
   }
 
   export function render_challenge(challenge: Clues.Challenge) {

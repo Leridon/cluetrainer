@@ -62,9 +62,20 @@ export namespace Pack {
 export type AugmentedMethod<
   method_t extends Method = Method,
   step_t extends Clues.Step = Clues.Step
-> = { method: method_t, pack?: Pack, clue?: step_t }
+> = { method: method_t, pack?: Pack, clue?: ClueSpot<step_t> }
 
 export namespace AugmentedMethod {
+  export function create<
+    method_t extends Method = Method,
+    step_t extends Clues.Step = Clues.Step
+  >(method: method_t, pack: Pack): AugmentedMethod<method_t, step_t> {
+    return {
+      method: method,
+      pack: pack,
+      clue: clue_data.index.get(method.for.clue) as ClueSpot<step_t>
+    }
+  }
+
   export function isSame(a: AugmentedMethod, b: AugmentedMethod): boolean {
     return (a == b) || (a && b && LocalMethodId.equals(LocalMethodId.fromMethod(a), LocalMethodId.fromMethod(b)))
   }
@@ -139,7 +150,7 @@ export class MethodPackManager {
           this.method_index.get(m.for)?.methods?.push({
             method: m,
             pack: p,
-            clue: clue_data.index.get(m.for.clue).clue
+            clue: clue_data.index.get(m.for.clue)
           })
         })
       })
@@ -332,6 +343,6 @@ export class MethodPackManager {
 
     if (!method) return null
 
-    return {method: method, pack: pack, clue: clue_data.index.get(method.for.clue).clue}
+    return AugmentedMethod.create(method, pack)
   }
 }

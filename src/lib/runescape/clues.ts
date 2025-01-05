@@ -136,7 +136,7 @@ export namespace Clues {
 
   export type ScanStep = Scan
 
-  export type ClueSpot = { clue: Step, spot?: TileCoordinates }
+  export type ClueSpot<step_t extends Step = Step> = { clue: step_t, spot?: TileCoordinates }
 
   export type StepWithTextIndex = {
     step: Step,
