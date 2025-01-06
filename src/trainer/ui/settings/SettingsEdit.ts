@@ -989,7 +989,7 @@ class InterfaceSettingsEdit extends Widget {
         .checkboxes()
     ), "The solution to challenge scrolls given out by npcs.")
 
-    this.layout.section("Presets")
+    this.layout.section("Load Preset")
 
     this.layout.row(
       new LightButton("Everything")

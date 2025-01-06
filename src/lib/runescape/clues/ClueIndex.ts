@@ -102,7 +102,7 @@ export class ClueSpotIndex<T> {
     }))
   }
 
-  get(clue: ClueSpot.Id): { for: Clues.ClueSpot } & T {
+  get(clue: ClueSpot.Id, fallback_if_no_spot_index: boolean = true): { for: Clues.ClueSpot } & T {
     const r = this._index[clue.clue]
 
     if (!r) return null
@@ -112,10 +112,10 @@ export class ClueSpotIndex<T> {
     if (clue.spot && r.spot_index) {
       const bucket = r.spot_index[Vector2.hash(clue.spot, ClueSpotIndex.BUCKETS)]
 
-      return bucket.find(v => TileCoordinates.eq2(v.spot, clue.spot))?.value ?? r.value
+      return bucket.find(v => TileCoordinates.eq2(v.spot, clue.spot))?.value ?? (fallback_if_no_spot_index ? r.value : null)
     }
 
-    return r.value
+    return (fallback_if_no_spot_index ? r.value : null)
   }
 
   flat(): ({ for: Clues.ClueSpot } & T)[] {

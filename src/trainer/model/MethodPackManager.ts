@@ -147,11 +147,7 @@ export class MethodPackManager {
 
       (await this.all()).forEach(p => {
         p.methods.forEach(m => {
-          this.method_index.get(m.for)?.methods?.push({
-            method: m,
-            pack: p,
-            clue: clue_data.index.get(m.for.clue)
-          })
+          this.method_index.get(m.for, false)?.methods?.push(AugmentedMethod.create(m, p))
         })
       })
 
