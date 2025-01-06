@@ -2,7 +2,7 @@ import Widget from "../../lib/ui/Widget";
 import {Observable, observe} from "../../lib/reactive";
 
 export class NislIcon extends Widget {
-  protected img: Widget
+  public img: Widget
   protected url = observe("")
 
   protected constructor() {
