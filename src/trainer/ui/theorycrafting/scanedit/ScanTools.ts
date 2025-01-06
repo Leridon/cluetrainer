@@ -23,21 +23,21 @@ export default class ScanTools extends Widget {
     centered(
       c("<div style='font-weight: bold'>Center On</div>"),
       new ButtonRow({align: "center", sizing: "100px", max_center_spacer_width: "20px"}).buttons(
-        new LightButton("Spots", "rectangle")
+        new LightButton("Spots")
           .onClick(() => {
             let bounds = leaflet.latLngBounds([])
 
-            this.editor.value.clue.spots.forEach((c) => bounds.extend(Vector2.toLatLong(c)))
+            this.editor.value.clue.clue.spots.forEach((c) => bounds.extend(Vector2.toLatLong(c)))
 
             bounds.pad(0.1)
 
             this.editor.app.map.fitBounds(bounds)
           }),
-        new LightButton("Complement", "rectangle")
+        new LightButton("Complement")
           .onClick(() => {
             let bounds = leaflet.latLngBounds([])
 
-            this.editor.value.clue.spots.forEach((c) => {
+            this.editor.value.clue.clue.spots.forEach((c) => {
               bounds.extend(Vector2.toLatLong({
                 x: c.x,
                 y: (c.y < 6400 ? c.y + 6400 : c.y - 6400)

@@ -20,6 +20,28 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([{
+    version: 32,
+    date: new Date(Date.parse("TBD")),
+    title: "TBD",
+    render: layout => {
+      layout
+        .row(new List()
+          .item("Improved styling of buttons across the app.")
+          .item("Added a note that explains how to enable the Canifis to Mort´ton shortcut to a hard clue step.")
+          .item("Removed impossible compass spots in the Kharazi jungle.")
+          .item("Fixed missing paths for recently relocated tetracompass spots (v31).")
+          .item("Fixed wrong clue text for the WE IRK OVER NAMESAKE anagram.")
+          .item("The method selection dropdown now displays the number of available methods.")
+          .item("Restyled the section control for multi-section paths.")
+          .item("Improved navigation surrounding method packs in the 'Methods' tab.", new List()
+            .item("Method packs are now shown in a single section with improved styling.")
+            .item("Control Buttons were moved to the top.")
+            .item("You can now open method packs like folders to see and manage their included methods.")
+            .item("Added development utilities to simplify editing builtin methods.")
+          )
+        )
+    }
+  }, {
     version: 31,
     date: new Date(Date.parse("2025-01-02")),
     title: "Small Compass Fixes",

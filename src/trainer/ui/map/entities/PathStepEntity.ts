@@ -99,7 +99,7 @@ export class PathStepEntity extends MapEntity {
           return arro.getElement()
         }
         case "run": {
-          if(step.target_area) {
+          if (step.target_area) {
             (step.target_area
               ? areaPolygon(step.target_area)
               : tilePolygon(step.waypoints[step.waypoints.length - 1]))
@@ -117,7 +117,7 @@ export class PathStepEntity extends MapEntity {
           const line = leaflet.polyline(
             //lines.map((t) => .map(Vector2.toLatLong)),
             step.waypoints
-              .map((w, i) => i == 0 ? offsetTowards(w, step.waypoints[1], 0.2) : w)
+              .map((w, i) => i == 0 && step.waypoints.length >= 2 ? offsetTowards(w, step.waypoints[1], 0.2) : w)
               .map(Vector2.toLatLong),
             {
               color: "#b4b4b4",
@@ -208,19 +208,21 @@ export class PathStepEntity extends MapEntity {
           return marker.getElement()
         }
         case "transport": {
-          let entity = step.internal
-          let action = entity.actions[0]
+          const entity = step.internal
+          const action = entity.actions[0]
           const movement = Transportation.EntityAction.findApplicable(action, step.assumed_start) ?? action.movement[0]
 
           const is_remote = movement.fixed_target && !movement.fixed_target.relative
 
-          let ends_up: TileCoordinates = Path.ends_up([step])
+          const ends_up: TileCoordinates = Path.ends_up([step])
 
           const center_of_entity = TileRectangle.center(entity.clickable_area, false)
 
-          const to = is_remote ? center_of_entity : ends_up
+          const to = is_remote ? center_of_entity : ends_up;
 
-          arrow(offsetTowards(step.assumed_start, to, 0.2), to)
+          (Vector2.eq(step.assumed_start, to) ? leaflet.circle(
+            Vector2.toLatLong(to), {radius: 0.1}
+          ) : arrow(offsetTowards(step.assumed_start, to, 0.2), to))
             .setStyle({
               color: "#069334",
               weight: weight,

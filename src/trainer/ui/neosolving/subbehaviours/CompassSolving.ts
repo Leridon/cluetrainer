@@ -567,14 +567,12 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
               spot.center(),
             )
 
-            const res = Math.min(
+            const COLINEARITY_THRESHOLD = 5 * CompassReader.EPSILON
+
+            return Math.min(
               angleDifference(angle, e.information.angle_radians),
               angleDifference(normalizeAngle(angle + Math.PI), e.information.angle_radians),
-            ) < 5 * CompassReader.EPSILON
-
-            if (res) debugger
-
-            return res
+            ) < COLINEARITY_THRESHOLD
           })
 
           const colinear_to_any = colinear_index >= 0

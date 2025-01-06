@@ -916,7 +916,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
       return;
     }
 
-    if (method && (method.clue.id != this.state?.step?.clue?.step?.id)) {
+    if (method && (method.clue.clue.id != this.state?.step?.clue?.step?.id)) {
       log().log(`Aborting set method because method does not match clue.`, "Solving")
 
       return;

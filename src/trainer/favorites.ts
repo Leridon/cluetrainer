@@ -3,10 +3,16 @@ import {Clues} from "../lib/runescape/clues";
 import {util} from "../lib/util/util";
 import {storage} from "../lib/util/storage";
 import * as lodash from "lodash";
+import {ewent} from "../lib/reactive";
 import todo = util.todo;
 import ClueSpot = Clues.ClueSpot;
 
 export class FavoriteIndex {
+  public method_favourite_changed = ewent<{
+    clue: ClueSpot.Id,
+    new: AugmentedMethod
+  }>()
+
   public readonly data = new storage.Variable<{
     methods: {
       spot: ClueSpot.Id,
@@ -46,7 +52,7 @@ export class FavoriteIndex {
   setChallengeAnswerId(clue: Clues.Step, answer_id: number): void {
     const entry = this.data.value.challenge_answers.find(a => a.clue_id == clue.id)
 
-    if(entry) {
+    if (entry) {
       entry.answer_id = answer_id
     } else {
       this.data.value.challenge_answers.push({clue_id: clue.id, answer_id: answer_id})
@@ -55,10 +61,10 @@ export class FavoriteIndex {
     this.data.save()
   }
 
-  async getMethod(step: Clues.ClueSpot.Id): Promise<AugmentedMethod> {
+  async getMethod(step: Clues.ClueSpot.Id, return_fallback: boolean = true): Promise<AugmentedMethod> {
     const entry = this.data.value.methods.find(v => ClueSpot.Id.equals(step, v.spot))
 
-    if (!entry) {
+    if (!entry && return_fallback) {
       // There is no entry at all for this clue, automatically choose one!
       // Default choice is the fastest builtin method, followed by the fastest custom method if no builtin is available
 
@@ -67,7 +73,9 @@ export class FavoriteIndex {
       return candidates.find(c => c.pack.type == "default") ?? candidates[0]
     }
 
-    if (!entry.method) return null
+    if (!entry) return undefined
+
+    if (!entry?.method) return null
 
     return this.methods.resolve(entry.method)
   }
@@ -75,9 +83,13 @@ export class FavoriteIndex {
   setMethod(step: ClueSpot.Id, method: AugmentedMethod): void {
     this.normalize_data()
 
-    const entry = this.data.value.methods.find(e => ClueSpot.Id.equals(e.spot, step))
+    const i = this.data.value.methods.findIndex(e => ClueSpot.Id.equals(e.spot, step))
 
-    if (entry) {
+    if (method === undefined) {
+      if (i >= 0) this.data.value.methods.splice(i, 1)
+    } else if (i >= 0) {
+      const entry = this.data.value.methods[i]
+
       entry.method = method
         ? {local_pack_id: method.pack.local_id, method_id: method.method.id}
         : null
@@ -89,6 +101,12 @@ export class FavoriteIndex {
           : null
       })
     }
+
+    this.method_favourite_changed.trigger({
+      clue: step,
+      new: method
+    })
+
     this.data.save()
   }
 }

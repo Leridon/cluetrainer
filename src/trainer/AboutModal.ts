@@ -37,7 +37,7 @@ export class AboutModal extends NisModal {
 
     layout.header("Patch Notes")
 
-    layout.row(new LightButton("View Patch Notes", "rectangle").onClick(() => new Changelog.Modal().show()))
+    layout.row(new LightButton("View Patch Notes").onClick(() => new Changelog.Modal().show()))
 
     layout.header("Donations")
 
