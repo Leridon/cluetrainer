@@ -96,20 +96,27 @@ export class PathDisplayWithSectionControl extends Widget {
           let section_id = parent.children.indexOf(node)
 
           if (node.type == "inner") {
+            const has_next = section_id < parent.children.length - 1
+            const has_prev = section_id > 0
+
             hbox(
-              section_id > 0 ? NislIcon.arrow("left").withClick(() => {
+              has_prev ? NislIcon.sectionArrow("left").withClick(() => {
                 let cp = lodash.clone(this.current_section_id)
                 cp[i - 1] -= 1
                 this.setCurrentSection(cp)
-              }) : undefined,
-              span(node.value.name).css("flex-grow", "1").css("text-align", "center"),
-              section_id < parent.children.length - 1 ? NislIcon.arrow("right").withClick(() => {
+              }) : c().css("width", "11px"),
+              span(node.value.name).css("flex-grow", "1").css("text-align", "center").css2({
+                //"background": "#16242a",
+                "border-left": has_prev ? "1px solid #b8770f" : "none",
+                "border-right": has_next ? "1px solid #b8770f" : "none",
+                "border-radius": "5px",
+              }).tooltip("This path has multiple sections. Use the arrows to navigate between them."),
+              has_next ? NislIcon.sectionArrow("right").withClick(() => {
                 let cp = lodash.clone(this.current_section_id)
                 cp[i - 1] += 1
                 this.setCurrentSection(cp)
-              }) : undefined,
-            )
-              .appendTo(this)
+              }) : c().css("width", "11px"),
+            ).appendTo(this)
           }
         })
       }
@@ -288,7 +295,7 @@ export default class PathControl extends Behaviour {
     this.sectioned_path = sections
     this.method = method
     this.scan_node = node
-    
+
     if (method && !active_id) {
       active_id = await this.section_memory.get(method,
         this.scan_node ? ScanTree.Augmentation.NodeId.hash(ScanTree.Augmentation.NodeId.of(this.scan_node)) : null

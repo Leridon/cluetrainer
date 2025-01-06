@@ -42,6 +42,14 @@ export class NislIcon extends Widget {
     return new ArrowIcon(direction)
   }
 
+  static sectionArrow(direction: "right" | "left"): NislIcon {
+    const icon = new NislIcon().setSource("assets/nis/sectionarrowright.png")
+
+    if (direction == "left") icon.img.css("transform", "scaleX(-1)")
+
+    return icon
+  }
+
   static info(): NislIcon {
     return new NislIcon().css("cursor", "help").setSource("assets/icons/info_nis.png")
   }

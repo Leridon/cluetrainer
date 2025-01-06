@@ -31,6 +31,8 @@ export namespace Changelog {
           .item("Removed impossible compass spots in the Kharazi jungle.")
           .item("Fixed missing paths for recently relocated tetracompass spots (v31).")
           .item("Fixed wrong clue text for the WE IRK OVER NAMESAKE anagram.")
+          .item("The method selection dropdown now displays the number of available methods.")
+          .item("Restyled the section control for multi-section paths.")
           .item("Improved navigation surrounding method packs in the 'Methods' tab.", new List()
             .item("Method packs are now shown in a single section with improved styling.")
             .item("Control Buttons were moved to the top.")
