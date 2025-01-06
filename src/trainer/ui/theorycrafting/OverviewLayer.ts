@@ -36,7 +36,7 @@ export default class OverviewLayer extends GameLayer {
     this.filter_control = new FilterControl(MethodPackManager.instance(), m => theorycrafter.editMethod(m)).addTo(this)
 
     new GameMapControl({
-        type: "floating", position: "top-right"
+        type: "floating", position: "top-left"
       }, new ControlWithHeader("Show routes")
         .setContent(
           this.route_control = new DisplayedRouteFilterEdit()

@@ -10,9 +10,11 @@ import {NewMethodPackModal} from "./MethodPackModal";
 import {ConfirmationModal} from "../widgets/modals/ConfirmationModal";
 import {observe} from "../../../lib/reactive";
 import {MethodWidget} from "./MethodWidget";
+import {Clues} from "../../../lib/runescape/clues";
+import {DropdownSelection} from "../widgets/DropdownSelection";
+import Properties from "../widgets/Properties";
 import btnrow = C.btnrow;
 import imp = ExportImport.imp;
-import {Clues} from "../../../lib/runescape/clues";
 
 export default class TheoryCraftingSidebar extends MapSideBar {
 
@@ -43,9 +45,27 @@ export default class TheoryCraftingSidebar extends MapSideBar {
 
     this.method_widgets = []
 
+    const props = new Properties().appendTo(this.body)
+
+    /*
+    props.named("Map Visibility",
+      new DropdownSelection({
+        type_class: {
+          toHTML: e => e
+        }
+      }, ["None", "All", "Preferred per Clue", "Focussed Method Pack", "Manual Selection"])
+    )*/
+
     if (focus) {
       this.header.name.set(`Pack: ${focus.name}`)
       this.header.close_handler.set(() => this.opened_pack.set(null))
+
+      /*props.row(btnrow(
+        new LightButton("Visibility", "rectangle")
+          .onClick(async () => {
+
+          }),
+      ))*/
 
       this.method_widgets = focus.methods.map(method =>
         new MethodWidget(this.theorycrafter, AugmentedMethod.create(method, focus))
@@ -55,7 +75,7 @@ export default class TheoryCraftingSidebar extends MapSideBar {
       this.header.name.set("Method Packs")
       this.header.close_handler.set(null)
 
-      btnrow(
+      props.row(btnrow(
         new LightButton("Import", "rectangle")
           .onClick(async () => {
             const imported = await new ImportStringModal<Pack>(imp({expected_type: "method-pack", expected_version: 1})).do()
@@ -101,7 +121,7 @@ export default class TheoryCraftingSidebar extends MapSideBar {
           .onClick(() => {
             new NewMethodPackModal().do()
           })
-      ).appendTo(this.body)
+      ))
 
       packs.forEach(p => {
         new PackWidget(p, MethodPackManager.instance(), {buttons: true, collapsible: true}, pack => this.opened_pack.set(pack)).appendTo(this.body)

@@ -184,7 +184,7 @@ export class FilterControl extends GameMapControl<ControlWithHeader> {
   ) {
     super({
       type: "floating",
-      position: "top-left"
+      position: "top-right"
     }, new ControlWithHeader("Clue Filter").css2({"max-width": "300px", "width": "300px"}))
 
     this.index.forEach(e => {

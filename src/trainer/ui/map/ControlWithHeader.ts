@@ -23,7 +23,7 @@ export class ControlHeader extends Widget {
 
       if (close_handle) {
         this.append(c("<div class='ctr-map-control-header-close'>&times;</div>")
-          .tooltip("Close (Esc)")
+          .tooltip("Close")
           .tapRaw(r => r.on("click", () => close_handle())))
       }
     }, true)

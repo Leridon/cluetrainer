@@ -1310,6 +1310,7 @@ video {
     display: inline-block;
     cursor: pointer;
     font-size: 1.3em;
+    margin: -4px 0;
 }
 
 /* Shortcut Edit */
@@ -1455,13 +1456,12 @@ input[type=checkbox] + span {
     background-color: #102c3a;
     border: 1px solid gray;
     border-radius: 2px;
-    margin-bottom: 5px;
+    margin: 5px 0;
 }
 
 .ctr-method-widget:hover {
     background-color: #0d3548;
 }
-
 
 .ctr-method-widget-pack-header {
     text-align: center;
@@ -1512,7 +1512,7 @@ input[type=checkbox] + span {
     background-color: #102c3a;
     border: 1px solid gray;
     border-radius: 5px;
-    margin: 5px;
+    margin: 5px 0;
     padding: 2px;
 }
 
