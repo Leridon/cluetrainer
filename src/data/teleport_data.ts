@@ -4553,7 +4553,7 @@ name: "Entrana",
     type: "teleports",
     id: "portmasterkags",
     name: "Portmaster Kags",
-    animation_ticks: 4,
+    animation_ticks: 1,
     img: {url: "portmasterkags.webp", height: 32},
     spots: [
       {id: "sunkenpyramid", name: "Sunken Pyramid", target: {"origin": {"x": 3032, "y": 2672, "level": 0}}, code: "1", menu_ticks: 1},

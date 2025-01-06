@@ -21,19 +21,19 @@ export namespace Changelog {
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([{
     version: 32,
-    date: new Date(Date.parse("TBD")),
-    title: "TBD",
+    date: new Date(Date.parse("2025-01-06")),
+    title: "Data Fixes and Better Method Management",
     render: layout => {
       layout
         .row(new List()
-          .item("Improved styling of buttons across the app.")
           .item("Added a note that explains how to enable the Canifis to Mort´ton shortcut to a hard clue step.")
           .item("Removed impossible compass spots in the Kharazi jungle.")
           .item("Fixed missing paths for recently relocated tetracompass spots (v31).")
+          .item("Added Portmaster Kags to the teleport dataset")
           .item("Fixed wrong clue text for the WE IRK OVER NAMESAKE anagram.")
+          .item("Improved styling of buttons across the app.")
           .item("The method selection dropdown now displays the number of available methods.")
           .item("Restyled the section control for multi-section paths.")
-          .item("Added Portmaster Kags to the teleport dataset")
           .item("Improved navigation surrounding method packs in the 'Methods' tab.", new List()
             .item("Method packs are now shown in a single section with improved styling.")
             .item("Control Buttons were moved to the top.")
