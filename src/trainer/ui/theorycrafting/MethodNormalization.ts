@@ -3,7 +3,6 @@ import {SolvingMethods} from "../../model/methods";
 import {Path} from "../../../lib/runescape/pathing";
 import {ScanTree} from "../../../lib/cluetheory/scans/ScanTree";
 import {GenericPathMethodEditor} from "./GenericPathMethodEditor";
-import {clue_data} from "../../../data/clues";
 import {Clues} from "../../../lib/runescape/clues";
 import {PathEditor} from "../pathedit/PathEditor";
 import {NisModal} from "../../../lib/ui/NisModal";
@@ -13,7 +12,6 @@ import ExportStringModal from "../widgets/modals/ExportStringModal";
 import {util} from "../../../lib/util/util";
 import ButtonRow from "../../../lib/ui/ButtonRow";
 import Properties from "../widgets/Properties";
-import * as lodash from "lodash";
 import {NewMethodPackModal} from "./MethodPackModal";
 
 export namespace MethodNormalization {
@@ -75,11 +73,8 @@ export namespace MethodNormalization {
     async pack(pack: Pack): Promise<Pack> {
       return {
         ...pack,
-        methods: await Promise.all(pack.methods.map(m => this.method({
-          method: m,
-          pack: pack,
-          clue: clue_data.index.get(m.for.clue).clue
-        })))
+        methods: await Promise.all(pack.methods.map(m => this.method(
+          AugmentedMethod.create(m, pack))))
       }
     }
   }
@@ -107,7 +102,7 @@ export namespace MethodNormalization {
               ...method.method,
               expected_time: (await ScanTree.Augmentation.augment({augment_paths: true, analyze_timing: true, path_assumptions: method.method.assumptions},
                 method.method.tree,
-                method.clue as Clues.Scan
+                method.clue.clue as Clues.Scan
               )).state.timing_analysis.average + 1
             }
         }
@@ -164,7 +159,7 @@ export namespace MethodNormalization {
 
       const grp = new Checkbox.Group([
         {button: new Checkbox("Show JSON"), value: "show" as const},
-        {button: new Checkbox("Save").setEnabled(this.pack.type != "default"), value: "save" as const},
+        {button: new Checkbox("Save").setEnabled(!this.pack.is_real_default), value: "save" as const},
         {button: new Checkbox("Save Copy"), value: "savecopy" as const},
       ])
         .setValue(this.mode)

@@ -102,7 +102,7 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
       this.minimap_overlay = this.withSub(new ScanMinimapOverlay(this.parent.app.minimapreader, settings, "scantree").setRange(this.method.method.tree.assumed_range))
     }
 
-    this.augmented = ScanTree.Augmentation.basic_augmentation(method.method.tree, method.clue)
+    this.augmented = ScanTree.Augmentation.basic_augmentation(method.method.tree, method.clue.clue)
   }
 
   private fit(active_path_section: Path.raw) {

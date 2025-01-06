@@ -14,20 +14,18 @@ import * as lodash from "lodash";
 import {Checkbox} from "../../../lib/ui/controls/Checkbox";
 import TextField from "../../../lib/ui/controls/TextField";
 import {C} from "../../../lib/ui/constructors";
-import NisCollapseButton from "../../../lib/ui/controls/NisCollapseButton";
-import {ExpansionBehaviour} from "../../../lib/ui/ExpansionBehaviour";
 import {ClueProperties} from "./ClueProperties";
 import {GameMap} from "../../../lib/gamemap/GameMap";
 import {TileRectangle} from "../../../lib/runescape/coordinates";
 import {ClueOverviewMarker} from "./OverviewMarker";
 import * as fuzzysort from "fuzzysort";
+import ContextMenu from "../widgets/ContextMenu";
 import sitog = SmallImageButton.sitog;
 import hbox = C.hbox;
 import spacer = C.spacer;
 import span = C.span;
 import vbox = C.vbox;
 import ClueSpot = Clues.ClueSpot;
-import ContextMenu from "../widgets/ContextMenu";
 
 export type ClueSpotFilter = {
   tiers?: { [P in ClueTier]: boolean },
@@ -128,12 +126,11 @@ class ClueSpotFilterResult extends Widget {
 
       return (new ClueProperties(
         this.spot,
-        self.methods,
         self.edit_handler,
         true,
         undefined,
         false
-      )).row(c().text("Right click marker to manage methods.").css("font-style", "italic"))
+      )).row(c().text("Right click to manage methods.").css("font-style", "italic"))
     })
 
     this.append(hbox(
@@ -187,7 +184,7 @@ export class FilterControl extends GameMapControl<ControlWithHeader> {
   ) {
     super({
       type: "floating",
-      position: "top-left"
+      position: "top-right"
     }, new ControlWithHeader("Clue Filter").css2({"max-width": "300px", "width": "300px"}))
 
     this.index.forEach(e => {
@@ -219,6 +216,14 @@ export class FilterControl extends GameMapControl<ControlWithHeader> {
   }
 
   private async renderFilter(): Promise<void> {
+    this.count_line = c()
+
+    this.result_container = c()
+      .css2({
+        "max-height": "60vh",
+        "overflow-y": "scroll"
+      })
+
     this.content.body.css2({
       "display": "flex",
       "flex-direction": "column"
@@ -251,7 +256,7 @@ export class FilterControl extends GameMapControl<ControlWithHeader> {
     props.named("Type", hbox(...buttons.type.map(s => s.btn), spacer()).addClass("ctr-filter-control-row"))
 
     if (this.methods) {
-      let group = new Checkbox.Group<"none" | "at_least_one">([
+      const group = new Checkbox.Group<"none" | "at_least_one">([
         {value: "none", button: new Checkbox("None")},
         {value: "at_least_one", button: new Checkbox("At least one", "radio")},
       ], true).setValue(this.filter.value().method_mode)
@@ -259,9 +264,9 @@ export class FilterControl extends GameMapControl<ControlWithHeader> {
 
       const [none, at_least_one] = group.checkboxes()
 
-      let specifics_container = hbox(none, spacer(), at_least_one)//new ButtonRow({max_center_spacer_width: "100%", align: "center"})
+      const specifics_container = hbox(none, spacer(), at_least_one)//new ButtonRow({max_center_spacer_width: "100%", align: "center"})
 
-      let selection = new DropdownSelection({
+      const selection = new DropdownSelection({
           type_class: {
             toHTML(v: Pack): Widget {
               if (v) return span(`${lodash.capitalize(v.type)}: ${v.name}`)
@@ -290,13 +295,10 @@ export class FilterControl extends GameMapControl<ControlWithHeader> {
       })
     )
 
-    this.count_line = c().appendTo(this.content.body)
-    this.result_container = c()
-      .css2({
-        "max-height": "60vh",
-        "overflow-y": "scroll"
-      })
-      .appendTo(this.content.body)
+    this.content.body.append(
+      this.count_line,
+      this.result_container
+    )
   }
 
   async renderResults() {

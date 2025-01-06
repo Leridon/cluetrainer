@@ -251,10 +251,9 @@ export class GenericPathMethodEditor extends MethodSubEditor {
    * The sequence is the "blueprint" of things that need to be done to complete the step.
    */
   private async updateSequence() {
-    const value = this.value
     const clue = this.value.clue
 
-    this.sequence = await GenericPathMethodEditor.getSequence({clue: clue, spot: value.method.for.spot}, this.assumptions.value())
+    this.sequence = await GenericPathMethodEditor.getSequence(clue, this.assumptions.value())
 
     await this.render()
   }
@@ -404,7 +403,7 @@ export namespace GenericPathMethodEditor {
   }
 
   export async function getEndState(value: AugmentedMethod<GenericPathMethod>) {
-    const sequence = await getSequence({clue: value.clue, spot: value.method.for.spot}, value.method.assumptions)
+    const sequence = await getSequence(value.clue, value.method.assumptions)
 
     return await sequence.reduce<Promise<movement_state>>(async (old_state, section) => {
       let state: movement_state = lodash.cloneDeep(await old_state)

@@ -1,17 +1,19 @@
 import Properties from "../widgets/Properties";
-import {Clues, ClueTier, ClueType} from "../../../lib/runescape/clues";
+import {Clues, ClueType} from "../../../lib/runescape/clues";
 import {Constants} from "../../constants";
 import {GieliCoordinates, TileCoordinates, TileRectangle} from "../../../lib/runescape/coordinates";
 import LightButton from "../widgets/LightButton";
 import {C} from "../../../lib/ui/constructors";
 import {util} from "../../../lib/util/util";
-import {AugmentedMethod, MethodPackManager} from "../../model/MethodPackManager";
+import {AugmentedMethod, MethodPackManager, Pack} from "../../model/MethodPackManager";
 import ContextMenu, {Menu, MenuEntry} from "../widgets/ContextMenu";
 import Dependencies from "../../dependencies";
 import {FavouriteIcon} from "../nisl";
 import {ConfirmationModal} from "../widgets/modals/ConfirmationModal";
-import {NewMethodModal} from "./MethodModal";
+import {EditMethodMetaModal, NewMethodModal} from "./MethodModal";
 import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
+import {Notification} from "../NotificationBar";
+import {SolvingMethods} from "../../model/methods";
 import hbox = C.hbox;
 import spacer = C.spacer;
 import span = C.span;
@@ -19,13 +21,11 @@ import ClueSpot = Clues.ClueSpot;
 import natural_join = util.natural_join;
 import plural = util.plural;
 import activate = TileArea.activate;
-import {Notification} from "../NotificationBar";
 
 export class ClueProperties extends Properties {
   render_promise: Promise<this> = null
 
   constructor(private clue: Clues.ClueSpot,
-              private methods: MethodPackManager,
               private edit_handler: (_: AugmentedMethod) => any,
               private include_header: boolean,
               private alternative_index?: number,
@@ -160,6 +160,8 @@ export class ClueProperties extends Properties {
 export namespace ClueProperties {
 
   import notification = Notification.notification;
+  import Method = SolvingMethods.Method;
+  import SubMenu = MenuEntry.SubMenu;
 
   export function header(clue: Clues.ClueSpot) {
     return hbox(
@@ -174,8 +176,6 @@ export namespace ClueProperties {
                                    edit_handler: (_: AugmentedMethod) => any,
   ): Promise<Menu> {
     const ms = await MethodPackManager.instance().get(clue)
-
-    const favourite = await Dependencies.instance().app.favourites.getMethod(ClueSpot.toId(clue))
 
     return {
       type: "submenu",
@@ -192,76 +192,98 @@ export namespace ClueProperties {
             }
           }
         },
-        ...ms.map((m): MenuEntry => {
-          const isFavourite = AugmentedMethod.isSame(favourite, m)
-
-          const men: MenuEntry.SubMenu = {
-            type: "submenu",
-            text: m.method.name,
-            icon: () => new FavouriteIcon().set(isFavourite),
-            children: [
-              {
-                type: "basic",
-                text: isFavourite ? "Unset Favourite" : "Make Favourite",
-                icon: () => new FavouriteIcon().set(isFavourite),
-                handler: () => {
-                  Dependencies.instance().app.favourites.setMethod(ClueSpot.toId(clue), isFavourite ? null : m)
-                }
-              },
-            ]
-          }
-
-          if (m.pack.type == "local") {
-            men.children.push({
-              type: "basic",
-              text: "Edit",
-              icon: "assets/icons/edit.png",
-              handler: () => edit_handler(m)
-            })
-          }
-
-          men.children.push(
-            {
-              type: "basic",
-              icon: "assets/icons/copy.png",
-              text: "Make Copy",
-              handler: async () => {
-                const new_method = await new NewMethodModal(clue, m).do()
-
-                if (new_method?.created) {
-                  edit_handler(new_method.created)
-                }
-              }
-            })
-
-          if (m.pack.type == "local") {
-            men.children.push({
-              type: "basic",
-              text: "Delete",
-              icon: "assets/icons/delete.png",
-              handler: async () => {
-                const really = await new ConfirmationModal<boolean>({
-                  body: "Are you sure you want to delete this method? There is no way to undo it!",
-                  options: [
-                    {kind: "neutral", text: "Cancel", value: false},
-                    {kind: "cancel", text: "Delete", value: true},
-                  ]
-                }).do()
-
-                if (really) {
-                  MethodPackManager.instance().deleteMethod(m)
-
-                  notification("Deleted").show()
-                }
-              }
-            })
-          }
-
-          return men
-        })
+        ...(await Promise.all(ms.map(async (m) => await methodSubMenu(m, edit_handler))))
 
       ]
     }
+  }
+
+  export async function methodSubMenu(m: AugmentedMethod, edit_handler: (_: AugmentedMethod) => any): Promise<SubMenu> {
+    const favourite = await Dependencies.instance().app.favourites.getMethod(ClueSpot.toId(m.clue), false)
+
+    const isFavourite = AugmentedMethod.isSame(favourite, m)
+
+    const men: MenuEntry.SubMenu = {
+      type: "submenu",
+      text: m.method.name,
+      icon: () => new FavouriteIcon().set(isFavourite),
+      children: [
+        {
+          type: "basic",
+          text: isFavourite ? "Unset Favourite" : "Make Favourite",
+          icon: () => new FavouriteIcon().set(isFavourite),
+          handler: () => {
+            Dependencies.instance().app.favourites.setMethod(ClueSpot.toId(m.clue), isFavourite ? undefined : m)
+          }
+        },
+      ]
+    }
+
+    if (Pack.isEditable(m.pack)) {
+      men.children.push({
+        type: "basic",
+        text: "Edit",
+        icon: "assets/icons/edit.png",
+        handler: () => edit_handler(m)
+      })
+
+      men.children.push({
+        type: "basic",
+        text: "Edit Metadata",
+        icon: "assets/icons/edit.png",
+        handler: async () => {
+
+          const result = await new EditMethodMetaModal(m.clue,
+            Method.meta(m.method), false
+          ).do()
+
+          if (result?.result) {
+            Method.setMeta(m.method, result.result)
+
+            MethodPackManager.instance().updateMethod(m)
+          }
+        }
+      })
+    }
+
+    men.children.push(
+      {
+        type: "basic",
+        icon: "assets/icons/copy.png",
+        text: "Edit Copy",
+        handler: async () => {
+          const new_method = await new NewMethodModal(m.clue, m).do()
+
+          if (new_method?.created) {
+            edit_handler(new_method.created)
+          }
+        }
+      })
+
+    if (Pack.isEditable(m.pack)) {
+      men.children.push({
+        type: "basic",
+        text: "Delete",
+        icon: "assets/icons/delete.png",
+        handler: async () => {
+          const really = await new ConfirmationModal<boolean>({
+            body: "Are you sure you want to delete this method? There is no way to undo it!",
+            options: [
+              {kind: "neutral", text: "Cancel", value: false},
+              {kind: "cancel", text: "Delete", value: true},
+            ]
+          }).do()
+
+          if (really) {
+            MethodPackManager.instance().deleteMethod(m)
+
+            notification("Deleted").show()
+          }
+        }
+      })
+    }
+
+    return men
   }
 
   export function render_challenge(challenge: Clues.Challenge) {

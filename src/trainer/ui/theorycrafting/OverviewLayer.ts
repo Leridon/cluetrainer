@@ -30,13 +30,13 @@ export default class OverviewLayer extends GameLayer {
 
   update_promise: Promise<any> = Promise.resolve()
 
-  constructor(private app: TheoryCrafter) {
+  constructor(private theorycrafter: TheoryCrafter) {
     super();
 
-    this.filter_control = new FilterControl(MethodPackManager.instance(), m => app.editMethod(m)).addTo(this)
+    this.filter_control = new FilterControl(MethodPackManager.instance(), m => theorycrafter.editMethod(m)).addTo(this)
 
     new GameMapControl({
-        type: "floating", position: "top-right"
+        type: "floating", position: "top-left"
       }, new ControlWithHeader("Show routes")
         .setContent(
           this.route_control = new DisplayedRouteFilterEdit()
@@ -66,7 +66,7 @@ export default class OverviewLayer extends GameLayer {
         }
 
         if (visible && c.markers.length == 0) {
-          c.markers = ClueOverviewMarker.forClue(c.for, MethodPackManager.instance(), m => this.app.editMethod(m))
+          c.markers = ClueOverviewMarker.forClue(c.for, MethodPackManager.instance(), m => this.theorycrafter.editMethod(m))
           c.markers.forEach(m => m.addTo(this))
         }
       })

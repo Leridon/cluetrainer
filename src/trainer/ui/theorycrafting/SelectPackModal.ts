@@ -71,7 +71,7 @@ export default class SelectPackModal extends FormModal<{
 
     if (this.types.includes("local")) {
       new ButtonRow().buttons(
-        new LightButton("Create New", "rectangle")
+        new LightButton("Create New")
           .onClick(async () => {
             let result = await new NewMethodPackModal().do()
 

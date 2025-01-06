@@ -149,19 +149,19 @@ export class RegionChainEditor extends AbstractEditWidget<Region[]> {
         "padding-right": "3px",
       })
 
-    menu.row(new LightButton("New Chain", "rectangle").css("margin", "2px")
+    menu.row(new LightButton("New Chain").css("margin", "2px")
       .onClick(() => {
         this.setValue([Region.empty()])
       })
     )
-    menu.row(new LightButton("Import", "rectangle").css("margin", "2px")
+    menu.row(new LightButton("Import").css("margin", "2px")
       .onClick(async () => {
         const res = await new ImportStringModal(imp<Region[]>()).do()
 
         if (res?.imported) this.commit(res.imported, true)
       })
     )
-    menu.row(new LightButton("Export", "rectangle").css("margin", "2px")
+    menu.row(new LightButton("Export").css("margin", "2px")
       .onClick(() => {
         ExportStringModal.do(
           cleanedJSON(this.get())
@@ -241,7 +241,7 @@ export class PDBGeneratorWidget extends Widget {
     ))
 
 
-    this.editor.menu.row(new LightButton("Create tables", "rectangle").css("margin", "2px")
+    this.editor.menu.row(new LightButton("Create tables").css("margin", "2px")
       .onClick(() => {
         const generator = new RegionChainDistanceTable.Generator({
           regions: this.editor.get(),

@@ -33,7 +33,7 @@ export class DevelopmentModal extends NisModal {
     layout.paragraph("Welcome to the super secret development menu! If you're not a developer, you probably won't find anything useful here, but feel free to take a look around. Important note: Some options may mess up your local data/settings without warning you about it before doing so!")
 
     layout.header("General")
-    layout.row(new LightButton("Log Viewer", "rectangle")
+    layout.row(new LightButton("Log Viewer")
       .onClick(() => {
         ImportModal.json<Log.LogBuffer>(txt => txt as Log.LogBuffer,
           buffer => {new LogViewer(buffer).show()},
@@ -43,31 +43,31 @@ export class DevelopmentModal extends NisModal {
 
     layout.header("Slider Puzzles")
 
-    layout.row(new LightButton("Benchmark Solvers", "rectangle")
+    layout.row(new LightButton("Benchmark Solvers")
       .onClick(() => {
         new SliderBenchmarkModal().show()
       })
     )
 
-    layout.row(new LightButton("Generate PDB", "rectangle")
+    layout.row(new LightButton("Generate PDB")
       .onClick(() => {
         new PDBGeneratorModal().show()
       })
     )
 
-    layout.row(new LightButton("Benchmark Region Indexing", "rectangle")
+    layout.row(new LightButton("Benchmark Region Indexing")
       .onClick(() => {
         new RegionIndexingModal().show()
       })
     )
 
-    layout.row(new LightButton("Delete local pdbs", "rectangle")
+    layout.row(new LightButton("Delete local pdbs")
       .onClick(() => {
         PDBManager.instance.get().clearCache()
       })
     )
 
-    layout.row(new LightButton("Analyze sliders", "rectangle")
+    layout.row(new LightButton("Analyze sliders")
       .onClick(() => {
         ImportModal.json(p => p as SliderDataEntry[],
           data => {
@@ -78,7 +78,7 @@ export class DevelopmentModal extends NisModal {
     )
 
     layout.header("Compass")
-    layout.row(new LightButton("Calibration Tool", "rectangle")
+    layout.row(new LightButton("Calibration Tool")
       .onClick(() => {
         new CompassReader.CalibrationTool().show()
       })
@@ -86,12 +86,12 @@ export class DevelopmentModal extends NisModal {
 
     layout.header("Tests")
 
-    layout.row(new LightButton("Run Tests", "rectangle")
+    layout.row(new LightButton("Run Tests")
       .onClick(() => {
         clue_trainer_test_set.run()
       })
     )
-    layout.row(new LightButton("Run makeshift Main", "rectangle")
+    layout.row(new LightButton("Run makeshift Main")
       .onClick(async () => {
         await makeshift_main()
 
@@ -101,7 +101,7 @@ export class DevelopmentModal extends NisModal {
 
     layout.header("Other")
 
-    layout.row(new LightButton("Open Development Utility Layer", "rectangle")
+    layout.row(new LightButton("Open Development Utility Layer")
       .onClick(() => {
         deps().app.menu_bar.switchToTab("utility")
       })

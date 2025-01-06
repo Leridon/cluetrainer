@@ -64,15 +64,30 @@ export default class MethodSelector extends Widget {
   }
 
   private render(method: AugmentedMethod) {
+    const icon = NislIcon.dropdown()
+      .css("margin-right", "3px")
+      .css("margin-left", "3px")
+      .css("position", "relative")
+
+    icon.append(c().css2({
+      "position": "absolute",
+      "top": 0,
+      color: "black",
+      "font-weight": "bold",
+      width: "100%",
+      "text-align": "center"
+    }).text(this.methods.length.toString()))
+
+    icon.img.css("width", "12px")
+
     this.row = hbox(
       method
         ? this.renderName(method)
         : c("<span style='font-style: italic; color: gray'> No method selected</span>"),
       spacer(),
-      NislIcon.dropdown()
-        .css("margin-right", "3px")
-        .css("margin-left", "3px"),
-      //`(${this.methods.length})`
+      //`(${this.methods.length})`,
+      icon
+      ,
     )
       .addClass("ctr-clickable")
       .setAttribute("tabindex", "-1")
@@ -85,14 +100,14 @@ export default class MethodSelector extends Widget {
 
   private async openMethodSelection() {
     if (!this.dropdown) {
-      const favourite = await this.parent.app.favourites.getMethod(this.clue)
+      const favourite = await this.parent.app.favourites.getMethod(this.clue, false)
 
       this.dropdown = new AbstractDropdownSelection.DropDown<AugmentedMethod>({
         dropdownClass: "ctr-neosolving-favourite-dropdown",
         renderItem: m => {
           if (!m) {
             return hbox(
-              new FavouriteIcon().set(!favourite),
+              new FavouriteIcon().set(favourite === null),
               span("None"),
               spacer()
             )

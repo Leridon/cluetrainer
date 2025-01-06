@@ -89,7 +89,7 @@ export class ScanEditLayer extends GameLayer {
   }
 
   setSpotOrder(order: TileCoordinates[] | null) {
-    if(order) {
+    if (order) {
       order.forEach((spot, i) => {
         this.getMarker(spot)?.setNumber(i + 1)
       })
@@ -343,14 +343,14 @@ class EquivalenceClassHandling extends Behaviour {
     }
 
     let normal = setup({
-      candidates: this.parent.value.clue.spots,
+      candidates: this.parent.value.clue.clue.spots,
       range: this.parent.builder.tree.assumed_range,
       complement: false,
       floor: this.parent.app.map.floor.value()
     }, this.parent.tools.normal)
 
-    let complement = setup({
-      candidates: this.parent.value.clue.spots,
+    const complement = setup({
+      candidates: this.parent.value.clue.clue.spots,
       range: this.parent.builder.tree.assumed_range,
       complement: true,
       floor: this.parent.app.map.floor.value()
@@ -522,7 +522,7 @@ export default class ScanEditor extends MethodSubEditor {
   ) {
     super(parent);
 
-    this.builder = new ScanTreeBuilder(value.clue)
+    this.builder = new ScanTreeBuilder(value.clue.clue)
     this.builder.assumptions.set(lodash.cloneDeep(value.method.assumptions))
 
     this.builder.augmented.subscribe((t) => {
@@ -537,7 +537,7 @@ export default class ScanEditor extends MethodSubEditor {
       this.layer.setSpotOrder(order)
     })
 
-    this.layer = new ScanEditLayer(value.clue.spots)
+    this.layer = new ScanEditLayer(value.clue.clue.spots)
 
     this.layer.marker.setClickable(true)
 
@@ -567,7 +567,7 @@ export default class ScanEditor extends MethodSubEditor {
 
                     const props = new Properties().appendTo(this.body)
 
-                    props.named("New Spot Number", this.input = new NumberInput(1, self.value.clue.spots.length)
+                    props.named("New Spot Number", this.input = new NumberInput(1, self.value.clue.clue.spots.length)
                       .setValue(self.builder.tree.ordered_spots.findIndex(c => TileCoordinates.eq(c, spot)) + 1)
                     )
 
@@ -611,7 +611,7 @@ export default class ScanEditor extends MethodSubEditor {
     this.path_editor = this.withSub(new SingleBehaviour<PathEditor>())
 
     this.assumptions.subscribe((v) => {
-      this.value.method.tree.assumed_range = this.value.clue.range + (v.meerkats_active ? 5 : 0)
+      this.value.method.tree.assumed_range = this.value.clue.clue.range + (v.meerkats_active ? 5 : 0)
 
       this.builder.assumptions.set(lodash.cloneDeep(v))
 
@@ -664,7 +664,7 @@ export default class ScanEditor extends MethodSubEditor {
       .css("overflow-y", "auto").appendTo(this.side_panel)
 
     this.candidates_at_active_node = this.tree_edit.active
-      .map(n => n ? n.node.remaining_candidates : this.value.clue.spots)
+      .map(n => n ? n.node.remaining_candidates : this.value.clue.clue.spots)
 
     this.candidates_at_active_node.subscribe(n => {
       this.layer.setActiveCandidates(n)

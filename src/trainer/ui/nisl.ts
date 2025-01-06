@@ -2,7 +2,7 @@ import Widget from "../../lib/ui/Widget";
 import {Observable, observe} from "../../lib/reactive";
 
 export class NislIcon extends Widget {
-  private img: Widget
+  public img: Widget
   protected url = observe("")
 
   protected constructor() {
@@ -42,6 +42,14 @@ export class NislIcon extends Widget {
     return new ArrowIcon(direction)
   }
 
+  static sectionArrow(direction: "right" | "left"): NislIcon {
+    const icon = new NislIcon().setSource("assets/nis/sectionarrowright.png")
+
+    if (direction == "left") icon.img.css("transform", "scaleX(-1)")
+
+    return icon
+  }
+
   static info(): NislIcon {
     return new NislIcon().css("cursor", "help").setSource("assets/icons/info_nis.png")
   }
@@ -76,6 +84,8 @@ export class FavouriteIcon extends NislIcon {
     this.toggled.subscribe(v => {
       this.setSource(v ? "assets/nis/favourite_on.png" : "assets/nis/favourite_off.png")
     }, true)
+
+    this.img.css("margin-bottom", "2px")
   }
 
   set(value: boolean): this {

@@ -4548,6 +4548,31 @@ name: "Entrana",
         clickable_area: {"origin": {"x": 3296, "y": 10154, "level": 0}, "size": {"x": 4, "y": 1}, "data": "Cw=="}
       },
     ]
+  },
+  {
+    type: "teleports",
+    id: "portmasterkags",
+    name: "Portmaster Kags",
+    animation_ticks: 1,
+    img: {url: "portmasterkags.webp", height: 32},
+    spots: [
+      {id: "sunkenpyramid", name: "Sunken Pyramid", target: {"origin": {"x": 3032, "y": 2672, "level": 0}}, code: "1", menu_ticks: 1},
+      {id: "crondispyramid", name: "Crondis' Pyramid", target: {"origin": {"x": 3273, "y": 2644, "level": 0}}, code: "2", menu_ticks: 1},
+      {id: "jaldraocht", name: "Jaldraocht", target: {"origin": {"x": 3254, "y": 2882, "level": 0}}, code: "3", menu_ticks: 1},
+      {id: "nardah", name: "Nardah", target: {"origin": {"x": 3373, "y": 2931, "level": 0}}, code: "4,1", menu_ticks: 2},
+      {id: "pollnivneach", name: "Pollnivneach", target: {"origin": {"x": 3364, "y": 2950, "level": 0}}, code: "4,2", menu_ticks: 2},
+      {id: "dominiontower", name: "Dominion Tower", target: {"origin": {"x": 3373, "y": 3080, "level": 0}}, code: "4,3", menu_ticks: 2},
+    ],
+    access: [
+      {
+        id: "menaphos",
+        type: "entity",
+        name: {name: "Portmaster Kags", kind: "npc"},
+        action_name: "Travel",
+        clickable_area: {"origin": {"x": 3122, "y": 2631, "level": 0}},
+        cursor: "talk"
+      }
+    ]
   }
 //TODO: Eagle transport system
 //TODO: Canoes
