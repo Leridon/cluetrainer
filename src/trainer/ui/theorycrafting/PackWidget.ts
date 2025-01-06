@@ -76,6 +76,7 @@ export default class PackWidget extends Widget {
 
   private openContextMenu(event: JQuery.MouseEventBase) {
     event.preventDefault()
+    event.stopPropagation()
 
     const pack = this.pack
     const manager = this.manager
