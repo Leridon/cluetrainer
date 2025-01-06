@@ -33,6 +33,7 @@ export namespace Changelog {
           .item("Fixed wrong clue text for the WE IRK OVER NAMESAKE anagram.")
           .item("The method selection dropdown now displays the number of available methods.")
           .item("Restyled the section control for multi-section paths.")
+          .item("Added Portmaster Kags to the teleport dataset")
           .item("Improved navigation surrounding method packs in the 'Methods' tab.", new List()
             .item("Method packs are now shown in a single section with improved styling.")
             .item("Control Buttons were moved to the top.")
