@@ -1,11 +1,10 @@
 import {ScanTree} from "../../../../lib/cluetheory/scans/ScanTree";
-import * as leaflet from "leaflet";
 import Widget from "../../../../lib/ui/Widget";
 import {AugmentedMethod} from "../../../model/MethodPackManager";
 import {Clues} from "../../../../lib/runescape/clues";
 import BoundsBuilder from "../../../../lib/gamemap/BoundsBuilder";
 import {Path} from "../../../../lib/runescape/pathing";
-import {floor_t, TileRectangle} from "../../../../lib/runescape/coordinates";
+import {floor_t, TileCoordinates, TileRectangle} from "../../../../lib/runescape/coordinates";
 import {Rectangle} from "../../../../lib/math";
 import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
 import {ScanRegionPolygon} from "../ScanLayer";
@@ -33,7 +32,12 @@ import span = C.span;
 import spotNumber = ScanTree.spotNumber;
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
+import {GameLayer} from "../../../../lib/gamemap/GameLayer";
+import {GameMapMouseEvent} from "../../../../lib/gamemap/MapEvents";
+import {ScanEditLayer} from "../../theorycrafting/scanedit/ScanEditor";
 import ScanMinimapOverlay = ScanSolving.ScanMinimapOverlay;
+import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
+import digSpotArea = Clues.digSpotArea;
 
 class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
   private capture_interest: AbstractCaptureService.InterestToken<ScreenCaptureService.Options, CapturedImage>
@@ -79,10 +83,34 @@ namespace ScanCaptureService {
   }
 }
 
+function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): AugmentedScanTreeNode {
+  function searchDown(node: AugmentedScanTreeNode): AugmentedScanTreeNode {
+    if (!node.remaining_candidates.some(c => TileCoordinates.eq(c, spot))) return null
+
+    for (const child of (node.children ?? [])) {
+      const res = searchDown(child.value)
+
+      if (res) return res
+    }
+
+    return node
+  }
+
+  function searchUp(node: AugmentedScanTreeNode): AugmentedScanTreeNode {
+    if (!node) return null
+
+    if (!node.remaining_candidates.some(c => TileCoordinates.eq(c, spot))) return searchUp(node.parent?.node)
+
+    return searchDown(node)
+  }
+
+  return searchUp(tree)
+}
+
 export class ScanTreeSolving extends NeoSolvingSubBehaviour {
   node: ScanTree.Augmentation.AugmentedScanTreeNode = null
   augmented: ScanTree.Augmentation.AugmentedScanTree = null
-  layer: leaflet.FeatureGroup = null
+  layer: GameLayer = null
 
   private minimap_overlay: ScanMinimapOverlay
 
@@ -279,13 +307,16 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
     // this.fit()
   }
 
+  private handling_layer: GameLayer = null
+
   protected begin() {
     this.parent.layer.scan_layer.setSpots(this.method.method.tree.ordered_spots)
     this.parent.layer.scan_layer.setSpotOrder(this.method.method.tree.ordered_spots)
     this.parent.layer.scan_layer.marker.setRadius(this.method.method.tree.assumed_range, this.method.method.assumptions.meerkats_active)
 
     this.tree_widget = c().appendTo(this.parent.layer.scantree_container)
-    this.layer = leaflet.featureGroup().addTo(this.parent.layer.scan_layer)
+
+    this.layer = new GameLayer().addTo(this.parent.layer.scan_layer)
 
     this.lifetime_manager.bind(
       /*this.scan_capture_service = new ScanCaptureService(this.parent.app.capture_service, this.original_interface_capture),
@@ -331,6 +362,26 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
         }
       })*/
     )
+
+    const self = this
+
+    this.parent.layer.scan_layer.marker.add(this.handling_layer = new class extends GameLayer {
+      eventClick(event: GameMapMouseEvent) {
+        super.eventClick(event);
+
+        event.onPre(() => {
+
+          console.log("Click registered")
+
+          if (event.active_entity instanceof ScanEditLayer.SpotMarker) {
+            if(event.original.shiftKey)
+
+            self.setNode(findTripleNode(self.node, event.active_entity.spot))
+            self.registerSolution(digSpotArea(event.active_entity.spot))
+          }
+        })
+      }
+    })
 
     this.setNode(this.augmented.root_node)
   }
