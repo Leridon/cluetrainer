@@ -132,9 +132,7 @@ Please do not enable any crowdsourcing options while using your local developmen
 
 Clue Trainer is in active development and will continue to receive additional features and improvements to existing features, including but not limited to:
 
-- [ ] A full set of recommended paths for all clue tiers.
 - [ ] Display answers to challenge scrolls directly in the dialogue box.
-- [ ] Improvements to the UI and general workflow for compass clues.
 - [ ] Improvements to the workflow of solving scan clues, including reading the current pulse color directly from the screen.
 - [ ] Recommendations for using charges of globetrotter backpack and jacket charges.
 
@@ -155,7 +153,7 @@ If you are serious about contributing a feature to Clue Trainer, please get into
 
 ## Support and Feedback
 
-You can get support, report issues, request features, or leave praise or criticism by joining the [Clue Chasers Discord](https://discord.gg/cluechasers) and entering the [#clue-trainer](https://discord.com/channels/332595657363685377/1103737270114209825) channel.
+You can get support, report issues, request features, or leave praise and criticism by joining the [Clue Chasers Discord](https://discord.gg/cluechasers) and entering the [#clue-trainer](https://discord.com/channels/332595657363685377/1103737270114209825) channel.
 For support, issues and feature requests you can also create an [issue][issues-url].
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
