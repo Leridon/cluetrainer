@@ -4226,7 +4226,7 @@ export namespace clue_data {
       "type": "emote",
       "tier": "easy",
       "text": ["Cheer at the Druids' Circle. Equip an air tiara, bronze two-handed sword and a gold amulet."],
-      "area": {"origin": {"x": 2917, "y": 3478, "level": 0}, "size": {"x": 9, "y": 8}},
+      "area": {"origin": {"x": 2917, "y": 3476, "level": 0}, "size": {"x": 10, "y": 11}},
       "items": ["Air Tiara", "Bronze 2h Sword", "Gold Amulet"],
       "emotes": ["Cheer"],
       "double_agent": false,
