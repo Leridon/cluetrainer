@@ -27,7 +27,7 @@ export namespace Changelog {
       layout
         .row(new List()
           .item("Compasses will now utilize the previous clue's solution area up to 4 chunks wide an high.")
-
+          .item("Added a minimum similarity for map clues to prevent misreads due to partially loaded maps.")
         )
     }
   }, {
