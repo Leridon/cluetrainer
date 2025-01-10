@@ -4076,7 +4076,7 @@ export namespace clue_data {
       "type": "emote",
       "tier": "easy",
       "text": ["Shrug in the mine near Rimmington. Equip a gold necklace, gold ring and a bronze spear."],
-      "area": {"origin": {"x": 2970, "y": 3230, "level": 0}, "size": {"x": 12, "y": 14}},
+      "area": {"origin": {"x": 2970, "y": 3230, "level": 0}, "size": {"x": 20, "y": 22}},
       "items": ["Gold necklace", "Gold ring", "Bronze spear"],
       "emotes": ["Shrug"],
       "double_agent": false,
