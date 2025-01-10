@@ -23,6 +23,9 @@ import {CapturedScan} from "../cluereader/capture/CapturedScan";
 import {Finder} from "../../../../lib/alt1/capture/Finder";
 import {ScanSolving} from "./ScanSolving";
 import {Observable} from "../../../../lib/reactive";
+import {GameLayer} from "../../../../lib/gamemap/GameLayer";
+import {GameMapMouseEvent} from "../../../../lib/gamemap/MapEvents";
+import {ScanEditLayer} from "../../theorycrafting/scanedit/ScanEditor";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import activate = TileArea.activate;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
@@ -32,12 +35,13 @@ import span = C.span;
 import spotNumber = ScanTree.spotNumber;
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
-import {GameLayer} from "../../../../lib/gamemap/GameLayer";
-import {GameMapMouseEvent} from "../../../../lib/gamemap/MapEvents";
-import {ScanEditLayer} from "../../theorycrafting/scanedit/ScanEditor";
 import ScanMinimapOverlay = ScanSolving.ScanMinimapOverlay;
 import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 import digSpotArea = Clues.digSpotArea;
+
+class ScanTreeSolvingLayer extends GameLayer {
+
+}
 
 class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
   private capture_interest: AbstractCaptureService.InterestToken<ScreenCaptureService.Options, CapturedImage>
@@ -374,8 +378,6 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
           console.log("Click registered")
 
           if (event.active_entity instanceof ScanEditLayer.SpotMarker) {
-            if(event.original.shiftKey)
-
             self.setNode(findTripleNode(self.node, event.active_entity.spot))
             self.registerSolution(digSpotArea(event.active_entity.spot))
           }
