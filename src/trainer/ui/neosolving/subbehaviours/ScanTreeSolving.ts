@@ -221,6 +221,8 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
   }
 
   setNode(node: ScanTree.Augmentation.AugmentedScanTreeNode) {
+    if (node == this.node) return
+
     this.node = node
 
     this.tree_widget.empty()
