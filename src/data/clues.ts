@@ -3996,7 +3996,7 @@ export namespace clue_data {
       "type": "emote",
       "tier": "easy",
       "text": ["Panic in the limestone mine. Equip bronze platelegs, a steel pickaxe and a steel helmet."],
-      "area": {"origin": {"x": 3365, "y": 3497, "level": 0}, "size": {"x": 12, "y": 8}},
+      "area": {"origin": {"x": 3367, "y": 3497, "level": 0}, "size": {"x": 10, "y": 6}},
       "items": ["Bronze platelegs", "Steel pickaxe", "Steel helm"],
       "emotes": ["Panic"],
       "double_agent": false,
