@@ -220,17 +220,29 @@ export class PathStepEntity extends MapEntity {
 
           const to = is_remote ? center_of_entity : ends_up;
 
-          (Vector2.eq(step.assumed_start, to) ? leaflet.circle(
-            Vector2.toLatLong(to), {radius: 0.1}
-          ) : arrow(offsetTowards(step.assumed_start, to, 0.2), to))
-            .setStyle({
+          const is_too_far_for_arrow = Vector2.max_axis(Vector2.sub(step.assumed_start, to)) > 16;
+
+          if (Vector2.eq(step.assumed_start, to) || is_too_far_for_arrow) {
+            leaflet.circle(
+              Vector2.toLatLong(to), {radius: 0.1}
+            ).setStyle({
               color: "#069334",
               weight: weight,
-              dashArray: '10, 10',
               className: cls,
               pane: GameMap.pathArrowPane,
               opacity
             }).addTo(this)
+          } else {
+            arrow(offsetTowards(step.assumed_start, to, 0.2), to)
+              .setStyle({
+                color: "#069334",
+                weight: weight,
+                dashArray: '10, 10',
+                className: cls,
+                pane: GameMap.pathArrowPane,
+                opacity
+              }).addTo(this)
+          }
 
           const marker = new MapIcon(center_of_entity, {
             icon: CursorType.getIcon(action.cursor),

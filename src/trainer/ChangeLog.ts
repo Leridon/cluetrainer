@@ -30,6 +30,7 @@ export namespace Changelog {
           .item("Added a minimum similarity for map clues to prevent misreads due to partially loaded maps.")
           .item("Improved the accuracy of the emote area for 3 easy clues.")
           .item("Made cursor types on the map more consistent.")
+          .item("Replaced obstructive arrows for far transports in paths with small circles at their arrival location.")
         )
     }
   }, {
