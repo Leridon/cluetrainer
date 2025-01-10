@@ -313,7 +313,6 @@ h2 {
 }
 
 .marktele {
-    cursor: default;
     transform-origin: center;
     position: absolute;
     color: #fff;
@@ -2142,6 +2141,14 @@ input[type=checkbox] + span {
 
 .leaflet-container:focus {
     outline: none;
+}
+
+.leaflet-grab {
+    cursor: default;
+}
+
+.leaflet-drag-target {
+    cursor: move !important;
 }
 
 /* Settings */
