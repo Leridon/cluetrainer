@@ -45,6 +45,8 @@ import count = util.count;
 import digSpotArea = Clues.digSpotArea;
 import vbox = C.vbox;
 import log = Log.log;
+import {TextRendering} from "../../TextRendering";
+import render_digspot = TextRendering.render_digspot;
 
 class CompassHandlingLayer extends GameLayer {
   private lines: {
@@ -136,7 +138,7 @@ class KnownCompassSpot extends MapEntity {
     this.setTooltip(() => {
       const layout = new Properties()
 
-      layout.header(`Compass spot ${this.spot.spot_id + 1}`)
+      layout.header(c().append("Compass spot ", render_digspot(this.spot.spot_id + 1)))
 
       layout.paragraph("Click to select as solution and view pathing.")
 

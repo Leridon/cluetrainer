@@ -51,8 +51,7 @@ export class ScanEditLayer extends GameLayer {
 
   private markers: ScanEditLayer.MarkerPair[] = []
 
-  constructor(private spots: TileCoordinates[]
-  ) {
+  constructor(private spots: TileCoordinates[]) {
     super();
 
     this.marker = new AdaptiveScanRadiusMarker().addTo(this)
