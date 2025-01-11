@@ -30,7 +30,7 @@ export namespace Scans {
 
   export type Pulse = {
     pulse: 1 | 2 | 3,
-    different_level: boolean
+    different_level?: boolean
   }
 
   export namespace Pulse {

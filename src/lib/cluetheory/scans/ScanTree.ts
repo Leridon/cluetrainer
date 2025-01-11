@@ -55,7 +55,8 @@ export namespace ScanTree {
         timing_analysis: {
           spots: { spot: TileCoordinates, timings: { ticks: number, incomplete: boolean }[], average: number }[],
           average: number,
-        }
+        },
+        has_synthetic_triple_nodes: boolean
       }
     }
 
@@ -182,7 +183,8 @@ export namespace ScanTree {
           paths_augmented: false,
           completeness_analyzed: false,
           correctness_analyzed: false,
-          timing_analysis: null
+          timing_analysis: null,
+          has_synthetic_triple_nodes: false
         }
       }
 
@@ -336,21 +338,68 @@ export namespace ScanTree {
       return tree
     }
 
+    export function synthesize_triple_nodes(tree: AugmentedScanTree): AugmentedScanTree {
+      if (tree.state.has_synthetic_triple_nodes) return tree
+
+      AugmentedScanTree.traverse(tree.root_node, n => {
+        const triples = n.children.filter(c => c.key.pulse == 3)
+
+        if (triples.length > 1 && n.children.some(c => c.key.pulse != 3)) {
+
+          const synthetic: AugmentedScanTreeNode = {
+            children: [],
+            depth: n.depth + 1,
+            parent: {key: {pulse: 3}, node: n},
+            path: n.path ? {
+              issues: [], post_state: n.path.post_state, pre_state: n.path.post_state, raw: [], steps: [], target: []
+            } : undefined,
+            raw: {
+              children: [], directions: undefined, path: [], region: undefined
+            },
+            region: n.region,
+            remaining_candidates: triples.flatMap(t => t.value.remaining_candidates),
+            root: n.root
+          }
+
+          synthetic.children = n.children.filter(c => c.key.pulse == 3).map((c): {
+            key: PulseInformation,
+            value: AugmentedScanTreeNode
+          } => ({
+            key: c.key,
+            value: {
+              ...c.value,
+              depth: c.value.depth + 1,
+              parent: {node: synthetic, key: c.key}
+            }
+          }))
+
+          n.children = [...n.children.filter(c => c.key.pulse != 3), {
+            key: {pulse: 3},
+            value: synthetic
+          }]
+        }
+      })
+
+      return tree
+    }
+
     export async function augment(options: {
                                     augment_paths?: boolean,
                                     analyze_correctness?: boolean,
                                     analyze_completeness?: boolean,
                                     analyze_timing?: boolean,
+                                    synthesize_triple_nodes?: boolean,
                                     path_assumptions?: Path.PathAssumptions
                                   }, tree: ScanTree,
                                   clue: Clues.Scan) {
 
-      let augmented = basic_augmentation(tree, clue)
+      const augmented = basic_augmentation(tree, clue)
 
       if (options.augment_paths) await path_augmentation(augmented, options.path_assumptions)
       if (options.analyze_correctness) analyze_correctness(augmented)
       if (options.analyze_completeness) analyze_completeness(augmented)
       if (options.analyze_timing) analyze_timing(augmented)
+      if (options.synthesize_triple_nodes) synthesize_triple_nodes(augmented)
 
       return augmented
     }
@@ -358,13 +407,15 @@ export namespace ScanTree {
     export namespace AugmentedScanTree {
       export function decision_string(node: AugmentedScanTreeNode): string {
 
-        let internal = (() => {
+        if (node.parent?.node?.parent?.key?.pulse == 3 && node.remaining_candidates.length == 1) return `Sp. ${spotNumber(node.root.raw, node.remaining_candidates[0])}`
+
+        const internal = (() => {
           if (!node.parent) return "Start"
           else {
-            let region_name = node.parent.node.region?.name || ""
+            const region_name = node.parent.node.region?.name || ""
 
-            let type = node.parent.key
-            let context = node.parent.node.children.map(c => c.key)
+            const type = node.parent.key
+            const context = node.parent.node.children.map(c => c.key)
 
             // Use the full word when it's not "different level"
             if (!type.different_level) {
@@ -374,7 +425,7 @@ export namespace ScanTree {
                 else return "Far"
               } else return `${region_name}${type.pulse.toString()}`
             } else {
-              let counterpart_exists = context.some(p => p.pulse == type.pulse && !p.different_level)
+              const counterpart_exists = context.some(p => p.pulse == type.pulse && !p.different_level)
 
               if (!counterpart_exists) return type.pulse.toString() // If the non-different level counterpart does not exist, just use the pretty string
 
@@ -514,7 +565,9 @@ export namespace ScanTree {
   }
 
   export function defaultScanTreeInstructions(node: AugmentedScanTreeNode): string {
-    let path_short =
+    if (node.raw.path.length == 0 && node.children.length == 0) return "Improvise!"
+
+    const path_short =
       node.raw.path.length > 0
         ? node.raw.path.filter(p => p.type != "cosmetic").map(PathingGraphics.templateString).join(" - ")
         : "Go"
@@ -539,6 +592,6 @@ export namespace ScanTree {
   export function getTargetRegion(node: AugmentedScanTreeNode): ScanRegion {
     if (node.remaining_candidates.length == 1) return null
 
-    return {area: node.raw.region?.area ?? Path.endsUpArea(node.raw.path), name: node.region?.name ?? ""}
+    return {area: node.region.area, name: node.region?.name ?? ""}
   }
 }
