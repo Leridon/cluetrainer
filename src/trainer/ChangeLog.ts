@@ -26,6 +26,10 @@ export namespace Changelog {
     render: layout => {
       layout
         .row(new List()
+          .item("You can now click dig spots on the map to move the scan tree there.")
+          .item("You can now click the line for triple pulses to get to a selection node where you can select the specific spot by number.")
+          .item("Removed spot numbers when not needed to declutter the map.")
+          .item("Fixed bug that caused the wrong floor to be selected for some scans.")
           .item("Compasses will now utilize the previous clue's solution area up to 4 chunks wide an high.")
           .item("Added a minimum similarity for map clues to prevent misreads due to partially loaded maps.")
           .item("Improved the accuracy of the emote area for various easy clues.")
