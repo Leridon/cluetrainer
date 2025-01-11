@@ -376,9 +376,6 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
         super.eventClick(event);
 
         event.onPre(() => {
-
-          console.log("Click registered")
-
           if (event.active_entity instanceof ScanEditLayer.SpotMarker) {
             self.setNode(findTripleNode(self.node, event.active_entity.spot))
             self.registerSolution(digSpotArea(event.active_entity.spot))
@@ -397,6 +394,8 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
     this.parent.layer.scan_layer.marker.setFixedSpot(null)
     this.parent.layer.scan_layer.marker.clearManualMarker()
     this.parent.layer.scan_layer.setSpotOrder(null)
+
+    this.handling_layer?.remove()
 
     if (this.layer) {
       this.layer.remove()
