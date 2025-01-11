@@ -105,36 +105,25 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
     this.augmented = ScanTree.Augmentation.basic_augmentation(method.method.tree, method.clue.clue)
   }
 
-  private fit(active_path_section: Path.raw) {
+  private fit(active_path_section: Path.raw): void {
     const node = this.node
 
     const bounds = new BoundsBuilder()
 
-    //1. If no children: All Candidates
-    if (node.children.length == 0)
-      node.remaining_candidates.forEach((c) => bounds.addTile(c))
-
-    // 2. The path
+    // 1. The path
     if (node.raw.path.length > 0) {
-      // TODO: There needs to be a way to remember the preferred section
-      /*
-            const last_section = index(Path.Section.split_into_sections(node.raw.path).children, -1)
-
-            assert(last_section.type == "inner")
-
-            const path = last_section.children.map(c => {
-              assert(c.type == "leaf")
-              return c.value
-            })*/
-
-      const path = active_path_section
-
-      bounds.addRectangle(Path.bounds(path, true))
+      bounds.addRectangle(Path.bounds(active_path_section, true))
     } else {
       if (node.region?.area) {
         bounds.addArea(node.region.area)
       }
     }
+
+    bounds.fixLevel()
+
+    //2. If no children: All Candidates
+    if (node.children.length == 0)
+      node.remaining_candidates.forEach((c) => bounds.addTile(c))
 
     bounds.setDistanceLimit(320)
 
