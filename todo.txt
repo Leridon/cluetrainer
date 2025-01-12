@@ -2,6 +2,7 @@ Elite Playtesting:
     - Highlighting first step of slider would be helpful
     - No seeing where a long distance transport ends up sucks
     - Auto-Reading Too Far and Different Level would be nice
+    - Teleport access needs to be rendered in some way, if applicable
 
 
 Usability playtesting results:
