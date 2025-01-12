@@ -29,6 +29,7 @@ import {ScanEditLayer} from "../../theorycrafting/scanedit/ScanEditor";
 import Behaviour from "../../../../lib/ui/Behaviour";
 import {Process} from "../../../../lib/Process";
 import {OverlayGeometry} from "../../../../lib/alt1/OverlayGeometry";
+import {ScreenRectangle} from "lib/alt1/ScreenRectangle";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import activate = TileArea.activate;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
@@ -42,7 +43,6 @@ import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 import digSpotArea = Clues.digSpotArea;
 import Pulse = Scans.Pulse;
 import A1Color = util.A1Color;
-import { ScreenRectangle } from "lib/alt1/ScreenRectangle";
 
 class ScanTreeSolvingLayer extends GameLayer {
 
@@ -121,8 +121,8 @@ namespace ScanControlPrototype {
 }
 
 class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
+  private debug: boolean = true
   private debug_overlay: OverlayGeometry = new OverlayGeometry()
-  private sca
 
   private capture_interest: AbstractCaptureService.InterestToken<ScreenCaptureService.Options, CapturedImage>
   private interface_finder: Finder<CapturedScan>
@@ -133,7 +133,7 @@ class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Option
 
     this.capture_interest = this.addDataSource(capture_service, () => {
       return {
-        area: this.original_captured_interface.body.screen_rectangle,
+        area: this.original_captured_interface.relevantTextArea(),
         interval: null,
       }
     })
@@ -150,11 +150,34 @@ class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Option
       // TODO: This does not work because the text can shift vertically and needs to be realigned after recapturing
       const updated = this.original_captured_interface.updated(capture.value)
 
-      this.debug_overlay.clear()
+      if (this.debug) {
+        console.log(updated.text())
 
-      updated.body.setName("Scan").debugOverlay(this.debug_overlay)
+        this.debug_overlay.clear()
 
-      this.debug_overlay.render()
+        updated.body.setName("Scan").debugOverlay(this.debug_overlay)
+
+        this.debug_overlay.line({
+          x: updated.first_line_knowledge.position.x + updated.body.screen_rectangle.origin.x,
+          y: updated.body.screen_rectangle.origin.y
+        }, {
+          x: updated.first_line_knowledge.position.x + updated.body.screen_rectangle.origin.x,
+          y: updated.body.screen_rectangle.origin.y + updated.body.screen_rectangle.size.y
+        })
+
+        const first_line = updated._raw_lines.get()[0].debugArea
+
+        this.debug_overlay.line({
+          x: first_line.x + updated.body.screen_rectangle.origin.x,
+          y: updated.body.screen_rectangle.origin.y
+        }, {
+          x: first_line.x + updated.body.screen_rectangle.origin.x,
+          y: updated.body.screen_rectangle.origin.y + updated.body.screen_rectangle.size.y
+        })
+
+
+        this.debug_overlay.render()
+      }
 
       return updated
     } else if (this.initialization.isInitialized()) {
@@ -202,7 +225,7 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
   augmented: ScanTree.Augmentation.AugmentedScanTree = null
   layer: GameLayer = null
 
-  private scan_interface_overlay: OverlayGeometry
+  private scan_interface_overlay: OverlayGeometry = new OverlayGeometry()
 
   private minimap_overlay: ScanMinimapOverlay
 
@@ -424,7 +447,7 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
 
             this.scan_interface_overlay.clear()
 
-            this.scan_interface_overlay.rect2(rect, {
+            this.scan_interface_overlay.rect2(scan.body.screenRectangle(), {
               width: 1,
               color: A1Color.fromHex("#FF0000"),
             })

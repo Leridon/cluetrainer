@@ -3,47 +3,73 @@ import {Vector2} from "../../../../../lib/math";
 import {ImageDetect} from "alt1";
 import {async_lazy, Lazy, lazy, LazyAsync} from "../../../../../lib/properties/Lazy";
 import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
-import * as OCR from "alt1/ocr";
 import {util} from "../../../../../lib/util/util";
 import * as lodash from "lodash"
 import {Finder} from "../../../../../lib/alt1/capture/Finder";
+import {OCR} from "../../../../../lib/alt1/OCR";
 import index = util.index;
 import stringSimilarity = util.stringSimilarity;
+import ColortTriplet = OCR.ColortTriplet;
+
+type Line = { debugArea: { x: number; y: number; w: number; h: number }; text: string; fragments: OCR.TextFragment[] }
 
 export class CapturedScan {
-
-  constructor(public readonly body: CapturedImage) {
+  constructor(public readonly body: CapturedImage,
+              public first_line_knowledge: {
+                text: string,
+                position: Vector2
+              } = null
+  ) {
     body.setName("scan")
   }
 
-  private _raw_lines: Lazy<string[]> = lazy(() => {
-    /**
-     * This function is originally by skillbert as part of the ScanTextReader class
-     */
+  public _raw_lines = lazy<Line[]>(() => {
+    const COLORS: ColortTriplet[] = [[255, 255, 255], [239, 176, 99], [192, 192, 192], [255, 223, 0]]
 
-    const font = require("alt1/fonts/aa_8px.js")
+    const data = this.body.getData();
 
-    //const font = require("alt1/fonts/aa_8px_new.js");
-    const LINEHEIGHT = 12;
+    const lines: Line[] = [];
 
-    let data = this.body.getData();
+    const start = (() => {
+      if (!this.first_line_knowledge) return 0
 
-    let lines: string[] = [];
+      for (let y = 0; y < this.body.size.y; y += CapturedScan.LINE_HEIGHT / 2) {
+        const line = OCR.findReadLine(data, CapturedScan.FONT, COLORS, 70, y, 40, 1)
 
-    for (let lineindex = 0; lineindex < 13; lineindex++) {
-      const y = lineindex * LINEHEIGHT;
-      const line = OCR.findReadLine(data, font, [[255, 255, 255], [239, 176, 99], [192, 192, 192], [255, 223, 0]], 70, y, 40, 1);
-      lines.push(line.text);
+        // TODO: We should know where the first line starts, but for some reason the below line doesn't work
+
+        //const line = OCR.readLine(data, CapturedScan.FONT, COLORS, this.first_line_knowledge.position.x, y, true)
+
+        console.log(line.text)
+
+        if (!line.text) continue
+
+        if (stringSimilarity(line.text, this.first_line_knowledge.text) > 0.7) {
+          lines.push(line)
+
+          return y + CapturedScan.LINE_HEIGHT
+        }
+      }
+    })()
+
+    console.log(`Start ${start}`)
+
+    for (let lineindex = 0; lineindex < CapturedScan.MAX_LINE_COUNT; lineindex++) {
+      const y = start + lineindex * CapturedScan.LINE_HEIGHT;
+
+      const line = OCR.findReadLine(data, CapturedScan.FONT, COLORS, 70, y, 40, 1);
+
+      lines.push(line);
     }
 
-    const from = lines.findIndex(l => l != "")
-    const to = lodash.findLastIndex(lines, l => l != "")
+    const from = lines.findIndex(l => l.text != "")
+    const to = lodash.findLastIndex(lines, l => l.text != "")
 
     return lines.slice(from, to + 1)
   })
 
-  private _lines: Lazy<string[]> = lazy(() => {
-    let lines: string[] = this._raw_lines.get()
+  public _lines: Lazy<string[]> = lazy(() => {
+    const lines: string[] = this._raw_lines.get().map(l => l.text)
 
     const cleaned_lines: string[] = []
 
@@ -119,12 +145,43 @@ export class CapturedScan {
     )
   }
 
+  relevantTextArea(): ScreenRectangle {
+    const lines = this._raw_lines.get()
+
+    const first = lines[0].debugArea
+    const last = lines[lines.length - 1].debugArea
+
+    const current_center = {
+      x: ~~(first.x + first.w / 2),
+      y: (first.y + last.y + CapturedScan.LINE_HEIGHT + 6) / 2
+    }
+
+    return {
+      origin: Vector2.add(this.body.screen_rectangle.origin, current_center, Vector2.scale(-0.5, CapturedScan.MAX_TEXT_AREA_SIZE)),
+      size: CapturedScan.MAX_TEXT_AREA_SIZE
+    }
+  }
+
   updated(capture: CapturedImage): CapturedScan {
-    return new CapturedScan(capture.getScreenSection(this.body.screen_rectangle))
+    const relevant_text_area = this.relevantTextArea()
+
+    const relative_text_start = Vector2.sub(this._raw_lines.get()[0].debugArea, this.body.screenRectangle().origin)
+
+    const translated_text_start = Vector2.add(relevant_text_area.origin, relative_text_start)
+
+    return new CapturedScan(capture.getScreenSection(relevant_text_area), {text: this._raw_lines.get()[0].text, position: translated_text_start})
   }
 }
 
 export namespace CapturedScan {
+  export const MAX_LINE_COUNT = 13
+  export const LINE_HEIGHT = 12
+  export const FONT = require("alt1/fonts/aa_8px.js")
+  export const MAX_TEXT_AREA_SIZE: Vector2 = {
+    x: 180,
+    y: CapturedScan.MAX_LINE_COUNT * CapturedScan.LINE_HEIGHT
+  }
+
   export const finder = async_lazy<Finder<CapturedScan>>(async () => {
     const anchor_images = await CapturedScan.anchors.get()
 
