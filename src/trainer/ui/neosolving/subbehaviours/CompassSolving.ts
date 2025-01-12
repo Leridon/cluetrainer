@@ -31,6 +31,7 @@ import {SettingsModal} from "../../settings/SettingsEdit";
 import * as assert from "assert";
 import {Log} from "../../../../lib/util/Log";
 import {angleDifference} from "lib/math";
+import {TextRendering} from "../../TextRendering";
 import span = C.span;
 import cls = C.cls;
 import TeleportGroup = Transportation.TeleportGroup;
@@ -45,7 +46,6 @@ import count = util.count;
 import digSpotArea = Clues.digSpotArea;
 import vbox = C.vbox;
 import log = Log.log;
-import {TextRendering} from "../../TextRendering";
 import render_digspot = TextRendering.render_digspot;
 
 class CompassHandlingLayer extends GameLayer {
@@ -624,8 +624,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
   setSelectedSpot(spot: CompassSolving.SpotData, set_as_solution: boolean) {
     this.selected_spot.set(spot)
 
-    console.log("Setting")
-
     if (set_as_solution && set_as_solution) {
       this.registerSolution(digSpotArea(spot.spot))
     }
@@ -694,10 +692,8 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     // Fit camera view to only the remaining possible spots. (TODO: This conflicts with the camera zoom that happens when setting the method for the most likely spot)
     if (maybe_fit) {
-      if (possible.length > 0 && (information.length > 0 || possible.length < 50)) {
-        this.layer.getMap().fitView(TileRectangle.from(...possible.map(s => s.spot)),
-          {maxZoom: 2}
-        )
+      if (!this.parent.active_method && possible.length > 1 && (information.length > 0 || possible.length < 50)) {
+        this.parent.layer.fit(TileRectangle.from(...possible.map(s => s.spot)))
       }
     }
 

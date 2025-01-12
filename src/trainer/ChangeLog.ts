@@ -27,12 +27,17 @@ export namespace Changelog {
       layout
         .row(new List()
           .item("A separate path section will now be created for the arrival point if a path ends with a long distance transport.")
+          .item("You can now click dig spots on the map to move the scan tree there.")
+          .item("You can now click the line for triple pulses to get to a selection node where you can select the specific spot by number.")
+          .item("Removed spot numbers when not needed to declutter the map.")
+          .item("Fixed bug that caused the wrong floor to be selected for some scans.")
           .item("Compasses will now utilize the previous clue's solution area up to 4 chunks wide an high.")
           .item("Added a minimum similarity for map clues to prevent misreads due to partially loaded maps.")
           .item("Improved the accuracy of the emote area for various easy clues.")
           .item("Made cursor types on the map more consistent.")
           .item("Replaced obstructive arrows for far transports in paths with small circles at their arrival location.")
           .item("Fix major performance bug that would do rapid fullscreen captures when manually clicking 'Solve'.")
+          .item("Fixed conflicting zoom for compasses where clue trainer didn't zoom in to the path for the last remaining spot.")
         )
     }
   }, {

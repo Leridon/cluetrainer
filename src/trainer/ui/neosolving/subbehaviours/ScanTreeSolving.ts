@@ -1,17 +1,16 @@
 import {ScanTree} from "../../../../lib/cluetheory/scans/ScanTree";
-import * as leaflet from "leaflet";
 import Widget from "../../../../lib/ui/Widget";
 import {AugmentedMethod} from "../../../model/MethodPackManager";
 import {Clues} from "../../../../lib/runescape/clues";
 import BoundsBuilder from "../../../../lib/gamemap/BoundsBuilder";
 import {Path} from "../../../../lib/runescape/pathing";
-import {floor_t, TileRectangle} from "../../../../lib/runescape/coordinates";
+import {floor_t, TileCoordinates, TileRectangle} from "../../../../lib/runescape/coordinates";
 import {Rectangle} from "../../../../lib/math";
 import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
 import {ScanRegionPolygon} from "../ScanLayer";
 import {PathStepEntity} from "../../map/entities/PathStepEntity";
 import {Scans} from "../../../../lib/runescape/clues/scans";
-import PulseButton, {PulseIcon} from "../PulseButton";
+import PulseButton from "../PulseButton";
 import NeoSolvingBehaviour from "../NeoSolvingBehaviour";
 import {TemplateResolver} from "../../../../lib/util/TemplateResolver";
 import {util} from "../../../../lib/util/util";
@@ -24,16 +23,24 @@ import {CapturedScan} from "../cluereader/capture/CapturedScan";
 import {Finder} from "../../../../lib/alt1/capture/Finder";
 import {ScanSolving} from "./ScanSolving";
 import {Observable} from "../../../../lib/reactive";
+import {GameLayer} from "../../../../lib/gamemap/GameLayer";
+import {GameMapMouseEvent} from "../../../../lib/gamemap/MapEvents";
+import {ScanEditLayer} from "../../theorycrafting/scanedit/ScanEditor";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import activate = TileArea.activate;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
 import cls = C.cls;
 import Order = util.Order;
-import span = C.span;
 import spotNumber = ScanTree.spotNumber;
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
 import ScanMinimapOverlay = ScanSolving.ScanMinimapOverlay;
+import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
+import digSpotArea = Clues.digSpotArea;
+
+class ScanTreeSolvingLayer extends GameLayer {
+
+}
 
 class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
   private capture_interest: AbstractCaptureService.InterestToken<ScreenCaptureService.Options, CapturedImage>
@@ -79,10 +86,34 @@ namespace ScanCaptureService {
   }
 }
 
+function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): AugmentedScanTreeNode {
+  function searchDown(node: AugmentedScanTreeNode): AugmentedScanTreeNode {
+    if (!node.remaining_candidates.some(c => TileCoordinates.eq(c, spot))) return null
+
+    for (const child of (node.children ?? [])) {
+      const res = searchDown(child.value)
+
+      if (res) return res
+    }
+
+    return node
+  }
+
+  function searchUp(node: AugmentedScanTreeNode): AugmentedScanTreeNode {
+    if (!node) return null
+
+    if (!node.remaining_candidates.some(c => TileCoordinates.eq(c, spot))) return searchUp(node.parent?.node)
+
+    return searchDown(node)
+  }
+
+  return searchUp(tree)
+}
+
 export class ScanTreeSolving extends NeoSolvingSubBehaviour {
   node: ScanTree.Augmentation.AugmentedScanTreeNode = null
   augmented: ScanTree.Augmentation.AugmentedScanTree = null
-  layer: leaflet.FeatureGroup = null
+  layer: GameLayer = null
 
   private minimap_overlay: ScanMinimapOverlay
 
@@ -103,55 +134,46 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
     }
 
     this.augmented = ScanTree.Augmentation.basic_augmentation(method.method.tree, method.clue.clue)
+
+    ScanTree.Augmentation.synthesize_triple_nodes(this.augmented)
   }
 
-  private fit(active_path_section: Path.raw) {
+  private fit(active_path_section: Path.raw): void {
     const node = this.node
 
     const bounds = new BoundsBuilder()
 
-    //1. If no children: All Candidates
-    if (node.children.length == 0)
-      node.remaining_candidates.forEach((c) => bounds.addTile(c))
-
-    // 2. The path
+    // 1. The path
     if (node.raw.path.length > 0) {
-      // TODO: There needs to be a way to remember the preferred section
-      /*
-            const last_section = index(Path.Section.split_into_sections(node.raw.path).children, -1)
-
-            assert(last_section.type == "inner")
-
-            const path = last_section.children.map(c => {
-              assert(c.type == "leaf")
-              return c.value
-            })*/
-
-      const path = active_path_section
-
-      bounds.addRectangle(Path.bounds(path, true))
+      bounds.addRectangle(Path.bounds(active_path_section, true))
     } else {
       if (node.region?.area) {
         bounds.addArea(node.region.area)
       }
     }
 
+    bounds.fixLevel()
+
+    //2. If no children: All Candidates
+    if (node.children.length == 0)
+      node.remaining_candidates.forEach((c) => bounds.addTile(c))
+
     bounds.setDistanceLimit(320)
 
-    if (this.settings.value().zoom_behaviour_include_triples) {
+    if (this.settings.value().zoom_behaviour_include_triples || node.children.every(c => c.key.pulse == 3)) {
       // Add triple spots
       node.children.filter(c => c.key.pulse == 3).flatMap(c => c.value.remaining_candidates)
         .forEach(s => bounds.addTile(s))
     }
 
     if (this.settings.value().zoom_behaviour_include_doubles) {
-      // Add triple spots
+      // Add double spots
       node.children.filter(c => c.key.pulse == 2).flatMap(c => c.value.remaining_candidates)
         .forEach(s => bounds.addTile(s))
     }
 
     if (this.settings.value().zoom_behaviour_include_singles) {
-      // Add triple spots
+      // Add single spots
       node.children.filter(c => c.key.pulse == 1).flatMap(c => c.value.remaining_candidates)
         .forEach(s => bounds.addTile(s))
     }
@@ -160,11 +182,11 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
   }
 
   private renderLayer(): void {
-    let node = this.node
+    const node = this.node
 
     this.layer.clearLayers()
 
-    let pos = node.region
+    const pos = node.region
       ? activate(node.region.area).center()
       : Path.ends_up(node.raw.path)
 
@@ -199,16 +221,14 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
       })
   }
 
-  setNode(node: ScanTree.Augmentation.AugmentedScanTreeNode) {
-    this.node = node
+  /**
+   * Update the interface to display the currently selected node in the decision tree.
+   * @private
+   */
+  private updateInterface() {
+    const node = this.node
 
     this.tree_widget.empty()
-
-    this.registerSolution(
-      TileArea.fromRect(
-        TileRectangle.extend(TileRectangle.from(...node.remaining_candidates), 1)
-      )
-    )
 
     let content = cls("ctr-neosolving-solution-row").appendTo(this.tree_widget)
 
@@ -231,72 +251,76 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
       content.append(ui_nav)
     }
 
-    content.append(cls('ctr-neosolving-nextscanstep')
-      .append(
-        ...this.parent.app.template_resolver.with(...ScanTreeSolving.scan_tree_template_resolvers(node))
-          .resolve(ScanTree.getInstruction(node)))
-    )
+    if (node.raw?.path?.length > 0 || node.raw?.region?.name || node.children.length == 0) {
+      content.append(cls('ctr-neosolving-nextscanstep')
+        .append(
+          ...this.parent.app.template_resolver.with(...ScanTreeSolving.scan_tree_template_resolvers(node))
+            .resolve(ScanTree.getInstruction(node)))
+      )
+    }
 
     {
-      let triples = node.children.filter(e => e.key.pulse == 3)
+      const all_triples = node.children.every(e => e.key.pulse == 3)
 
       node.children
-        .filter((e) => triples.length <= 1 || e.key.pulse != 3)
         .sort(Order.comap(Scans.Pulse.compare, (a) => a.key))
         .forEach((child) => {
           const resolvers = this.parent.app.template_resolver.with(...ScanTreeSolving.scan_tree_template_resolvers(child.value))
 
           cls("ctr-neosolving-scantreeline")
             .addClass("ctr-clickable")
-            .append(
-              PulseButton.forPulse(child.key, node.children.map(c => c.key))
-                .onClick(() => {
-                  this.setNode(child.value)
-                })
-              ,
-              c().append(...resolvers.resolve(
-                ScanTree.getInstruction(child.value)
-              ))
-            )
             .on("click", () => {
               this.setNode(child.value)
-            }).appendTo(content)
-        })
+            })
+            .append(
+              ((child.key.pulse == 3 && child.key.spot && all_triples)
+                ? PulseButton.forSpot(spotNumber(node.root.raw, child.value.remaining_candidates[0]))
+                : PulseButton.forPulse(child.key, node.children.map(c => c.key)))
+                .onClick(() => {
+                  this.setNode(child.value)
+                }),
 
-      if (triples.length > 1) {
-        cls("ctr-neosolving-scantreeline")
-          .append(
-            c().append( // Wrap in another div to allow another margin
-              new PulseIcon({different_level: false, pulse: 3}, null)
-                .css("margin", "1px")
-            ),
-            span("at"),
-            ...triples
-              .sort(Order.comap(Order.natural_order, (c) => spotNumber(node.root.raw, c.value.remaining_candidates[0])))
-              .map((child) =>
-                PulseButton.forSpot(spotNumber(node.root.raw, child.value.remaining_candidates[0]))
-                  .onClick(() => this.setNode(child.value))
-              )
-          ).appendTo(content)
-      }
+              (child.key.pulse != 3 || child.key.spot)
+                ? c().append(...resolvers.resolve(
+                  ScanTree.getInstruction(child.value)
+                ))
+                : C.italic("Select spot on map")
+            ).appendTo(content)
+        })
     }
+  }
+
+  setNode(node: ScanTree.Augmentation.AugmentedScanTreeNode) {
+    if (node == this.node) return
+    this.node = node
+
+    if (node.children.some(c => c.key.pulse != 3) || node.remaining_candidates.length <= 1) this.parent.layer.scan_layer.setSpotOrder(null)
+    else this.parent.layer.scan_layer.setSpotOrder(this.method.method.tree.ordered_spots)
+
+    this.registerSolution(
+      TileArea.fromRect(
+        TileRectangle.extend(TileRectangle.from(...node.remaining_candidates), 1)
+      )
+    )
+
+    this.updateInterface()
 
     this.renderLayer()
 
     // Setting the path in the path control will in turn trigger the section selected event.
     // This in turn triggers fitting the map, so we do not need to do that here explicitly.
-    this.parent.path_control.reset().setPath(node.raw.path, {method: this.method, node})
-
-    // this.fit()
+    this.parent.path_control.reset().setPath(node.raw?.path ?? [], {method: this.method, node})
   }
+
+  private handling_layer: GameLayer = null
 
   protected begin() {
     this.parent.layer.scan_layer.setSpots(this.method.method.tree.ordered_spots)
-    this.parent.layer.scan_layer.setSpotOrder(this.method.method.tree.ordered_spots)
     this.parent.layer.scan_layer.marker.setRadius(this.method.method.tree.assumed_range, this.method.method.assumptions.meerkats_active)
 
     this.tree_widget = c().appendTo(this.parent.layer.scantree_container)
-    this.layer = leaflet.featureGroup().addTo(this.parent.layer.scan_layer)
+
+    this.layer = new GameLayer().addTo(this.parent.layer.scan_layer)
 
     this.lifetime_manager.bind(
       /*this.scan_capture_service = new ScanCaptureService(this.parent.app.capture_service, this.original_interface_capture),
@@ -343,6 +367,21 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
       })*/
     )
 
+    const self = this
+
+    this.parent.layer.scan_layer.marker.add(this.handling_layer = new class extends GameLayer {
+      eventClick(event: GameMapMouseEvent) {
+        event.onPre(() => {
+          if (event.active_entity instanceof ScanEditLayer.SpotMarker) {
+            event.stopAllPropagation()
+
+            self.setNode(findTripleNode(self.node, event.active_entity.spot))
+            self.registerSolution(digSpotArea(event.active_entity.spot))
+          }
+        })
+      }
+    })
+
     this.setNode(this.augmented.root_node)
   }
 
@@ -353,6 +392,8 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
     this.parent.layer.scan_layer.marker.setFixedSpot(null)
     this.parent.layer.scan_layer.marker.clearManualMarker()
     this.parent.layer.scan_layer.setSpotOrder(null)
+
+    this.handling_layer?.remove()
 
     if (this.layer) {
       this.layer.remove()
