@@ -1,3 +1,9 @@
+Elite Playtesting:
+    - Highlighting first step of slider would be helpful
+    - No seeing where a long distance transport ends up sucks
+    - Auto-Reading Too Far and Different Level would be nice
+
+
 Usability playtesting results:
     - It's not immediately obvious what Solve, Auto-Solve, and Fullscreen do
         => add tooltips
