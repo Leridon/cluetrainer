@@ -51,7 +51,7 @@ export default class PulseButton extends LightButton {
 
         break;
       case "spot":
-        this.empty().append(hbox(new PulseIcon({pulse: 3, different_level: false}, null), render_digspot(value.value)))
+        this.empty().append(render_digspot(value.value))
         break;
     }
   }

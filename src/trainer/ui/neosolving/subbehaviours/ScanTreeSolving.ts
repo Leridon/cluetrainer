@@ -18,7 +18,7 @@ import {SolvingMethods} from "../../../model/methods";
 import {NeoSolvingSubBehaviour} from "../NeoSolvingSubBehaviour";
 import {C} from "../../../../lib/ui/constructors";
 import {TextRendering} from "../../TextRendering";
-import {AbstractCaptureService, CapturedImage, DerivedCaptureService, InterestedToken, ScreenCaptureService} from "../../../../lib/alt1/capture";
+import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken, ScreenCaptureService} from "../../../../lib/alt1/capture";
 import {CapturedScan} from "../cluereader/capture/CapturedScan";
 import {Finder} from "../../../../lib/alt1/capture/Finder";
 import {ScanSolving} from "./ScanSolving";
@@ -42,9 +42,7 @@ import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 import digSpotArea = Clues.digSpotArea;
 import Pulse = Scans.Pulse;
 import A1Color = util.A1Color;
-import hbox = C.hbox;
-import hgrid = C.hgrid;
-import LightButton from "../../widgets/LightButton";
+import { ScreenRectangle } from "lib/alt1/ScreenRectangle";
 
 class ScanTreeSolvingLayer extends GameLayer {
 
@@ -123,7 +121,8 @@ namespace ScanControlPrototype {
 }
 
 class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
-  private debug_overlay = over()
+  private debug_overlay: OverlayGeometry = new OverlayGeometry()
+  private sca
 
   private capture_interest: AbstractCaptureService.InterestToken<ScreenCaptureService.Options, CapturedImage>
   private interface_finder: Finder<CapturedScan>
@@ -202,6 +201,8 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
   node: ScanTree.Augmentation.AugmentedScanTreeNode = null
   augmented: ScanTree.Augmentation.AugmentedScanTree = null
   layer: GameLayer = null
+
+  private scan_interface_overlay: OverlayGeometry
 
   private minimap_overlay: ScanMinimapOverlay
 
@@ -502,40 +503,6 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
           this.scan_interface_overlay.render()
         }
       })*/
-      this.minimap_interest = this.parent.app.minimapreader.subscribe({
-        options: (time: AbstractCaptureService.CaptureTime) => ({
-          interval: CaptureInterval.fromApproximateInterval(100),
-          refind_interval: CaptureInterval.fromApproximateInterval(10_000)
-        }),
-        handle: (value: AbstractCaptureService.TimedValue<MinimapReader.CapturedMinimap>) => {
-          const minimap = value.value
-
-          self.minimap_overlay.clear()
-
-          const scale = (self.method.method.tree.assumed_range * 2 + 1) * value.value.pixelPerTile() / 2
-
-          const transform =
-            Transform.chain(
-              Transform.translation(minimap.center()),
-              Transform.rotationRadians(-minimap.compassAngle.get()),
-              Transform.scale({x: scale, y: scale}),
-            )
-
-          const unit_square: Vector2[] = [
-            {x: 1, y: 1},
-            {x: 1, y: -1},
-            {x: -1, y: -1},
-            {x: -1, y: 1},
-          ]
-
-          self.minimap_overlay.polyline(
-            unit_square.map(v => Vector2.transform_point(v, transform)),
-            true
-          )
-
-          self.minimap_overlay.render()
-        }
-      })
     )
 
     const self = this
