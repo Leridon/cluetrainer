@@ -160,20 +160,20 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
 
     bounds.setDistanceLimit(320)
 
-    if (this.settings.value().zoom_behaviour_include_triples) {
+    if (this.settings.value().zoom_behaviour_include_triples || node.children.every(c => c.key.pulse == 3)) {
       // Add triple spots
       node.children.filter(c => c.key.pulse == 3).flatMap(c => c.value.remaining_candidates)
         .forEach(s => bounds.addTile(s))
     }
 
     if (this.settings.value().zoom_behaviour_include_doubles) {
-      // Add triple spots
+      // Add double spots
       node.children.filter(c => c.key.pulse == 2).flatMap(c => c.value.remaining_candidates)
         .forEach(s => bounds.addTile(s))
     }
 
     if (this.settings.value().zoom_behaviour_include_singles) {
-      // Add triple spots
+      // Add single spots
       node.children.filter(c => c.key.pulse == 1).flatMap(c => c.value.remaining_candidates)
         .forEach(s => bounds.addTile(s))
     }
@@ -284,7 +284,7 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
                 ? c().append(...resolvers.resolve(
                   ScanTree.getInstruction(child.value)
                 ))
-                : C.italic("Click markers on map")
+                : C.italic("Select spot on map")
             ).appendTo(content)
         })
     }
