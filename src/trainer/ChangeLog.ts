@@ -26,6 +26,7 @@ export namespace Changelog {
     render: layout => {
       layout
         .row(new List()
+          .item("A separate path section will now be created for the arrival point if a path ends with a long distance transport.")
           .item("Compasses will now utilize the previous clue's solution area up to 4 chunks wide an high.")
           .item("Added a minimum similarity for map clues to prevent misreads due to partially loaded maps.")
           .item("Improved the accuracy of the emote area for various easy clues.")

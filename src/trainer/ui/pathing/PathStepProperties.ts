@@ -30,6 +30,10 @@ export class PathStepProperties extends Properties {
   private render(): void {
     this.header(new PathStepHeader(this.step))
 
+    if (this.step.is_arrival_only) {
+      this.info("This is the arrival point of the previously used method of transportation.")
+    }
+
     switch (this.step.type) {
       case "orientation":
         this.info(

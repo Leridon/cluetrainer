@@ -55,7 +55,6 @@ Path Editor:
     Some sort of parallel world method of displaying steps (with non static teleports), if implemented, preferably differentiatable between absolute and relative step instructions
 
 - Scan Tree Solver
-    - Clicking on a spot on the map needs to do something useful
     - Auto read pulses
 
 - Solving Behaviour
