@@ -361,8 +361,6 @@ export class ScreenCaptureService extends AbstractCaptureService<
             ...interested_in_this_tick.map(t => t?.area ?? {origin: {x: 0, y: 0}, size: {x: alt1.rsWidth, y: alt1.rsHeight}})
           )
 
-          console.log(`Capturing ${required_area.size.x}x${required_area.size.y}`)
-
           const capture = CapturedImage.capture(required_area)
 
           if (!capture) return undefined

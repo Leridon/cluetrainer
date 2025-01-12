@@ -34,13 +34,7 @@ export class CapturedScan {
       if (!this.first_line_knowledge) return 0
 
       for (let y = 0; y < this.body.size.y; y += CapturedScan.LINE_HEIGHT / 2) {
-        const line = OCR.findReadLine(data, CapturedScan.FONT, COLORS, 70, y, 40, 1)
-
-        // TODO: We should know where the first line starts, but for some reason the below line doesn't work
-
-        //const line = OCR.readLine(data, CapturedScan.FONT, COLORS, this.first_line_knowledge.position.x, y, true)
-
-        console.log(line.text)
+        const line = OCR.readLine(data, CapturedScan.FONT, COLORS, this.first_line_knowledge.position.x, y, true)
 
         if (!line.text) continue
 
@@ -51,8 +45,6 @@ export class CapturedScan {
         }
       }
     })()
-
-    console.log(`Start ${start}`)
 
     for (let lineindex = 0; lineindex < CapturedScan.MAX_LINE_COUNT; lineindex++) {
       const y = start + lineindex * CapturedScan.LINE_HEIGHT;
@@ -165,9 +157,9 @@ export class CapturedScan {
   updated(capture: CapturedImage): CapturedScan {
     const relevant_text_area = this.relevantTextArea()
 
-    const relative_text_start = Vector2.sub(this._raw_lines.get()[0].debugArea, this.body.screenRectangle().origin)
+    const relative_text_start = Vector2.add(this._raw_lines.get()[0].debugArea, this.body.screenRectangle().origin)
 
-    const translated_text_start = Vector2.add(relevant_text_area.origin, relative_text_start)
+    const translated_text_start = Vector2.sub(relative_text_start, relevant_text_area.origin)
 
     return new CapturedScan(capture.getScreenSection(relevant_text_area), {text: this._raw_lines.get()[0].text, position: translated_text_start})
   }
