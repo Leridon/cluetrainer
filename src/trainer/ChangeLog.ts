@@ -31,6 +31,7 @@ export namespace Changelog {
           .item("Improved the accuracy of the emote area for various easy clues.")
           .item("Made cursor types on the map more consistent.")
           .item("Replaced obstructive arrows for far transports in paths with small circles at their arrival location.")
+          .item("Fix major performance bug that would do rapid fullscreen captures when manually clicking 'Solve'.")
         )
     }
   }, {
