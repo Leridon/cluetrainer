@@ -68,8 +68,6 @@ export class ScanEditLayer extends GameLayer {
     this.markers = spots.map(s => new ScanEditLayer.MarkerPair(s))
 
     this.markers.forEach((m, i) => {
-      //m.setNumber(i + 1)
-
       m.regular.addTo(this)
       m.complement.addTo(this)
     })
@@ -139,7 +137,6 @@ export namespace ScanEditLayer {
       this.complement.setTiming(timing)
     }
   }
-
 
   export class SpotMarker extends MapEntity {
     spot_on_map: TileCoordinates = null

@@ -43,7 +43,6 @@ export class Alt1MainHotkeyEvent {
 }
 
 export namespace Alt1MainHotkeyEvent {
-
   export class Handler extends EwentHandler<Event> {
     constructor(public readonly priority: number, handler: (_: Event) => void | Promise<void>) {
       super(handler)
