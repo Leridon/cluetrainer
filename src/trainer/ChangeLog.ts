@@ -20,6 +20,17 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([{
+    version: 33,
+    date: new Date(Date.parse("2025-01-13")),
+    title: "Nature Sentinel Key Combinations",
+    render: layout => {
+      layout
+        .row(new List()
+          .item("Updated keyboard code for Nature's sentinel outfit teleports.")
+          .item("Fixed a a few mislabeled teleports.")
+        )
+    }
+  }, {
     version: 32,
     date: new Date(Date.parse("2025-01-06")),
     title: "Data Fixes and Better Method Management",
