@@ -20,7 +20,7 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([{
-    version: 33,
+    version: 34,
     date: new Date(Date.parse("TBD")),
     title: "TBD",
     render: layout => {
@@ -36,8 +36,20 @@ export namespace Changelog {
           .item("Improved the accuracy of the emote area for various easy clues.")
           .item("Made cursor types on the map more consistent.")
           .item("Replaced obstructive arrows for far transports in paths with small circles at their arrival location.")
-          .item("Fix major performance bug that would do rapid fullscreen captures when manually clicking 'Solve'.")
           .item("Fixed conflicting zoom for compasses where clue trainer didn't zoom in to the path for the last remaining spot.")
+        )
+    }
+  }, {
+    version: 33,
+    date: new Date(Date.parse("2025-01-13")),
+    title: "Nature Sentinel Key Combinations",
+    notification: "Nature's Sentinel keyboard shortcuts have been updated.",
+    render: layout => {
+      layout
+        .row(new List()
+          .item("Updated keyboard code for Nature's sentinel outfit teleports.")
+          .item("Fixed a a few mislabeled teleports.")
+          .item("Fix major performance bug that would do rapid fullscreen captures when manually clicking 'Solve'.")
         )
     }
   }, {
