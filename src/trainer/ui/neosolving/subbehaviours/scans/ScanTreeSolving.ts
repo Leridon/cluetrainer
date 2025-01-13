@@ -5,7 +5,7 @@ import {Clues} from "../../../../../lib/runescape/clues";
 import BoundsBuilder from "../../../../../lib/gamemap/BoundsBuilder";
 import {Path} from "../../../../../lib/runescape/pathing";
 import {floor_t, TileCoordinates, TileRectangle} from "../../../../../lib/runescape/coordinates";
-import {Rectangle, Vector2} from "../../../../../lib/math";
+import {Rectangle} from "../../../../../lib/math";
 import {TileArea} from "../../../../../lib/runescape/coordinates/TileArea";
 import {ScanRegionPolygon} from "../../ScanLayer";
 import {PathStepEntity} from "../../../map/entities/PathStepEntity";
@@ -58,6 +58,19 @@ function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): Aug
   }
 
   return searchUp(tree)
+}
+
+function isFloorDistinctionNode(node: AugmentedScanTreeNode): boolean {
+  if (node.depth != 0) return false
+  if (node.children.length != 2) return false
+
+  const a = node.children[0].value.remaining_candidates[0].level
+  const b = node.children[1].value.remaining_candidates[0].level
+
+  if (a == b) return false
+
+  return node.children[0].value.remaining_candidates.every(c => c.level == a)
+    && node.children[1].value.remaining_candidates.every(c => c.level == b)
 }
 
 export class ScanTreeSolving extends NeoSolvingSubBehaviour {
