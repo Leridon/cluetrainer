@@ -24,7 +24,7 @@ import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
 import {identity} from "lodash";
 import {Path} from "../../../../lib/runescape/pathing";
 import {IssueWidget} from "../../pathedit/EditedPathOverview";
-import {ScanTreeSolving} from "../../neosolving/subbehaviours/ScanTreeSolving";
+import {ScanTreeSolving} from "../../neosolving/subbehaviours/scans/ScanTreeSolving";
 import decision_tree = ScanTree.ScanTreeNode;
 import natural_join = util.natural_join;
 import shorten_integer_list = util.shorten_integer_list;

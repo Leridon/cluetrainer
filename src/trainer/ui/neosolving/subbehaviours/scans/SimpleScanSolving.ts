@@ -1,13 +1,13 @@
-import {NeoSolvingSubBehaviour} from "../NeoSolvingSubBehaviour";
-import NeoSolvingBehaviour from "../NeoSolvingBehaviour";
-import {Clues} from "../../../../lib/runescape/clues";
-import {CapturedScan} from "../cluereader/capture/CapturedScan";
-import {Scans} from "../../../../lib/runescape/clues/scans";
-import {deps} from "../../../dependencies";
+import {NeoSolvingSubBehaviour} from "../../NeoSolvingSubBehaviour";
+import NeoSolvingBehaviour from "../../NeoSolvingBehaviour";
+import {Clues} from "../../../../../lib/runescape/clues";
+import {CapturedScan} from "../../cluereader/capture/CapturedScan";
+import {Scans} from "../../../../../lib/runescape/clues/scans";
+import {deps} from "../../../../dependencies";
 import {ScanSolving} from "./ScanSolving";
-import ScanMinimapOverlay = ScanSolving.ScanMinimapOverlay;
-import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
-import {TileRectangle} from "../../../../lib/runescape/coordinates";
+import {TileArea} from "../../../../../lib/runescape/coordinates/TileArea";
+import {TileRectangle} from "../../../../../lib/runescape/coordinates";
+import {ScanMinimapOverlay} from "./ScanMinimapOverlay";
 
 export class SimpleScanSolving extends NeoSolvingSubBehaviour {
   settings: ScanSolving.Settings

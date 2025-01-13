@@ -8,6 +8,7 @@ import {LifetimeManager} from "../../lifetime/LifetimeManager";
 import {LifetimeManaged} from "../../lifetime/LifetimeManaged";
 import TimedValue = AbstractCaptureService.TimedValue;
 import CaptureTime = AbstractCaptureService.CaptureTime;
+import {Vector2} from "../../math";
 
 export type InterestedToken<InterestOptionsT extends AbstractCaptureService.Options = AbstractCaptureService.Options, ValueT = any> = {
   token: AbstractCaptureService.InterestToken<InterestOptionsT, ValueT>,
