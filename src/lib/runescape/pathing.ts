@@ -862,7 +862,7 @@ export namespace Path {
           if (i >= 1 && path[i - 1].type == "orientation") division(i - 1)
           else division(i)
         } else if ((step.type == "transport" || step.type == "cheat") && pos) {
-          if (isFar(step)) {
+          if ((pos && new_pos?.level != pos.level) || isFar(step)) {
             division(i + 1)
           }
         }
@@ -914,7 +914,7 @@ export namespace Path {
       case "cheat":
         const new_pos = ends_up([step])
 
-        return new_pos.level != step.assumed_start?.level || Vector2.max_axis(Vector2.sub(step.assumed_start, new_pos)) > threshold
+        return Vector2.max_axis(Vector2.sub(step.assumed_start, new_pos)) > threshold
       case "teleport":
         if (context) return context.position > 0 && context.path[context.position - 1].type == "orientation"
         return false
