@@ -23,6 +23,7 @@ export namespace Changelog {
     version: 33,
     date: new Date(Date.parse("2025-01-13")),
     title: "Nature Sentinel Key Combinations",
+    notification: "Nature's Sentinel keyboard shortcuts have been updated.",
     render: layout => {
       layout
         .row(new List()
