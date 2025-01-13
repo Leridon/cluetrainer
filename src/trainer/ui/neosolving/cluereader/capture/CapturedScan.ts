@@ -60,6 +60,14 @@ export class CapturedScan {
     return lines.slice(from, to + 1)
   })
 
+  private checkRawLines(refs: {
+    index: number,
+    expected_text: string
+  }[]): boolean {
+    const THRESHOLD = 0.7
+    return refs.some(r => stringSimilarity(index(this._raw_lines.get(), r.index).text, r.expected_text) > THRESHOLD)
+  }
+
   public _lines: Lazy<string[]> = lazy(() => {
     const lines: string[] = this._raw_lines.get().map(l => l.text)
 
@@ -85,27 +93,22 @@ export class CapturedScan {
   })
 
   private _different_level: Lazy<boolean> = lazy(() => {
-    const line = this._lines.get()[1]
-
-    const similarity = stringSimilarity(line, "Try scanning a different level.")
-
-    return similarity > 0.7
+    return this.checkRawLines([
+      {index: -1, expected_text: "different level."},
+      {index: -1, expected_text: "level."},
+    ])
   })
 
   private _meerkats_active = lazy((): boolean => {
-    const last_line = index(this._lines.get(), -1)
-
-    const similarity = stringSimilarity(last_line, "Your meerkats are increasing your scan range by")
-
-    return similarity > 0.7
+    return this.checkRawLines([
+      {index: -3, expected_text: "Your meerkats are"},
+    ])
   })
-
   private _triple = lazy(() => {
-    const line = this._lines.get()[1]
-
-    const similarity = stringSimilarity(line, "The orb glows as you scan. You are in range of the coordinate! The coordinate is")
-
-    return similarity > 0.7
+    return this.checkRawLines([
+      {index: 2, expected_text: "The orb glows as you scan."},
+      {index: 2, expected_text: "The orb glows then flickers"},
+    ])
   })
 
   text(): string {
