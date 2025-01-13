@@ -539,6 +539,14 @@ class ScanSettingsEdit extends Widget {
       .setValue(this.value.zoom_behaviour_include_singles)
       .onCommit(v => this.value.zoom_behaviour_include_singles = v)
     )
+
+    this.layout.section("Input Control")
+
+    this.layout.setting(new Checkbox("Select floor based on previous solution")
+        .setValue(this.value.select_floor_based_on_previous_solution)
+        .onCommit(v => this.value.select_floor_based_on_previous_solution = v),
+      "When a scan tree is loaded for a scan whose dig spots are on multiple different levels (Dorgesh Khaan and Brimhaven Dungeon), and the scan tree starts with a floor distinction that can be done anywhere, the respective path is automatically chosen based on the location of the previous clue and if the scan scroll suggests scanning another level. "
+    )
   }
 }
 
