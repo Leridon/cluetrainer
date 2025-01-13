@@ -1,8 +1,10 @@
 Elite Playtesting:
     - Highlighting first step of slider would be helpful
-    - No seeing where a long distance transport ends up sucks
-    - Auto-Reading Too Far and Different Level would be nice
     - Teleport access needs to be rendered in some way, if applicable
+    - Some short distance across level transports don't have an arrow anymore
+    - Being fast with b2b compasses and a skipped wizard between doesn't reset properly.
+    - On triple selections, path previews should be shown
+    - Floors of scan areas aren't visualized.
 
 
 Usability playtesting results:
