@@ -70,7 +70,7 @@ function asFloorDistinctionNode(node: AugmentedScanTreeNode): { level: floor_t, 
   if (a == b) return null
 
   if (!node.children[0].value.remaining_candidates.every(c => c.level == a)) return null
-  if (node.children[1].value.remaining_candidates.every(c => c.level == b)) return null
+  if (!node.children[1].value.remaining_candidates.every(c => c.level == b)) return null
 
   return [
     {level: a, node: node.children[0].value},
