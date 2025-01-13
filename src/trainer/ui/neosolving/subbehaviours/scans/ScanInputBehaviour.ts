@@ -1,16 +1,20 @@
 import Behaviour from "../../../../../lib/ui/Behaviour";
 import {Rectangle, Vector2} from "../../../../../lib/math";
-import {ScanTreeSolving} from "../../subbehaviours/scans/ScanTreeSolving";
 import {Process} from "../../../../../lib/Process";
 import {OverlayGeometry} from "../../../../../lib/alt1/OverlayGeometry";
 import {util} from "../../../../../lib/util/util";
-import {Scans} from "../../../../../lib/runescape/clues/scans";
-import Pulse = Scans.Pulse;
+import {ewent} from "../../../../../lib/reactive";
+import {ScanCaptureService} from "./ScanPanelReader";
+import {Alt1MainHotkeyEvent} from "../../../../../lib/alt1/Alt1MainHotkeyEvent";
 
 export class ScanControlPrototype extends Behaviour {
   private process: ScanControlPrototype.OverlayProcess = null
 
-  constructor(private parent: ScanTreeSolving) {
+  private input_registered = ewent<ScanControlPrototype.Input>()
+
+  constructor(
+    private hotkey: Alt1MainHotkeyEvent,
+    private panel_reader: ScanCaptureService) {
     super();
   }
 
@@ -19,22 +23,24 @@ export class ScanControlPrototype extends Behaviour {
 
     this.process.run()
 
-    this.parent.parent.app.main_hotkey.subscribe(1, event => {
+    this.hotkey.subscribe(1, event => {
       console.log(event.mouse)
 
-      const pulse = ((): Pulse => {
-        if (Rectangle.contains(this.process.single, event.mouse)) return {pulse: 1}
-        if (Rectangle.contains(this.process.double, event.mouse)) return {pulse: 2}
-        if (Rectangle.contains(this.process.triple, event.mouse)) return {pulse: 3}
+      const pulse: 1 | 2 | 3 | undefined = (() => {
+        if (this.panel_reader.getState().triple) return 3
 
-        return null
+        if (Rectangle.contains(this.process.single, event.mouse)) return 1
+        if (Rectangle.contains(this.process.double, event.mouse)) return 2
+
+        return undefined
       })()
 
-      if (pulse) {
-        const candidates = this.parent.node.children.filter(c => c.key.pulse == pulse.pulse)
+      // TODO: This gets the last confirmed state, which might be a problem
 
-        if (candidates.length == 1) this.parent.setNode(candidates[0].value)
-      }
+      this.input_registered.trigger({
+        different_level: this.panel_reader.getState().different_level,
+        pulse: pulse
+      })
     }).bindTo(this.lifetime_manager)
   }
 
@@ -42,6 +48,10 @@ export class ScanControlPrototype extends Behaviour {
     this.process.overlay.clear().render()
 
     this.process?.stop()
+  }
+
+  onInput(f: (_: ScanControlPrototype.Input) => void) {
+    this.input_registered.on(f)
   }
 }
 
@@ -56,7 +66,6 @@ export namespace ScanControlPrototype {
 
     public single: Rectangle = null
     public double: Rectangle = null
-    public triple: Rectangle = null
 
     constructor() {
       super(5000);
@@ -65,15 +74,18 @@ export namespace ScanControlPrototype {
 
       this.single = Rectangle.fromOriginAndSize(position, {x: size, y: size})
       this.double = Rectangle.move(this.single, {x: size + space, y: 0})
-      this.triple = Rectangle.move(this.double, {x: size + space, y: 0})
 
       this.overlay.rect(this.single, {color: A1Color.fromHex("#0000FF")})
       this.overlay.rect(this.double, {color: A1Color.fromHex("#dc9936")})
-      this.overlay.rect(this.triple, {color: A1Color.fromHex("#FF0000")})
     }
 
     tick(): void {
       this.overlay.render() // Refresh rendering periodically
     }
+  }
+
+  export type Input = {
+    different_level: boolean | undefined,
+    pulse: 1 | 2 | 3 | undefined
   }
 }

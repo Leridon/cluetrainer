@@ -90,7 +90,16 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
 
     this.scan_panel_capture_service = new ScanCaptureService(this.parent.app.capture_service, this.original_interface_capture)
     this.scan_panel_overlay = this.withSub(new ScanPanelOverlay(this.scan_panel_capture_service))
-    this.scan_input_control = this.withSub(new ScanControlPrototype(this))
+    this.scan_input_control = this.withSub(new ScanControlPrototype(this.parent.app.main_hotkey, this.scan_panel_capture_service))
+
+    this.scan_input_control.onInput(input => {
+      const candidates = this.node.children.filter(c => {
+        return (input.pulse == undefined || c.key.pulse == input.pulse) &&
+          (input.pulse == undefined || (c.key.different_level ?? false) == input.different_level)
+      })
+
+      if (candidates.length == 1) this.setNode(candidates[0].value)
+    })
   }
 
   private fit(active_path_section: Path.raw): void {
