@@ -38,7 +38,7 @@ import TransportLayer from "../map/TransportLayer";
 import {KnotSolving} from "../neosolving/subbehaviours/KnotSolving";
 import {LockboxSolving} from "../neosolving/subbehaviours/LockboxSolving";
 import {TowersSolving} from "../neosolving/subbehaviours/TowersSolving";
-import {ScanSolving} from "../neosolving/subbehaviours/ScanSolving";
+import {ScanSolving} from "../neosolving/subbehaviours/scans/ScanSolving";
 import cls = C.cls;
 import PotaColor = Settings.PotaColor;
 import hbox = C.hbox;

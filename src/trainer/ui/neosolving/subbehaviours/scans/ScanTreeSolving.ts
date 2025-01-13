@@ -1,116 +1,40 @@
-import {ScanTree} from "../../../../lib/cluetheory/scans/ScanTree";
-import Widget from "../../../../lib/ui/Widget";
-import {AugmentedMethod} from "../../../model/MethodPackManager";
-import {Clues} from "../../../../lib/runescape/clues";
-import BoundsBuilder from "../../../../lib/gamemap/BoundsBuilder";
-import {Path} from "../../../../lib/runescape/pathing";
-import {floor_t, TileCoordinates, TileRectangle} from "../../../../lib/runescape/coordinates";
-import {Rectangle, Vector2} from "../../../../lib/math";
-import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
-import {ScanRegionPolygon} from "../ScanLayer";
-import {PathStepEntity} from "../../map/entities/PathStepEntity";
-import {Scans} from "../../../../lib/runescape/clues/scans";
-import PulseButton from "../PulseButton";
-import NeoSolvingBehaviour from "../NeoSolvingBehaviour";
-import {TemplateResolver} from "../../../../lib/util/TemplateResolver";
-import {util} from "../../../../lib/util/util";
-import {SolvingMethods} from "../../../model/methods";
-import {NeoSolvingSubBehaviour} from "../NeoSolvingSubBehaviour";
-import {C} from "../../../../lib/ui/constructors";
-import {TextRendering} from "../../TextRendering";
-import {CapturedScan} from "../cluereader/capture/CapturedScan";
+import {ScanTree} from "../../../../../lib/cluetheory/scans/ScanTree";
+import Widget from "../../../../../lib/ui/Widget";
+import {AugmentedMethod} from "../../../../model/MethodPackManager";
+import {Clues} from "../../../../../lib/runescape/clues";
+import BoundsBuilder from "../../../../../lib/gamemap/BoundsBuilder";
+import {Path} from "../../../../../lib/runescape/pathing";
+import {floor_t, TileCoordinates, TileRectangle} from "../../../../../lib/runescape/coordinates";
+import {Rectangle, Vector2} from "../../../../../lib/math";
+import {TileArea} from "../../../../../lib/runescape/coordinates/TileArea";
+import {ScanRegionPolygon} from "../../ScanLayer";
+import {PathStepEntity} from "../../../map/entities/PathStepEntity";
+import {Scans} from "../../../../../lib/runescape/clues/scans";
+import PulseButton from "../../PulseButton";
+import NeoSolvingBehaviour from "../../NeoSolvingBehaviour";
+import {TemplateResolver} from "../../../../../lib/util/TemplateResolver";
+import {util} from "../../../../../lib/util/util";
+import {SolvingMethods} from "../../../../model/methods";
+import {NeoSolvingSubBehaviour} from "../../NeoSolvingSubBehaviour";
+import {C} from "../../../../../lib/ui/constructors";
+import {TextRendering} from "../../../TextRendering";
+import {CapturedScan} from "../../cluereader/capture/CapturedScan";
 import {ScanSolving} from "./ScanSolving";
-import {Observable} from "../../../../lib/reactive";
-import {GameLayer} from "../../../../lib/gamemap/GameLayer";
-import {GameMapMouseEvent} from "../../../../lib/gamemap/MapEvents";
-import {ScanEditLayer} from "../../theorycrafting/scanedit/ScanEditor";
-import Behaviour from "../../../../lib/ui/Behaviour";
-import {Process} from "../../../../lib/Process";
-import {OverlayGeometry} from "../../../../lib/alt1/OverlayGeometry";
+import {Observable} from "../../../../../lib/reactive";
+import {GameLayer} from "../../../../../lib/gamemap/GameLayer";
+import {GameMapMouseEvent} from "../../../../../lib/gamemap/MapEvents";
+import {ScanEditLayer} from "../../../theorycrafting/scanedit/ScanEditor";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import activate = TileArea.activate;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
 import cls = C.cls;
 import Order = util.Order;
 import spotNumber = ScanTree.spotNumber;
-import ScanMinimapOverlay = ScanSolving.ScanMinimapOverlay;
 import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 import digSpotArea = Clues.digSpotArea;
-import Pulse = Scans.Pulse;
-
-import {ScanCaptureService, ScanPanelOverlay} from "../scans/ScanPanelReader";
-
-class ScanControlPrototype extends Behaviour {
-  private process: ScanControlPrototype.OverlayProcess = null
-
-  constructor(private parent: ScanTreeSolving) {
-    super();
-  }
-
-
-  protected begin() {
-    this.process = new ScanControlPrototype.OverlayProcess()
-
-    this.process.run()
-
-    this.parent.parent.app.main_hotkey.subscribe(1, event => {
-      console.log(event.mouse)
-
-      const pulse = ((): Pulse => {
-        if (Rectangle.contains(this.process.single, event.mouse)) return {pulse: 1}
-        if (Rectangle.contains(this.process.double, event.mouse)) return {pulse: 2}
-        if (Rectangle.contains(this.process.triple, event.mouse)) return {pulse: 3}
-
-        return null
-      })()
-
-      if (pulse) {
-        const candidates = this.parent.node.children.filter(c => c.key.pulse == pulse.pulse)
-
-        if (candidates.length == 1) this.parent.setNode(candidates[0].value)
-      }
-    }).bindTo(this.lifetime_manager)
-  }
-
-  protected end() {
-    this.process.overlay.clear().render()
-
-    this.process?.stop()
-  }
-}
-
-namespace ScanControlPrototype {
-  import A1Color = util.A1Color;
-  export const position: Vector2 = {x: 942, y: 323}
-  export const size: number = 100
-  export const space: number = 10
-
-  export class OverlayProcess extends Process.Interval {
-    public overlay: OverlayGeometry = null
-
-    public single: Rectangle = null
-    public double: Rectangle = null
-    public triple: Rectangle = null
-
-    constructor() {
-      super(5000);
-
-      this.overlay = new OverlayGeometry()
-
-      this.single = Rectangle.fromOriginAndSize(position, {x: size, y: size})
-      this.double = Rectangle.move(this.single, {x: size + space, y: 0})
-      this.triple = Rectangle.move(this.double, {x: size + space, y: 0})
-
-      this.overlay.rect(this.single, {color: A1Color.fromHex("#0000FF")})
-      this.overlay.rect(this.double, {color: A1Color.fromHex("#dc9936")})
-      this.overlay.rect(this.triple, {color: A1Color.fromHex("#FF0000")})
-    }
-
-    tick(): void {
-      this.overlay.render() // Refresh rendering periodically
-    }
-  }
-}
+import {ScanCaptureService, ScanPanelOverlay} from "./ScanPanelReader";
+import {ScanControlPrototype} from "./ScanInputBehaviour";
+import {ScanMinimapOverlay} from "./ScanMinimapOverlay";
 
 function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): AugmentedScanTreeNode {
   function searchDown(node: AugmentedScanTreeNode): AugmentedScanTreeNode {
@@ -143,6 +67,7 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
 
   private scan_panel_capture_service: ScanCaptureService
   private scan_panel_overlay: ScanPanelOverlay
+  private scan_input_control: ScanControlPrototype
 
   private minimap_overlay: ScanMinimapOverlay
 
@@ -159,14 +84,13 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
       this.minimap_overlay = this.withSub(new ScanMinimapOverlay(this.parent.app.minimapreader, settings, "scantree").setRange(this.method.method.tree.assumed_range))
     }
 
-    this.scan_panel_capture_service = new ScanCaptureService(this.parent.app.capture_service, this.original_interface_capture)
-    this.scan_panel_overlay = this.withSub(new ScanPanelOverlay(this.scan_panel_capture_service))
-
     this.augmented = ScanTree.Augmentation.basic_augmentation(method.method.tree, method.clue.clue)
 
     ScanTree.Augmentation.synthesize_triple_nodes(this.augmented)
 
-    this.withSub(new ScanControlPrototype(this))
+    this.scan_panel_capture_service = new ScanCaptureService(this.parent.app.capture_service, this.original_interface_capture)
+    this.scan_panel_overlay = this.withSub(new ScanPanelOverlay(this.scan_panel_capture_service))
+    this.scan_input_control = this.withSub(new ScanControlPrototype(this))
   }
 
   private fit(active_path_section: Path.raw): void {

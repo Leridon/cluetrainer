@@ -1,14 +1,14 @@
-import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken, ScreenCaptureService} from "../../../../lib/alt1/capture";
-import {CapturedScan} from "../cluereader/capture/CapturedScan";
-import {OverlayGeometry} from "../../../../lib/alt1/OverlayGeometry";
-import {Finder} from "../../../../lib/alt1/capture/Finder";
-import {util} from "../../../../lib/util/util";
+import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken, ScreenCaptureService} from "../../../../../lib/alt1/capture";
+import {CapturedScan} from "../../cluereader/capture/CapturedScan";
+import {OverlayGeometry} from "../../../../../lib/alt1/OverlayGeometry";
+import {Finder} from "../../../../../lib/alt1/capture/Finder";
+import {util} from "../../../../../lib/util/util";
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
-import Behaviour from "../../../../lib/ui/Behaviour";
+import Behaviour from "../../../../../lib/ui/Behaviour";
 import A1Color = util.A1Color;
-import {Vector2} from "../../../../lib/math";
-import {EwentHandler, observe} from "../../../../lib/reactive";
+import {Vector2} from "../../../../../lib/math";
+import {EwentHandler, observe} from "../../../../../lib/reactive";
 
 
 export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
