@@ -57,6 +57,25 @@ export class OverlayGeometry {
     return this
   }
 
+  circle(center: Vector2, radius: number, resolution: number = 8,
+         stroke: OverlayGeometry.StrokeOptions = OverlayGeometry.StrokeOptions.DEFAULT): this {
+
+    const points: Vector2[] = []
+
+    for (let i = 0; i < resolution; i++) {
+      const alpha = (i / resolution) * 2 * Math.PI;
+
+      points.push({
+        x: center.x + ~~(Math.cos(alpha) * radius),
+        y: center.y + ~~(Math.sin(alpha) * radius)
+      })
+    }
+
+    this.polyline(points, true, stroke)
+
+    return this
+  }
+
   progressbar(center: Vector2, length: number, progress: number, width: number = 5,
               contrast_border: number = 2,
               done_color: number = mixColor(0, 255, 0),

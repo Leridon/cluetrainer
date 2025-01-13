@@ -46,6 +46,8 @@ export class CapturedScan {
       }
     })()
 
+    if (start == undefined) return []
+
     for (let lineindex = 0; lineindex < CapturedScan.MAX_LINE_COUNT; lineindex++) {
       const y = start + lineindex * CapturedScan.LINE_HEIGHT;
 
@@ -65,7 +67,13 @@ export class CapturedScan {
     expected_text: string
   }[]): boolean {
     const THRESHOLD = 0.7
-    return refs.some(r => stringSimilarity(index(this._raw_lines.get(), r.index).text, r.expected_text) > THRESHOLD)
+    return refs.some(r => {
+      const line = index(this._raw_lines.get(), r.index)
+
+      if (line == undefined) return false
+
+      return stringSimilarity(line.text, r.expected_text) > THRESHOLD
+    })
   }
 
   public _lines: Lazy<string[]> = lazy(() => {
@@ -93,22 +101,45 @@ export class CapturedScan {
   })
 
   private _different_level: Lazy<boolean> = lazy(() => {
-    return this.checkRawLines([
+    if (this.checkRawLines([
       {index: -1, expected_text: "different level."},
       {index: -1, expected_text: "level."},
-    ])
+    ])) return true
+
+    if (this.checkRawLines([
+      {index: 2, expected_text: "You are too far away and"},
+      {index: 2, expected_text: "The orb glows as you scan."},
+    ])) return false
+
+    return undefined
   })
 
-  private _meerkats_active = lazy((): boolean => {
-    return this.checkRawLines([
+  private _meerkats_active = lazy<boolean | undefined>((): boolean => {
+    if (this._different_level.get()) return undefined
+
+    if (this.checkRawLines([
       {index: -3, expected_text: "Your meerkats are"},
-    ])
+    ])) return true
+
+    if (this.checkRawLines([
+      {index: 2, expected_text: "You are too far away and"},
+      {index: 2, expected_text: "The orb glows as you scan."},
+    ])) return false
+
+    return undefined
   })
-  private _triple = lazy(() => {
-    return this.checkRawLines([
+  private _triple = lazy<boolean>(() => {
+    if (this.checkRawLines([
       {index: 2, expected_text: "The orb glows as you scan."},
       {index: 2, expected_text: "The orb glows then flickers"},
-    ])
+    ])) return true
+
+    if (this.checkRawLines([
+      {index: 2, expected_text: "You are too far away and"},
+      {index: 2, expected_text: "Try scanning a different"},
+    ])) return false
+
+    return undefined
   })
 
   text(): string {
@@ -140,25 +171,29 @@ export class CapturedScan {
     )
   }
 
-  relevantTextArea(): ScreenRectangle {
+  public readonly center_of_text = lazy(() => {
     const lines = this._raw_lines.get()
 
     const first = lines[0].debugArea
     const last = lines[lines.length - 1].debugArea
 
-    const current_center = {
+    return Vector2.add(this.body.screen_rectangle.origin, {
       x: ~~(first.x + first.w / 2),
       y: (first.y + last.y + CapturedScan.LINE_HEIGHT + 6) / 2
-    }
+    })
+  })
+
+  relevantTextAreaForRecapture(): ScreenRectangle {
+    const current_center = this.center_of_text.get()
 
     return {
-      origin: Vector2.add(this.body.screen_rectangle.origin, current_center, Vector2.scale(-0.5, CapturedScan.MAX_TEXT_AREA_SIZE)),
+      origin: Vector2.add(current_center, Vector2.scale(-0.5, CapturedScan.MAX_TEXT_AREA_SIZE)),
       size: CapturedScan.MAX_TEXT_AREA_SIZE
     }
   }
 
   updated(capture: CapturedImage): CapturedScan {
-    const relevant_text_area = this.relevantTextArea()
+    const relevant_text_area = this.relevantTextAreaForRecapture()
 
     const relative_text_start = Vector2.add(this._raw_lines.get()[0].debugArea, this.body.screenRectangle().origin)
 
