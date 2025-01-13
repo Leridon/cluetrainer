@@ -28,6 +28,7 @@ export namespace Changelog {
         .row(new List()
           .item("Updated keyboard code for Nature's sentinel outfit teleports.")
           .item("Fixed a a few mislabeled teleports.")
+          .item("Fix major performance bug that would do rapid fullscreen captures when manually clicking 'Solve'.")
         )
     }
   }, {
