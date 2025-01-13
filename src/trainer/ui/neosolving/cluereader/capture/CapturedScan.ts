@@ -76,6 +76,7 @@ export class CapturedScan {
     })
   }
 
+
   public _lines: Lazy<string[]> = lazy(() => {
     const lines: string[] = this._raw_lines.get().map(l => l.text)
 
@@ -100,6 +101,16 @@ export class CapturedScan {
     return cleaned_lines
   })
 
+  private paragraph_start_indices = lazy(() => {
+    const indices: number[] = [0]
+
+    this._raw_lines.get().forEach((line, i) => {
+      if (line.text == "") indices.push(i + 1)
+    })
+
+    return indices
+  })
+
   private _different_level: Lazy<boolean> = lazy(() => {
     if (this.checkRawLines([
       {index: -1, expected_text: "different level."},
@@ -107,9 +118,11 @@ export class CapturedScan {
     ])) return true
 
     if (this.checkRawLines([
-      {index: 2, expected_text: "You are too far away and"},
-      {index: 2, expected_text: "The orb glows as you scan."},
+      {index: this.paragraph_start_indices.get()[1], expected_text: "You are too far away and"},
+      {index: this.paragraph_start_indices.get()[1], expected_text: "The orb glows as you scan."},
     ])) return false
+
+    debugger
 
     return undefined
   })
@@ -122,21 +135,21 @@ export class CapturedScan {
     ])) return true
 
     if (this.checkRawLines([
-      {index: 2, expected_text: "You are too far away and"},
-      {index: 2, expected_text: "The orb glows as you scan."},
+      {index: this.paragraph_start_indices.get()[1], expected_text: "You are too far away and"},
+      {index: this.paragraph_start_indices.get()[1], expected_text: "The orb glows as you scan."},
     ])) return false
 
     return undefined
   })
   private _triple = lazy<boolean>(() => {
     if (this.checkRawLines([
-      {index: 2, expected_text: "The orb glows as you scan."},
-      {index: 2, expected_text: "The orb glows then flickers"},
+      {index: this.paragraph_start_indices.get()[1], expected_text: "The orb glows as you scan."},
+      {index: this.paragraph_start_indices.get()[1], expected_text: "The orb glows then flickers"},
     ])) return true
 
     if (this.checkRawLines([
-      {index: 2, expected_text: "You are too far away and"},
-      {index: 2, expected_text: "Try scanning a different"},
+      {index: this.paragraph_start_indices.get()[1], expected_text: "You are too far away and"},
+      {index: this.paragraph_start_indices.get()[1], expected_text: "Try scanning a different"},
     ])) return false
 
     return undefined
