@@ -41,6 +41,11 @@ export abstract class AbstractCaptureService<
         options(time: AbstractCaptureService.CaptureTime): ActualInterestOptionsT | null {
           return token.options(time);
         }
+
+        isOneTime(): boolean {
+          if (token.isOneTime) return token.isOneTime()
+          return false
+        }
       }
     })()
 
@@ -211,6 +216,7 @@ export namespace AbstractCaptureService {
   > = {
     paused?: () => boolean,
     handle?: (value: AbstractCaptureService.TimedValue<ValueT, ActualOptionsT>) => void,
+    isOneTime?: () => boolean
     options: (time: CaptureTime) => ActualOptionsT | null,
     setup_handlers?: (service: ServiceT) => LifetimeManaged[]
   }
