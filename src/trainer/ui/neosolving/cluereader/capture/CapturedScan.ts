@@ -177,9 +177,11 @@ export class CapturedScan {
     const first = lines[0].debugArea
     const last = lines[lines.length - 1].debugArea
 
+    const last_line_color_fix = lines[lines.length - 1].text.startsWith("The coordinate is") ? CapturedScan.LINE_HEIGHT : 0
+
     return Vector2.add(this.body.screen_rectangle.origin, {
       x: ~~(first.x + first.w / 2),
-      y: (first.y + last.y + CapturedScan.LINE_HEIGHT + 6) / 2
+      y: (first.y + last.y + last_line_color_fix + CapturedScan.LINE_HEIGHT + 6) / 2
     })
   })
 
