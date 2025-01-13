@@ -24,6 +24,9 @@ import {Observable} from "../../../../../lib/reactive";
 import {GameLayer} from "../../../../../lib/gamemap/GameLayer";
 import {GameMapMouseEvent} from "../../../../../lib/gamemap/MapEvents";
 import {ScanEditLayer} from "../../../theorycrafting/scanedit/ScanEditor";
+import {ScanCaptureService, ScanPanelOverlay} from "./ScanPanelReader";
+import {ScanControlPrototype} from "./ScanInputBehaviour";
+import {ScanMinimapOverlay} from "./ScanMinimapOverlay";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import activate = TileArea.activate;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
@@ -32,9 +35,6 @@ import Order = util.Order;
 import spotNumber = ScanTree.spotNumber;
 import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 import digSpotArea = Clues.digSpotArea;
-import {ScanCaptureService, ScanPanelOverlay} from "./ScanPanelReader";
-import {ScanControlPrototype} from "./ScanInputBehaviour";
-import {ScanMinimapOverlay} from "./ScanMinimapOverlay";
 
 function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): AugmentedScanTreeNode {
   function searchDown(node: AugmentedScanTreeNode): AugmentedScanTreeNode {
@@ -111,10 +111,13 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
     this.scan_input_control = this.withSub(new ScanControlPrototype(this.parent.app.main_hotkey, this.scan_panel_capture_service))
 
     this.scan_input_control.onInput(input => {
+      console.log(input)
       const candidates = this.node.children.filter(c => {
         return (input.pulse == undefined || c.key.pulse == input.pulse) &&
-          (input.pulse == undefined || (c.key.different_level ?? false) == input.different_level)
+          (input.different_level == undefined || (c.key.different_level ?? false) == input.different_level)
       })
+
+      console.log(candidates.length)
 
       if (candidates.length == 1) this.setNode(candidates[0].value)
     })
