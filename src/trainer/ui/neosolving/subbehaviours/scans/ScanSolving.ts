@@ -19,6 +19,8 @@ export namespace ScanSolving {
     zoom_behaviour_include_triples: boolean
     zoom_behaviour_include_doubles: boolean
     zoom_behaviour_include_singles: boolean
+
+    select_floor_based_on_previous_solution: boolean
   }
 
   export namespace Settings {
@@ -33,6 +35,7 @@ export namespace ScanSolving {
       zoom_behaviour_include_triples: SettingsNormalization.bool(true),
       zoom_behaviour_include_doubles: SettingsNormalization.bool(false),
       zoom_behaviour_include_singles: SettingsNormalization.bool(false),
+      select_floor_based_on_previous_solution: SettingsNormalization.bool(true),
     })
   }
 }

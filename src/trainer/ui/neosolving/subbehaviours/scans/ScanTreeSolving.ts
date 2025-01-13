@@ -60,17 +60,22 @@ function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): Aug
   return searchUp(tree)
 }
 
-function isFloorDistinctionNode(node: AugmentedScanTreeNode): boolean {
-  if (node.depth != 0) return false
-  if (node.children.length != 2) return false
+function asFloorDistinctionNode(node: AugmentedScanTreeNode): { level: floor_t, node: AugmentedScanTreeNode }[] {
+  if (node.depth != 0) return null
+  if (node.children.length != 2) return null
 
   const a = node.children[0].value.remaining_candidates[0].level
   const b = node.children[1].value.remaining_candidates[0].level
 
-  if (a == b) return false
+  if (a == b) return null
 
-  return node.children[0].value.remaining_candidates.every(c => c.level == a)
-    && node.children[1].value.remaining_candidates.every(c => c.level == b)
+  if (!node.children[0].value.remaining_candidates.every(c => c.level == a)) return null
+  if (node.children[1].value.remaining_candidates.every(c => c.level == b)) return null
+
+  return [
+    {level: a, node: node.children[0].value},
+    {level: b, node: node.children[1].value},
+  ]
 }
 
 export class ScanTreeSolving extends NeoSolvingSubBehaviour {
@@ -314,7 +319,29 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
       }
     })
 
-    this.setNode(this.augmented.root_node)
+    const findStartNode = (): AugmentedScanTreeNode => {
+      const root = this.augmented.root_node
+
+      if (this.settings.value().select_floor_based_on_previous_solution && this.original_interface_capture) {
+        const known_position = this.parent.getAssumedPlayerPositionByLastClueSolution()
+        const floor_distinction = asFloorDistinctionNode(root)
+
+        if (known_position && floor_distinction) {
+
+          const known_level = known_position.origin.level
+
+          const dl = this.original_interface_capture.isDifferentLevel()
+
+          const selection = floor_distinction.find(e => dl ? e.level != known_level : e.level == known_level)
+
+          if (selection) return selection.node
+        }
+      }
+
+      return root
+    }
+
+    this.setNode(findStartNode())
   }
 
   protected end() {
