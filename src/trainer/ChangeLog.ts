@@ -28,7 +28,6 @@ export namespace Changelog {
         .row(new List()
           .item("A separate path section will now be created for the arrival point if a path ends with a long distance transport.")
           .item("You can now click dig spots on the map to move the scan tree there.")
-          .item("You can now click the line for triple pulses to get to a selection node where you can select the specific spot by number.")
           .item("Removed spot numbers when not needed to declutter the map.")
           .item("Fixed bug that caused the wrong floor to be selected for some scans.")
           .item("Compasses will now utilize the previous clue's solution area up to 4 chunks wide an high.")
@@ -37,6 +36,10 @@ export namespace Changelog {
           .item("Made cursor types on the map more consistent.")
           .item("Replaced obstructive arrows for far transports in paths with small circles at their arrival location.")
           .item("Fixed conflicting zoom for compasses where clue trainer didn't zoom in to the path for the last remaining spot.")
+          .item("You can now click the line for triple pulses to get to a selection node where you can select the specific spot by number.")
+          .item("Triple spots are no longer included in the zoom for scan trees by default.", new List()
+            .item("This change only affects new users, and can still be toggled on in the settings. Playtesting showed that with the change before this, seeing all triple spots all the time isn't necessary anymore, so I encourage existing users to also change this setting.")
+          )
         )
     }
   }, {

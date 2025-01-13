@@ -32,7 +32,7 @@ export namespace ScanSolving {
       minimap_overlay_zoom_manual_ppt: compose(SettingsNormalization.number(4), SettingsNormalization.clamp(3, 30)),
       show_double_ping: SettingsNormalization.bool(true),
       show_triple_ping: SettingsNormalization.bool(true),
-      zoom_behaviour_include_triples: SettingsNormalization.bool(true),
+      zoom_behaviour_include_triples: SettingsNormalization.bool(false),
       zoom_behaviour_include_doubles: SettingsNormalization.bool(false),
       zoom_behaviour_include_singles: SettingsNormalization.bool(false),
       select_floor_based_on_previous_solution: SettingsNormalization.bool(true),
