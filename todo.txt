@@ -3,6 +3,7 @@ Elite Playtesting:
     - Teleport access needs to be rendered in some way, if applicable
     - Being fast with b2b compasses and a skipped wizard between doesn't reset properly.
     - Floors of scan areas aren't visualized.
+    - Manually setting certain scans (ex. Lumbridge Caves) crashes
 
 
 Usability playtesting results:
