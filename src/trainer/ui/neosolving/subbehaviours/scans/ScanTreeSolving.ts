@@ -216,9 +216,11 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
       PathStepEntity.renderPath(n.raw.path).eachEntity(e => e.setOpacity(0.5)).addTo(this.layer)
     })
 
+    const all_triple = node.children.every(c => c.key.pulse == 3)
+
     // Children paths are rendered with 0.5
     node.children
-      .filter(c => c.key.pulse != 3)
+      .filter(c => all_triple || c.key.pulse != 3)
       .forEach(c => {
         PathStepEntity.renderPath(c.value.raw.path).eachEntity(l => l.setOpacity(0.5)).addTo(this.layer)
         new ScanRegionPolygon(ScanTree.getTargetRegion(c.value)).setOpacity(0.5).addTo(this.layer)
