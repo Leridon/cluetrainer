@@ -216,6 +216,10 @@ export class CapturedScan {
 
     return new CapturedScan(capture.getScreenSection(relevant_text_area), {text: this._raw_lines.get()[0].text, position: translated_text_start})
   }
+
+  isValid(): boolean {
+    return this._raw_lines.get().length > 0
+  }
 }
 
 export namespace CapturedScan {

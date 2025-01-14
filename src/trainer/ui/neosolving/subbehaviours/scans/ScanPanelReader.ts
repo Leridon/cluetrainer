@@ -15,7 +15,7 @@ export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService
   private debug: boolean = false
   private debug_overlay: OverlayGeometry = new OverlayGeometry()
 
-  private capture_interest: AbstractCaptureService.InterestToken<ScreenCaptureService.Options, CapturedImage>
+  private capture_interest: AbstractCaptureService.InterestToken<ScanCaptureService.UpstreamOptions, CapturedImage>
   private interface_finder: Finder<CapturedScan>
   public readonly initialization: AsyncInitialization
 
@@ -23,13 +23,28 @@ export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService
     triple: false, meerkats: true, different_level: false
   }).structuralEquality()
 
+  private last_successfull_capture: {
+    capture: CapturedScan,
+    time: number
+  } = null
+
   constructor(private capture_service: ScreenCaptureService, private original_captured_interface: CapturedScan | null) {
     super()
 
-    this.capture_interest = this.addDataSource(capture_service, () => {
+    if (original_captured_interface) {
+      this.last_successfull_capture = {
+        capture: original_captured_interface,
+        time: Date.now()
+      }
+    }
+
+    this.capture_interest = this.addDataSource<ScanCaptureService.UpstreamOptions, CapturedImage>(capture_service as any/*The types are fine, but the signature of addDataSource isn't accurate*/, () => {
+      const should_refind = this.last_successfull_capture == null || this.last_successfull_capture.time < (Date.now() - 5000)
+
       return {
-        area: this.original_captured_interface.relevantTextAreaForRecapture(),
-        interval: null,
+        is_refind: should_refind,
+        area: should_refind ? null : this.last_successfull_capture.capture.relevantTextAreaForRecapture(),
+        interval: should_refind ? CaptureInterval.fromApproximateInterval(1000) : null,
       }
     })
 
@@ -38,11 +53,28 @@ export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService
     })
   }
 
+  private shouldRefind(): boolean {
+    return this.last_successfull_capture == null || this.last_successfull_capture.time < (Date.now() - 5000)
+  }
+
   processNotifications(interested_tokens: InterestedToken<ScanCaptureService.Options, CapturedScan>[]): CapturedScan {
     const capture = this.capture_interest.lastNotification()
 
-    if (this.original_captured_interface) {
-      const updated = this.original_captured_interface.updated(capture.value)
+    if (capture.options.is_refind) {
+      const ui = this.interface_finder.find(capture.value)
+
+      if (ui) {
+        this.last_successfull_capture = {
+          capture: ui,
+          time: Date.now()
+        }
+      }
+
+      return ui
+    } else {
+      const updated = this.last_successfull_capture.capture.updated(capture.value)
+
+      if (!updated.isValid()) return null
 
       if (this.debug) {
         console.log(updated.text())
@@ -54,6 +86,11 @@ export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService
         this.debug_overlay.render()
       }
 
+      this.last_successfull_capture = {
+        capture: updated,
+        time: Date.now()
+      }
+
       this.state.update2(state => {
         state.triple = updated.isTriple() ?? state.triple
         state.meerkats = updated.hasMeerkats() ?? state.meerkats
@@ -61,12 +98,6 @@ export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService
       })
 
       return updated
-    } else if (this.initialization.isInitialized()) {
-      const ui = this.interface_finder.find(capture.value)
-
-      if (ui) this.original_captured_interface = ui
-
-      return ui
     }
   }
 
@@ -77,6 +108,12 @@ export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService
   public onStateChange(f: (_: ScanCaptureService.ScanState) => void): EwentHandler<any> {
     return this.state.subscribe2(f)
   }
+
+  public lastValidInterface(): CapturedScan {
+    if (!this.last_successfull_capture) return null
+
+    return this.last_successfull_capture.capture
+  }
 }
 
 export namespace ScanCaptureService {
@@ -86,8 +123,10 @@ export namespace ScanCaptureService {
     different_level: boolean
   }
 
-  export type Options = AbstractCaptureService.Options & {
-    show_overlay?: boolean
+  export type Options = AbstractCaptureService.Options
+
+  export type UpstreamOptions = AbstractCaptureService.Options & {
+    is_refind: boolean
   }
 }
 
@@ -105,12 +144,16 @@ export class ScanPanelOverlay extends Behaviour {
   }
 
   private refreshOverlay(state: ScanCaptureService.ScanState) {
+
+    const scaninterface = this.service.lastValidInterface()
+
+    if (!scaninterface) return
+
+    const center = Vector2.add(scaninterface.center_of_text.get(), {x: 0, y: 100})
+
     this.scan_interface_overlay.clear()
 
-    const center = Vector2.add(this.scan_capture_interest.lastNotification().value.center_of_text.get(), {x: 0, y: 100})
-
     // TODO: Decide whether to gray out status indicators for 'false' or hide them completely
-
 
     // TODO: Maybe replace 'DL' with an appropriate icon
     this.scan_interface_overlay.text("DL", Vector2.add(center, {x: -25, y: 0}), {

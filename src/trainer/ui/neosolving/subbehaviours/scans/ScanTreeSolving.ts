@@ -123,23 +123,24 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
   ) {
     super(parent, "method")
 
-    if (this.settings.value().show_minimap_overlay_scantree) {
-      this.minimap_overlay = this.withSub(new ScanMinimapOverlay(this.parent.app.minimapreader, settings, "scantree").setRange(this.method.method.tree.assumed_range))
-    }
-
     this.augmented = ScanTree.Augmentation.basic_augmentation(method.method.tree, method.clue.clue)
-
     ScanTree.Augmentation.synthesize_triple_nodes(this.augmented)
 
-    this.scan_panel_capture_service = new ScanCaptureService(this.parent.app.capture_service, this.original_interface_capture)
-    this.scan_panel_overlay = this.withSub(new ScanPanelOverlay(this.scan_panel_capture_service))
-    this.scan_input_control = this.withSub(new ScanControlPrototype(this.parent.app.main_hotkey, this.scan_panel_capture_service))
+    if (this.parent.app.in_alt1) {
+      if (this.settings.value().show_minimap_overlay_scantree) {
+        this.minimap_overlay = this.withSub(new ScanMinimapOverlay(this.parent.app.minimapreader, settings, "scantree").setRange(this.method.method.tree.assumed_range))
+      }
 
-    this.scan_input_control.onInput(input => {
-      const candidate = determineChild(this.node, input)
+      this.scan_panel_capture_service = new ScanCaptureService(this.parent.app.capture_service, this.original_interface_capture)
+      this.scan_panel_overlay = this.withSub(new ScanPanelOverlay(this.scan_panel_capture_service))
+      this.scan_input_control = this.withSub(new ScanControlPrototype(this.parent.app.main_hotkey, this.scan_panel_capture_service))
 
-      if (candidate) this.setNode(candidate)
-    })
+      this.scan_input_control.onInput(input => {
+        const candidate = determineChild(this.node, input)
+
+        if (candidate) this.setNode(candidate)
+      })
+    }
   }
 
   private fit(active_path_section: Path.raw): void {
