@@ -40,6 +40,9 @@ export namespace Changelog {
           .item("Triple spots are no longer included in the zoom for scan trees by default.", new List()
             .item("This change only affects new users, and can still be toggled on in the settings. Playtesting showed that with the change before this, seeing all triple spots all the time isn't necessary anymore, so I encourage existing users to also change this setting.")
           )
+          .item("Reduced default time allocated to solving sliders down to 0.2 seconds",
+            new List().item("Existing users should consider changing this setting as well. With the new shuffle introduced in december, this is enough and allocating more time barely finds an improvement.")
+          )
         )
     }
   }, {
