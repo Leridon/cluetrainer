@@ -1329,6 +1329,7 @@ class CompassSettingsEdit extends Widget {
                             }
                           })
                             .attachTopControl(new InteractionTopControl()
+                              .setName("Spot selection")
                               .setContent(c().text("Click a teleport spot or any tile on the map to select it as a triangulation spot."))
                             )
                             .onCommit(v => this.confirm(v))

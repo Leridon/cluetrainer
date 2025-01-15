@@ -5,13 +5,13 @@ import ControlWithHeader from "./ControlWithHeader";
 
 export default class InteractionTopControl extends GameMapControl<ControlWithHeader> {
   constructor(public _config: {
-    name?: String,
+    name?: string,
     cancel_handler?: () => void
   } = {}) {
     super({
       type: "gapless",
       position: "top-center"
-    }, new ControlWithHeader(`Active interaction: ${_config.name || "Interaction"}`, _config.cancel_handler));
+    }, new ControlWithHeader(_config.name ?? "Interaction", _config.cancel_handler));
 
     this.content.addClass("ctr-interaction-control")
   }
