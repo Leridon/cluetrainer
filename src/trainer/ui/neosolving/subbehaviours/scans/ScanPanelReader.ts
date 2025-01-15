@@ -171,9 +171,9 @@ export class ScanPanelOverlay extends Behaviour {
       const triple_center = Vector2.add(center, {x: 22, y: 0})
 
       this.scan_interface_overlay
-        .circle(triple_center, 12, 16, options)
-        .circle(triple_center, 8, 16, options)
-        .circle(triple_center, 4, 16, options)
+        .circle({center: triple_center, radius: 12}, 16, options)
+        .circle({center: triple_center, radius: 8}, 16, options)
+        .circle({center: triple_center, radius: 4}, 16, options)
     }
 
     if (!state.meerkats) {

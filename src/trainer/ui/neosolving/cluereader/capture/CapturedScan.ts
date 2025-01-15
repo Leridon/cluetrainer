@@ -122,8 +122,6 @@ export class CapturedScan {
       {index: this.paragraph_start_indices.get()[1], expected_text: "The orb glows as you scan."},
     ])) return false
 
-    debugger
-
     return undefined
   })
 

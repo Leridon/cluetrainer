@@ -2,8 +2,11 @@ Elite Playtesting:
     - Highlighting first step of slider would be helpful
     - Teleport access needs to be rendered in some way, if applicable
     - Being fast with b2b compasses and a skipped wizard between doesn't reset properly.
+        - Some grayish backgrounds facilitate this because it thinks it's still open in the solved state
     - Floors of scan areas aren't visualized.
-    - Manually setting certain scans (ex. Lumbridge Caves) crashes
+
+    - Need to see what will be auto commited in the interface
+    - Needs to have a back button
 
 
 Usability playtesting results:
@@ -22,7 +25,6 @@ Transport Backlog:
     (City of Um teleport incantation; not sure if same as tome)
     (((Runespan portal, runespan pads on high floor to east and then north)))
     (and the fishing platform and entrana connections as mentioned above)
-    Kag Ship transports
     Wildy volcano stepping stone and cliff climb
     Dorgesh Khaan: Grapple hooks
                    Stairs up to the agility arena

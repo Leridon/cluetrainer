@@ -5,6 +5,7 @@ import * as lodash from "lodash";
 import {ScreenRectangle} from "./ScreenRectangle";
 import todo = util.todo;
 import uuid = util.uuid;
+import {Circle} from "../math/Circle";
 
 export class OverlayGeometry {
   private is_frozen = false
@@ -57,7 +58,7 @@ export class OverlayGeometry {
     return this
   }
 
-  circle(center: Vector2, radius: number, resolution: number = 8,
+  circle(circle: Circle, resolution: number = 8,
          stroke: OverlayGeometry.StrokeOptions = OverlayGeometry.StrokeOptions.DEFAULT): this {
 
     const points: Vector2[] = []
@@ -66,8 +67,8 @@ export class OverlayGeometry {
       const alpha = (i / resolution) * 2 * Math.PI;
 
       points.push({
-        x: center.x + ~~(Math.cos(alpha) * radius),
-        y: center.y + ~~(Math.sin(alpha) * radius)
+        x: circle.center.x + ~~(Math.cos(alpha) * circle.radius),
+        y: circle.center.y + ~~(Math.sin(alpha) * circle.radius)
       })
     }
 
