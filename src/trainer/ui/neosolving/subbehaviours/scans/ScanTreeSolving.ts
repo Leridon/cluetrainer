@@ -60,31 +60,6 @@ function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): Aug
   return searchUp(tree)
 }
 
-function determineChild(node: AugmentedScanTreeNode, info: ScanControlPrototype.Input): AugmentedScanTreeNode {
-  {
-    const candidates = node.children.filter(c => {
-      return (info.pulse == undefined || c.key.pulse == info.pulse) &&
-        (info.different_level == undefined || (c.key.different_level ?? false) == info.different_level)
-    })
-
-    if (candidates.length == 1) return candidates[0].value
-  }
-
-  if (info.different_level != undefined) {
-    const candidates = node.children.filter(c => (c.key.different_level ?? false) == info.different_level)
-
-    if (candidates.length == 1) return candidates[0].value
-  }
-
-  if (info.pulse != undefined) {
-    const candidates = node.children.filter(c => c.key.pulse == info.pulse)
-
-    if (candidates.length == 1) return candidates[0].value
-  }
-
-  return undefined
-}
-
 function asFloorDistinctionNode(node: AugmentedScanTreeNode): { level: floor_t, node: AugmentedScanTreeNode }[] {
   if (node.depth != 0) return null
   if (node.children.length != 2) return null
@@ -135,11 +110,7 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
       this.scan_panel_overlay = this.withSub(new ScanPanelOverlay(this.scan_panel_capture_service))
       this.scan_input_control = this.withSub(new ScanControlPrototype(this.parent.app.main_hotkey, this.scan_panel_capture_service))
 
-      this.scan_input_control.onInput(input => {
-        const candidate = determineChild(this.node, input)
-
-        if (candidate) this.setNode(candidate)
-      })
+      this.scan_input_control.onNodeSelection(node => this.setNode(node))
     }
   }
 
@@ -300,6 +271,8 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
   setNode(node: ScanTree.Augmentation.AugmentedScanTreeNode) {
     if (node == this.node) return
     this.node = node
+
+    this.scan_input_control.setActiveNode(node)
 
     if (node.children.some(c => c.key.pulse != 3) || node.remaining_candidates.length <= 1) this.parent.layer.scan_layer.setSpotOrder(null)
     else this.parent.layer.scan_layer.setSpotOrder(this.method.method.tree.ordered_spots)

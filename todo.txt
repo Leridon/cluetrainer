@@ -7,6 +7,8 @@ Elite Playtesting:
 
     - Need to see what will be auto commited in the interface
     - Needs to have a back button
+    - Commiting an angle sometimes has a noticeable delay
+    - Scan Overlay should hide after x seconds without valid read
 
 
 Usability playtesting results:
