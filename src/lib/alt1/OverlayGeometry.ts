@@ -77,7 +77,7 @@ export class OverlayGeometry {
     return this
   }
 
-  progressbar(center: Vector2, length: number, progress: number, width: number = 5,
+  progressbar(center: Vector2, length: number, progress: number, thickness: number = 5,
               contrast_border: number = 2,
               done_color: number = mixColor(0, 255, 0),
               remaining_color: number = mixColor(255, 0, 0)
@@ -88,9 +88,9 @@ export class OverlayGeometry {
     const mid = Vector2.snap(Vector2.add(start, {x: lodash.clamp(progress, 0, 1) * length, y: 0}))
 
     this.line(Vector2.add(start, {x: -contrast_border, y: 0}), Vector2.add(end, {x: contrast_border, y: 0}),
-      {color: mixColor(1, 1, 1), width: width + 2 * contrast_border})
-    this.line(start, mid, {color: done_color, width: width})
-    this.line(mid, end, {color: remaining_color, width: width})
+      {color: mixColor(1, 1, 1), width: thickness + 2 * contrast_border})
+    this.line(start, mid, {color: done_color, width: thickness})
+    this.line(mid, end, {color: remaining_color, width: thickness})
   }
 
   text(text: string, position: Vector2,

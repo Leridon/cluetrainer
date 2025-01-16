@@ -1,6 +1,5 @@
 import Behaviour from "../../../../../lib/ui/Behaviour";
 import {Vector2} from "../../../../../lib/math";
-import {Process} from "../../../../../lib/Process";
 import {OverlayGeometry} from "../../../../../lib/alt1/OverlayGeometry";
 import {util} from "../../../../../lib/util/util";
 import {ewent, observe} from "../../../../../lib/reactive";
@@ -9,6 +8,8 @@ import {Alt1MainHotkeyEvent} from "../../../../../lib/alt1/Alt1MainHotkeyEvent";
 import {Circle} from "../../../../../lib/math/Circle";
 import {Alt1Overlay} from "../../../../../lib/alt1/Alt1Overlay";
 import {ScanTree} from "../../../../../lib/cluetheory/scans/ScanTree";
+import {Scans} from "../../../../../lib/runescape/clues/scans";
+import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
 import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 
 
@@ -20,7 +21,7 @@ export class ScanControlPrototype extends Behaviour {
     private panel_reader: ScanCaptureService) {
     super();
 
-    this.overlay = this.withSub(new ScanControlPrototype.Overlay(hotkey))
+    this.overlay = this.withSub(new ScanControlPrototype.Overlay(hotkey, {position: {x: 911, y: 240}, width: 500, height: 200}))
 
     panel_reader.onStateChange(s => this.overlay.setScanPanelState(s))
 
@@ -46,9 +47,8 @@ export namespace ScanControlPrototype {
   import A1Color = util.A1Color;
   import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
   import count = util.count;
-  export const position: Vector2 = {x: 1105, y: 449}
-  export const size: number = 100
-  export const space: number = 10
+  import Pulse = Scans.Pulse;
+  import plural = util.plural;
 
   function isDetectable(node: AugmentedScanTreeNode): boolean {
     if (!node.parent) return false
@@ -60,7 +60,6 @@ export namespace ScanControlPrototype {
   }
 
   export class Overlay extends Alt1Overlay {
-    public back: Circle = null
     public single: Circle = null
     public double: Circle = null
 
@@ -71,18 +70,24 @@ export namespace ScanControlPrototype {
 
     public node_selection = ewent<AugmentedScanTreeNode>()
 
-    constructor(private hotkey: Alt1MainHotkeyEvent) {
+    constructor(private hotkey: Alt1MainHotkeyEvent,
+                private config: Overlay.Config
+    ) {
       super(true);
 
       this.hotkey.subscribe(1, event => {
+        console.log(event.mouse)
+
+        if (!this.node) return
 
         const node = ((): AugmentedScanTreeNode => {
-          if (this.back && Circle.contains(this.back, event.mouse)) return this.node.parent.node
+          if (this.back && ScreenRectangle.contains(this.back, event.mouse)) return this.node.parent.node
 
-          if (this.state.value()?.auto_input) return determineChild(this.node, this.state.value()?.auto_input)
+          const option = this.buttons.find(b => ScreenRectangle.contains(b.area, event.mouse))
 
-          if (Circle.contains(this.single, event.mouse)) return determineChild(this.node, {pulse: 1, different_level: this.panel_state.different_level})
-          if (Circle.contains(this.double, event.mouse)) return determineChild(this.node, {pulse: 2, different_level: this.panel_state.different_level})
+          if (option) return determineChild(this.node, option.input)
+
+          if (this.auto_info) return determineChild(this.node, this.auto_info)
 
           return null
         })()
@@ -122,8 +127,43 @@ export namespace ScanControlPrototype {
         return null
       })();
 
-      this.state.set({back: this.node.parent != undefined, auto_input: auto_input, no_children: this.node.children.every(c => c.key.pulse == 3)})
+
+      const all_options: Overlay.State["options"] = [
+        [
+          {pulse: {pulse: 1, different_level: false}, possible: true},
+          {pulse: {pulse: 2, different_level: false}, possible: true},
+          {pulse: {pulse: 3, different_level: false}, possible: true}
+        ],
+        [
+          {pulse: {pulse: 1, different_level: true}, possible: true},
+          {pulse: {pulse: 2, different_level: true}, possible: true},
+          {pulse: {pulse: 3, different_level: true}, possible: true}
+        ]
+      ]
+
+      let filtered = all_options
+        .map(row => row.filter(o => determineChild(this.node, {pulse: o.pulse.pulse, different_level: o.pulse.different_level ?? false})))
+
+      filtered.forEach(row => row.forEach(option => {
+        if (option.pulse.pulse == 3 && !this.panel_state.triple) option.possible = false
+        if (option.pulse.different_level != this.panel_state.different_level) option.possible = false
+      }))
+
+      // filtered = filtered.map(row => row.filter(o => o.possible))
+
+      this.state.set({
+        back: this.node.parent != undefined, options: filtered.filter(r => r.length > 0)
+      })
     }
+
+    private buttons: {
+      input: Pulse,
+      area: ScreenRectangle
+    }[] = []
+
+    private back: ScreenRectangle = null
+
+    private auto_info: Pulse = null
 
     render(overlay: OverlayGeometry) {
       const state = this.state.value()
@@ -133,49 +173,117 @@ export namespace ScanControlPrototype {
 
       if (!state) return
 
-      this.single = {
-        center: Vector2.add(position, {x: -(size + space), y: 0}),
-        radius: size
-      }
+      this.buttons = []
+      this.back = null
+      this.auto_info = null
 
-      this.double = {
-        center: Vector2.add(position, {x: (size + space), y: 0}),
-        radius: size
-      }
+      const GUTTER = 5
 
-      this.back = state.back
-        ? {center: Vector2.add(position, {x: 0, y: -60}), radius: 30}
-        : null
+      const origin = this.config.position
 
-      const auto_color: number = state.auto_input ? A1Color.fromHex(pulsecolors[state.auto_input?.pulse ?? (state.auto_input?.different_level ? 0 : undefined)]) : null
-
-      if (!state.no_children) {
-        overlay.circle(this.single, 16, {color: auto_color ?? A1Color.fromHex("#0f91d3"), width: 3})
-        overlay.circle(this.double, 16, {color: auto_color ?? A1Color.fromHex("#dc9936"), width: 3})
+      const back: ScreenRectangle = {
+        origin: origin,
+        size: {x: 80, y: 25}
       }
 
       if (state.back) {
-        overlay.circle(this.back, 20, {color: A1Color.fromHex("#b836dc"), width: 3})
-        overlay.text("Back", Vector2.add(position, {x: 0, y: -60}), {color: A1Color.fromHex("#b836dc"), width: 12, centered: true})
+        this.back = back
+
+        overlay.rect2(back, {
+          width: 2,
+          color: A1Color.fromHex("#ffffff")
+        })
+
+        overlay.rect2(back, {
+          width: 1,
+          color: A1Color.fromHex("#010101")
+        })
+
+        overlay.text("< Back", Vector2.add(ScreenRectangle.center(back), {x: 2, y: -2}), {
+          width: 16,
+          color: A1Color.fromHex("#FFFFFF"),
+          centered: true
+        })
       }
 
-      if (state.auto_input) {
-        let pretty = ["Single", "Double", "Triple"][state.auto_input.pulse - 1]
+      const needed_info = Math.log2(this.node.root.root_node.remaining_candidates.length)
+      const remaining_info = Math.log2(this.node.remaining_candidates.length)
 
-        if (state.auto_input.different_level) pretty += " (Different Level)"
+      const progress = 1 - (remaining_info / needed_info)
 
-        overlay.text(`Auto: ${pretty}`, position, {color: A1Color.fromHex("#ffffff"), width: 15, centered: true, shadow: true})
-      }
+      //const progress = 1 - this.node.remaining_candidates.length / this.node.root.root_node.remaining_candidates.length
+
+      const PROGRESS_BAR_HEIGHT = 3
+      const PROGRESS_BAR_BORDER = 2
+      const PROGRESS_BAR_TOTAL_HEIGHT = PROGRESS_BAR_BORDER + PROGRESS_BAR_HEIGHT
+
+      const progress_bar_space = {x: this.config.width - 2 * back.size.x, y: back.size.y}
+
+      const progress_bar_center = Vector2.add(back.origin, {x: back.size.x, y: 0}, Vector2.scale(0.5, {x: progress_bar_space.x, y: PROGRESS_BAR_TOTAL_HEIGHT}))
+
+      overlay.progressbar(progress_bar_center, progress_bar_space.x - 2 * GUTTER, progress, PROGRESS_BAR_HEIGHT, PROGRESS_BAR_BORDER)
+      overlay.text(`${plural(this.node.remaining_candidates.length, "spot")} remain`, Vector2.add(progress_bar_center, {x: 0, y: 12}), {
+        width: 12,
+        color: A1Color.fromHex("#FFFFFF"),
+      })
+
+      const rows_n = state.options.length
+
+      const row_height = (this.config.height - (rows_n - 1) * GUTTER) / rows_n
+
+      const options_origin = Vector2.add(this.config.position, {x: 0, y: back.size.y + GUTTER})
+
+      this.buttons = []
+
+      const possibles = state.options.flat().filter(o => o.possible)
+
+      const only_one_possible = possibles.length == 1
+
+      if (only_one_possible) this.auto_info = possibles[0].pulse
+
+      state.options.forEach((row, row_i) => {
+        const column_n = row.length
+
+        const column_width = (this.config.width - (column_n - 1) * GUTTER) / column_n
+        const row_origin = Vector2.add(options_origin, {x: 0, y: row_i * (row_height + GUTTER)})
+
+        row.forEach((option, column_i) => {
+          const option_origin = Vector2.add(row_origin, {x: column_i * (column_width + GUTTER), y: 0})
+
+          const rect: ScreenRectangle = {
+            origin: option_origin,
+            size: {x: column_width, y: row_height}
+          }
+
+          overlay.rect2(rect, {
+            width: (only_one_possible && option.possible) ? 8 : (option.possible ? 4 : 3),
+            color: A1Color.fromHex(pulsecolors[option.pulse.pulse])
+          })
+
+          overlay.rect2(rect, {
+            width: 2,
+            color: A1Color.fromHex("#010101")
+          })
+
+          this.buttons.push({area: rect, input: option.pulse})
+        })
+      })
     }
 
   }
 
   export namespace Overlay {
 
+    import Pulse = Scans.Pulse;
     export type State = {
       back: boolean,
-      auto_input?: Input,
-      no_children: boolean
+      options: { pulse: Pulse, possible: boolean }[][]
+    }
+
+    export type Config = {
+      position: Vector2,
+      width: number,
+      height: number
     }
   }
 
@@ -186,15 +294,15 @@ export namespace ScanControlPrototype {
     "#d51918"
   ]
 
-  export function determineChild(node: AugmentedScanTreeNode, info: ScanControlPrototype.Input): AugmentedScanTreeNode {
+  export function determineChild(node: AugmentedScanTreeNode, info: Pulse): AugmentedScanTreeNode {
     {
       const candidates = node.children.filter(c => {
         return (info.pulse == undefined || c.key.pulse == info.pulse) &&
-          (info.different_level == undefined || (c.key.different_level ?? false) == info.different_level)
+          (info.different_level == undefined || (c.key.different_level ?? false) == (info.different_level ?? false))
       })
 
       if (candidates.length == 1) return candidates[0].value
-    }
+    }/*
 
     if (info.different_level != undefined) {
       const candidates = node.children.filter(c => (c.key.different_level ?? false) == info.different_level)
@@ -206,45 +314,9 @@ export namespace ScanControlPrototype {
       const candidates = node.children.filter(c => c.key.pulse == info.pulse)
 
       if (candidates.length == 1) return candidates[0].value
-    }
+    }*/
 
     return undefined
-  }
-
-
-  export class OverlayProcess extends Process.Interval {
-    public overlay: OverlayGeometry = null
-
-    public single: Circle = null
-    public double: Circle = null
-
-    constructor() {
-      super(5000);
-
-      this.overlay = new OverlayGeometry()
-    }
-
-    tick(): void {
-
-      this.single = {
-        center: Vector2.add(position, {x: -(size + space), y: 0}),
-        radius: size
-      }
-
-      this.double = {
-        center: Vector2.add(position, {x: (size + space), y: 0}),
-        radius: size
-      }
-
-      this.overlay.clear()
-
-      this.overlay.circle(this.single, 16, {color: A1Color.fromHex("#0000FF"), width: 3})
-      this.overlay.circle(this.double, 16, {color: A1Color.fromHex("#dc9936"), width: 3})
-
-      console.log("Rendering")
-
-      this.overlay.render() // Refresh rendering periodically
-    }
   }
 
   export type Input = {
