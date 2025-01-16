@@ -145,7 +145,7 @@ export namespace ScanControlPrototype {
         .map(row => row.filter(o => determineChild(this.node, {pulse: o.pulse.pulse, different_level: o.pulse.different_level ?? false})))
 
       filtered.forEach(row => row.forEach(option => {
-        if (option.pulse.pulse == 3 && !this.panel_state.triple) option.possible = false
+        if (option.pulse.pulse == 3 != this.panel_state.triple) option.possible = false
         if (option.pulse.different_level != this.panel_state.different_level) option.possible = false
       }))
 
