@@ -6,7 +6,6 @@ import {ScreenRectangle} from "../ScreenRectangle";
 import {Vector2} from "../../math";
 import * as a1lib from "alt1";
 import {OverlayGeometry} from "../OverlayGeometry";
-import {Alt1Color} from "../Alt1Color";
 import observe_combined = Observable.observe_combined;
 
 export abstract class InteractiveOverlay extends Alt1Overlay {
@@ -29,18 +28,31 @@ export abstract class InteractiveOverlay extends Alt1Overlay {
     super.begin();
 
     Alt1.instance().main_hotkey.subscribe(10, event => {
-      if (InteractiveOverlay.Bounds.contains(this.bounds, event.mouse)) this.main_hotkey_pressed.trigger(this)
-    })
+      if (!this.visible.value()) return
+      if (InteractiveOverlay.Bounds.contains(this.bounds, event.mouse)) {
+        event.consume()
+        this.main_hotkey_pressed.trigger(this)
+      }
+    }).bindTo(this.lifetime_manager)
 
     Alt1.instance().main_hotkey.subscribe(9, event => {
-      if (InteractiveOverlay.Bounds.contains(this.bounds, event.mouse)) this.main_hotkey_pressed.trigger(this)
-    })
+      if (!this.visible.value()) return
+      if (this.is_default_action.value()) {
+        event.consume()
+        this.main_hotkey_pressed.trigger(this)
+      }
+    }).bindTo(this.lifetime_manager)
 
     Alt1.instance().context_menu.subscribe(area => {
+      if (!this.visible.value()) return
       const pos = a1lib.getMousePosition()
 
-      if (InteractiveOverlay.Bounds.contains(this.bounds, pos)) this.main_hotkey_pressed.trigger(this)
-    })
+      if (InteractiveOverlay.Bounds.contains(this.bounds, pos)) this.right_clicked.trigger(this)
+    }).bindTo(this.lifetime_manager)
+
+    Alt1.instance().mouse_tracking.subscribe(pos => {
+      this.hovered.set(InteractiveOverlay.Bounds.contains(this.bounds, pos))
+    }).bindTo(this.lifetime_manager)
   }
 
   private static _default_action = observe<InteractiveOverlay>(null)
@@ -60,6 +72,10 @@ export abstract class InteractiveOverlay extends Alt1Overlay {
 
   static setDefaultElement(overlay: InteractiveOverlay) {
     this._default_action.set(overlay)
+  }
+
+  private static setHovered(overlay: InteractiveOverlay) {
+
   }
 }
 
@@ -85,26 +101,61 @@ export namespace InteractiveOverlay {
   }
 
   export class Button extends InteractiveOverlay {
-    constructor(private area: ScreenRectangle, private config: Button.Config) {
+    constructor(protected area: ScreenRectangle, protected config: Button.Config) {
       super();
 
-      this.setBounds({type: "rectangle", area: area})
+      this.setBounds(area ? {type: "rectangle", area: area} : null)
     }
 
-    render(overlay: OverlayGeometry) {
+    private text = observe<{
+      text: string,
+      font: OverlayGeometry.TextOptions
+    }>(null).structuralEquality()
+
+    renderSelf(overlay: OverlayGeometry) {
+      if (!this.area) return
+
       const hovered = this.render_as_hovered.value()
 
       const stroke = hovered ? (this.config.active_stroke ?? this.config.stroke) : this.config.stroke
 
-      overlay.rect2(this.area, stroke)
+      if (this.config.constrast) {
+        overlay.rect2(this.area, {
+          width: stroke.width + 2 * this.config.constrast.width,
+          color: this.config.constrast.color
+        })
+      }
+
+      const text = this.text.value()
+
+      const extension = this.config.constrast ? -this.config.constrast.width : 0
+
+      overlay.rect2(ScreenRectangle.extend(this.area, {x: extension, y: extension}), stroke)
+
+      if (text?.text && text?.font) {
+        overlay.text(text.text, Vector2.add(ScreenRectangle.center(this.area), {x: 2, y: -2}), {
+          ...text.font,
+          centered: true
+        })
+      }
+    }
+
+    setPosition(area: ScreenRectangle) {
+      this.area = area
+
+      this.setBounds(area ? {type: "rectangle", area: area} : null)
+
+      this.refresh()
+    }
+
+    setText(text: string, font?: OverlayGeometry.TextOptions) {
+      this.text.set({text, font: font ?? this.text.value()?.font})
     }
   }
 
   export namespace Button {
     import StrokeOptions = OverlayGeometry.StrokeOptions;
     export type Config = {
-      color: Alt1Color,
-
       stroke: StrokeOptions,
       active_stroke: StrokeOptions,
       constrast?: StrokeOptions

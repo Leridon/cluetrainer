@@ -5,7 +5,7 @@ import {Process} from "../Process";
 
 export class Alt1MouseTracking {
   private process: Process
-  private position = observe<Vector2>(null)
+  private position = observe<Vector2>(null).structuralEquality()
 
   constructor() {}
 
@@ -28,8 +28,9 @@ export class Alt1MouseTracking {
 
         self.position.set(a1lib.getMousePosition())
       }
-
     }
+
+    this.process.run()
   }
 
   subscribe(f: (_: Vector2) => void): EwentHandler<any> {

@@ -34,6 +34,7 @@ export class Alt1Color {
 
 export namespace Alt1Color {
   export const black = Alt1Color.fromHex("#010101") // #000000 is considered transparent!
+  export const gray = Alt1Color.fromHex("#808080") // #000000 is considered transparent!
   export const white = Alt1Color.fromHex("#FFFFFF")
   export const red = Alt1Color.fromHex("#FF0000")
   export const green = Alt1Color.fromHex("#00FF00")

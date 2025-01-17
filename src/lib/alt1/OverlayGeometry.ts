@@ -17,6 +17,10 @@ export class OverlayGeometry {
 
   private geometry: OverlayGeometry.Geometry[] = []
 
+  setGroupName(name: string): void {
+    this.group_name = name
+  }
+
   withTime(time: number): this {
     this.alive_time = time
     return this
