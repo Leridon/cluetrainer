@@ -1,12 +1,11 @@
 import {Alt1Overlay} from "../Alt1Overlay";
-import {ewent, Observable, observe} from "../../reactive";
+import {ewent, observe} from "../../reactive";
 import {Alt1} from "../Alt1";
 import {Circle} from "../../math/Circle";
 import {ScreenRectangle} from "../ScreenRectangle";
 import {Vector2} from "../../math";
 import * as a1lib from "alt1";
 import {OverlayGeometry} from "../OverlayGeometry";
-import observe_combined = Observable.observe_combined;
 
 export abstract class InteractiveOverlay extends Alt1Overlay {
   public readonly main_hotkey_pressed = ewent<this>()
@@ -14,14 +13,14 @@ export abstract class InteractiveOverlay extends Alt1Overlay {
 
   private bounds: InteractiveOverlay.Bounds = null
 
-  private hovered = observe(false)
-  private is_default_action = observe(false)
-  protected render_as_hovered = observe_combined({hovered: this.hovered, is_default_action: this.is_default_action}).map(e => e.hovered || e.is_default_action)
+  protected hovered = observe(false)
+  protected is_default_action = observe(false)
 
-  constructor() {
+  protected constructor() {
     super(true);
 
-    this.render_as_hovered.subscribe2(() => this.refresh()).bindTo(this.lifetime_manager)
+    this.hovered.subscribe(() => this.refresh())
+    this.is_default_action.subscribe(() => this.refresh())
   }
 
   protected begin() {
@@ -51,7 +50,12 @@ export abstract class InteractiveOverlay extends Alt1Overlay {
     }).bindTo(this.lifetime_manager)
 
     Alt1.instance().mouse_tracking.subscribe(pos => {
-      this.hovered.set(InteractiveOverlay.Bounds.contains(this.bounds, pos))
+      const h = InteractiveOverlay.Bounds.contains(this.bounds, pos)
+
+      this.hovered.set(h)
+
+      if (h) InteractiveOverlay.setHovered(this)
+      else if (InteractiveOverlay._hovered.value() == this) InteractiveOverlay.setHovered(null)
     }).bindTo(this.lifetime_manager)
   }
 
@@ -59,6 +63,13 @@ export abstract class InteractiveOverlay extends Alt1Overlay {
     .subscribe((newValue, oldValue) => {
       if (oldValue) oldValue.is_default_action.set(false)
       if (newValue) newValue.is_default_action.set(true)
+    })
+
+  protected static _hovered = observe<InteractiveOverlay>(null)
+    .subscribe((newValue, oldValue) => {
+      if (newValue?.isHovered() != oldValue?.isHovered()) {
+        InteractiveOverlay._default_action.value()?.refresh()
+      }
     })
 
   public makeDefaultAction() {
@@ -70,12 +81,22 @@ export abstract class InteractiveOverlay extends Alt1Overlay {
     return this
   }
 
+  public isHovered(): boolean {
+    return this.hovered.value() && this.isVisible()
+  }
+
   static setDefaultElement(overlay: InteractiveOverlay) {
     this._default_action.set(overlay)
   }
 
   private static setHovered(overlay: InteractiveOverlay) {
+    this._hovered.set(overlay)
+  }
 
+  public isDefaultHovered(): boolean {
+    const hovered = InteractiveOverlay._hovered.value()
+
+    return this.is_default_action.value() && (hovered == null || !hovered.isVisible() || !hovered.hovered.value())
   }
 }
 
@@ -115,7 +136,7 @@ export namespace InteractiveOverlay {
     renderSelf(overlay: OverlayGeometry) {
       if (!this.area) return
 
-      const hovered = this.render_as_hovered.value()
+      const hovered = this.hovered.value() || this.isDefaultHovered()
 
       const stroke = hovered ? (this.config.active_stroke ?? this.config.stroke) : this.config.stroke
 
@@ -159,10 +180,6 @@ export namespace InteractiveOverlay {
       stroke: StrokeOptions,
       active_stroke: StrokeOptions,
       constrast?: StrokeOptions
-    }
-
-    export namespace Config {
-
     }
   }
 }

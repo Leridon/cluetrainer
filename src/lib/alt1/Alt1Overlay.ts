@@ -28,7 +28,7 @@ export abstract class Alt1Overlay extends Behaviour {
   }
 
   public isVisible(): boolean {
-    return this.visible.value()
+    return this.isActive() && this.visible.value()
   }
 
   public refresh() {

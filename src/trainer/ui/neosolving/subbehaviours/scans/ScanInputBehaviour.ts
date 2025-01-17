@@ -1,10 +1,8 @@
 import Behaviour from "../../../../../lib/ui/Behaviour";
 import {Vector2} from "../../../../../lib/math";
 import {OverlayGeometry} from "../../../../../lib/alt1/OverlayGeometry";
-import {util} from "../../../../../lib/util/util";
 import {ewent, observe} from "../../../../../lib/reactive";
 import {ScanCaptureService} from "./ScanPanelReader";
-import {Alt1MainHotkeyEvent} from "../../../../../lib/alt1/Alt1MainHotkeyEvent";
 import {Circle} from "../../../../../lib/math/Circle";
 import {Alt1Overlay} from "../../../../../lib/alt1/Alt1Overlay";
 import {ScanTree} from "../../../../../lib/cluetheory/scans/ScanTree";
@@ -46,45 +44,8 @@ export class ScanControlPrototype extends Behaviour {
 
 export namespace ScanControlPrototype {
   import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
-  import count = util.count;
   import Pulse = Scans.Pulse;
-
-  function isDetectable(node: AugmentedScanTreeNode): boolean {
-    if (!node.parent) return false
-
-    if (node.parent.key.pulse == 3 && (!node.parent.key.spot || count(node.parent.node.children, c => c.key.pulse == 3) == 1)) return true
-
-    // If it's the only one with/without different level, it's also detectable
-    return count(node.parent.node.children, c => (c.key.different_level ?? false) == (node.parent.key.different_level ?? false)) == 1
-  }
-
-  class OverlayButton extends Alt1Overlay {
-    constructor(private config: {
-      area: ScreenRectangle,
-      text?: {
-        text: string,
-
-      }
-    }) {
-      super(true);
-
-    }
-
-    renderSelf(overlay: OverlayGeometry) {
-    }
-
-    checkHover(position: Vector2) {
-
-    }
-
-    checkClick(event: Alt1MainHotkeyEvent.Event) {
-
-    }
-  }
-
-  namespace OverlayButton {
-
-  }
+  import SimplifiedPulseForContext = Scans.Pulse.SimplifiedPulseForContext;
 
   export class Overlay extends Alt1Overlay {
     public single: Circle = null
@@ -160,7 +121,9 @@ export namespace ScanControlPrototype {
     }
 
     setScanPanelState(state: ScanCaptureService.ScanState) {
-      this.panel_state = state
+      const meerkats_changed = this.panel_state?.meerkats != state.meerkats
+
+      this.panel_state = {...state}
 
       this.pulse_buttons.forEach(row => row.forEach(button => {
         const impossible = button.pulse.pulse == 3 != this.panel_state.triple
@@ -170,6 +133,8 @@ export namespace ScanControlPrototype {
       }))
 
       this.updatePossible()
+
+      if (meerkats_changed) this.refresh()
     }
 
     private updatePossible() {
@@ -207,14 +172,34 @@ export namespace ScanControlPrototype {
 
       const progress_bar_center = Vector2.add(back.origin, {x: back.size.x, y: 0}, Vector2.scale(0.5, {x: progress_bar_space.x, y: PROGRESS_BAR_TOTAL_HEIGHT}))
 
-      overlay.progressbar(progress_bar_center, progress_bar_space.x - 2 * GUTTER, progress, PROGRESS_BAR_HEIGHT, PROGRESS_BAR_BORDER)
-      overlay.text(this.node.remaining_candidates.length != 1 ? `${this.node.remaining_candidates.length} spots remain` : "1 spot remains", Vector2.add(progress_bar_center, {
-        x: 0,
-        y: 12
-      }), {
-        width: 12,
-        color: Alt1Color.fromHex("#FFFFFF"),
-      })
+      const meerkats_assumed = this.node.root.raw.assumed_range == (this.node.root.clue.range + 5)
+
+      if (meerkats_assumed == this.panel_state.meerkats) {
+        overlay.progressbar(progress_bar_center, progress_bar_space.x - 2 * GUTTER, progress, PROGRESS_BAR_HEIGHT, PROGRESS_BAR_BORDER)
+        overlay.text(this.node.remaining_candidates.length != 1 ? `${this.node.remaining_candidates.length} spots remain` : "1 spot remains", Vector2.add(progress_bar_center, {
+          x: 0,
+          y: 12
+        }), {
+          width: 12,
+          color: Alt1Color.fromHex("#FFFFFF"),
+        })
+      } else {
+        const text = this.panel_state.meerkats
+          ? "Do not use meerkats for this scan tree!"
+          : "Meerkats required for this scan tree!"
+
+        overlay.text(text, Vector2.add(progress_bar_center, {
+          x: 0,
+          y: 12
+        }), {
+          width: 14,
+          color: Alt1Color.red,
+        })
+      }
+
+
+      if (this.node.root.raw.assumed_range)
+        this.panel_state.meerkats
 
       const visible_buttons = this.pulse_buttons.map(row => row.filter(b => b.isRelevant())).filter(r => r.length > 0)
 
@@ -223,6 +208,8 @@ export namespace ScanControlPrototype {
       const row_height = (this.config.height - (rows_n - 1) * GUTTER) / rows_n
 
       const options_origin = Vector2.add(this.config.position, {x: 0, y: back.size.y + GUTTER})
+
+      const context = visible_buttons.flat().map(b => b.pulse)
 
       visible_buttons.forEach((row, row_i) => {
         const column_n = row.length
@@ -238,7 +225,7 @@ export namespace ScanControlPrototype {
             size: {x: column_width, y: row_height}
           }
 
-          option.setPosition(rect)
+          option.setPositionAndContext(rect, context)
         })
       })
     }
@@ -253,12 +240,8 @@ export namespace ScanControlPrototype {
 
   export namespace Overlay {
 
-    import Pulse = Scans.Pulse;
-    export type State = {
-      back: boolean,
-      options: { pulse: Pulse, possible: boolean }[][]
-    }
-
+    import simplify_with_context = Scans.Pulse.simplify_with_context;
+    import SimplifiedPulseForContext = Scans.Pulse.SimplifiedPulseForContext;
     export type Config = {
       position: Vector2,
       width: number,
@@ -283,6 +266,26 @@ export namespace ScanControlPrototype {
         })
 
         this.relevant.subscribe(v => this.setVisible(v))
+
+        this.setText(null, {
+          width: 12,
+          color: Alt1Color.white,
+          shadow: true
+        })
+      }
+
+      renderSelf(overlay: OverlayGeometry) {
+        super.renderSelf(overlay);
+
+        if (!this.area) return
+
+        if (this.is_default_action.value()) {
+          overlay.text("Auto", Vector2.add(this.area.origin, {x: this.area.size.x - 30, y: 20}), {
+            color: Alt1Color.white,
+            centered: true,
+            width: 12
+          })
+        }
       }
 
       setRelevant(v: boolean) {
@@ -300,11 +303,35 @@ export namespace ScanControlPrototype {
       isPossible(): boolean {
         return this.possible.value()
       }
+
+      private context: SimplifiedPulseForContext
+
+      setPositionAndContext(position: ScreenRectangle, context: Pulse[]) {
+        this.context = simplify_with_context(this.pulse, context)
+
+        const txt = text[this.context.text]
+
+        if (txt) {
+          if (position.size.x > 100) this.setText(txt.long)
+          else this.setText(txt.short)
+        } else this.setText(null)
+
+        const color = this.context.type ? pulsecolors[this.context.type] : pulsecolors[this.context.text == "DL" ? 0 : 1]
+
+        this.config.stroke.color = color
+        this.config.active_stroke.color = color
+
+        this.setPosition(position)
+      }
     }
   }
 
+  const text: Record<SimplifiedPulseForContext["text"], { long: string, short: string }> = {
+    DL: {long: "Different Level", short: "DL"}, TF: {long: "Too Far", short: "TF"}
+  }
+
   const pulsecolors: Alt1Color[] = [
-    Alt1Color.fromHex("#00ff2a"), // 0 is special for "different level"
+    Alt1Color.fromHex("#8adc13"), // 0 is special for "different level"
     Alt1Color.fromHex("#0f91d3"),
     Alt1Color.fromHex("#e1a53f"),
     Alt1Color.fromHex("#d51918")
@@ -318,19 +345,7 @@ export namespace ScanControlPrototype {
       })
 
       if (candidates.length == 1) return candidates[0].value
-    }/*
-
-    if (info.different_level != undefined) {
-      const candidates = node.children.filter(c => (c.key.different_level ?? false) == info.different_level)
-
-      if (candidates.length == 1) return candidates[0].value
     }
-
-    if (info.pulse != undefined) {
-      const candidates = node.children.filter(c => c.key.pulse == info.pulse)
-
-      if (candidates.length == 1) return candidates[0].value
-    }*/
 
     return undefined
   }

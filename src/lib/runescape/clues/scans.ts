@@ -89,10 +89,12 @@ export namespace Scans {
       }
     }
 
-    export function simplify_with_context(pulse: Pulse, context: Pulse[]): {
+    export type SimplifiedPulseForContext = {
       type: 1 | 2 | 3 | null,
       text: "DL" | "TF" | null
-    } {
+    }
+
+    export function simplify_with_context(pulse: Pulse, context: Pulse[]): SimplifiedPulseForContext {
       // Use the full word when it's not "different level"
       if (!pulse.different_level) {
         if (util.count(context, (p => p.different_level)) == context.length - 1) return {type: null, text: "TF"} // Is the only non-different level

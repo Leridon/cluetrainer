@@ -8,10 +8,6 @@ Elite Playtesting:
     - Fix tooltips for spots in scan trees.
 
     - Scan Overlay should hide after x seconds without valid read
-    - Need to see what will be auto commited in the interface
-    - Highlight hovered buttons.
-    - Fix contrast border for buttons
-
 
 Usability playtesting results:
     - It's not immediately obvious what Solve, Auto-Solve, and Fullscreen do
