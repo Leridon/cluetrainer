@@ -10,18 +10,19 @@ import {Alt1Overlay} from "../../../../../lib/alt1/Alt1Overlay";
 import {ScanTree} from "../../../../../lib/cluetheory/scans/ScanTree";
 import {Scans} from "../../../../../lib/runescape/clues/scans";
 import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
+import {Alt1} from "../../../../../lib/alt1/Alt1";
 import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
+import {Alt1Color} from "../../../../../lib/alt1/Alt1Color";
 
 
 export class ScanControlPrototype extends Behaviour {
   private overlay: ScanControlPrototype.Overlay
 
   constructor(
-    private hotkey: Alt1MainHotkeyEvent,
     private panel_reader: ScanCaptureService) {
     super();
 
-    this.overlay = this.withSub(new ScanControlPrototype.Overlay(hotkey, {position: {x: 911, y: 240}, width: 500, height: 200}))
+    this.overlay = this.withSub(new ScanControlPrototype.Overlay({position: {x: 911, y: 240}, width: 500, height: 200}))
 
     panel_reader.onStateChange(s => this.overlay.setScanPanelState(s))
 
@@ -59,6 +60,34 @@ export namespace ScanControlPrototype {
     return count(node.parent.node.children, c => (c.key.different_level ?? false) == (node.parent.key.different_level ?? false)) == 1
   }
 
+  class OverlayButton extends Alt1Overlay {
+    constructor(private config: {
+      area: ScreenRectangle,
+      text?: {
+        text: string,
+
+      }
+    }) {
+      super(true);
+
+    }
+
+    render(overlay: OverlayGeometry) {
+    }
+
+    checkHover(position: Vector2) {
+
+    }
+
+    checkClick(event: Alt1MainHotkeyEvent.Event) {
+
+    }
+  }
+
+  namespace OverlayButton {
+
+  }
+
   export class Overlay extends Alt1Overlay {
     public single: Circle = null
     public double: Circle = null
@@ -70,12 +99,10 @@ export namespace ScanControlPrototype {
 
     public node_selection = ewent<AugmentedScanTreeNode>()
 
-    constructor(private hotkey: Alt1MainHotkeyEvent,
-                private config: Overlay.Config
-    ) {
+    constructor(private config: Overlay.Config) {
       super(true);
 
-      this.hotkey.subscribe(1, event => {
+      Alt1.instance().main_hotkey.subscribe(1, event => {
         console.log(event.mouse)
 
         if (!this.node) return
@@ -101,6 +128,14 @@ export namespace ScanControlPrototype {
       this.state.subscribe(() => this.refresh())
     }
 
+    protected begin() {
+      super.begin();
+
+      Alt1.instance().mouse_tracking.subscribe(pos => {
+
+      })
+    }
+
     setNode(node: AugmentedScanTreeNode): void {
       this.node = node
       this.updateState()
@@ -114,19 +149,6 @@ export namespace ScanControlPrototype {
     private updateState() {
       if (!this.node) return
       if (!this.panel_state) return
-
-      const auto_input: Input = ((): Input => {
-        const panel_input: Input = {pulse: this.panel_state.triple ? 3 : undefined, different_level: this.panel_state.different_level}
-
-        if (determineChild(this.node, panel_input)) return panel_input
-
-        const undetectable = this.node.children.filter(c => !isDetectable(c.value))
-
-        if (undetectable.length == 1) return {pulse: undetectable[0].key.pulse, different_level: undefined}
-
-        return null
-      })();
-
 
       const all_options: Overlay.State["options"] = [
         [
@@ -191,17 +213,17 @@ export namespace ScanControlPrototype {
 
         overlay.rect2(back, {
           width: 2,
-          color: A1Color.fromHex("#ffffff")
+          color: Alt1Color.fromHex("#ffffff")
         })
 
         overlay.rect2(back, {
           width: 1,
-          color: A1Color.fromHex("#010101")
+          color: Alt1Color.fromHex("#010101")
         })
 
         overlay.text("< Back", Vector2.add(ScreenRectangle.center(back), {x: 2, y: -2}), {
           width: 16,
-          color: A1Color.fromHex("#FFFFFF"),
+          color: Alt1Color.fromHex("#FFFFFF"),
           centered: true
         })
       }
@@ -224,7 +246,7 @@ export namespace ScanControlPrototype {
       overlay.progressbar(progress_bar_center, progress_bar_space.x - 2 * GUTTER, progress, PROGRESS_BAR_HEIGHT, PROGRESS_BAR_BORDER)
       overlay.text(`${plural(this.node.remaining_candidates.length, "spot")} remain`, Vector2.add(progress_bar_center, {x: 0, y: 12}), {
         width: 12,
-        color: A1Color.fromHex("#FFFFFF"),
+        color: Alt1Color.fromHex("#FFFFFF"),
       })
 
       const rows_n = state.options.length
@@ -257,12 +279,12 @@ export namespace ScanControlPrototype {
 
           overlay.rect2(rect, {
             width: (only_one_possible && option.possible) ? 8 : (option.possible ? 4 : 3),
-            color: A1Color.fromHex(pulsecolors[option.pulse.pulse])
+            color: Alt1Color.fromHex(pulsecolors[option.pulse.pulse])
           })
 
           overlay.rect2(rect, {
             width: 2,
-            color: A1Color.fromHex("#010101")
+            color: Alt1Color.fromHex("#010101")
           })
 
           this.buttons.push({area: rect, input: option.pulse})

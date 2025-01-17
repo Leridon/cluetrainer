@@ -4,11 +4,13 @@ Elite Playtesting:
     - Being fast with b2b compasses and a skipped wizard between doesn't reset properly.
         - Some grayish backgrounds facilitate this because it thinks it's still open in the solved state
     - Floors of scan areas aren't visualized.
-
-    - Need to see what will be auto commited in the interface
-    - Needs to have a back button
     - Commiting an angle sometimes has a noticeable delay
+    - Fix tooltips for spots in scan trees.
+
     - Scan Overlay should hide after x seconds without valid read
+    - Need to see what will be auto commited in the interface
+    - Highlight hovered buttons.
+    - Fix contrast border for buttons
 
 
 Usability playtesting results:

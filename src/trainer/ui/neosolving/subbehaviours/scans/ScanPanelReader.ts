@@ -9,6 +9,7 @@ import Behaviour from "../../../../../lib/ui/Behaviour";
 import A1Color = util.A1Color;
 import {Vector2} from "../../../../../lib/math";
 import {EwentHandler, observe} from "../../../../../lib/reactive";
+import {Alt1Color} from "../../../../../lib/alt1/Alt1Color";
 
 
 export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
@@ -158,13 +159,13 @@ export class ScanPanelOverlay extends Behaviour {
     // TODO: Maybe replace 'DL' with an appropriate icon
     this.scan_interface_overlay.text("DL", Vector2.add(center, {x: -25, y: 0}), {
       centered: true,
-      color: state.different_level ? A1Color.fromHex("#8adc13") : A1Color.fromHex("#888888"),
+      color: state.different_level ? Alt1Color.fromHex("#8adc13") : Alt1Color.fromHex("#888888"),
       width: 15,
     })
 
     {
       const options: OverlayGeometry.StrokeOptions = {
-        color: state.triple ? A1Color.fromHex("#E00000") : A1Color.fromHex("#888888"),
+        color: state.triple ? Alt1Color.fromHex("#E00000") : Alt1Color.fromHex("#888888"),
         width: 2
       }
 
@@ -179,7 +180,7 @@ export class ScanPanelOverlay extends Behaviour {
     if (!state.meerkats) {
       this.scan_interface_overlay.text("No Meerkats", Vector2.add(center, {x: 0, y: 30}), {
         centered: true,
-        color: A1Color.fromHex("FF0000"),
+        color: Alt1Color.red,
         width: 15,
       })
     }

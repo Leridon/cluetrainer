@@ -7,6 +7,7 @@ import {NeedleImage} from "./NeedleImage";
 import {util} from "../../util/util";
 import * as lodash from "lodash";
 import A1Color = util.A1Color;
+import {Alt1Color} from "../Alt1Color";
 
 export class CapturedImage {
   private _name: string = undefined
@@ -188,7 +189,7 @@ export class CapturedImage {
 
     if (this._name) {
       overlay.text(this._name, this.screen_rectangle.origin,
-        {width: 10, centered: false, color: A1Color.fromHex("#FFFFFF")}
+        {width: 10, centered: false, color: Alt1Color.white}
       )
     }
 

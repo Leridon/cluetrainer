@@ -25,6 +25,8 @@ export abstract class Alt1Overlay extends Behaviour {
   }
 
   public refresh() {
+    if (!this.isActive()) return
+
     if (this.clear_before_render) this.overlay.clear()
 
     this.render(this.overlay)

@@ -50,6 +50,10 @@ export namespace Ewent {
       return h
     }
 
+    public handlerCount(): number {
+      return this.handlers.length
+    }
+
     /**
      * Triggers this event.
      * @param v

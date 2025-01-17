@@ -9,6 +9,7 @@ import over = OverlayGeometry.over;
 import {ScanSolving} from "./ScanSolving";
 import {util} from "../../../../../lib/util/util";
 import A1Color = util.A1Color;
+import { Alt1Color } from "lib/alt1/Alt1Color";
 
 export class ScanMinimapOverlay extends Behaviour {
   private minimap_interest: AbstractCaptureService.InterestToken<AbstractCaptureService.Options, MinimapReader.CapturedMinimap>
@@ -68,7 +69,7 @@ export class ScanMinimapOverlay extends Behaviour {
               this.minimap_overlay.polyline(
                 unit_square.map(v => Vector2.transform_point(v, transform)),
                 true, {
-                  color: A1Color.fromHex("#FF0000")
+                  color: Alt1Color.fromHex("#FF0000")
                 }
               )
             }
@@ -85,7 +86,7 @@ export class ScanMinimapOverlay extends Behaviour {
               this.minimap_overlay.polyline(
                 unit_square.map(v => Vector2.transform_point(v, transform2)),
                 true, {
-                  color: A1Color.fromHex("#FFFF00")
+                  color: Alt1Color.fromHex("#FFFF00")
                 }
               )
             }

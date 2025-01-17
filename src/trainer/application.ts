@@ -412,9 +412,6 @@ export class Application extends Behaviour {
 
   main_behaviour = this.withSub(new SingleBehaviour())
 
-  main_hotkey = new Alt1MainHotkeyEvent()
-  context_menu = new Alt1ContextMenuDetection()
-
   template_resolver = new TemplateResolver(
     {name: "surge", apply: () => [{type: "domelement", value: inlineimg('assets/icons/surge.png')}]},
     {name: "dive", apply: () => [{type: "domelement", value: inlineimg('assets/icons/dive.png')}]},

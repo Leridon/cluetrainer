@@ -6,6 +6,7 @@ import {ScreenRectangle} from "./ScreenRectangle";
 import todo = util.todo;
 import uuid = util.uuid;
 import {Circle} from "../math/Circle";
+import {Alt1Color} from "./Alt1Color";
 
 export class OverlayGeometry {
   private is_frozen = false
@@ -79,8 +80,8 @@ export class OverlayGeometry {
 
   progressbar(center: Vector2, length: number, progress: number, thickness: number = 5,
               contrast_border: number = 2,
-              done_color: number = mixColor(0, 255, 0),
-              remaining_color: number = mixColor(255, 0, 0)
+              done_color: Alt1Color = Alt1Color.green,
+              remaining_color: Alt1Color = Alt1Color.red
   ) {
     const start = Vector2.add(center, {x: -Math.floor(length / 2), y: 0},)
 
@@ -88,7 +89,7 @@ export class OverlayGeometry {
     const mid = Vector2.snap(Vector2.add(start, {x: lodash.clamp(progress, 0, 1) * length, y: 0}))
 
     this.line(Vector2.add(start, {x: -contrast_border, y: 0}), Vector2.add(end, {x: contrast_border, y: 0}),
-      {color: mixColor(1, 1, 1), width: thickness + 2 * contrast_border})
+      {color: Alt1Color.black, width: thickness + 2 * contrast_border})
     this.line(start, mid, {color: done_color, width: thickness})
     this.line(mid, end, {color: remaining_color, width: thickness})
   }
@@ -128,7 +129,7 @@ export class OverlayGeometry {
           const origin = Rectangle.screenOrigin(element.rect)
 
           alt1.overLayRect(
-            element.options.color,
+            element.options.color.for_overlay,
             Math.round(origin.x), Math.round(origin.y),
             Math.round(Rectangle.width(element.rect)), Math.round(Rectangle.height(element.rect)),
             this.alive_time,
@@ -138,7 +139,7 @@ export class OverlayGeometry {
           break;
         case "line":
           alt1.overLayLine(
-            element.options.color,
+            element.options.color.for_overlay,
             element.options.width,
             Math.round(element.from.x), Math.round(element.from.y),
             Math.round(element.to.x), Math.round(element.to.y),
@@ -146,7 +147,7 @@ export class OverlayGeometry {
           )
           break;
         case "text":
-          alt1.overLayTextEx(element.text, element.options.color, element.options.width ?? 20,
+          alt1.overLayTextEx(element.text, element.options.color.for_overlay, element.options.width ?? 20,
             Math.round(element.position.x), Math.round(element.position.y),
             this.alive_time, undefined, element.options.centered ?? true, element.options.shadow ?? true
           )
@@ -235,14 +236,14 @@ export namespace OverlayGeometry {
   }
 
   export type StrokeOptions = {
-    color: number,
+    color: Alt1Color,
     width?: number
   }
 
   export namespace StrokeOptions {
     export const DEFAULT: StrokeOptions = {
       width: 2,
-      color: mixColor(255, 0, 0)
+      color: Alt1Color.red
     }
   }
 
@@ -254,7 +255,7 @@ export namespace OverlayGeometry {
   export namespace TextOptions {
     export const DEFAULT: TextOptions = {
       width: 20,
-      color: mixColor(255, 0, 0),
+      color: Alt1Color.red,
       centered: true,
       shadow: true
     }

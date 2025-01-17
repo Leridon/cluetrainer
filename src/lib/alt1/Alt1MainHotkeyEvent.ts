@@ -31,6 +31,11 @@ export class Alt1MainHotkeyEvent {
     }
   }
 
+  /**
+   * Subscribe to the main hotkey event
+   * @param priority The priority of this handler. Handlers with higher priorities see the event first and can stop propagation.
+   * @param handler The handler function.
+   */
   subscribe(priority: number, handler: (e: Alt1MainHotkeyEvent.Event) => void): Alt1MainHotkeyEvent.Handler {
     this.clean_pass()
 

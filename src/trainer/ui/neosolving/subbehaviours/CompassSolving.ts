@@ -32,6 +32,7 @@ import * as assert from "assert";
 import {Log} from "../../../../lib/util/Log";
 import {angleDifference} from "lib/math";
 import {TextRendering} from "../../TextRendering";
+import {Alt1} from "../../../../lib/alt1/Alt1";
 import span = C.span;
 import cls = C.cls;
 import TeleportGroup = Transportation.TeleportGroup;
@@ -880,7 +881,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     if (this.reader) {
       this.process?.start()
 
-      this.parent.app.main_hotkey.subscribe(0, e => {
+      Alt1.instance().main_hotkey.subscribe(0, e => {
         if (e.text) {
           const matched_teleport = CompassSolving.teleport_hovers.findBest(e.text)
 

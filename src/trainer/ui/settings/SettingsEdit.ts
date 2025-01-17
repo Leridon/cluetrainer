@@ -39,6 +39,7 @@ import {KnotSolving} from "../neosolving/subbehaviours/KnotSolving";
 import {LockboxSolving} from "../neosolving/subbehaviours/LockboxSolving";
 import {TowersSolving} from "../neosolving/subbehaviours/TowersSolving";
 import {ScanSolving} from "../neosolving/subbehaviours/scans/ScanSolving";
+import {Alt1Color} from "../../../lib/alt1/Alt1Color";
 import cls = C.cls;
 import PotaColor = Settings.PotaColor;
 import hbox = C.hbox;
@@ -600,17 +601,17 @@ class PuzzleSettingsEdit extends Widget {
 
 
     const color_mainline_move = new ColorPicker()
-      .setValue(A1Color.toHex(this.value.color_mainline_move))
-      .onCommit(v => this.value.color_mainline_move = A1Color.fromHex(v))
+      .setValue(Alt1Color.fromNumber(this.value.color_mainline_move).css_string)
+      .onCommit(v => this.value.color_mainline_move = Alt1Color.fromHex(v).for_overlay)
     const color_recovery_move = new ColorPicker()
-      .setValue(A1Color.toHex(this.value.color_recovery_move))
-      .onCommit(v => this.value.color_recovery_move = A1Color.fromHex(v))
+      .setValue(Alt1Color.fromNumber(this.value.color_recovery_move).css_string)
+      .onCommit(v => this.value.color_recovery_move = Alt1Color.fromHex(v).for_overlay)
     const color_mainline_line = new ColorPicker()
-      .setValue(A1Color.toHex(this.value.color_mainline_line))
-      .onCommit(v => this.value.color_mainline_line = A1Color.fromHex(v))
+      .setValue(Alt1Color.fromNumber(this.value.color_mainline_line).css_string)
+      .onCommit(v => this.value.color_mainline_line = Alt1Color.fromHex(v).for_overlay)
     const color_recovery_line = new ColorPicker()
-      .setValue(A1Color.toHex(this.value.color_recovery_line))
-      .onCommit(v => this.value.color_recovery_line = A1Color.fromHex(v))
+      .setValue(Alt1Color.fromNumber(this.value.color_recovery_line).css_string)
+      .onCommit(v => this.value.color_recovery_line = Alt1Color.fromHex(v).for_overlay)
 
     this.layout.named("Colors", hgrid(centered("Main Line"), centered("Recovery")))
     this.layout.named("Moves", hgrid(color_mainline_move, color_recovery_move))
@@ -701,8 +702,8 @@ class LockboxSettingsEdit extends Widget {
     this.layout.paragraph("Disable this if you are simultaneously using Alt1's builtin clue solver and the lockbox solutions are overlapping.")
 
     this.layout.named("Overlay Color", new ColorPicker()
-      .setValue(A1Color.toHex(this.value.overlay_color))
-      .onCommit(v => this.value.overlay_color = A1Color.fromHex(v)))
+      .setValue(Alt1Color.fromNumber(this.value.overlay_color).css_string)
+      .onCommit(v => this.value.overlay_color = Alt1Color.fromHex(v).for_overlay))
 
     this.layout.header("Optimization Mode")
 

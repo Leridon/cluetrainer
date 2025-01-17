@@ -35,6 +35,7 @@ import Order = util.Order;
 import spotNumber = ScanTree.spotNumber;
 import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 import digSpotArea = Clues.digSpotArea;
+import {Alt1} from "../../../../../lib/alt1/Alt1";
 
 function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): AugmentedScanTreeNode {
   function searchDown(node: AugmentedScanTreeNode): AugmentedScanTreeNode {
@@ -108,7 +109,7 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
 
       this.scan_panel_capture_service = new ScanCaptureService(this.parent.app.capture_service, this.original_interface_capture)
       this.scan_panel_overlay = this.withSub(new ScanPanelOverlay(this.scan_panel_capture_service))
-      this.scan_input_control = this.withSub(new ScanControlPrototype(this.parent.app.main_hotkey, this.scan_panel_capture_service))
+      this.scan_input_control = this.withSub(new ScanControlPrototype(this.scan_panel_capture_service))
 
       this.scan_input_control.onNodeSelection(node => this.setNode(node))
     }
