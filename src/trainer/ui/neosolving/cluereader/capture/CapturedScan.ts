@@ -128,8 +128,10 @@ export class CapturedScan {
   private _meerkats_active = lazy<boolean | undefined>((): boolean => {
     if (this._different_level.get()) return undefined
 
+    index(this.paragraph_start_indices.get(), -1)
+
     if (this.checkRawLines([
-      {index: -3, expected_text: "Your meerkats are"},
+      {index: index(this.paragraph_start_indices.get(), -1), expected_text: "Your meerkats are"},
     ])) return true
 
     if (this.checkRawLines([
