@@ -254,8 +254,8 @@ export namespace ScanControlPrototype {
 
       constructor(public readonly pulse: Pulse) {
         super(null, {
-          stroke: {width: 3, color: pulsecolors[pulse.pulse]},
-          active_stroke: {width: 6, color: pulsecolors[pulse.pulse]},
+          stroke: {width: 2, color: pulsecolors[pulse.pulse]},
+          active_stroke: {width: 4, color: pulsecolors[pulse.pulse]},
           constrast: {width: 1, color: Alt1Color.black}
         });
 
