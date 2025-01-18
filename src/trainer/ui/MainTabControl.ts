@@ -14,6 +14,7 @@ import {SettingsModal} from "./settings/SettingsEdit";
 import {AboutModal} from "../AboutModal";
 import {Alt1Modal} from "../Alt1Modal";
 import {HoverTileDisplay} from "./devutilitylayer/UtilityLayer";
+import {ClueTrainerWiki} from "../wiki";
 import spacer = C.spacer;
 import span = C.span;
 
@@ -162,6 +163,17 @@ export default class MainTabControl extends Widget {
               placement: "right",
               hideOnClick: false
             }),
+      new MenuButton("Guide", "assets/icons/ribbon_osh.png")
+        .onClick(() => ClueTrainerWiki.open()
+        )
+        .setActive(true)
+        .addTippy(
+          new Properties().header("Cluepedia")
+            .row(c().text("Cluepedia is a mini wiki included with Clue Trainer that contains guides and explanations of clue mechanics.").css("font-style", "italic"))
+          , {
+            placement: "right",
+            hideOnClick: false
+          }),
       this.settings_button = new MenuButton("Settings", "assets/icons/ribbon_options.webp").onClick(() => {
           new SettingsModal().do()
         })

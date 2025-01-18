@@ -14,6 +14,7 @@ import * as lodash from "lodash"
 import {deps} from "../../../../dependencies";
 import {Alt1} from "../../../../../lib/alt1/Alt1";
 import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
+import {ClueTrainerWiki} from "../../../../wiki";
 
 
 export class ScanControlPrototype extends Behaviour {
@@ -122,10 +123,10 @@ export namespace ScanControlPrototype {
             }
           }
         }
-      ).setTooltip("Press Alt+1 for an explanation")
+      ).setTooltip("Press Alt+1 while hovering this button for an explanation.")
 
       this.help_button.main_hotkey_pressed.on(() => {
-
+        ClueTrainerWiki.open("scantreecontroloverlay")
       })
 
       this.back_button.main_hotkey_pressed.on(e => { if (this.node.parent) this.node_selection.trigger(this.node.parent.node) })

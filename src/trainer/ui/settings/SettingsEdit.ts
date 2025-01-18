@@ -59,6 +59,7 @@ import TeleportGroup = Transportation.TeleportGroup;
 import span = C.span;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import Appendable = C.Appendable;
+import {SectionControl} from "../widgets/SectionControl";
 
 class SettingsLayout extends Properties {
   constructor() {super();}
@@ -98,99 +99,6 @@ namespace SettingsLayout {
     if (!explanation) return undefined
 
     return inlineimg("assets/icons/info_nis.png").css("height", "1em").addTippy(explanation)
-  }
-}
-
-class SectionControl<id_type extends string = string> extends Widget {
-  menu_bar: Widget
-  content: Widget
-
-  private entry_buttons: {
-    original: {
-      section: SectionControl.Section,
-      entry: SectionControl.Entry
-    },
-    button: Widget
-  }[] = []
-
-  private active_entry: Observable<string> = observe(null)
-
-  constructor(private sections: SectionControl.Section<id_type>[]) {
-    super(cls("ctr-section-control"));
-
-    this.active_entry.subscribe(active => {
-      this.entry_buttons.forEach(e => {
-        const isActive = active == e.original.entry.id
-
-        e.button.toggleClass("active", isActive)
-
-        if (isActive) {
-          this.content.empty()
-
-          this.content.append(
-            C.cls("ctr-section-control-content-header")
-              .css("padding-left", "0")
-              .text(e.original.entry.name),
-            e.original.entry.renderer()
-          )
-        }
-      })
-    })
-
-    this.render()
-
-    this.active_entry.set(sections[0].entries[0].id)
-  }
-
-  setActiveSection(id: string): this {
-    if (id) {
-      this.active_entry.set(id)
-    }
-    return this
-  }
-
-  private render() {
-    this.empty()
-
-    this.append(
-      this.menu_bar = cls("ctr-section-control-menu"),
-      this.content = cls("ctr-section-control-content")
-    )
-
-    for (const section of this.sections) {
-      cls("ctr-section-control-menu-header")
-        .text(section.name)
-        .appendTo(this.menu_bar)
-
-      for (const entry of section.entries) {
-        const button = cls("ctr-section-control-menu-entry")
-          .on("click", () => {
-            this.active_entry.set(entry.id)
-          })
-          .text(entry.short_name ?? entry.name)
-          .appendTo(this.menu_bar)
-
-        this.entry_buttons.push({
-          original: {section, entry},
-          button: button
-        })
-      }
-    }
-  }
-}
-
-namespace SectionControl {
-
-  export type Entry<id_type extends string = string> = {
-    id: id_type,
-    name: string,
-    short_name?: string,
-    renderer: () => Widget
-  }
-
-  export type Section<id_type extends string = string> = {
-    name: string,
-    entries: Entry[]
   }
 }
 
@@ -1639,7 +1547,7 @@ class DataManagementEdit extends Widget {
 export class SettingsEdit extends Widget {
   value: Settings.Settings
 
-  constructor(app: Application, start_section: string) {
+  constructor(app: Application, start_section: SettingsEdit.section_id) {
     super();
 
     this.value = lodash.cloneDeep(app.settings.settings)
@@ -1647,7 +1555,7 @@ export class SettingsEdit extends Widget {
     new SectionControl<SettingsEdit.section_id>([
       {
         name: "Solving", entries: [{
-          id: "general",
+          id: "solving_general",
           name: "General",
           short_name: "General",
           renderer: () => new GeneralSolvingSettingsEdit(this.value.solving.general)
@@ -1682,7 +1590,7 @@ export class SettingsEdit extends Widget {
           short_name: "Compass",
           renderer: () => new CompassSettingsEdit(this.value.solving.compass)
         }, {
-          id: "scan",
+          id: "scans",
           name: "Scan Solving",
           short_name: "Scans",
           renderer: () => new ScanSettingsEdit(this.value.solving.scans)
@@ -1717,7 +1625,7 @@ export class SettingsEdit extends Widget {
 }
 
 export namespace SettingsEdit {
-  export type section_id = "solving_general" | "sliders" | "knots" | "lockboxes" | "towers" | "compass" | "teleports" | "crowdsourcing"
+  export type section_id = "solving_general" | "solving_interface" | "sliders" | "knots" | "lockboxes" | "towers" | "compass" | "teleports" | "crowdsourcing" | "scans" | "dataexport"
 }
 
 export class SettingsModal extends FormModal<{
