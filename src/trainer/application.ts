@@ -26,8 +26,6 @@ import {TransportData} from "../data/transports";
 import {PathGraphics} from "./ui/path_graphics";
 import {CrowdSourcing} from "./CrowdSourcing";
 import {Notification, NotificationBar} from "./ui/NotificationBar";
-import {Alt1MainHotkeyEvent} from "../lib/alt1/Alt1MainHotkeyEvent";
-import {Alt1ContextMenuDetection} from "../lib/alt1/Alt1ContextMenuDetection";
 import {Log} from "../lib/util/Log";
 import {Changelog} from "./ChangeLog";
 import {DevelopmentModal} from "../devtools/DevelopmentMenu";
@@ -306,7 +304,6 @@ namespace UpdateAlt1Modal {
 
   export async function maybeRemind(app: Application) {
     if (window.alt1?.permissionInstalled && alt1.version == "1.5.6") {
-
       if (earliest_reminder_time.get() < Date.now()) {
         const reminder = await new UpdateAlt1Modal(app).do()
 

@@ -1,17 +1,20 @@
 import {Alt1Overlay} from "../Alt1Overlay";
-import {ewent, observe} from "../../reactive";
+import {ewent, Observable, observe} from "../../reactive";
 import {Alt1} from "../Alt1";
 import {Circle} from "../../math/Circle";
 import {ScreenRectangle} from "../ScreenRectangle";
 import {Vector2} from "../../math";
 import * as a1lib from "alt1";
 import {OverlayGeometry} from "../OverlayGeometry";
+import {Alt1TooltipManager} from "../Alt1TooltipManager";
 
 export abstract class InteractiveOverlay extends Alt1Overlay {
   public readonly main_hotkey_pressed = ewent<this>()
   public readonly right_clicked = ewent<this>()
 
   private bounds: InteractiveOverlay.Bounds = null
+  private tooltip: string = null
+  private active_tooltip: Alt1TooltipManager.Instance = null
 
   protected hovered = observe(false)
   protected is_default_action = observe(false)
@@ -81,6 +84,17 @@ export abstract class InteractiveOverlay extends Alt1Overlay {
     return this
   }
 
+  refresh() {
+    if (this.isHovered() && this.tooltip && !this.active_tooltip) {
+      this.active_tooltip = Alt1.instance().tooltips.setTooltip(this.tooltip)
+    } else if (!this.isHovered() && this.active_tooltip) {
+      this.active_tooltip.remove()
+      this.active_tooltip = null
+    }
+
+    super.refresh();
+  }
+
   public isHovered(): boolean {
     return this.hovered.value() && this.isVisible()
   }
@@ -97,6 +111,12 @@ export abstract class InteractiveOverlay extends Alt1Overlay {
     const hovered = InteractiveOverlay._hovered.value()
 
     return this.is_default_action.value() && (hovered == null || !hovered.isVisible() || !hovered.hovered.value())
+  }
+
+  public setTooltip(tooltip: string): this {
+    this.tooltip = tooltip
+
+    return this
   }
 }
 
@@ -122,43 +142,55 @@ export namespace InteractiveOverlay {
   }
 
   export class Button extends InteractiveOverlay {
-    constructor(protected area: ScreenRectangle, protected config: Button.Config) {
+    protected config: Observable<Button.Config>
+
+    constructor(protected area: ScreenRectangle, config: Button.Config) {
       super();
+
+      this.config = observe(config)
+        .structuralEquality()
+        .subscribe(() => this.refresh())
 
       this.setBounds(area ? {type: "rectangle", area: area} : null)
     }
 
-    private text = observe<{
-      text: string,
-      font: OverlayGeometry.TextOptions
-    }>(null).structuralEquality()
-
     renderSelf(overlay: OverlayGeometry) {
       if (!this.area) return
 
-      const hovered = this.hovered.value() || this.isDefaultHovered()
+      const render_as_hovered = this.hovered.value() || this.isDefaultHovered()
 
-      const stroke = hovered ? (this.config.active_stroke ?? this.config.stroke) : this.config.stroke
+      const config = this.config.value()
 
-      if (this.config.constrast) {
-        overlay.rect2(this.area, {
-          width: stroke.width + 2 * this.config.constrast.width,
-          color: this.config.constrast.color
-        })
+      const style_a = render_as_hovered ? config.active_style : {}
+      const style_b = config.style
+
+      const style: Button.Style = {...style_b, ...style_a}
+
+      const stroke = style.stroke
+
+      if (style.stroke) {
+        if (style.constrast) {
+          overlay.rect2(this.area, {
+            width: stroke.width + 2 * style.constrast.width,
+            color: style.constrast.color
+          })
+        }
+
+        const extension = style.constrast ? -style.constrast.width : 0
+
+        overlay.rect2(ScreenRectangle.extend(this.area, {x: extension, y: extension}), stroke)
       }
 
-      const text = this.text.value()
-
-      const extension = this.config.constrast ? -this.config.constrast.width : 0
-
-      overlay.rect2(ScreenRectangle.extend(this.area, {x: extension, y: extension}), stroke)
-
-      if (text?.text && text?.font) {
-        overlay.text(text.text, Vector2.add(ScreenRectangle.center(this.area), {x: 2, y: -2}), {
-          ...text.font,
+      if (config.text && style.font) {
+        overlay.text(config.text, Vector2.add(ScreenRectangle.center(this.area), {x: 2, y: -2}), {
+          ...style.font,
           centered: true
         })
       }
+    }
+
+    position(): ScreenRectangle {
+      return this.area
     }
 
     setPosition(area: ScreenRectangle) {
@@ -169,17 +201,26 @@ export namespace InteractiveOverlay {
       this.refresh()
     }
 
-    setText(text: string, font?: OverlayGeometry.TextOptions) {
-      this.text.set({text, font: font ?? this.text.value()?.font})
+    updateConfig(f: (_: Button.Config) => void): this {
+      this.config.update2(f)
+
+      return this
     }
   }
 
   export namespace Button {
     import StrokeOptions = OverlayGeometry.StrokeOptions;
-    export type Config = {
-      stroke: StrokeOptions,
-      active_stroke: StrokeOptions,
+
+    export type Style = {
+      stroke?: StrokeOptions,
+      font?: OverlayGeometry.TextOptions
       constrast?: StrokeOptions
+    }
+
+    export type Config = {
+      text?: string,
+      style: Style,
+      active_style?: Style
     }
   }
 }

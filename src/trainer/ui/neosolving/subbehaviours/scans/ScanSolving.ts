@@ -2,6 +2,7 @@ import {SimpleScanSolving} from "./SimpleScanSolving";
 import {ScanTreeSolving} from "./ScanTreeSolving";
 import {util} from "../../../../../lib/util/util";
 import {SettingsNormalization} from "../../../../../lib/util/SettingsNormalization";
+import {ScanControlPrototype} from "./ScanInputBehaviour";
 
 export namespace ScanSolving {
 
@@ -21,6 +22,8 @@ export namespace ScanSolving {
     zoom_behaviour_include_singles: boolean
 
     select_floor_based_on_previous_solution: boolean
+
+    input_control_configuration: ScanControlPrototype.Overlay.Config
   }
 
   export namespace Settings {
@@ -36,6 +39,20 @@ export namespace ScanSolving {
       zoom_behaviour_include_doubles: SettingsNormalization.bool(false),
       zoom_behaviour_include_singles: SettingsNormalization.bool(false),
       select_floor_based_on_previous_solution: SettingsNormalization.bool(true),
+      input_control_configuration: SettingsNormalization.normaliz<ScanControlPrototype.Overlay.Config>({
+        position: SettingsNormalization.normaliz({
+          x: compose(SettingsNormalization.number(0), SettingsNormalization.clamp(-2000, 2000)),
+          y: compose(SettingsNormalization.number(0), SettingsNormalization.clamp(0, 2000))
+        }),
+        size: SettingsNormalization.normaliz({
+          x: compose(SettingsNormalization.number(500), SettingsNormalization.clamp(160, 1000)),
+          y: compose(SettingsNormalization.number(250), SettingsNormalization.clamp(100, 1000))
+        }),
+        gutter: compose(SettingsNormalization.number(5), SettingsNormalization.clamp(1, 20)),
+        warn_for_meerkats: SettingsNormalization.bool(true),
+        show_help_button: SettingsNormalization.bool(true),
+        force_small_back_button: SettingsNormalization.bool(false),
+      })
     })
   }
 }

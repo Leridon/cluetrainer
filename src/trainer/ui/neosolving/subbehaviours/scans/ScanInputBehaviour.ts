@@ -10,6 +10,9 @@ import {Scans} from "../../../../../lib/runescape/clues/scans";
 import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
 import {Alt1Color} from "../../../../../lib/alt1/Alt1Color";
 import {InteractiveOverlay} from "../../../../../lib/alt1/overlay/InteractiveOverlay";
+import * as lodash from "lodash"
+import {deps} from "../../../../dependencies";
+import {Alt1} from "../../../../../lib/alt1/Alt1";
 import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 
 
@@ -20,7 +23,7 @@ export class ScanControlPrototype extends Behaviour {
     private panel_reader: ScanCaptureService) {
     super();
 
-    this.overlay = this.withSub(new ScanControlPrototype.Overlay({position: {x: 911, y: 240}, width: 500, height: 200}))
+    this.overlay = this.withSub(new ScanControlPrototype.Overlay(deps().app.settings.settings.solving.scans.input_control_configuration))
 
     panel_reader.onStateChange(s => this.overlay.setScanPanelState(s))
 
@@ -82,16 +85,47 @@ export namespace ScanControlPrototype {
 
       this.back_button = new InteractiveOverlay.Button(
         null, {
-          stroke: {width: 1, color: Alt1Color.white},
-          active_stroke: {width: 2, color: Alt1Color.white},
-          constrast: {width: 1, color: Alt1Color.black}
+          style: {
+            stroke: {width: 1, color: Alt1Color.white},
+            constrast: {width: 1, color: Alt1Color.black},
+            font: {
+              width: 16,
+              color: Alt1Color.fromHex("#FFFFFF"),
+              centered: true
+            }
+          },
+          active_style: {
+            stroke: {width: 2, color: Alt1Color.white},
+          }
         }
       )
 
-      this.back_button.setText("< Back", {
-        width: 16,
-        color: Alt1Color.fromHex("#FFFFFF"),
-        centered: true
+      this.help_button = new InteractiveOverlay.Button(
+        null, {
+          text: "?",
+          style: {
+            stroke: {width: 1, color: Alt1Color.white},
+            constrast: {width: 1, color: Alt1Color.black},
+            font: {
+              width: 14,
+              color: Alt1Color.fromHex("#FFFFFF"),
+              centered: true
+            }
+          },
+          active_style: {
+            stroke: {width: 1, color: Alt1Color.white},
+            constrast: {width: 1, color: Alt1Color.black},
+            font: {
+              width: 16,
+              color: Alt1Color.fromHex("#FFFFFF"),
+              centered: true
+            }
+          }
+        }
+      ).setTooltip("Press Alt+1 for an explanation")
+
+      this.help_button.main_hotkey_pressed.on(() => {
+
       })
 
       this.back_button.main_hotkey_pressed.on(e => { if (this.node.parent) this.node_selection.trigger(this.node.parent.node) })
@@ -102,6 +136,7 @@ export namespace ScanControlPrototype {
     protected begin() {
       this.pulse_buttons.flat().map(b => b.start())
       this.back_button.start()
+      this.help_button.start()
 
       super.begin();
     }
@@ -149,18 +184,30 @@ export namespace ScanControlPrototype {
     }
 
     private back_button: InteractiveOverlay.Button = null
+    private help_button: InteractiveOverlay.Button = null
 
     renderSelf(overlay: OverlayGeometry) {
-      const GUTTER = 5
+      const UPPER_ROW_HEIGHT = 25
 
-      const origin = this.config.position
+      const GUTTER = this.config.gutter
 
-      const back: ScreenRectangle = {
+      const origin = Vector2.add(this.config.position, {x: Alt1.clientSize().x / 2 - this.config.size.x / 2, y: 0})
+
+      const small_back_button = this.config.force_small_back_button || this.config.size.x < 280
+
+      const back_button_width = small_back_button ? 25 : 80
+
+      this.back_button.updateConfig(c => c.text = small_back_button ? "<" : "< Back")
+
+      this.back_button.setPosition({
         origin: origin,
-        size: {x: 80, y: 25}
-      }
+        size: {x: back_button_width, y: UPPER_ROW_HEIGHT}
+      })
 
-      this.back_button.setPosition(back)
+      this.help_button.setPosition(this.config.show_help_button ? {
+        origin: {x: origin.x + this.config.size.x - back_button_width, y: this.config.position.y},
+        size: {x: back_button_width, y: UPPER_ROW_HEIGHT}
+      } : null)
 
       const progress = 1 - (Math.log2(this.node.remaining_candidates.length) / Math.log2(this.node.root.root_node.remaining_candidates.length))
 
@@ -168,15 +215,15 @@ export namespace ScanControlPrototype {
       const PROGRESS_BAR_BORDER = 1
       const PROGRESS_BAR_TOTAL_HEIGHT = PROGRESS_BAR_BORDER + PROGRESS_BAR_HEIGHT
 
-      const progress_bar_space = {x: this.config.width - 2 * back.size.x, y: back.size.y}
+      const progress_bar_space = {x: this.config.size.x - 2 * this.back_button.position().size.x, y: UPPER_ROW_HEIGHT}
 
-      const progress_bar_center = Vector2.add(back.origin, {x: back.size.x, y: 0}, Vector2.scale(0.5, {x: progress_bar_space.x, y: PROGRESS_BAR_TOTAL_HEIGHT}))
+      const progress_bar_center = Vector2.add(origin, {x: this.back_button.position().size.x, y: 0}, Vector2.scale(0.5, {x: progress_bar_space.x, y: PROGRESS_BAR_TOTAL_HEIGHT}))
 
       const meerkats_assumed = this.node.root.raw.assumed_range == (this.node.root.clue.range + 5)
 
-      if (meerkats_assumed == this.panel_state.meerkats) {
+      if (!this.config.warn_for_meerkats || meerkats_assumed == this.panel_state.meerkats) {
         overlay.progressbar(progress_bar_center, progress_bar_space.x - 2 * GUTTER, progress, PROGRESS_BAR_HEIGHT, PROGRESS_BAR_BORDER)
-        overlay.text(this.node.remaining_candidates.length != 1 ? `${this.node.remaining_candidates.length} spots remain` : "1 spot remains", Vector2.add(progress_bar_center, {
+        overlay.text(this.node.remaining_candidates.length != 1 ? `${this.node.remaining_candidates.length} spots` : "1 spot", Vector2.add(progress_bar_center, {
           x: 0,
           y: 12
         }), {
@@ -205,16 +252,16 @@ export namespace ScanControlPrototype {
 
       const rows_n = visible_buttons.length
 
-      const row_height = (this.config.height - (rows_n - 1) * GUTTER) / rows_n
+      const row_height = (this.config.size.y - (rows_n - 1) * GUTTER) / rows_n
 
-      const options_origin = Vector2.add(this.config.position, {x: 0, y: back.size.y + GUTTER})
+      const options_origin = Vector2.add(origin, {x: 0, y: UPPER_ROW_HEIGHT + GUTTER})
 
       const context = visible_buttons.flat().map(b => b.pulse)
 
       visible_buttons.forEach((row, row_i) => {
         const column_n = row.length
 
-        const column_width = (this.config.width - (column_n - 1) * GUTTER) / column_n
+        const column_width = (this.config.size.x - (column_n - 1) * GUTTER) / column_n
         const row_origin = Vector2.add(options_origin, {x: 0, y: row_i * (row_height + GUTTER)})
 
         row.forEach((option, column_i) => {
@@ -234,7 +281,14 @@ export namespace ScanControlPrototype {
       super.end();
 
       this.back_button.stop()
+      this.help_button.stop()
       this.pulse_buttons.flat().forEach(b => b.stop())
+    }
+
+    setConfig(config: Overlay.Config) {
+      this.config = lodash.cloneDeep(config)
+
+      this.refresh()
     }
   }
 
@@ -242,10 +296,14 @@ export namespace ScanControlPrototype {
 
     import simplify_with_context = Scans.Pulse.simplify_with_context;
     import SimplifiedPulseForContext = Scans.Pulse.SimplifiedPulseForContext;
+
     export type Config = {
       position: Vector2,
-      width: number,
-      height: number
+      size: Vector2,
+      gutter: number,
+      show_help_button: boolean,
+      warn_for_meerkats: boolean,
+      force_small_back_button: boolean,
     }
 
     export class PulseButton extends InteractiveOverlay.Button {
@@ -254,24 +312,25 @@ export namespace ScanControlPrototype {
 
       constructor(public readonly pulse: Pulse) {
         super(null, {
-          stroke: {width: 2, color: pulsecolors[pulse.pulse]},
-          active_stroke: {width: 4, color: pulsecolors[pulse.pulse]},
-          constrast: {width: 1, color: Alt1Color.black}
+          style: {
+            stroke: {width: 2, color: pulsecolors[pulse.pulse]},
+            constrast: {width: 1, color: Alt1Color.black},
+            font: {
+              width: 12,
+              color: Alt1Color.white,
+              shadow: true
+            }
+          },
+          active_style: {
+            stroke: {width: 4, color: pulsecolors[pulse.pulse]},
+          }
         });
 
         this.possible.subscribe(v => {
-          this.config.stroke.width = v ? 3 : 1
-
-          this.refresh()
+          this.updateConfig(c => c.style.stroke.width = v ? 3 : 1)
         })
 
         this.relevant.subscribe(v => this.setVisible(v))
-
-        this.setText(null, {
-          width: 12,
-          color: Alt1Color.white,
-          shadow: true
-        })
       }
 
       renderSelf(overlay: OverlayGeometry) {
@@ -311,15 +370,17 @@ export namespace ScanControlPrototype {
 
         const txt = text[this.context.text]
 
+        const config = this.config.value()
+
         if (txt) {
-          if (position.size.x > 100) this.setText(txt.long)
-          else this.setText(txt.short)
-        } else this.setText(null)
+          if (position.size.x > 100) config.text = (txt.long)
+          else config.text = (txt.short)
+        } else config.text = (null)
 
         const color = this.context.type ? pulsecolors[this.context.type] : pulsecolors[this.context.text == "DL" ? 0 : 1]
 
-        this.config.stroke.color = color
-        this.config.active_stroke.color = color
+        config.style.stroke.color = color
+        config.active_style.stroke.color = color
 
         this.setPosition(position)
       }
@@ -348,10 +409,5 @@ export namespace ScanControlPrototype {
     }
 
     return undefined
-  }
-
-  export type Input = {
-    different_level: boolean | undefined,
-    pulse: 1 | 2 | 3 | undefined
   }
 }

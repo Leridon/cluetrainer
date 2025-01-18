@@ -17,6 +17,7 @@ export class LifetimeManager implements LifetimeManaged {
 
   kill(): void {
     this.managed.forEach(h => h())
+    this.managed = []
   }
 
   endLifetime(): void {
