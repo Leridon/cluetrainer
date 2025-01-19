@@ -45,6 +45,7 @@ import {Alt1} from "lib/alt1/Alt1";
 import {ScanTree} from "lib/cluetheory/scans/ScanTree";
 import {AugmentedMethod} from "../../model/MethodPackManager";
 import {SolvingMethods} from "../../model/methods";
+import {SectionControl} from "../widgets/SectionControl";
 import cls = C.cls;
 import PotaColor = Settings.PotaColor;
 import hbox = C.hbox;
@@ -59,7 +60,6 @@ import TeleportGroup = Transportation.TeleportGroup;
 import span = C.span;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import Appendable = C.Appendable;
-import {SectionControl} from "../widgets/SectionControl";
 
 class SettingsLayout extends Properties {
   constructor() {super();}
@@ -483,6 +483,8 @@ class ScanInputOverlayConfigModal extends FormModal<ScanControlPrototype.Overlay
 
   constructor(value: ScanControlPrototype.Overlay.Config) {
     super({size: "small"});
+
+    this.setTitle("Interactive Scan Tree Overlay Configuration")
 
     this.value = observe(lodash.cloneDeep(value))
       .structuralEquality()
@@ -1625,7 +1627,18 @@ export class SettingsEdit extends Widget {
 }
 
 export namespace SettingsEdit {
-  export type section_id = "solving_general" | "solving_interface" | "sliders" | "knots" | "lockboxes" | "towers" | "compass" | "teleports" | "crowdsourcing" | "scans" | "dataexport"
+  export type section_id =
+    "solving_general"
+    | "solving_interface"
+    | "sliders"
+    | "knots"
+    | "lockboxes"
+    | "towers"
+    | "compass"
+    | "teleports"
+    | "crowdsourcing"
+    | "scans"
+    | "dataexport"
 }
 
 export class SettingsModal extends FormModal<{

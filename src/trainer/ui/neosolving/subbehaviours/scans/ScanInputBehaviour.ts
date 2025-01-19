@@ -114,10 +114,10 @@ export namespace ScanControlPrototype {
             }
           },
           active_style: {
-            stroke: {width: 1, color: Alt1Color.white},
+            stroke: {width: 2, color: Alt1Color.white},
             constrast: {width: 1, color: Alt1Color.black},
             font: {
-              width: 16,
+              width: 18,
               color: Alt1Color.fromHex("#FFFFFF"),
               centered: true
             }

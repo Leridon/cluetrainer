@@ -4,6 +4,7 @@ import {C} from "../../lib/ui/constructors";
 import text_link = C.text_link;
 import link = C.link;
 import space = C.space;
+import italic = C.italic;
 
 export abstract class WikiPage extends Properties {
   constructor() {
@@ -28,6 +29,10 @@ export abstract class WikiPage extends Properties {
     }
 
     return []
+  }
+  
+  protected todo() {
+    this.paragraph(italic("This page is yet to be written."))
   }
 }
 
