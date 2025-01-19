@@ -86,7 +86,7 @@ export namespace C {
   }
 
   export function link(href: string): Widget {
-    return c("<a></a>").setAttribute("href", href)
+    return c("<a target='_blank'></a>").setAttribute("href", href)
   }
 
   export function npc(name: string, clickable: boolean = false): Widget {
