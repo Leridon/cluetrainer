@@ -20,407 +20,424 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([{
-    version: 33,
-    date: new Date(Date.parse("2025-01-13")),
-    title: "Nature Sentinel Key Combinations",
-    notification: "Nature's Sentinel keyboard shortcuts have been updated.",
+    version: 34,
+    date: new Date(Date.parse("2025-01-22")),
+    title: "Some Teleport Additions",
     render: layout => {
       layout
         .row(new List()
-          .item("Updated keyboard code for Nature's sentinel outfit teleports.")
-          .item("Fixed a a few mislabeled teleports.")
-          .item("Fix major performance bug that would do rapid fullscreen captures when manually clicking 'Solve'.")
+          .item("Added the Fremennik sea boots teleport to Relekka Market.")
+          .item("Added the Clan vexillum teleport to Falador.")
+          .item("Added Amulet of nature teleport to hops patch north of McGrubor's wood and the fruit tree patch at Tree Gnome Village")
+          .item("Added the Shattered Worlds teleport.")
+          .item("Added the Soul Wars portal transport.")
+          .item("Added the ladder to and from the Obelisk of Water.")
+          .item("Updated the path for a coordinate step in medium clues in mort myre swamp.")
         )
-    }
-  }, {
-    version: 32,
-    date: new Date(Date.parse("2025-01-06")),
-    title: "Data Fixes and Better Method Management",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Added a note that explains how to enable the Canifis to Mort´ton shortcut to a hard clue step.")
-          .item("Removed impossible compass spots in the Kharazi jungle.")
-          .item("Fixed missing paths for recently relocated tetracompass spots (v31).")
-          .item("Added Portmaster Kags to the teleport dataset")
-          .item("Fixed wrong clue text for the WE IRK OVER NAMESAKE anagram.")
-          .item("Improved styling of buttons across the app.")
-          .item("The method selection dropdown now displays the number of available methods.")
-          .item("Restyled the section control for multi-section paths.")
-          .item("Improved navigation surrounding method packs in the 'Methods' tab.", new List()
-            .item("Method packs are now shown in a single section with improved styling.")
-            .item("Control Buttons were moved to the top.")
-            .item("You can now open method packs like folders to see and manage their included methods.")
-            .item("Added development utilities to simplify editing builtin methods.")
-          )
-        )
-    }
-  }, {
-    version: 31,
-    date: new Date(Date.parse("2025-01-02")),
-    title: "Small Compass Fixes",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Added a new builtin triangulation preset for elite clues only using the normal spellbook (Menaphos House Teleport and South Feldip Hills).")
-          .item("Fixed styling issue for triangulation presets with long names.")
-          .item("The compass solver now recognizes clicked teleports when they are part of a previewed path.")
-          .item("Fixed the precise location of 3 tetracompass spots.")
-        )
-    }
-  }, {
-    version: 30,
-    date: new Date(Date.parse("2024-12-21")),
-    title: "Crash Hotfix",
-    silent: true,
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Fixed a bug that caused clue trainer to crash internally when reading certain clue steps.")
-          .item("Fixed another bug that caused another internal crash when reading certain clue steps.")
-        )
-    }
-  }, {
-    version: 29,
-    date: new Date(Date.parse("2024-12-21")),
-    title: "Further Zoom Fixes and Configuration Options",
-    notification: "Check out the new options for zoom behaviour",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Fixed a bug where parts of a path were hidden behind the UI after zooming in.")
-          .item("Selected path sections will now be remembered even within scan trees.")
-          .item("Added global configuration settings for zoom behaviour in the 'General' section.", new List()
-            .item("Added an option to limit the maximum allowed zoom level.")
-            .item("Added an option to set a minimum size for the area that is zoomed into.")
-            .item("Added an option to include the closest teleport in the zoom when not having a method selected.")
-          )
-          .item("Added configuration options to control what to include in the zoom for scan trees.")
-          .item("Moved interface options from 'General' to the new 'Interface' section.")
-        )
-    }
-  }, {
-    version: 28,
-    date: new Date(Date.parse("2024-12-16")),
-    title: "Decluttering Path Displays and Zoom Fixes",
-    notification: "Check out changes to path rendering and zoom behaviour",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Fixed various conflicts and inconsistencies with map parts overlaying each other in undesired ways.",
-            new List()
-              .item("For example, the tile grid and collision overlay is now placed below walls."))
-          .item("Fixed zoom to make better use of the available screen real estate while not zooming in incredibly close.")
-          .item("Reduced distracting icons from emote areas and hidey-holes.")
-          .item("Removed redundant dive and run icons across all tiers.")
-          .item("Changed rendering of yellow target indicators for run steps to be polygon based instead of an image marker so it scales better and is less obstructive.")
-          .item("Fixed various wrong far/precise dive indicators.")
-          .item("Changed the color for emote areas to match the purple of Uri and Double Agents.")
-          .item("Starting points for arrows in paths are now outset slightly so their start does not overlap with the arrow tip of the previous step.")
-          .item("Added an alternative method for the Paul Gower master step.")
-          .item("Fixed scan region names hiding teleport icons.")
-          .item("Fixed the image url for an easy map clue.")
-          .item("Removed number displays from compass spots.")
-        )
-    }
-  }, {
-    version: 27,
-    date: new Date(Date.parse("2024-12-14")),
-    silent: true,
-    title: "Crowdsourcing Data Sanitation",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Added some additional sanitation logic for crowdsourced slider data.")
-        )
-    }
-  }, {
-    version: 26,
-    date: new Date(Date.parse("2024-12-10")),
-    title: "URL Update",
-    silent: true,
-    render: layout => {
-      layout
-        .row(new List()
-          .item("The legacy url <a>https://leridon.github.io/rs3scantrainer</a> has been turned off as announced back in september.")
-          .item("Updated references to the GitHub repository to use the new URL <a>https://github.com/leridon/cluetrainer</a>.", new List().item(
-            "If you have a GitHub account and enjoy Clue Trainer, please head over to the repository and give it a star. "
-          ))
-        )
-    }
-  }, {
-    version: 25,
-    date: new Date(Date.parse("2024-12-09")),
-    title: "Game Update Fixes",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Updated the crowdsourcing function to work with the updated slider shuffle.")
-          .item("Updated the teleports of the Natures's Sentinel outfit.")
-          .item("Reduced minimum solve time for sliders to 0.1 seconds down from 0.5 seconds.")
-          .item("Updated collision data after today's game update.", new List()
-            .item("This is not reflected in the visuals yet, as they depend on the runeapps map update."))
-        )
-        .paragraph("Today's game update changed the shuffle algorithm for slider puzzles, making them significantly faster to solve. Preliminary testing suggests solution lengths in the range between 15 and 40 clicks.")
-    }
-  }, {
-    version: 24,
-    date: new Date(Date.parse("2024-12-05")),
-    title: "Scan Overlay Updates",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Added a second minimap overlay for the double ping range in addition to the triple ping range on scans.")
-          .item("The double and triple ping range can be toggled on/off independently from each other.")
-          .item("Added an option to manually select the minimap scaling instead of trying to automatically detect it.", new List()
-            .item("This is the new default because automatic zoom detection has some serious flaws.")
-            .item("Automatic zoom detection will remain as an experimental feature.")
-          )
-        )
-        .paragraph("Next monday, the update to slider puzzles will release. To quickly evaluate the effects of this change, we need the appropriate crowd-sourced data. Crowdsourcing is powered by users of Clue Trainer that opt in for data collection available in the 'Crowdsourcing' section in the settings.")
-    }
-  }, {
-    version: 23,
-    date: new Date(Date.parse("2024-11-26")),
-    title: "Seal Slider Fix",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Enabled support for the seal slider image used to free Mephisto in the Infernal Source.")
-        )
-    }
-  }, {
-    version: 22,
-    date: new Date(Date.parse("2024-11-25")),
-    title: "Fixes for the 'Use solution of previous step' option.",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Fixed that scans not using a scan tree method would not act as expected with regards to the 'Use solution of previous step' option for compasses.")
-          .item("Regular text clues will now also provide their solutions for the 'Use solution of previous step' option for compasses.", new List()
-            .item("This only really benefits the O EASTERN WISHES master clue."))
-          .item("Fixed a bug that could cause crashes when examining scan tree methods outside of Alt1.")
-        )
-    }
-  }, {
-    version: 21,
-    date: new Date(Date.parse("2024-11-25")),
-    silent: true,
-    title: "Fixing the Bugfix",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Added more error resilience to the minimap zoom detection, which caused the minimap overlay to not appear at all.")
-        )
-    }
-  }, {
-    version: 20,
-    date: new Date(Date.parse("2024-11-25")),
-    title: "Bugfixes",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Reduced erratic behaviour of the scan range minimap overlay in snowy areas.")
-          .item("Fixed a bug that caused the slider solver to crash when hovering the 'Hint' button immediately after opening the puzzle.")
-          .item("Fixed a critical typo that confused two very distinct types of aquatic creatures in a medium clue.")
-        )
-    }
-  }, {
-    version: 19,
-    date: new Date(Date.parse("2024-11-17")),
-    silent: true,
-    title: "Internal Tooling Fixes",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Fixed a math bug causing tile transforms for entity instances to be broken.")
-          .item("Added a filter safeguard to remove entity transports with zero actions.")
-          .item("Updated the tile collision data.")
-        )
-    }
-  }, {
-    version: 18,
-    date: new Date(Date.parse("2024-11-17")),
-    title: "Clue Reader Bugfix",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("(Maybe) Fixed a newly introduced bug that prevented scans from being read.")
-          .item("Added a notification when the clue reader is not fully initialized when trying to solve a clue.")
-        )
-    }
-  }, {
-    version: 17,
-    date: new Date(Date.parse("2024-11-16")),
-    title: "Scan Range Minimap Overlay",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Added a scan range overlay for the minimap.", new List().item("This can be toggled on or off in the new settings page for scans."))
-          .item("Fixed an internal error when manually selecting a compass clue via the search function.", new List().item(
-            "With this fix, you can now use the 'Solve'-page to explore pathing for compass spots by clicking on their markers."
-          ))
-          .item("Added a popup recommending to watch the tutorial when opening Clue Trainer for the first time after installation.")
-        )
-    }
-  }, {
-    version: 16,
-    date: new Date(Date.parse("2024-10-10")),
-    silent: true,
-    title: "Compass Overlay Fix",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Fixed a timing issue that could cause the compass overlay to persist after the compass already ended.")
-        )
-    }
-  }, {
-    version: 15,
-    date: new Date(Date.parse("2024-10-10")),
-    silent: true,
-    title: "Solving Bugfix",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Fixed a bug that caused parts of the solving interface to not appear when reading a scan.")
-        )
-    }
-  }, {
-    version: 14,
-    date: new Date(Date.parse("2024-10-08")),
-    title: "Large internal change and small visible changes",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Large internal refactor of screen capturing to optimize for multiple captures being done in parallel.",
-            new List()
-              .item("This is a significant internal change that could potentially lead to unforeseen issues, despite extensive testing. Please let me know if you experience any issues.")
-          )
-          .item("Fixed a bug that caused lockbox optimization to reset down to 2 on reloading.")
-          .item("Separated the method selection dropdown into its own element instead of being embedded in the path list or the scan tree view.")
-          .item("On scans, the entire lines can now be clicked instead of just the small button containing the pulse icon.")
-        )
-    }
-  }, {
-    version: 13,
-    date: new Date(Date.parse("2024-10-03")),
-    silent: true,
-    title: "Lockbox Hotfix",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Changed the desync detection for lockboxes for a much more stable and reliable implementation.")
-        )
-    }
-  }, {
-    version: 12,
-    date: new Date(Date.parse("2024-10-03")),
-    title: "Lockbox Changes",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Tweaked the lockbox solver so it does not switch to a different solution in the middle of solving.",
-            new List()
-              .item("Instead of independently solving the puzzle on each tick, the solver now prefers the solution closest to the previously known solution. Solution minimization is only applied on the initial solve.")
-          )
-          .item("Extended the lockbox reader to try to detect client desyncs and pause the overlay so that it does not display a wrong solution.",
-            new List()
-              .item("Occasionally, the puzzle state shown by the game client desyncs from the actual server state. The reader now tries to detect this based on the number of clicks you would need to have done to get to this state and unplausible states are discarded. This is considered experimental, so let me know if you encounter issues.")
-          )
-          .item("The optimization mode for lockboxes can now be turned up to 5. Values above 2 encourage the solver to avoid tiles that need to be clicked 2 times.",
-            new List()
-              .item("If you're thinking 'this is dumb, why would I ever do this?': You're right, please go and try to convince Ngis."))
-          .item("Fixed some right click options for lodestones not being detected when hovering it and pressing Alt+1 on compasses.")
-        )
-    }
-  }, {
-    version: 11,
-    date: new Date(Date.parse("2024-09-22")),
-    title: "Bugfixes",
-    render: layout => {
-      layout.row(new List()
-        .item("Fixed a bug that caused certain paths to not be correctly split into sections, sometimes resulting in the 'zoom to space' symptom (for example at the Edmond medium clue).")
-        .item("Added a workaround for a rare issue where a master compass would reset and be redetected as an elite compass.")
-        .item("Added 2 missing tiles to the landing area for the turtle island teleport, which sometimes caused problems with master compasses.")
-        .item("Slightly increased the time required for a stationary compass to be counted to mitigate lag spikes.")
-      )
-    }
-  }, {
-    version: 10,
-    silent: true,
-    date: new Date(Date.parse("2024-09-20")),
-    title: "Timing Bugfix",
-    render: layout => {
-      layout.row(new List()
-          .item("Fixed a rare timing bug where a completed puzzle could abort the following clue. This was noticeable for compasses following a celtic knot.")
-          .item("Reduced the size of log files.")
-        )
-        .paragraph("This is a bit of a speculative fix, because the source of the reported issue is not 100% confirmed.")
-    }
-  }, {
-    version: 9,
-    date: new Date(Date.parse("2024-09-18")),
-    title: "Bugfixes",
-    render: layout => {
-      layout.row(new List()
-        .item("Fixed a minor bug that caused an exception when outside of Alt 1.")
-        .item("Fixed a bug that caused teleport icons on the map to not update on changes to the settings, requiring a reload.")
-      )
-    }
-  }, {
-    version: 8,
-    date: new Date(Date.parse("2024-09-09")),
-    title: "Migration and update notices",
-    render: layout => {
-      layout.row(new List()
-        .item("Added a data export/import feature. Data exports will include local/imported method packs, method preferences, and all of your settings.")
-        .item("Added a migration notice to remind users that are still on the old 'leridon.github.io/rs3scantrainer' URL to migrate to 'cluetrainer.app'.",
-          new List()
-            .item("The legacy URL 'leridon.github.io/rs3scantrainer' will stop being available after 2024-10-31.")
-        )
-        .item("Added an update reminder for users that are on Alt 1 1.5.6.")
-        .item("Reduced the default setting for slider solve time to 1 second down from 2 seconds.")
-        .item("Fixed a bug that caused the map to zoom very far out on certain steps.", new List()
-          .item("This still isn't optimal, but it's an improvement over the previous situation."))
-        .item("Enabled the option to automatically draw the first compass arrow for back to back arc compasses.")
-      )
-    }
-  }, {
-    version: 7,
-    date: new Date(Date.parse("2024-08-11")),
-    title: "Transport Fixes and Permission Checking",
-    render: layout => {
-      layout.row(new List()
-        .item("Fixed issues with various transports missing in the path editor and many actions being named 'Unnamed Action'.")
-        .item("Clue Trainer now checks if all required permissions are granted on startup and opens and explanation how to grant them if they are not.")
-      )
-    }
-  }, {
-    version: 6,
-    date: new Date(Date.parse("2024-07-14")),
-    title: "Celtic Knot Bugfix",
-    render: layout => {
-      layout.row(new List()
-        .item("Fixed a bug that caused celtic knots to revert to the 'Not enough information' state mid-solve.")
-        .item("Fixed the position of Wellington for sandy clues.")
-      )
-
-      layout.header("What went wrong?", "left")
-      layout.paragraph("While solving celtic knots, there's a step called 'unification' of puzzle states. This joins the previously known state of the puzzle with the new state. It continuously updates what the solver knows about the puzzle and is required when there is not enough information initially, and to make updating the overlay continuously possible. There was a rare case where unification actually caused information to be lost, which in turn caused the solver to not find a solution anymore.")
-    }
-  }, {
-    version: 5,
-    date: new Date(Date.parse("2024-07-12")),
-    title: "Slider Bugfix",
-    render: layout => {
-      layout.row(new List()
-        .item("Fixed a bug that caused invalid moves for slider puzzles to be displayed.")
-      )
-
-      layout.header("What went wrong?", "left")
-      layout.paragraph("In the new solving algorithm there is a point where the slider state needs to be reflected along the main diagonal (top left to bottom right). The datastructure that describes the slider state contains the layout of the 25 tiles and for optimization reasons also the position of the blank tile and the last performed move. The latter two were not correctly updated when reflecting the state, causing invalid solutions to be produced.")
     }
   },
+    {
+      version: 33,
+      date: new Date(Date.parse("2025-01-13")),
+      title: "Nature Sentinel Key Combinations",
+      notification: "Nature's Sentinel keyboard shortcuts have been updated.",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Updated keyboard code for Nature's sentinel outfit teleports.")
+            .item("Fixed a a few mislabeled teleports.")
+            .item("Fix major performance bug that would do rapid fullscreen captures when manually clicking 'Solve'.")
+          )
+      }
+    }, {
+      version: 32,
+      date: new Date(Date.parse("2025-01-06")),
+      title: "Data Fixes and Better Method Management",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Added a note that explains how to enable the Canifis to Mort´ton shortcut to a hard clue step.")
+            .item("Removed impossible compass spots in the Kharazi jungle.")
+            .item("Fixed missing paths for recently relocated tetracompass spots (v31).")
+            .item("Added Portmaster Kags to the teleport dataset")
+            .item("Fixed wrong clue text for the WE IRK OVER NAMESAKE anagram.")
+            .item("Improved styling of buttons across the app.")
+            .item("The method selection dropdown now displays the number of available methods.")
+            .item("Restyled the section control for multi-section paths.")
+            .item("Improved navigation surrounding method packs in the 'Methods' tab.", new List()
+              .item("Method packs are now shown in a single section with improved styling.")
+              .item("Control Buttons were moved to the top.")
+              .item("You can now open method packs like folders to see and manage their included methods.")
+              .item("Added development utilities to simplify editing builtin methods.")
+            )
+          )
+      }
+    }, {
+      version: 31,
+      date: new Date(Date.parse("2025-01-02")),
+      title: "Small Compass Fixes",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Added a new builtin triangulation preset for elite clues only using the normal spellbook (Menaphos House Teleport and South Feldip Hills).")
+            .item("Fixed styling issue for triangulation presets with long names.")
+            .item("The compass solver now recognizes clicked teleports when they are part of a previewed path.")
+            .item("Fixed the precise location of 3 tetracompass spots.")
+          )
+      }
+    }, {
+      version: 30,
+      date: new Date(Date.parse("2024-12-21")),
+      title: "Crash Hotfix",
+      silent: true,
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Fixed a bug that caused clue trainer to crash internally when reading certain clue steps.")
+            .item("Fixed another bug that caused another internal crash when reading certain clue steps.")
+          )
+      }
+    }, {
+      version: 29,
+      date: new Date(Date.parse("2024-12-21")),
+      title: "Further Zoom Fixes and Configuration Options",
+      notification: "Check out the new options for zoom behaviour",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Fixed a bug where parts of a path were hidden behind the UI after zooming in.")
+            .item("Selected path sections will now be remembered even within scan trees.")
+            .item("Added global configuration settings for zoom behaviour in the 'General' section.", new List()
+              .item("Added an option to limit the maximum allowed zoom level.")
+              .item("Added an option to set a minimum size for the area that is zoomed into.")
+              .item("Added an option to include the closest teleport in the zoom when not having a method selected.")
+            )
+            .item("Added configuration options to control what to include in the zoom for scan trees.")
+            .item("Moved interface options from 'General' to the new 'Interface' section.")
+          )
+      }
+    }, {
+      version: 28,
+      date: new Date(Date.parse("2024-12-16")),
+      title: "Decluttering Path Displays and Zoom Fixes",
+      notification: "Check out changes to path rendering and zoom behaviour",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Fixed various conflicts and inconsistencies with map parts overlaying each other in undesired ways.",
+              new List()
+                .item("For example, the tile grid and collision overlay is now placed below walls."))
+            .item("Fixed zoom to make better use of the available screen real estate while not zooming in incredibly close.")
+            .item("Reduced distracting icons from emote areas and hidey-holes.")
+            .item("Removed redundant dive and run icons across all tiers.")
+            .item("Changed rendering of yellow target indicators for run steps to be polygon based instead of an image marker so it scales better and is less obstructive.")
+            .item("Fixed various wrong far/precise dive indicators.")
+            .item("Changed the color for emote areas to match the purple of Uri and Double Agents.")
+            .item("Starting points for arrows in paths are now outset slightly so their start does not overlap with the arrow tip of the previous step.")
+            .item("Added an alternative method for the Paul Gower master step.")
+            .item("Fixed scan region names hiding teleport icons.")
+            .item("Fixed the image url for an easy map clue.")
+            .item("Removed number displays from compass spots.")
+          )
+      }
+    }, {
+      version: 27,
+      date: new Date(Date.parse("2024-12-14")),
+      silent: true,
+      title: "Crowdsourcing Data Sanitation",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Added some additional sanitation logic for crowdsourced slider data.")
+          )
+      }
+    }, {
+      version: 26,
+      date: new Date(Date.parse("2024-12-10")),
+      title: "URL Update",
+      silent: true,
+      render: layout => {
+        layout
+          .row(new List()
+            .item("The legacy url <a>https://leridon.github.io/rs3scantrainer</a> has been turned off as announced back in september.")
+            .item("Updated references to the GitHub repository to use the new URL <a>https://github.com/leridon/cluetrainer</a>.", new List().item(
+              "If you have a GitHub account and enjoy Clue Trainer, please head over to the repository and give it a star. "
+            ))
+          )
+      }
+    }, {
+      version: 25,
+      date: new Date(Date.parse("2024-12-09")),
+      title: "Game Update Fixes",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Updated the crowdsourcing function to work with the updated slider shuffle.")
+            .item("Updated the teleports of the Natures's Sentinel outfit.")
+            .item("Reduced minimum solve time for sliders to 0.1 seconds down from 0.5 seconds.")
+            .item("Updated collision data after today's game update.", new List()
+              .item("This is not reflected in the visuals yet, as they depend on the runeapps map update."))
+          )
+          .paragraph("Today's game update changed the shuffle algorithm for slider puzzles, making them significantly faster to solve. Preliminary testing suggests solution lengths in the range between 15 and 40 clicks.")
+      }
+    }, {
+      version: 24,
+      date: new Date(Date.parse("2024-12-05")),
+      title: "Scan Overlay Updates",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Added a second minimap overlay for the double ping range in addition to the triple ping range on scans.")
+            .item("The double and triple ping range can be toggled on/off independently from each other.")
+            .item("Added an option to manually select the minimap scaling instead of trying to automatically detect it.", new List()
+              .item("This is the new default because automatic zoom detection has some serious flaws.")
+              .item("Automatic zoom detection will remain as an experimental feature.")
+            )
+          )
+          .paragraph("Next monday, the update to slider puzzles will release. To quickly evaluate the effects of this change, we need the appropriate crowd-sourced data. Crowdsourcing is powered by users of Clue Trainer that opt in for data collection available in the 'Crowdsourcing' section in the settings.")
+      }
+    }, {
+      version: 23,
+      date: new Date(Date.parse("2024-11-26")),
+      title: "Seal Slider Fix",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Enabled support for the seal slider image used to free Mephisto in the Infernal Source.")
+          )
+      }
+    }, {
+      version: 22,
+      date: new Date(Date.parse("2024-11-25")),
+      title: "Fixes for the 'Use solution of previous step' option.",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Fixed that scans not using a scan tree method would not act as expected with regards to the 'Use solution of previous step' option for compasses.")
+            .item("Regular text clues will now also provide their solutions for the 'Use solution of previous step' option for compasses.", new List()
+              .item("This only really benefits the O EASTERN WISHES master clue."))
+            .item("Fixed a bug that could cause crashes when examining scan tree methods outside of Alt1.")
+          )
+      }
+    }, {
+      version: 21,
+      date: new Date(Date.parse("2024-11-25")),
+      silent: true,
+      title: "Fixing the Bugfix",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Added more error resilience to the minimap zoom detection, which caused the minimap overlay to not appear at all.")
+          )
+      }
+    }, {
+      version: 20,
+      date: new Date(Date.parse("2024-11-25")),
+      title: "Bugfixes",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Reduced erratic behaviour of the scan range minimap overlay in snowy areas.")
+            .item("Fixed a bug that caused the slider solver to crash when hovering the 'Hint' button immediately after opening the puzzle.")
+            .item("Fixed a critical typo that confused two very distinct types of aquatic creatures in a medium clue.")
+          )
+      }
+    }, {
+      version: 19,
+      date: new Date(Date.parse("2024-11-17")),
+      silent: true,
+      title: "Internal Tooling Fixes",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Fixed a math bug causing tile transforms for entity instances to be broken.")
+            .item("Added a filter safeguard to remove entity transports with zero actions.")
+            .item("Updated the tile collision data.")
+          )
+      }
+    }, {
+      version: 18,
+      date: new Date(Date.parse("2024-11-17")),
+      title: "Clue Reader Bugfix",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("(Maybe) Fixed a newly introduced bug that prevented scans from being read.")
+            .item("Added a notification when the clue reader is not fully initialized when trying to solve a clue.")
+          )
+      }
+    }, {
+      version: 17,
+      date: new Date(Date.parse("2024-11-16")),
+      title: "Scan Range Minimap Overlay",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Added a scan range overlay for the minimap.", new List().item("This can be toggled on or off in the new settings page for scans."))
+            .item("Fixed an internal error when manually selecting a compass clue via the search function.", new List().item(
+              "With this fix, you can now use the 'Solve'-page to explore pathing for compass spots by clicking on their markers."
+            ))
+            .item("Added a popup recommending to watch the tutorial when opening Clue Trainer for the first time after installation.")
+          )
+      }
+    }, {
+      version: 16,
+      date: new Date(Date.parse("2024-10-10")),
+      silent: true,
+      title: "Compass Overlay Fix",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Fixed a timing issue that could cause the compass overlay to persist after the compass already ended.")
+          )
+      }
+    }, {
+      version: 15,
+      date: new Date(Date.parse("2024-10-10")),
+      silent: true,
+      title: "Solving Bugfix",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Fixed a bug that caused parts of the solving interface to not appear when reading a scan.")
+          )
+      }
+    }, {
+      version: 14,
+      date: new Date(Date.parse("2024-10-08")),
+      title: "Large internal change and small visible changes",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Large internal refactor of screen capturing to optimize for multiple captures being done in parallel.",
+              new List()
+                .item("This is a significant internal change that could potentially lead to unforeseen issues, despite extensive testing. Please let me know if you experience any issues.")
+            )
+            .item("Fixed a bug that caused lockbox optimization to reset down to 2 on reloading.")
+            .item("Separated the method selection dropdown into its own element instead of being embedded in the path list or the scan tree view.")
+            .item("On scans, the entire lines can now be clicked instead of just the small button containing the pulse icon.")
+          )
+      }
+    }, {
+      version: 13,
+      date: new Date(Date.parse("2024-10-03")),
+      silent: true,
+      title: "Lockbox Hotfix",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Changed the desync detection for lockboxes for a much more stable and reliable implementation.")
+          )
+      }
+    }, {
+      version: 12,
+      date: new Date(Date.parse("2024-10-03")),
+      title: "Lockbox Changes",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Tweaked the lockbox solver so it does not switch to a different solution in the middle of solving.",
+              new List()
+                .item("Instead of independently solving the puzzle on each tick, the solver now prefers the solution closest to the previously known solution. Solution minimization is only applied on the initial solve.")
+            )
+            .item("Extended the lockbox reader to try to detect client desyncs and pause the overlay so that it does not display a wrong solution.",
+              new List()
+                .item("Occasionally, the puzzle state shown by the game client desyncs from the actual server state. The reader now tries to detect this based on the number of clicks you would need to have done to get to this state and unplausible states are discarded. This is considered experimental, so let me know if you encounter issues.")
+            )
+            .item("The optimization mode for lockboxes can now be turned up to 5. Values above 2 encourage the solver to avoid tiles that need to be clicked 2 times.",
+              new List()
+                .item("If you're thinking 'this is dumb, why would I ever do this?': You're right, please go and try to convince Ngis."))
+            .item("Fixed some right click options for lodestones not being detected when hovering it and pressing Alt+1 on compasses.")
+          )
+      }
+    }, {
+      version: 11,
+      date: new Date(Date.parse("2024-09-22")),
+      title: "Bugfixes",
+      render: layout => {
+        layout.row(new List()
+          .item("Fixed a bug that caused certain paths to not be correctly split into sections, sometimes resulting in the 'zoom to space' symptom (for example at the Edmond medium clue).")
+          .item("Added a workaround for a rare issue where a master compass would reset and be redetected as an elite compass.")
+          .item("Added 2 missing tiles to the landing area for the turtle island teleport, which sometimes caused problems with master compasses.")
+          .item("Slightly increased the time required for a stationary compass to be counted to mitigate lag spikes.")
+        )
+      }
+    }, {
+      version: 10,
+      silent: true,
+      date: new Date(Date.parse("2024-09-20")),
+      title: "Timing Bugfix",
+      render: layout => {
+        layout.row(new List()
+            .item("Fixed a rare timing bug where a completed puzzle could abort the following clue. This was noticeable for compasses following a celtic knot.")
+            .item("Reduced the size of log files.")
+          )
+          .paragraph("This is a bit of a speculative fix, because the source of the reported issue is not 100% confirmed.")
+      }
+    }, {
+      version: 9,
+      date: new Date(Date.parse("2024-09-18")),
+      title: "Bugfixes",
+      render: layout => {
+        layout.row(new List()
+          .item("Fixed a minor bug that caused an exception when outside of Alt 1.")
+          .item("Fixed a bug that caused teleport icons on the map to not update on changes to the settings, requiring a reload.")
+        )
+      }
+    }, {
+      version: 8,
+      date: new Date(Date.parse("2024-09-09")),
+      title: "Migration and update notices",
+      render: layout => {
+        layout.row(new List()
+          .item("Added a data export/import feature. Data exports will include local/imported method packs, method preferences, and all of your settings.")
+          .item("Added a migration notice to remind users that are still on the old 'leridon.github.io/rs3scantrainer' URL to migrate to 'cluetrainer.app'.",
+            new List()
+              .item("The legacy URL 'leridon.github.io/rs3scantrainer' will stop being available after 2024-10-31.")
+          )
+          .item("Added an update reminder for users that are on Alt 1 1.5.6.")
+          .item("Reduced the default setting for slider solve time to 1 second down from 2 seconds.")
+          .item("Fixed a bug that caused the map to zoom very far out on certain steps.", new List()
+            .item("This still isn't optimal, but it's an improvement over the previous situation."))
+          .item("Enabled the option to automatically draw the first compass arrow for back to back arc compasses.")
+        )
+      }
+    }, {
+      version: 7,
+      date: new Date(Date.parse("2024-08-11")),
+      title: "Transport Fixes and Permission Checking",
+      render: layout => {
+        layout.row(new List()
+          .item("Fixed issues with various transports missing in the path editor and many actions being named 'Unnamed Action'.")
+          .item("Clue Trainer now checks if all required permissions are granted on startup and opens and explanation how to grant them if they are not.")
+        )
+      }
+    }, {
+      version: 6,
+      date: new Date(Date.parse("2024-07-14")),
+      title: "Celtic Knot Bugfix",
+      render: layout => {
+        layout.row(new List()
+          .item("Fixed a bug that caused celtic knots to revert to the 'Not enough information' state mid-solve.")
+          .item("Fixed the position of Wellington for sandy clues.")
+        )
+
+        layout.header("What went wrong?", "left")
+        layout.paragraph("While solving celtic knots, there's a step called 'unification' of puzzle states. This joins the previously known state of the puzzle with the new state. It continuously updates what the solver knows about the puzzle and is required when there is not enough information initially, and to make updating the overlay continuously possible. There was a rare case where unification actually caused information to be lost, which in turn caused the solver to not find a solution anymore.")
+      }
+    }, {
+      version: 5,
+      date: new Date(Date.parse("2024-07-12")),
+      title: "Slider Bugfix",
+      render: layout => {
+        layout.row(new List()
+          .item("Fixed a bug that caused invalid moves for slider puzzles to be displayed.")
+        )
+
+        layout.header("What went wrong?", "left")
+        layout.paragraph("In the new solving algorithm there is a point where the slider state needs to be reflected along the main diagonal (top left to bottom right). The datastructure that describes the slider state contains the layout of the 25 tiles and for optimization reasons also the position of the blank tile and the last performed move. The latter two were not correctly updated when reflecting the state, causing invalid solutions to be produced.")
+      }
+    },
     {
       version: 4,
       date: new Date(Date.parse("2024-07-11")),
