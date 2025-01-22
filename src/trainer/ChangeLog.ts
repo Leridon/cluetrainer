@@ -32,6 +32,7 @@ export namespace Changelog {
           .item("Added the Shattered Worlds teleport.")
           .item("Added the Soul Wars portal transport.")
           .item("Added the ladder to and from the Obelisk of Water.")
+          .item("Updated the path for a coordinate step in medium clues in mort myre swamp.")
         )
     }
   },
