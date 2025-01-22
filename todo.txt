@@ -10,24 +10,21 @@ Usability playtesting results:
 
 
 Transport Backlog:
+    [BUG] Using offset movement for rotated instances doesn't transform correctly
     Master:
     (City of Um teleport incantation; not sure if same as tome)
     (((Runespan portal, runespan pads on high floor to east and then north)))
     (and the fishing platform and entrana connections as mentioned above)
-    Kag Ship transports
     Wildy volcano stepping stone and cliff climb
     Dorgesh Khaan: Grapple hooks
                    Stairs up to the agility arena
                    Stairs down to both the north east and south west buildings
    Daemonheim guard to wildy (also ED2 guard)
     Fort Forinthry gate to that
-    Taverley dungeon ladder to Water obby
     Boss portal to barrows
     (add boss portal transport to reaper portal)
     Stepping stones in the east and maybe also the shilo gate (for comparison)
-    Soul wars portal
     Shantay Pass
-    Al kharid mine rock climb
     Death Plateau rock wall climb
     Memory strand teleports to memorial to Guthix. If you've prestiged Engrams can be used to teleport to the entrance
     Max Guild  boss portal teleport options + airut peninsula to it

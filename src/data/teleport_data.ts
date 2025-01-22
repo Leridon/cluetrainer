@@ -2173,7 +2173,7 @@ name: "Harmony Island",
     type: "teleports",
     id: "hazelmeressignetring",
     name: "Hazelmere's signet ring",
-    menu_ticks: 1,
+    menu_ticks: 0,
     animation_ticks: 4,
     spots: [
       {
@@ -3701,26 +3701,28 @@ name: "Entrana",
     access: [
       {type: "item", id: "tablet", name: {name: "The Heart teleport", kind: "item"}, action_name: "Break"}
     ]
-  }, /*
-            {
-                type: "teleports",
-                id: "fremmenikboots",
-                name: "Fremmenik sea boots",
-                img: {url: "fremmenikboots.gif"},
-                spots: [{
-                    id: "relekkamarket",
-                    target: {origin: {x: 2642, y: 3678, level: 0}},
-                    name: "Relekka Market",
-                    menu_ticks: 1,
-                    animation_ticks: default_teleport_ticks
-                }]
-            }, */
+  },
+  {
+    type: "teleports",
+    id: "fremmenikboots",
+    name: "Fremmenik sea boots",
+    img: {url: "fremmenikboots.gif"},
+    spots: [{
+      id: "relekkamarket",
+      target: {"origin": {"x": 2651, "y": 3689, "level": 0}, "size": {"x": 5, "y": 5}, "data": "///vAQ=="},
+      name: "Rellekka Market",
+      icon_position_override: {"x": 2651, "y": 3691, "level": 0},
+      menu_ticks: 0,
+      animation_ticks: default_teleport_ticks
+    }], access: [
+      {type: "item", id: "seaboots", name: {kind: "item", name: "Fremennik sea boots 4"}, action_name: "Rellekka teleport"},
+    ]
+  },
   {
     type: "teleports",
     id: "legendscape",
     name: "Legends Cape",
-    img: {url: "legendscape.png"}
-    ,
+    img: {url: "legendscape.png"},
     spots: [{
       id: "legendsguild",
       target: {origin: {x: 2728, y: 3348, level: 0}},
@@ -3931,8 +3933,9 @@ name: "Entrana",
       {
         id: "relekka",
         target: {"origin": {"x": 2651, "y": 3689, "level": 0}, "size": {"x": 5, "y": 5}, "data": "///vAQ=="},
+        icon_position_override: {"x": 2655, "y": 3691, "level": 0},
         code: "1",
-        name: "Relekka",
+        name: "Rellekka",
         menu_ticks: 1,
         animation_ticks: 6
       },
@@ -3970,7 +3973,7 @@ name: "Entrana",
         id: "relekkamarket",
         target: {"origin": {"x": 2641, "y": 3675, "level": 0}, "size": {"x": 5, "y": 5}},
         code: "7",
-        name: "Relekka Market",
+        name: "Rellekka Market",
       },
     ],
     access: [{
@@ -4270,6 +4273,16 @@ name: "Entrana",
         id: "grandtreetreepatch",
         target: {"origin": {"x": 2434, "y": 3413, "level": 0}, "size": {"x": 5, "y": 5}, "data": "LsboAA=="},
         name: "Tree Gnome Stronghold Tree Patch",
+      },
+      {
+        id: "gnomemazefruittree",
+        target: {"origin": {"x": 2488, "y": 3178, "level": 0}, "size": {"x": 4, "y": 4}, "data": "lmk="},
+        name: "Tree Gnome Village Fruit Tree Patch",
+      },
+      {
+        id: "mcgruborswoodhops",
+        target: {"origin": {"x": 2663, "y": 3522, "level": 0}, "size": {"x": 8, "y": 8}, "data": "foGBgYGBgX4="},
+        name: "Hops Patch north of McGrubor's Wood",
       },
     ],
     access: [{
@@ -4572,6 +4585,29 @@ name: "Entrana",
         clickable_area: {"origin": {"x": 3122, "y": 2631, "level": 0}},
         cursor: "talk"
       }
+    ]
+  }, {
+    type: "teleports",
+    id: "shatteredworldsteleport",
+    name: "Shattered Worlds teleport",
+    animation_ticks: default_teleport_ticks,
+    menu_ticks: 0,
+    spots: [
+      {id: "shatteredworlds", name: "Shattered Worlds", target: {"origin": {"x": 3166, "y": 3161, "level": 0}, "size": {"x": 5, "y": 5}, "data": "/zv/AQ=="}}
+    ], access: [
+      {id: "scroll", type: "item", name: {kind: "item", name: "Shattered Worlds teleport"}, action_name: "Teleport", img: {url: "Shattered_Worlds_teleport_scroll.webp"}}
+    ]
+  }, {
+    type: "teleports",
+    id: "clanvexillum",
+    name: "Clan vexillum",
+    animation_ticks: 8,
+    menu_ticks: 1,
+    spots: [
+      {id: "falador", name: "Falador", target: {"origin": {"x": 2964, "y": 3282, "level": 0}, "size": {"x": 5, "y": 5}}, code: "1"}
+    ],
+    access: [
+      {id: "vexillum", type: "item", name: {kind: "item", name: "Clan vexillum"}, action_name: "Teleport", img: {url: "clanvex.webp"}}
     ]
   }
 //TODO: Eagle transport system
