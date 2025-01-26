@@ -21,13 +21,13 @@ export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
         {id: "scans", name: "Scan Clues", renderer: () => new WikiPageScanClues()},
         {id: "scantrees", name: "Scan Trees", renderer: () => new WikiPageScanTrees()},
         {id: "scantreecontroloverlay", name: "Scan Tree Control Overlay", short_name: "Tree Control", renderer: () => new WikiPageScanTreeControlOverlay()},
-        {id: "scanequivalenceclasses", name: "Scan Tree Equivalence Classes", short_name: "Equivalence Classes", renderer: () => new WikiPageScanEquivalenceClasses()},
       ]
     }, {
       name: "Method Creation",
       entries: [
         {id: "methodediting", name: "Method Editing", short_name: "General", renderer: () => new WikiPageMethodEditing()},
-        {id: "scantreeediting", name: "Creating Scan Trees", short_name: "Scan Trees", renderer: () => new WikiPageScanTreeEditing()}
+        {id: "scantreeediting", name: "Creating Scan Trees", short_name: "Scan Trees", renderer: () => new WikiPageScanTreeEditing()},
+        {id: "scanequivalenceclasses", name: "Scan Tree Equivalence Classes", short_name: "Equivalence Classes", renderer: () => new WikiPageScanEquivalenceClasses()},
       ]
     }]);
   }
@@ -35,7 +35,7 @@ export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
 
 export namespace ClueTrainerWiki {
   export type page_id = "home" | "scantrees" | "scantreecontroloverlay" | "scans" | "scanequivalenceclasses"
-    | "methodediting" | "scantreeediting"
+    | "methodediting" | "scantreeediting" | "toofardifferentlevel"
 
   let instance: ClueTrainerWiki = null
 
