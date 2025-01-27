@@ -7,6 +7,7 @@ import {WikiPageScanClues} from "./pages/scans/WikiPageScanClues";
 import {WikiPageScanEquivalenceClasses} from "./pages/scans/WikiPageScanEquivalenceClasses";
 import {WikiPageMethodEditing} from "./pages/WikiPageMethodEditing";
 import {WikiPageScanTreeEditing} from "./pages/WikiPageScanTreeEditing";
+import {WikiPageInteractiveOverlays} from "./pages/WikiPageInteractiveOverlay";
 
 export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
   constructor() {
@@ -23,6 +24,12 @@ export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
         {id: "scantreecontroloverlay", name: "Scan Tree Control Overlay", short_name: "Tree Control", renderer: () => new WikiPageScanTreeControlOverlay()},
       ]
     }, {
+      name: "Miscellaneous",
+      entries: [
+        {id: "interactiveoverlays", name: "Interactive Overlays", renderer: () => new WikiPageInteractiveOverlays()}
+      ]
+    },
+      {
       name: "Method Creation",
       entries: [
         {id: "methodediting", name: "Method Editing", short_name: "General", renderer: () => new WikiPageMethodEditing()},
@@ -35,11 +42,11 @@ export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
 
 export namespace ClueTrainerWiki {
   export type page_id = "home" | "scantrees" | "scantreecontroloverlay" | "scans" | "scanequivalenceclasses"
-    | "methodediting" | "scantreeediting" | "toofardifferentlevel"
+    | "methodediting" | "scantreeediting" | "toofardifferentlevel" | "interactiveoverlays"
 
   let instance: ClueTrainerWiki = null
 
-  export function open(page?: page_id) {
+  export function openOnPage(page?: page_id) {
     if (instance) instance.setActiveSection(page)
     else {
       const modal = new class extends NisModal {

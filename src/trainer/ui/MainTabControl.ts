@@ -164,7 +164,7 @@ export default class MainTabControl extends Widget {
               hideOnClick: false
             }),
       new MenuButton("Guide", "assets/icons/ribbon_osh.png")
-        .onClick(() => ClueTrainerWiki.open()
+        .onClick(() => ClueTrainerWiki.openOnPage()
         )
         .setActive(true)
         .addTippy(

@@ -126,7 +126,7 @@ export namespace ScanControlPrototype {
       ).setTooltip("Press Alt+1 while hovering this button for an explanation.")
 
       this.help_button.main_hotkey_pressed.on(() => {
-        ClueTrainerWiki.open("scantreecontroloverlay")
+        ClueTrainerWiki.openOnPage("scantreecontroloverlay")
       })
 
       this.back_button.main_hotkey_pressed.on(e => { if (this.node.parent) this.node_selection.trigger(this.node.parent.node) })

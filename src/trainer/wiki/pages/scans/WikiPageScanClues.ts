@@ -24,7 +24,7 @@ export class WikiPageScanClues extends WikiPage {
     this.paragraph("If the correct spot is even farther away, there will be a single blue ring pulsating slowly.")
 
     this.header("Too Far/Different level")
-    this.paragraph("In addition to the changing pulse, there is a second mechanic that is less well known and easily missed. In some situations, the text in the scan panel suggests you to try scanning a different level. This can be used to rule out some of the spots before even entering the scan area. More information can be found in the ", text_link("dedicated page", () => ClueTrainerWiki.open("toofardifferentlevel")), ".")
+    this.paragraph("In addition to the changing pulse, there is a second mechanic that is less well known and easily missed. In some situations, the text in the scan panel suggests you to try scanning a different level. This can be used to rule out some of the spots before even entering the scan area. More information can be found in the ", text_link("dedicated page", () => ClueTrainerWiki.openOnPage("toofardifferentlevel")), ".")
 
     this.seeAlso([
       {name: "Scan Clues", comment: "RS Wiki", action: "https://runescape.wiki/w/Treasure_Trails/Guide/Scans"}

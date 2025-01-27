@@ -638,21 +638,6 @@ export class Application extends Behaviour {
 
   protected end() {
   }
-
-  /*
-  mode(): "development" | "live" | "preview" {
-    return "preview"
-
-    if (window.location.host.includes("localhost"))
-      return "development"
-
-    if (window.location.host == "leridon.github.io") {
-      if (window.location.pathname.startsWith("/cluetrainer-live")) return "live"
-      if (window.location.pathname.startsWith("/rs3scantrainer")) return "preview"
-    }
-
-    return "development"
-  }*/
 }
 
 namespace Application {
@@ -666,53 +651,4 @@ export function initialize() {
   let app = new Application()
   Dependencies.instance().app = app
   app.start()
-
-
-  //scantrainer.select(clues.find((c) => c.id == 361)) // zanaris
-  //scantrainer.select(clues.find((c) => c.id == 399)) // compass
-  // scantrainer.sidepanels.clue_panel.selectClue(clues.find((c) => c.id == 364)) // falador
-
-  /*
-      let player = YouTubePlayer('my-player', {
-          events: undefined,
-          height: undefined,
-          host: "",
-          playerVars: {
-              autoplay: 1,
-              controls: 1,
-              enablejsapi: 1,
-              end: 7,
-              fs: 0,
-              iv_load_policy: 3,
-              loop: 1,
-              modestbranding: 1,
-              list: "U9pFPB6gjug",
-              rel: 0,
-              start: 3
-
-          },
-          videoId: "U9pFPB6gjug",
-          width: undefined
-      })
-
-      player.mute()
-          .then(() =>
-              player.loadVideoById({
-                  videoId: "U9pFPB6gjug",
-                  startSeconds: 3,
-                  endSeconds: 7
-              }))
-          .then(() => player.playVideo())
-
-      // TODO: Check the current time on a loop and reset when close to end
-
-
-      /*
-          player.loadVideoByUrl({
-              mediaContentUrl: "U9pFPB6gjug",
-              startSeconds: 2,
-              endSeconds: 3,
-          })*/
-
-  //player.playVideo()
 }

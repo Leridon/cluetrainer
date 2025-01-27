@@ -157,7 +157,7 @@ export namespace InteractiveOverlay {
     renderSelf(overlay: OverlayGeometry) {
       if (!this.area) return
 
-      const render_as_hovered = this.hovered.value() || this.isDefaultHovered()
+      const render_as_hovered = this.hovered.value() // || this.isDefaultHovered()
 
       const config = this.config.value()
 
