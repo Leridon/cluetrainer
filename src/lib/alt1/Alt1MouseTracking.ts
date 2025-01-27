@@ -1,13 +1,29 @@
 import * as a1lib from "alt1/base"
-import {EwentHandler, observe} from "../reactive";
+import {ewent, EwentHandler, observe} from "../reactive";
 import {Vector2} from "lib/math/Vector2";
 import {Process} from "../Process";
+import {timeSync} from "../gamemap/GameLayer";
+import {OverlayGeometry} from "./OverlayGeometry";
+import {ScreenRectangle} from "./ScreenRectangle";
 
 export class Alt1MouseTracking {
   private process: Process
   private position = observe<Vector2>(null).structuralEquality()
+  private click = ewent<Vector2>()
 
-  constructor() {}
+  constructor() {
+
+    this.click.on(pos => {
+      console.log(`Active at ${Vector2.toString(pos)}`)
+
+      new OverlayGeometry().withTime(1000)
+        .rect2(ScreenRectangle.centeredOn(pos, 5))
+        .render()
+    })
+
+    this.startTracking()
+
+  }
 
   private startTracking() {
     const self = this
@@ -15,18 +31,22 @@ export class Alt1MouseTracking {
     if (this.process) return
 
     this.process = new class extends Process.Interval {
-      constructor() {super(20);}
+      constructor() {super(50);}
 
       tick(): void {
-        if (self.position.changed.handlerCount() == 0) {
-          this.stop()
+        timeSync("tick", () => {
+          if (self.position.changed.handlerCount() == 0 && self.click.handlerCount() == 0) {
+            this.stop()
 
-          self.process = null
+            self.process = null
 
-          return
-        }
+            return
+          }
 
-        self.position.set(a1lib.getMousePosition())
+          self.position.set(a1lib.getMousePosition())
+
+          if (alt1.rsLastActive < 50) self.click.trigger(a1lib.getMousePosition())
+        })
       }
     }
 

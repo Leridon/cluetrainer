@@ -43,6 +43,7 @@ import {ChatReader} from "../lib/alt1/readers/ChatReader";
 import {MinimapReader} from "../lib/alt1/readers/MinimapReader";
 import {ScreenCaptureService} from "../lib/alt1/capture";
 import {SectionMemory} from "./ui/neosolving/PathControl";
+import {Alt1} from "../lib/alt1/Alt1";
 import ActiveTeleportCustomization = Transportation.TeleportGroup.ActiveTeleportCustomization;
 import TeleportSettings = Settings.TeleportSettings;
 import inlineimg = C.inlineimg;
@@ -502,6 +503,8 @@ export class ClueTrainer extends Behaviour {
   }
 
   protected async begin() {
+    Alt1.instance()
+
     let container = Widget.wrap(jquery("#main-content"))
 
     this.startup_settings.subscribe(s => this.startup_settings_storage.set(s))
