@@ -15,6 +15,9 @@ export class Alt1ContextMenuDetection {
 
   constructor() {
     a1lib.on("menudetected", e => {
+
+      console.log(`Right click at ${e.rectangle.x}|${e.rectangle.y}`)
+
       const event = new Alt1ContextMenuDetection.Event(e)
 
       this.last_rect = {
@@ -27,7 +30,7 @@ export class Alt1ContextMenuDetection {
   }
 
   check(rect: CapturedImage): ScreenRectangle {
-    if(!this.last_rect) return null
+    if (!this.last_rect) return null
 
     const PIXEL_OFFSET = {x: 22, y: 6}
     const expected_color: [number, number, number] = [28, 26, 18]
