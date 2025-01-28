@@ -8,7 +8,6 @@ import {ExportImport} from "lib/util/exportString";
 import {TileRectangle} from "lib/runescape/coordinates/TileRectangle";
 import Behaviour, {SingleBehaviour} from "lib/ui/Behaviour";
 import {SolvingMethods} from "./model/methods";
-import {GameLayer} from "../lib/gamemap/GameLayer";
 import MainTabControl from "./ui/MainTabControl";
 import Widget from "../lib/ui/Widget";
 import {MethodPackManager} from "./model/MethodPackManager";
@@ -30,19 +29,18 @@ import {Log} from "../lib/util/Log";
 import {Changelog} from "./ChangeLog";
 import {DevelopmentModal} from "../devtools/DevelopmentMenu";
 import {LogViewer} from "../devtools/LogViewer";
-import {NisModal} from "../lib/ui/NisModal";
-import {BigNisButton} from "./ui/widgets/BigNisButton";
-import Properties from "./ui/widgets/Properties";
 import {DataExport} from "./DataExport";
 import {BookmarkStorage} from "./ui/pathedit/BookmarkStorage";
-import {FormModal} from "../lib/ui/controls/FormModal";
-import {Alt1Modal} from "./Alt1Modal";
-import {List} from "../lib/ui/List";
-import {ClickToCopy} from "../lib/ui/ClickToCopy";
 import {ChatReader} from "../lib/alt1/readers/ChatReader";
 import {MinimapReader} from "../lib/alt1/readers/MinimapReader";
 import {ScreenCaptureService} from "../lib/alt1/capture";
 import {SectionMemory} from "./ui/neosolving/PathControl";
+import {Alt1UpdateNotice} from "./startup_messages/Alt1UpdateNotice";
+import {ClueTrainerAppMigrationNotice} from "./startup_messages/ClueTrainerAppMigrationNotice";
+import {PermissionChecker} from "./startup_messages/PermissionChecker";
+import {SuccessfullInstallationNotice} from "./startup_messages/SuccessfullInstallationNotice";
+import {lazy} from "../lib/properties/Lazy";
+import {Alt1} from "../lib/alt1/Alt1";
 import ActiveTeleportCustomization = Transportation.TeleportGroup.ActiveTeleportCustomization;
 import TeleportSettings = Settings.TeleportSettings;
 import inlineimg = C.inlineimg;
@@ -54,81 +52,6 @@ import staticentity = C.staticentity;
 import entity = C.entity;
 import notification = Notification.notification;
 import log = Log.log;
-import img = C.img;
-
-class PermissionChecker extends NisModal {
-  constructor() {
-    super({disable_close_button: true, fixed: true});
-
-    this.title.set("Missing Permissions")
-  }
-
-  render() {
-    super.render();
-
-    const props = new Properties().appendTo(this.body)
-
-    props.paragraph("Clue Trainer is missing permissions that are essential for it to function. Please grant the necessary permissions and then check again by clicking the button on the bottom of this modal.")
-
-    props.header("How to set permissions")
-
-    props.paragraph("Open Clue Trainer settings by clicking the small wrench on the top left, next to the buttons to minimize or close the window.")
-
-    props.row(img("media/how_to_set_permissions_1.png"))
-
-    props.paragraph("Make sure all permissions are checked.")
-
-    props.row(img("media/how_to_set_permissions_2.png"))
-
-    props.paragraph("Click 'Check' below to check if permissions have correctly been set.")
-  }
-
-  getButtons(): BigNisButton[] {
-    return [
-      new BigNisButton("Ignore", "cancel")
-        .onClick(() => {
-          notification("Please be aware that Clue Trainer will not work without granting the permissions.", "error").show()
-          this.remove()
-        }),
-      new BigNisButton("Check", "confirm")
-        .onClick(() => {
-          if (!alt1) this.remove()
-          else {
-            if (alt1.permissionPixel && alt1.permissionOverlay && alt1.permissionGameState) {
-              notification("Success! Permissions are fine now", "information").show()
-              this.remove()
-            } else {
-              notification("Clue Trainer is still missing permissions.", "error").show()
-            }
-          }
-        })
-    ]
-  }
-}
-
-namespace PermissionChecker {
-  export function arePermissionsFine(): boolean {
-    return alt1.permissionPixel && alt1.permissionOverlay && alt1.permissionGameState
-  }
-
-  export function check() {
-    if (alt1.permissionInstalled && !arePermissionsFine()) new PermissionChecker().show()
-  }
-}
-
-export class SimpleLayerBehaviour extends Behaviour {
-  constructor(private map: GameMap, private layer: GameLayer) {
-    super();
-  }
-
-  protected begin() {
-    this.map.addGameLayer(this.layer)
-  }
-
-  protected end() {
-    this.layer.remove()
-  }
-}
 
 export namespace ScanTrainerCommands {
   import Command = QueryLinks.Command;
@@ -204,7 +127,6 @@ export namespace ScanTrainerCommands {
     },
   }
 
-
   export const index = [
     load_path, load_overview, load_method
   ]
@@ -243,149 +165,6 @@ export class SettingsManagement {
     const clone = lodash.cloneDeep(this.settings)
     f(clone)
     this.set(clone)
-  }
-}
-
-class UpdateAlt1Modal extends FormModal<number> {
-  constructor(private app: ClueTrainer) {super();}
-
-  render() {
-    super.render();
-
-    this.setTitle("You should update your Alt 1")
-
-    const layout = new Properties().appendTo(this.body)
-
-    layout.paragraph("You are currently on the outdated Alt 1 version 1.5.6. The newest version is 1.6.0. This can potentially lead to issues while using Clue Trainer and other plugins. For example, you will notice that Clue Trainer will re-download databases for slider puzzles on every session instead of caching them locally. Other possible issues include performance problems or crashes.")
-
-    layout.paragraph("Unfortunately, at the current time you can not automatically update from 1.5.6 to 1.6.0. To update manually, you will need to follow these steps:")
-
-    layout.row(
-      new List(true)
-        .item("Backup any important data. Unfortunately you will lose all of your local data and settings, as well as all installed third party plugins such as Clue Trainer. Make a backup of everything that's possible to backup. See below to export Clue Trainer data and also remember to save your custom AfkWarden presets!",
-          new List(false)
-            .item("Alt 1 stores installed apps and their data in ",
-              new ClickToCopy("%localappdata%/alt1toolkit"),
-              ". Backup the ",
-              new ClickToCopy("config.json"),
-              " file and the ",
-              new ClickToCopy("chromecache"),
-              " folder to easily save all of your data."
-            )
-        )
-        .item("Uninstall your current Alt 1 version.")
-        .item("Download the current Alt 1 installer from <a href='https://runeapps.org/alt1'>https://runeapps.org</a>. This is the only official source of Alt 1!")
-        .item("Install the downloaded version of Alt 1. Make sure that your game is closed while you do it or the setup will fail!")
-        .item("Install any required third party plugins such as Clue Trainer and restore your data backups.")
-    )
-
-    layout.divider()
-
-    layout.paragraph("You can save your Clue Trainer data before you update by clicking the button below. On the new version, please visit the 'Data' page in settings to restore your data.")
-
-    layout.row(new BigNisButton("Export Data", "confirm").onClick(() => this.app.data_dump.dump()))
-  }
-
-  protected getValueForCancel(): number {
-    return null
-  }
-
-  getButtons(): BigNisButton[] {
-    return [
-      new BigNisButton("Remind me another time", "confirm")
-        .onClick(() => this.confirm(21 * 24 * 60 * 60 * 1000))
-    ]
-  }
-
-}
-
-namespace UpdateAlt1Modal {
-  const earliest_reminder_time = new storage.Variable<number>("preferences/dontremindtoupdatealt1until", () => null)
-
-  export async function maybeRemind(app: ClueTrainer) {
-    if (window.alt1?.permissionInstalled && alt1.version == "1.5.6") {
-      if (earliest_reminder_time.get() < Date.now()) {
-        const reminder = await new UpdateAlt1Modal(app).do()
-
-        if (reminder != null) {
-          earliest_reminder_time.set(Date.now() + reminder)
-        }
-      }
-    }
-  }
-}
-
-class MigrateToCluetrainerAppDomain extends FormModal<number> {
-  constructor(private app: ClueTrainer) {super();}
-
-  render() {
-    super.render();
-
-    this.setTitle("Please Migrate")
-
-    const layout = new Properties().appendTo(this.body)
-
-    let first_paragraph = ""
-
-    if (this.app.in_alt1) {
-      first_paragraph += "Your installation of Clue Trainer is still using 'leridon.github.io/rs3scantrainer'. "
-    } else {
-      first_paragraph += "You are currently on leridon.github.io/rs3scantrainer. "
-    }
-
-    first_paragraph += "This version of Clue Trainer is hosted using GitHub pages on the Clue Trainer repository, which is currently blocking me from renaming the repository to something more fitting of the current state. When the rename happens, your current installation of Clue Trainer will stop to work."
-
-    layout.paragraph(first_paragraph)
-
-    layout.paragraph(
-      `Clue Trainer has been available on the custom domain <a href="https://cluetrainer.app">cluetrainer.app</a> since June 6th. Please migrate to that URL before 2024-10-31, at which point the repository will be renamed and Clue Trainer becoming unavailable on the 'leridon.github.io/rs3scantrainer' URL without further notice. Please also take note of the option to export your current data/settings to make migration less painful.`
-    )
-
-    layout.paragraph(C.bold(`You have ${MigrateToCluetrainerAppDomain.daysLeft()} days left to migrate.`))
-
-    if (this.app.in_alt1) {
-      layout.row(
-        new BigNisButton("Install cluetrainer.app", "confirm").onClick(() => new Alt1Modal("https://cluetrainer.app").show())
-      )
-    }
-
-    layout.divider()
-
-    layout.paragraph("If you have any relevant local data or settings on this URL, you can export all of your data using the button below. On the new version, please visit the 'Data' page in settings to restore your data.")
-
-    layout.row(new BigNisButton("Export Data", "confirm").onClick(() => this.app.data_dump.dump()))
-  }
-
-  protected getValueForCancel(): number {
-    return null
-  }
-
-  getButtons(): BigNisButton[] {
-    const daysleft = MigrateToCluetrainerAppDomain.daysLeft()
-
-    if (daysleft >= 14) {
-      return [
-        new BigNisButton("Remind me in a week", "confirm")
-          .onClick(() => this.confirm(6 * 24 * 60 * 60 * 1000))
-      ]
-    } else {
-      return [
-        new BigNisButton("Remind me tomorrow", "confirm")
-          .onClick(() => this.confirm(1 * 24 * 60 * 60 * 1000))
-      ]
-    }
-  }
-}
-
-namespace MigrateToCluetrainerAppDomain {
-  export const deadline = new Date(2024, 9, 31)
-
-  export function daysLeft(): number {
-    const now = Date.now()
-
-    const DAY = 24 * 60 * 60 * 1000
-
-    return Math.max(0, Math.floor((deadline.getTime() - now) / DAY))
   }
 }
 
@@ -502,7 +281,7 @@ export class ClueTrainer extends Behaviour {
   }
 
   protected async begin() {
-    let container = Widget.wrap(jquery("#main-content"))
+    const container = Widget.wrap(jquery("#main-content"))
 
     this.startup_settings.subscribe(s => this.startup_settings_storage.set(s))
 
@@ -521,50 +300,14 @@ export class ClueTrainer extends Behaviour {
 
     this.menu_bar.switchToTab(this.in_alt1 ? "solve" : "solve")
 
-    /*
-    if (this.mode() == "preview") {
-      if (!this.startup_settings.value().hide_preview_notice) {
-        notification("Preview Notice: Clue Trainer is actively in development and currently incomplete.")
-          .setDuration(null)
-          .addButton("Don't show again", (not) => {
-            this.startup_settings.update(s => s.hide_preview_notice = true)
-            not.dismiss()
-          }).show()
-      }
+    if (Alt1.exists()) {
+      alt1.identifyAppUrl("appconfig.json");
     }
-
-    if (!this.in_alt1 && !this.startup_settings.value().dont_recommend_alt1) {
-      notification("Clue Trainer is an Alt1 plugin and has clue-solving features when installed.")
-        .setDuration(null)
-        .addButton(C.text_link("Click here to install", () => new Alt1Modal().show()))
-        .addButton("Don't show again", (not) => {
-          this.startup_settings.update(s => s.dont_recommend_alt1 = true)
-          not.dismiss()
-        }).show()
-    }*/
 
     const is_first_visit = this.startup_settings.value().last_loaded_version == null
 
     if (is_first_visit && this.in_alt1) {
-      (new class extends NisModal {
-
-        render() {
-          super.render();
-
-          this.title.set("Welcome to Clue Trainer")
-
-          const layout = new Properties().appendTo(this.body)
-          layout.paragraph("You have successfully installed Clue Trainer! If you want, check out the video tutorial made by <b>Ngis</b> embedded below. It teaches you how to setup Clue Trainer according to your preferences and how its solving features are used. For additional info, open the 'About' page linked in the left sidebar.")
-
-          layout.row(c("<iframe width=\"560\" height=\"315\" src=\"https://www.youtube-nocookie.com/embed/EGDHM4USIp8?si=YLcuCoqZnAUAjI8s\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>"))
-        }
-
-        getButtons(): BigNisButton[] {
-          return [
-            new BigNisButton("Dismiss", "cancel").onClick(() => this.hide())
-          ]
-        }
-      }).show()
+      new SuccessfullInstallationNotice().show()
     }
 
     if (!is_first_visit && this.startup_settings.value().last_loaded_version != Changelog.latest_patch.version) {
@@ -594,12 +337,6 @@ export class ClueTrainer extends Behaviour {
         log().log("Log exported")
 
         LogViewer.do(log().get())
-
-        /*ExportStringModal.do(
-          log().toString(),
-          "",
-          `cluetrainerlog${Date.now()}.txt`
-        )*/
       }
 
       if (e.key == "F4") {
@@ -618,34 +355,23 @@ export class ClueTrainer extends Behaviour {
       PermissionChecker.check()
     }
 
-    UpdateAlt1Modal.maybeRemind(this)
-
-    if (window.location.host == "leridon.github.io" && window.location.pathname.startsWith("/rs3scantrainer")) {
-      const next_notice = this.startup_settings.value().earliest_next_cluetrainer_dot_app_migration_notice
-
-      if (!next_notice || next_notice < Date.now()) {
-        const remind_later = await new MigrateToCluetrainerAppDomain(this).do()
-
-        if (remind_later != null) {
-          this.startup_settings.update(s => s.earliest_next_cluetrainer_dot_app_migration_notice = Date.now() + remind_later)
-        }
-      }
-    }
+    Alt1UpdateNotice.maybeRemind(this)
+    ClueTrainerAppMigrationNotice.maybeRemind(this)
   }
 
   protected end() {
   }
 }
 
-namespace ClueTrainer {
+export namespace ClueTrainer {
   export type Preferences = {
     last_loaded_version?: number,
     earliest_next_cluetrainer_dot_app_migration_notice?: number
   }
-}
 
-export function initialize() {
-  let app = new ClueTrainer()
-  Dependencies.instance().app = app
-  app.start()
+  const _instance = lazy(() => Dependencies.instance().app = new ClueTrainer())
+
+  export function instance() {
+    return _instance.get()
+  }
 }
