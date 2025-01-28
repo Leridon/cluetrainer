@@ -1,4 +1,4 @@
-import {type Application} from "trainer/application";
+import {type ClueTrainer} from "./ClueTrainer";
 import {ExportImport} from "lib/util/exportString";
 import * as lodash from "lodash"
 import {identity} from "lodash";
@@ -15,7 +15,7 @@ export namespace QueryLinks {
     default: {
       [P in keyof T]?: T[P];
     }
-    instantiate: (arg: T) => (_: Application) => void
+    instantiate: (arg: T) => (_: ClueTrainer) => void
   }
 
   type QueryInvocation<T> = {
@@ -73,7 +73,7 @@ export namespace QueryLinks {
       } else return imp()(query) as QueryInvocation<any>
     }
 
-    export function resolve<T>(index: Command<any>[], query: QueryInvocation<T>): (_: Application) => void {
+    export function resolve<T>(index: Command<any>[], query: QueryInvocation<T>): (_: ClueTrainer) => void {
       let command = (index.find(c => c.name == query.name) as Command<T>)
 
       let cloned_arg = lodash.clone(query.arg)
@@ -92,7 +92,7 @@ export namespace QueryLinks {
     return `${get_path()}?${QueryInvocation.toQuery(Commands.invocation(command, arg), compact).toString()}`
   }
 
-  export function get_from_params(index: Command<any>[], parameters: URLSearchParams): (_: Application) => void {
+  export function get_from_params(index: Command<any>[], parameters: URLSearchParams): (_: ClueTrainer) => void {
     let invocation = QueryInvocation.fromQuery(index, parameters)
     if (!invocation) return null
     return QueryInvocation.resolve(index, invocation)

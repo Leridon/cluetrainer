@@ -1,5 +1,4 @@
 import {Clues} from "../../../../lib/runescape/clues";
-import * as a1lib from "alt1";
 import {Rectangle, Vector2} from "../../../../lib/math";
 import {util} from "../../../../lib/util/util";
 import * as oldlib from "../../../../skillbertssolver/cluesolver/oldlib";
@@ -23,6 +22,7 @@ import {Log} from "../../../../lib/util/Log";
 import {CelticKnots} from "../../../../lib/cluetheory/CelticKnots";
 import {CapturedScan} from "./capture/CapturedScan";
 import {Finder} from "../../../../lib/alt1/capture/Finder";
+import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
 import stringSimilarity = util.stringSimilarity;
 import notification = Notification.notification;
 import findBestMatch = util.findBestMatch;
@@ -86,7 +86,7 @@ export class ClueReader {
           if (CLUEREADERDEBUG) {
             CLUEREADER_DEBUG_OVERLAY.rect(Rectangle.fromOriginAndSize(modal.body.screenRectangle().origin, modal.body.screenRectangle().size), {
               width: 1,
-              color: a1lib.mixColor(255, 0, 0, 255)
+              color: Alt1Color.red
             }).render()
           }
 
@@ -273,7 +273,7 @@ export class ClueReader {
               )
 
               alt1.overLayText(`${res.theme}\n${tile.position}`,
-                a1lib.mixColor(0, 255, 0),
+                Alt1Color.green.for_overlay,
                 10,
                 pos.x,
                 pos.y,

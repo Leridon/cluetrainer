@@ -3,47 +3,82 @@ import {Vector2} from "../../../../../lib/math";
 import {ImageDetect} from "alt1";
 import {async_lazy, Lazy, lazy, LazyAsync} from "../../../../../lib/properties/Lazy";
 import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
-import * as OCR from "alt1/ocr";
 import {util} from "../../../../../lib/util/util";
 import * as lodash from "lodash"
 import {Finder} from "../../../../../lib/alt1/capture/Finder";
+import {OCR} from "../../../../../lib/alt1/OCR";
 import index = util.index;
 import stringSimilarity = util.stringSimilarity;
+import ColortTriplet = OCR.ColortTriplet;
+
+type Line = { debugArea: { x: number; y: number; w: number; h: number }; text: string; fragments: OCR.TextFragment[] }
 
 export class CapturedScan {
-
-  constructor(public readonly body: CapturedImage) {
+  constructor(public readonly body: CapturedImage,
+              public first_line_knowledge: {
+                text: string,
+                position: Vector2
+              } = null
+  ) {
     body.setName("scan")
   }
 
-  private _raw_lines: Lazy<string[]> = lazy(() => {
-    /**
-     * This function is originally by skillbert as part of the ScanTextReader class
-     */
+  public _raw_lines = lazy<Line[]>(() => {
+    const COLORS: ColortTriplet[] = [[255, 255, 255], [239, 176, 99], [192, 192, 192], [255, 223, 0]]
 
-    const font = require("alt1/fonts/aa_8px.js")
+    const data = this.body.getData();
 
-    //const font = require("alt1/fonts/aa_8px_new.js");
-    const LINEHEIGHT = 12;
+    const lines: Line[] = [];
 
-    let data = this.body.getData();
+    const start = (() => {
+      if (!this.first_line_knowledge) return 0
 
-    let lines: string[] = [];
+      for (let y = 0; y < this.body.size.y; y += CapturedScan.LINE_HEIGHT / 2) {
+        const line = OCR.readLine(data, CapturedScan.FONT, COLORS, this.first_line_knowledge.position.x, y, true)
 
-    for (let lineindex = 0; lineindex < 13; lineindex++) {
-      const y = lineindex * LINEHEIGHT;
-      const line = OCR.findReadLine(data, font, [[255, 255, 255], [239, 176, 99], [192, 192, 192], [255, 223, 0]], 70, y, 40, 1);
-      lines.push(line.text);
+        if (!line.text) continue
+
+        if (stringSimilarity(line.text, this.first_line_knowledge.text) > 0.7) {
+          lines.push(line)
+
+          return y + CapturedScan.LINE_HEIGHT
+        }
+      }
+    })()
+
+    if (start == undefined) return []
+
+    for (let lineindex = 0; lineindex < CapturedScan.MAX_LINE_COUNT; lineindex++) {
+      const y = start + lineindex * CapturedScan.LINE_HEIGHT;
+
+      const line = OCR.findReadLine(data, CapturedScan.FONT, COLORS, 70, y, 40, 1);
+
+      lines.push(line);
     }
 
-    const from = lines.findIndex(l => l != "")
-    const to = lodash.findLastIndex(lines, l => l != "")
+    const from = lines.findIndex(l => l.text != "")
+    const to = lodash.findLastIndex(lines, l => l.text != "")
 
     return lines.slice(from, to + 1)
   })
 
-  private _lines: Lazy<string[]> = lazy(() => {
-    let lines: string[] = this._raw_lines.get()
+  private checkRawLines(refs: {
+    index: number,
+    expected_text: string
+  }[]): boolean {
+    const THRESHOLD = 0.7
+    return refs.some(r => {
+      const line = index(this._raw_lines.get(), r.index)
+
+      if (line == undefined) return false
+
+      return stringSimilarity(line.text, r.expected_text) > THRESHOLD
+    })
+  }
+
+
+  public _lines: Lazy<string[]> = lazy(() => {
+    const lines: string[] = this._raw_lines.get().map(l => l.text)
 
     const cleaned_lines: string[] = []
 
@@ -66,28 +101,58 @@ export class CapturedScan {
     return cleaned_lines
   })
 
+  private paragraph_start_indices = lazy(() => {
+    const indices: number[] = [0]
+
+    this._raw_lines.get().forEach((line, i) => {
+      if (line.text == "") indices.push(i + 1)
+    })
+
+    return indices
+  })
+
   private _different_level: Lazy<boolean> = lazy(() => {
-    const line = this._lines.get()[1]
+    if (this.checkRawLines([
+      {index: -1, expected_text: "different level."},
+      {index: -1, expected_text: "level."},
+    ])) return true
 
-    const similarity = stringSimilarity(line, "Try scanning a different level.")
+    if (this.checkRawLines([
+      {index: this.paragraph_start_indices.get()[1], expected_text: "You are too far away and"},
+      {index: this.paragraph_start_indices.get()[1], expected_text: "The orb glows as you scan."},
+    ])) return false
 
-    return similarity > 0.7
+    return undefined
   })
 
-  private _meerkats_active = lazy((): boolean => {
-    const last_line = index(this._lines.get(), -1)
+  private _meerkats_active = lazy<boolean | undefined>((): boolean => {
+    if (this._different_level.get()) return undefined
 
-    const similarity = stringSimilarity(last_line, "Your meerkats are increasing your scan range by")
+    index(this.paragraph_start_indices.get(), -1)
 
-    return similarity > 0.7
+    if (this.checkRawLines([
+      {index: index(this.paragraph_start_indices.get(), -1), expected_text: "Your meerkats are"},
+    ])) return true
+
+    if (this.checkRawLines([
+      {index: this.paragraph_start_indices.get()[1], expected_text: "You are too far away and"},
+      {index: this.paragraph_start_indices.get()[1], expected_text: "The orb glows as you scan."},
+    ])) return false
+
+    return undefined
   })
+  private _triple = lazy<boolean>(() => {
+    if (this.checkRawLines([
+      {index: this.paragraph_start_indices.get()[1], expected_text: "The orb glows as you scan."},
+      {index: this.paragraph_start_indices.get()[1], expected_text: "The orb glows then flickers"},
+    ])) return true
 
-  private _triple = lazy(() => {
-    const line = this._lines.get()[1]
+    if (this.checkRawLines([
+      {index: this.paragraph_start_indices.get()[1], expected_text: "You are too far away and"},
+      {index: this.paragraph_start_indices.get()[1], expected_text: "Try scanning a different"},
+    ])) return false
 
-    const similarity = stringSimilarity(line, "The orb glows as you scan. You are in range of the coordinate! The coordinate is")
-
-    return similarity > 0.7
+    return undefined
   })
 
   text(): string {
@@ -119,12 +184,53 @@ export class CapturedScan {
     )
   }
 
+  public readonly center_of_text = lazy(() => {
+    const lines = this._raw_lines.get()
+
+    const first = lines[0].debugArea
+    const last = lines[lines.length - 1].debugArea
+
+    const last_line_color_fix = lines[lines.length - 1].text.startsWith("The coordinate is") ? CapturedScan.LINE_HEIGHT : 0
+
+    return Vector2.add(this.body.screen_rectangle.origin, {
+      x: ~~(first.x + first.w / 2),
+      y: (first.y + last.y + last_line_color_fix + CapturedScan.LINE_HEIGHT + 6) / 2
+    })
+  })
+
+  relevantTextAreaForRecapture(): ScreenRectangle {
+    const current_center = this.center_of_text.get()
+
+    return {
+      origin: Vector2.add(current_center, Vector2.scale(-0.5, CapturedScan.MAX_TEXT_AREA_SIZE)),
+      size: CapturedScan.MAX_TEXT_AREA_SIZE
+    }
+  }
+
   updated(capture: CapturedImage): CapturedScan {
-    return new CapturedScan(capture.getScreenSection(this.body.screen_rectangle))
+    const relevant_text_area = this.relevantTextAreaForRecapture()
+
+    const relative_text_start = Vector2.add(this._raw_lines.get()[0].debugArea, this.body.screenRectangle().origin)
+
+    const translated_text_start = Vector2.sub(relative_text_start, relevant_text_area.origin)
+
+    return new CapturedScan(capture.getScreenSection(relevant_text_area), {text: this._raw_lines.get()[0].text, position: translated_text_start})
+  }
+
+  isValid(): boolean {
+    return this._raw_lines.get().length > 0
   }
 }
 
 export namespace CapturedScan {
+  export const MAX_LINE_COUNT = 13
+  export const LINE_HEIGHT = 12
+  export const FONT = require("alt1/fonts/aa_8px.js")
+  export const MAX_TEXT_AREA_SIZE: Vector2 = {
+    x: 180,
+    y: CapturedScan.MAX_LINE_COUNT * CapturedScan.LINE_HEIGHT
+  }
+
   export const finder = async_lazy<Finder<CapturedScan>>(async () => {
     const anchor_images = await CapturedScan.anchors.get()
 

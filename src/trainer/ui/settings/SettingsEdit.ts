@@ -1,5 +1,5 @@
 import Widget from "../../../lib/ui/Widget";
-import {Application} from "../../application";
+import {ClueTrainer} from "../../ClueTrainer";
 import {deps} from "../../dependencies";
 import {C} from "../../../lib/ui/constructors";
 import {Observable, observe} from "../../../lib/reactive";
@@ -38,7 +38,14 @@ import TransportLayer from "../map/TransportLayer";
 import {KnotSolving} from "../neosolving/subbehaviours/KnotSolving";
 import {LockboxSolving} from "../neosolving/subbehaviours/LockboxSolving";
 import {TowersSolving} from "../neosolving/subbehaviours/TowersSolving";
-import {ScanSolving} from "../neosolving/subbehaviours/ScanSolving";
+import {ScanSolving} from "../neosolving/subbehaviours/scans/ScanSolving";
+import {Alt1Color} from "../../../lib/alt1/Alt1Color";
+import {ScanControlPrototype} from "../neosolving/subbehaviours/scans/ScanInputBehaviour";
+import {Alt1} from "lib/alt1/Alt1";
+import {ScanTree} from "lib/cluetheory/scans/ScanTree";
+import {AugmentedMethod} from "../../model/MethodPackManager";
+import {SolvingMethods} from "../../model/methods";
+import {SectionControl} from "../widgets/SectionControl";
 import cls = C.cls;
 import PotaColor = Settings.PotaColor;
 import hbox = C.hbox;
@@ -47,7 +54,6 @@ import inlineimg = C.inlineimg;
 import hgrid = C.hgrid;
 import hboxl = C.hboxl;
 import centered = C.centered;
-import A1Color = util.A1Color;
 import italic = C.italic;
 import spacer = C.spacer;
 import TeleportGroup = Transportation.TeleportGroup;
@@ -93,99 +99,6 @@ namespace SettingsLayout {
     if (!explanation) return undefined
 
     return inlineimg("assets/icons/info_nis.png").css("height", "1em").addTippy(explanation)
-  }
-}
-
-class SectionControl<id_type extends string = string> extends Widget {
-  menu_bar: Widget
-  content: Widget
-
-  private entry_buttons: {
-    original: {
-      section: SectionControl.Section,
-      entry: SectionControl.Entry
-    },
-    button: Widget
-  }[] = []
-
-  private active_entry: Observable<string> = observe(null)
-
-  constructor(private sections: SectionControl.Section<id_type>[]) {
-    super(cls("ctr-section-control"));
-
-    this.active_entry.subscribe(active => {
-      this.entry_buttons.forEach(e => {
-        const isActive = active == e.original.entry.id
-
-        e.button.toggleClass("active", isActive)
-
-        if (isActive) {
-          this.content.empty()
-
-          this.content.append(
-            C.cls("ctr-section-control-content-header")
-              .css("padding-left", "0")
-              .text(e.original.entry.name),
-            e.original.entry.renderer()
-          )
-        }
-      })
-    })
-
-    this.render()
-
-    this.active_entry.set(sections[0].entries[0].id)
-  }
-
-  setActiveSection(id: string): this {
-    if (id) {
-      this.active_entry.set(id)
-    }
-    return this
-  }
-
-  private render() {
-    this.empty()
-
-    this.append(
-      this.menu_bar = cls("ctr-section-control-menu"),
-      this.content = cls("ctr-section-control-content")
-    )
-
-    for (const section of this.sections) {
-      cls("ctr-section-control-menu-header")
-        .text(section.name)
-        .appendTo(this.menu_bar)
-
-      for (const entry of section.entries) {
-        const button = cls("ctr-section-control-menu-entry")
-          .on("click", () => {
-            this.active_entry.set(entry.id)
-          })
-          .text(entry.short_name ?? entry.name)
-          .appendTo(this.menu_bar)
-
-        this.entry_buttons.push({
-          original: {section, entry},
-          button: button
-        })
-      }
-    }
-  }
-}
-
-namespace SectionControl {
-
-  export type Entry<id_type extends string = string> = {
-    id: id_type,
-    name: string,
-    short_name?: string,
-    renderer: () => Widget
-  }
-
-  export type Section<id_type extends string = string> = {
-    name: string,
-    entries: Entry[]
   }
 }
 
@@ -539,6 +452,233 @@ class ScanSettingsEdit extends Widget {
       .setValue(this.value.zoom_behaviour_include_singles)
       .onCommit(v => this.value.zoom_behaviour_include_singles = v)
     )
+
+    this.layout.section("Input Control")
+
+    this.layout.setting(new Checkbox("Select floor based on previous solution")
+        .setValue(this.value.select_floor_based_on_previous_solution)
+        .onCommit(v => this.value.select_floor_based_on_previous_solution = v),
+      "When a scan tree is loaded for a scan whose dig spots are on multiple different levels (Dorgesh Khaan and Brimhaven Dungeon), and the scan tree starts with a floor distinction that can be done anywhere, the respective path is automatically chosen based on the location of the previous clue and whether the scan scroll suggests scanning another level. "
+    )
+
+    if (Alt1.exists()) {
+      this.layout.setting(new Checkbox(hbox("Show interactive control overlay", spacer(), new LightButton("Configure")
+        .onClick(async () => {
+          const result = await new ScanInputOverlayConfigModal(this.value.input_control_configuration)
+            .do()
+
+          if (result) {
+            this.value.input_control_configuration = result
+          }
+        }))
+      ))
+    }
+  }
+}
+
+class ScanInputOverlayConfigModal extends FormModal<ScanControlPrototype.Overlay.Config> {
+  private value: Observable<ScanControlPrototype.Overlay.Config>
+
+  private overlay: ScanControlPrototype.Overlay
+
+  constructor(value: ScanControlPrototype.Overlay.Config) {
+    super({size: "small"});
+
+    this.setTitle("Interactive Scan Tree Overlay Configuration")
+
+    this.value = observe(lodash.cloneDeep(value))
+      .structuralEquality()
+      .subscribe(change => {
+        this.overlay.setConfig(change)
+      })
+
+    this.shown.on(() => {
+      this.lifetime_manager.bind(
+        this.overlay = new ScanControlPrototype.Overlay(this.value.value())
+      )
+
+      this.overlay.node_selection.on(node => this.overlay.setNode(node))
+
+      const example = AugmentedMethod.create(ScanInputOverlayConfigModal.example_method, null)
+
+      const ex = ScanTree.Augmentation.synthesize_triple_nodes(ScanTree.Augmentation.basic_augmentation(example.method.tree, example.clue.clue as Clues.Scan))
+
+      this.overlay.setScanPanelState({meerkats: true, triple: false, different_level: false})
+      this.overlay.setNode(ex.root_node)
+
+      this.overlay.start()
+    })
+  }
+
+  render() {
+    super.render();
+
+    const layout = new SettingsLayout()
+
+    layout.section("Position", "Relative to the top center of your screen")
+    layout.namedSetting("X", new NumberSlider(-2000, 2000).setValue(this.value.value().position.x)
+      .onChange(v => this.value.update(c => c.position.x = v.value))
+    )
+    layout.namedSetting("Y", new NumberSlider(0, 2000).setValue(this.value.value().position.y)
+      .onChange(v => this.value.update(c => c.position.y = v.value))
+    )
+
+    layout.section("Size")
+    layout.namedSetting("Width", new NumberSlider(160, 1000).setValue(this.value.value().size.x)
+      .onChange(v => this.value.update(c => c.size.x = v.value))
+    )
+    layout.namedSetting("Height", new NumberSlider(100, 1000).setValue(this.value.value().size.y)
+      .onChange(v => this.value.update(c => c.size.y = v.value))
+    )
+
+    layout.section("Other")
+    layout.namedSetting("Spacing", new NumberSlider(1, 20).setValue(this.value.value().gutter)
+      .onChange(v => this.value.update(c => c.gutter = v.value))
+    )
+    layout.setting(new Checkbox("Show help button").setValue(this.value.value().show_help_button)
+      .onCommit(v => this.value.update(c => c.show_help_button = v)), "Shows the help button in the top right."
+    )
+    layout.setting(new Checkbox("Warn for meerkats").setValue(this.value.value().warn_for_meerkats)
+      .onCommit(v => this.value.update(c => c.warn_for_meerkats = v)), "Show a warning when you don't have active meerkats for scan trees that require one."
+    )
+    layout.setting(new Checkbox("Force small back button").setValue(this.value.value().force_small_back_button)
+      .onCommit(v => this.value.update(c => c.force_small_back_button = v)), "Forces the small version of the back button."
+    )
+
+    layout.appendTo(this.body)
+  }
+
+  getButtons(): BigNisButton[] {
+    return [
+      new BigNisButton("Cancel", "cancel").onClick(() => this.cancel()),
+      new BigNisButton("Confirm", "confirm").onClick(() => this.confirm(this.value.value())),
+    ]
+  }
+}
+
+namespace ScanInputOverlayConfigModal {
+  export const example_method: SolvingMethods.ScanTreeMethod = {
+    "id": "037949db-71ad-46d5-a038-d162003e92ae",
+    "type": "scantree",
+    "timestamp": 1737206928,
+    "name": "",
+    "description": "",
+    "assumptions": {"meerkats_active": true},
+    "for": {"clue": 365},
+    "tree": {
+      "assumed_range": 21,
+      "ordered_spots": [{"x": 2747, "y": 5263, "level": 0}, {"x": 2731, "y": 5266, "level": 0}, {"x": 2740, "y": 5273, "level": 0}, {"x": 2723, "y": 5279, "level": 0}, {
+        "x": 2711,
+        "y": 5271,
+        "level": 0
+      }, {"x": 2729, "y": 5295, "level": 0}, {"x": 2711, "y": 5284, "level": 0}, {"x": 2730, "y": 5315, "level": 0}, {"x": 2717, "y": 5311, "level": 0}, {
+        "x": 2739,
+        "y": 5253,
+        "level": 1
+      }, {"x": 2738, "y": 5301, "level": 1}, {"x": 2700, "y": 5284, "level": 1}, {"x": 2704, "y": 5321, "level": 0}, {"x": 2732, "y": 5327, "level": 0}, {
+        "x": 2704,
+        "y": 5349,
+        "level": 0
+      }, {"x": 2701, "y": 5343, "level": 1}, {"x": 2704, "y": 5357, "level": 1}, {"x": 2734, "y": 5370, "level": 1}, {"x": 2747, "y": 5327, "level": 1}, {
+        "x": 2698,
+        "y": 5316,
+        "level": 1
+      }],
+      "root": {
+        "children": [{
+          "key": {"pulse": 1, "different_level": false},
+          "value": {
+            "children": [{"key": {"pulse": 1, "different_level": false}, "value": {"children": [], "directions": "", "path": []}}, {
+              "key": {
+                "pulse": 2,
+                "different_level": false
+              }, "value": {"children": [], "directions": "", "path": []}
+            }, {"key": {"pulse": 3, "different_level": false, "spot": {"x": 2704, "y": 5349, "level": 0}}, "value": {"children": [], "directions": "", "path": []}}],
+            "directions": "",
+            "path": [{"type": "teleport", "spot": {"x": 2720, "y": 5352, "level": 0}, "id": {"group": "spheredorgeshkaan", "spot": "north", "access": "sphere"}}]
+          }
+        }, {
+          "key": {"pulse": 2, "different_level": false},
+          "value": {
+            "children": [{"key": {"pulse": 2, "different_level": true}, "value": {"children": [], "directions": "", "path": []}}, {
+              "key": {
+                "pulse": 3,
+                "different_level": true,
+                "spot": {"x": 2711, "y": 5284, "level": 0}
+              }, "value": {"children": [], "directions": "", "path": []}
+            }],
+            "directions": "",
+            "path": [{"type": "run", "waypoints": [{"x": 2723, "y": 5264, "level": 0}, {"x": 2723, "y": 5268, "level": 0}]}, {
+              "type": "transport",
+              "assumed_start": {"x": 2723, "y": 5268, "level": 0},
+              "internal": {
+                "type": "entity",
+                "source_loc": ["loc", 22937],
+                "entity": {"name": "Stairs", "kind": "static"},
+                "clickable_area": {"topleft": {"x": 2721.5, "y": 5271.5}, "botright": {"x": 2723.5, "y": 5268.5}, "level": 0},
+                "actions": [{
+                  "cursor": "ladderup",
+                  "interactive_area": {"origin": {"x": 2722, "y": 5268, "level": 0}, "size": {"x": 2, "y": 1}},
+                  "name": "Climb-up",
+                  "movement": [{"time": 3, "fixed_target": {"target": {"origin": {"x": 2722, "y": 5272, "level": 1}}, "relative": true}, "orientation": "toentityafter"}]
+                }]
+              }
+            }]
+          }
+        }, {
+          "key": {"pulse": 3, "different_level": false, "spot": {"x": 2731, "y": 5266, "level": 0}},
+          "value": {"children": [], "directions": "", "path": []}
+        }, {
+          "key": {"pulse": 3, "different_level": false, "spot": {"x": 2740, "y": 5273, "level": 0}},
+          "value": {"children": [], "directions": "", "path": []}
+        }, {
+          "key": {"pulse": 3, "different_level": false, "spot": {"x": 2723, "y": 5279, "level": 0}},
+          "value": {"children": [], "directions": "", "path": []}
+        }, {
+          "key": {"pulse": 3, "different_level": false, "spot": {"x": 2711, "y": 5271, "level": 0}},
+          "value": {"children": [], "directions": "", "path": []}
+        }, {
+          "key": {"pulse": 3, "different_level": false, "spot": {"x": 2711, "y": 5284, "level": 0}},
+          "value": {"children": [], "directions": "", "path": []}
+        }, {
+          "key": {"pulse": 1, "different_level": true},
+          "value": {
+            "children": [{"key": {"pulse": 2, "different_level": true}, "value": {"children": [], "directions": "", "path": []}}, {
+              "key": {
+                "pulse": 3,
+                "different_level": true,
+                "spot": {"x": 2701, "y": 5343, "level": 1}
+              }, "value": {"children": [], "directions": "", "path": []}
+            }, {
+              "key": {"pulse": 3, "different_level": true, "spot": {"x": 2704, "y": 5357, "level": 1}},
+              "value": {"children": [], "directions": "", "path": []}
+            }, {"key": {"pulse": 3, "different_level": true, "spot": {"x": 2734, "y": 5370, "level": 1}}, "value": {"children": [], "directions": "", "path": []}}],
+            "directions": "",
+            "path": [{"type": "teleport", "spot": {"x": 2720, "y": 5352, "level": 0}, "id": {"group": "spheredorgeshkaan", "spot": "north", "access": "sphere"}}]
+          }
+        }, {
+          "key": {"pulse": 2, "different_level": true},
+          "value": {
+            "children": [{"key": {"pulse": 2, "different_level": false}, "value": {"children": [], "directions": "", "path": []}}, {
+              "key": {
+                "pulse": 3,
+                "different_level": false,
+                "spot": {"x": 2738, "y": 5301, "level": 1}
+              }, "value": {"children": [], "directions": "", "path": []}
+            }],
+            "directions": "",
+            "path": [{"type": "teleport", "spot": {"x": 2735, "y": 5305, "level": 1}, "id": {"group": "spheredorgeshkaan", "spot": "east", "access": "sphere"}}]
+          }
+        }, {"key": {"pulse": 3, "different_level": true, "spot": {"x": 2739, "y": 5253, "level": 1}}, "value": {"children": [], "directions": "", "path": []}}, {
+          "key": {
+            "pulse": 3,
+            "different_level": true,
+            "spot": {"x": 2700, "y": 5284, "level": 1}
+          }, "value": {"children": [], "directions": "", "path": []}
+        }], "directions": "", "path": [{"type": "teleport", "spot": {"x": 2723, "y": 5264, "level": 0}, "id": {"group": "spheredorgeshkaan", "spot": "south", "access": "sphere"}}]
+      }
+    },
+    "expected_time": 22.225
   }
 }
 
@@ -592,17 +732,17 @@ class PuzzleSettingsEdit extends Widget {
 
 
     const color_mainline_move = new ColorPicker()
-      .setValue(A1Color.toHex(this.value.color_mainline_move))
-      .onCommit(v => this.value.color_mainline_move = A1Color.fromHex(v))
+      .setValue(Alt1Color.fromNumber(this.value.color_mainline_move).css_string)
+      .onCommit(v => this.value.color_mainline_move = Alt1Color.fromHex(v).for_overlay)
     const color_recovery_move = new ColorPicker()
-      .setValue(A1Color.toHex(this.value.color_recovery_move))
-      .onCommit(v => this.value.color_recovery_move = A1Color.fromHex(v))
+      .setValue(Alt1Color.fromNumber(this.value.color_recovery_move).css_string)
+      .onCommit(v => this.value.color_recovery_move = Alt1Color.fromHex(v).for_overlay)
     const color_mainline_line = new ColorPicker()
-      .setValue(A1Color.toHex(this.value.color_mainline_line))
-      .onCommit(v => this.value.color_mainline_line = A1Color.fromHex(v))
+      .setValue(Alt1Color.fromNumber(this.value.color_mainline_line).css_string)
+      .onCommit(v => this.value.color_mainline_line = Alt1Color.fromHex(v).for_overlay)
     const color_recovery_line = new ColorPicker()
-      .setValue(A1Color.toHex(this.value.color_recovery_line))
-      .onCommit(v => this.value.color_recovery_line = A1Color.fromHex(v))
+      .setValue(Alt1Color.fromNumber(this.value.color_recovery_line).css_string)
+      .onCommit(v => this.value.color_recovery_line = Alt1Color.fromHex(v).for_overlay)
 
     this.layout.named("Colors", hgrid(centered("Main Line"), centered("Recovery")))
     this.layout.named("Moves", hgrid(color_mainline_move, color_recovery_move))
@@ -693,8 +833,8 @@ class LockboxSettingsEdit extends Widget {
     this.layout.paragraph("Disable this if you are simultaneously using Alt1's builtin clue solver and the lockbox solutions are overlapping.")
 
     this.layout.named("Overlay Color", new ColorPicker()
-      .setValue(A1Color.toHex(this.value.overlay_color))
-      .onCommit(v => this.value.overlay_color = A1Color.fromHex(v)))
+      .setValue(Alt1Color.fromNumber(this.value.overlay_color).css_string)
+      .onCommit(v => this.value.overlay_color = Alt1Color.fromHex(v).for_overlay))
 
     this.layout.header("Optimization Mode")
 
@@ -1321,6 +1461,7 @@ class CompassSettingsEdit extends Widget {
                             }
                           })
                             .attachTopControl(new InteractionTopControl()
+                              .setName("Spot selection")
                               .setContent(c().text("Click a teleport spot or any tile on the map to select it as a triangulation spot."))
                             )
                             .onCommit(v => this.confirm(v))
@@ -1408,7 +1549,7 @@ class DataManagementEdit extends Widget {
 export class SettingsEdit extends Widget {
   value: Settings.Settings
 
-  constructor(app: Application, start_section: string) {
+  constructor(app: ClueTrainer, start_section: SettingsEdit.section_id) {
     super();
 
     this.value = lodash.cloneDeep(app.settings.settings)
@@ -1416,7 +1557,7 @@ export class SettingsEdit extends Widget {
     new SectionControl<SettingsEdit.section_id>([
       {
         name: "Solving", entries: [{
-          id: "general",
+          id: "solving_general",
           name: "General",
           short_name: "General",
           renderer: () => new GeneralSolvingSettingsEdit(this.value.solving.general)
@@ -1451,7 +1592,7 @@ export class SettingsEdit extends Widget {
           short_name: "Compass",
           renderer: () => new CompassSettingsEdit(this.value.solving.compass)
         }, {
-          id: "scan",
+          id: "scans",
           name: "Scan Solving",
           short_name: "Scans",
           renderer: () => new ScanSettingsEdit(this.value.solving.scans)
@@ -1486,7 +1627,18 @@ export class SettingsEdit extends Widget {
 }
 
 export namespace SettingsEdit {
-  export type section_id = "solving_general" | "sliders" | "knots" | "lockboxes" | "towers" | "compass" | "teleports" | "crowdsourcing"
+  export type section_id =
+    "solving_general"
+    | "solving_interface"
+    | "sliders"
+    | "knots"
+    | "lockboxes"
+    | "towers"
+    | "compass"
+    | "teleports"
+    | "crowdsourcing"
+    | "scans"
+    | "dataexport"
 }
 
 export class SettingsModal extends FormModal<{

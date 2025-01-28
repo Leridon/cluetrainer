@@ -1,3 +1,17 @@
+Elite Playtesting:
+    - Highlighting first step of slider would be helpful
+    - Teleport access needs to be rendered in some way, if applicable
+    - Being fast with b2b compasses and a skipped wizard between doesn't reset properly.
+        - Some grayish backgrounds facilitate this because it thinks it's still open in the solved state. Needs finetuning
+    - Floors of scan areas aren't visualized.
+    - Commiting an angle sometimes has a noticeable delay
+        - Probably just lag because it's checking nearly 500 spots. Optimize with quad tree.
+    - Fix tooltips for spots in scan trees.
+    - Scan Overlay should hide after x seconds without valid read
+    - Sometimes, the compass calibration is slightly off (https://discord.com/channels/332595657363685377/1103737270114209825/1318205858601107497)
+        - This is due to antialiasing => Increase epsilon for AA
+
+
 Usability playtesting results:
     - It's not immediately obvious what Solve, Auto-Solve, and Fullscreen do
         => add tooltips
@@ -5,7 +19,6 @@ Usability playtesting results:
     - It's not obvious that you have to click the largest box first
     - Compass solving isn't obvious (Neither is it with base Alt1 though)
     - Settings are overwhelming at first
-    - Yellow Xs on the map aren't obviously part of the run step
     - When the first beam narrows the spots down to only a few and you take a gamble going straight to one of them, it will commit an angle to the second teleport of the preset and delete the correct solution
 
 
@@ -28,13 +41,7 @@ Transport Backlog:
     Death Plateau rock wall climb
     Memory strand teleports to memorial to Guthix. If you've prestiged Engrams can be used to teleport to the entrance
     Max Guild  boss portal teleport options + airut peninsula to it
-
     port hardcoded to new tool
-
-
-In-App Wiki
-    - Compass Explanation
-    - Scan Explanation
 
 Issues
     - [Bug, 1] SearchSelection: Very rarely the dropdown remains after the element is already gone
@@ -43,9 +50,9 @@ Issues
     - [Bug, 4] Selecting another method while a scan tree method is active glitches
     - [Bug] Master Compasses reset sometimes to the elite compass (https://discord.com/channels/332595657363685377/1103737270114209825/1287161070645149818)
     - [Bug] Text inputs with the legacy skin are rarely detected as puzzles
-    - Sometimes, the compass calibration is slightly off (https://discord.com/channels/332595657363685377/1103737270114209825/1318205858601107497)
     - Some slider puzzles are still detected in the desert after the puzzle closed (https://discord.com/channels/332595657363685377/1103737270114209825/1315159104792166490)
     - For some people, lockboxes desync like crazy (alan mostly)
+    - Invalid LatLng object in various cases
 
 Path Editor:
     Custom sized square (to help map distances), purely for theorycrafting
@@ -67,7 +74,7 @@ Path Editor:
     - Scan Tree Behaviour
         - Spacing in the tree view is bad
 
-- Performance
+- Map Performance
     - [3] Share a quad tree for all game layers. Cull empty branches.
     - [3] <img>-elements should probably be preserved in-memory for markers when hidden
     - [3] Using :hover style rules would probably be faster than the current way of rerendering. Would also reduce some of the pain with lingering activations
@@ -84,7 +91,6 @@ Path Editor:
 
 Compass solver:
     - [Postponed] Chatbox read service to look for sextant message
-    - [Postponed] Fix fight for zoom-authority between compass and path.
 
 - Path Editor
     - [Feature, 3] Highlight step on hover
@@ -96,14 +102,10 @@ Compass solver:
 - Context Menu Builder
     - Creating context menus currently is a little annoying
 
-- Map Entities
-    - [Feature, 2] Find a way to separate entities on the same tile
-
 - Theorycrafter
     - Editor for generic path methods
         - Display Target-Areas and auxiliary stuff (hidey hole) on map
             - Share with Solver!
-    - Collapsible method pack sections (default|imported|local)
     - [QOL] Improved Import Modal
         - Show metadata before import
         - Confirm/Cancel
@@ -150,7 +152,6 @@ Unscheduled (Post launch, if ever):
 - Add some kind of discord integration with Fairy Nuff (Mike, if you stumble upon this: I have some ideas :) )
 - Better algorithm to combine equivalence classes.
 - Better algorithm to construct polygon for equivalence class (with hole support).
-- Warn when not using meerkats
 - [Tech] Overlay pathing into the game.
     - If this works, it is HUGE. Idea: Fix Camera distance and height by zooming out and clicking the compass, then calibrate camera transform using a suitable environment, Falador party room might actually be great.
     - Player position is input explicitly by placing a marker on the map.

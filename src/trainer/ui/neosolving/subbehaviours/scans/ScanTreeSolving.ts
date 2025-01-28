@@ -1,90 +1,41 @@
-import {ScanTree} from "../../../../lib/cluetheory/scans/ScanTree";
-import Widget from "../../../../lib/ui/Widget";
-import {AugmentedMethod} from "../../../model/MethodPackManager";
-import {Clues} from "../../../../lib/runescape/clues";
-import BoundsBuilder from "../../../../lib/gamemap/BoundsBuilder";
-import {Path} from "../../../../lib/runescape/pathing";
-import {floor_t, TileCoordinates, TileRectangle} from "../../../../lib/runescape/coordinates";
-import {Rectangle} from "../../../../lib/math";
-import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
-import {ScanRegionPolygon} from "../ScanLayer";
-import {PathStepEntity} from "../../map/entities/PathStepEntity";
-import {Scans} from "../../../../lib/runescape/clues/scans";
-import PulseButton from "../PulseButton";
-import NeoSolvingBehaviour from "../NeoSolvingBehaviour";
-import {TemplateResolver} from "../../../../lib/util/TemplateResolver";
-import {util} from "../../../../lib/util/util";
-import {SolvingMethods} from "../../../model/methods";
-import {NeoSolvingSubBehaviour} from "../NeoSolvingSubBehaviour";
-import {C} from "../../../../lib/ui/constructors";
-import {TextRendering} from "../../TextRendering";
-import {AbstractCaptureService, CapturedImage, DerivedCaptureService, InterestedToken, ScreenCaptureService} from "../../../../lib/alt1/capture";
-import {CapturedScan} from "../cluereader/capture/CapturedScan";
-import {Finder} from "../../../../lib/alt1/capture/Finder";
+import {ScanTree} from "../../../../../lib/cluetheory/scans/ScanTree";
+import Widget from "../../../../../lib/ui/Widget";
+import {AugmentedMethod} from "../../../../model/MethodPackManager";
+import {Clues} from "../../../../../lib/runescape/clues";
+import BoundsBuilder from "../../../../../lib/gamemap/BoundsBuilder";
+import {Path} from "../../../../../lib/runescape/pathing";
+import {floor_t, TileCoordinates, TileRectangle} from "../../../../../lib/runescape/coordinates";
+import {Rectangle} from "../../../../../lib/math";
+import {TileArea} from "../../../../../lib/runescape/coordinates/TileArea";
+import {ScanRegionPolygon} from "../../ScanLayer";
+import {PathStepEntity} from "../../../map/entities/PathStepEntity";
+import {Scans} from "../../../../../lib/runescape/clues/scans";
+import PulseButton from "../../PulseButton";
+import NeoSolvingBehaviour from "../../NeoSolvingBehaviour";
+import {TemplateResolver} from "../../../../../lib/util/TemplateResolver";
+import {util} from "../../../../../lib/util/util";
+import {SolvingMethods} from "../../../../model/methods";
+import {NeoSolvingSubBehaviour} from "../../NeoSolvingSubBehaviour";
+import {C} from "../../../../../lib/ui/constructors";
+import {TextRendering} from "../../../TextRendering";
+import {CapturedScan} from "../../cluereader/capture/CapturedScan";
 import {ScanSolving} from "./ScanSolving";
-import {Observable} from "../../../../lib/reactive";
-import {GameLayer} from "../../../../lib/gamemap/GameLayer";
-import {GameMapMouseEvent} from "../../../../lib/gamemap/MapEvents";
-import {ScanEditLayer} from "../../theorycrafting/scanedit/ScanEditor";
+import {Observable} from "../../../../../lib/reactive";
+import {GameLayer} from "../../../../../lib/gamemap/GameLayer";
+import {GameMapMouseEvent} from "../../../../../lib/gamemap/MapEvents";
+import {ScanEditLayer} from "../../../theorycrafting/scanedit/ScanEditor";
+import {ScanCaptureService, ScanPanelOverlay} from "./ScanPanelReader";
+import {ScanControlPrototype} from "./ScanInputBehaviour";
+import {ScanMinimapOverlay} from "./ScanMinimapOverlay";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import activate = TileArea.activate;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
 import cls = C.cls;
 import Order = util.Order;
 import spotNumber = ScanTree.spotNumber;
-import AsyncInitialization = util.AsyncInitialization;
-import async_init = util.async_init;
-import ScanMinimapOverlay = ScanSolving.ScanMinimapOverlay;
 import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 import digSpotArea = Clues.digSpotArea;
-
-class ScanTreeSolvingLayer extends GameLayer {
-
-}
-
-class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
-  private capture_interest: AbstractCaptureService.InterestToken<ScreenCaptureService.Options, CapturedImage>
-  private interface_finder: Finder<CapturedScan>
-  public readonly initialization: AsyncInitialization
-
-  constructor(private capture_service: ScreenCaptureService, private original_captured_interface: CapturedScan | null) {
-    super()
-
-    this.capture_interest = this.addDataSource(capture_service, () => {
-      return {
-        area: this.original_captured_interface.body.screen_rectangle,
-        interval: null,
-      }
-    })
-
-    this.initialization = async_init(async () => {
-      this.interface_finder = await CapturedScan.finder.get()
-    })
-  }
-
-  processNotifications(interested_tokens: InterestedToken<ScanCaptureService.Options, CapturedScan>[]): CapturedScan {
-    const capture = this.capture_interest.lastNotification()
-
-    if (this.original_captured_interface) {
-      // TODO: This does not work because the text can shift vertically and needs to be realigned after recapturing
-      const updated = this.original_captured_interface.updated(capture.value)
-
-      return updated
-    } else if (this.initialization.isInitialized()) {
-      const ui = this.interface_finder.find(capture.value)
-
-      if (ui) this.original_captured_interface = ui
-
-      return ui
-    }
-  }
-}
-
-namespace ScanCaptureService {
-  export type Options = AbstractCaptureService.Options & {
-    show_overlay?: boolean
-  }
-}
+import {Alt1} from "../../../../../lib/alt1/Alt1";
 
 function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): AugmentedScanTreeNode {
   function searchDown(node: AugmentedScanTreeNode): AugmentedScanTreeNode {
@@ -110,17 +61,36 @@ function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): Aug
   return searchUp(tree)
 }
 
+function asFloorDistinctionNode(node: AugmentedScanTreeNode): { level: floor_t, node: AugmentedScanTreeNode }[] {
+  if (node.depth != 0) return null
+  if (node.children.length != 2) return null
+
+  const a = node.children[0].value.remaining_candidates[0].level
+  const b = node.children[1].value.remaining_candidates[0].level
+
+  if (a == b) return null
+
+  if (!node.children[0].value.remaining_candidates.every(c => c.level == a)) return null
+  if (!node.children[1].value.remaining_candidates.every(c => c.level == b)) return null
+
+  return [
+    {level: a, node: node.children[0].value},
+    {level: b, node: node.children[1].value},
+  ]
+}
+
 export class ScanTreeSolving extends NeoSolvingSubBehaviour {
   node: ScanTree.Augmentation.AugmentedScanTreeNode = null
   augmented: ScanTree.Augmentation.AugmentedScanTree = null
   layer: GameLayer = null
 
+  private scan_panel_capture_service: ScanCaptureService
+  private scan_panel_overlay: ScanPanelOverlay
+  private scan_input_control: ScanControlPrototype
+
   private minimap_overlay: ScanMinimapOverlay
 
   tree_widget: Widget
-
-  private scan_capture_service: ScanCaptureService
-  private scan_capture_interest: AbstractCaptureService.InterestToken<ScanCaptureService.Options, CapturedScan>
 
   constructor(parent: NeoSolvingBehaviour,
               public method: AugmentedMethod<ScanTreeMethod, Clues.Scan>,
@@ -129,13 +99,20 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
   ) {
     super(parent, "method")
 
-    if (this.settings.value().show_minimap_overlay_scantree) {
-      this.minimap_overlay = this.withSub(new ScanMinimapOverlay(this.parent.app.minimapreader, settings, "scantree").setRange(this.method.method.tree.assumed_range))
-    }
-
     this.augmented = ScanTree.Augmentation.basic_augmentation(method.method.tree, method.clue.clue)
-
     ScanTree.Augmentation.synthesize_triple_nodes(this.augmented)
+
+    if (this.parent.app.in_alt1) {
+      if (this.settings.value().show_minimap_overlay_scantree) {
+        this.minimap_overlay = this.withSub(new ScanMinimapOverlay(this.parent.app.minimapreader, settings, "scantree").setRange(this.method.method.tree.assumed_range))
+      }
+
+      this.scan_panel_capture_service = new ScanCaptureService(this.parent.app.capture_service, this.original_interface_capture)
+      this.scan_panel_overlay = this.withSub(new ScanPanelOverlay(this.scan_panel_capture_service))
+      this.scan_input_control = this.withSub(new ScanControlPrototype(this.scan_panel_capture_service))
+
+      this.scan_input_control.onNodeSelection(node => this.setNode(node))
+    }
   }
 
   private fit(active_path_section: Path.raw): void {
@@ -212,9 +189,11 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
       PathStepEntity.renderPath(n.raw.path).eachEntity(e => e.setOpacity(0.5)).addTo(this.layer)
     })
 
+    const all_triple = node.children.every(c => c.key.pulse == 3)
+
     // Children paths are rendered with 0.5
     node.children
-      .filter(c => c.key.pulse != 3)
+      .filter(c => all_triple || c.key.pulse != 3)
       .forEach(c => {
         PathStepEntity.renderPath(c.value.raw.path).eachEntity(l => l.setOpacity(0.5)).addTo(this.layer)
         new ScanRegionPolygon(ScanTree.getTargetRegion(c.value)).setOpacity(0.5).addTo(this.layer)
@@ -294,6 +273,8 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
     if (node == this.node) return
     this.node = node
 
+    this.scan_input_control.setActiveNode(node)
+
     if (node.children.some(c => c.key.pulse != 3) || node.remaining_candidates.length <= 1) this.parent.layer.scan_layer.setSpotOrder(null)
     else this.parent.layer.scan_layer.setSpotOrder(this.method.method.tree.ordered_spots)
 
@@ -322,51 +303,6 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
 
     this.layer = new GameLayer().addTo(this.parent.layer.scan_layer)
 
-    this.lifetime_manager.bind(
-      /*this.scan_capture_service = new ScanCaptureService(this.parent.app.capture_service, this.original_interface_capture),
-      this.scan_capture_interest = this.scan_capture_service.subscribe({
-        options: () => ({interval: CaptureInterval.fromApproximateInterval(100)}),
-        handle: (scan2) => {
-          const scan = scan2.value
-          const rect = scan.screenRectangle()
-
-          this.scan_interface_overlay.clear()
-
-          this.scan_interface_overlay.rect2(rect, {
-            width: 1,
-            color: A1Color.fromHex("#FF0000"),
-          })
-
-          if (scan.isDifferentLevel()) {
-            this.scan_interface_overlay.rect2(ScreenRectangle.move(rect,
-              {x: 50, y: 220}, {x: 20, y: 20}
-            ), {
-              color: A1Color.fromHex("#8adc13"),
-              width: 2
-            })
-          }
-
-          this.scan_interface_overlay.rect2(ScreenRectangle.move(rect,
-            {x: 80, y: 220}, {x: 20, y: 20}
-          ), {
-            color: scan.isTriple() ? A1Color.fromHex("#FF0000") : A1Color.fromHex("#0000FF"),
-            width: 2
-          })
-
-          if (scan.hasMeerkats()) {
-            this.scan_interface_overlay.rect2(ScreenRectangle.move(rect,
-              {x: 110, y: 220}, {x: 20, y: 20}
-            ), {
-              color: A1Color.fromHex("#00ffff"),
-              width: 2
-            })
-          }
-
-          this.scan_interface_overlay.render()
-        }
-      })*/
-    )
-
     const self = this
 
     this.parent.layer.scan_layer.marker.add(this.handling_layer = new class extends GameLayer {
@@ -382,7 +318,29 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
       }
     })
 
-    this.setNode(this.augmented.root_node)
+    const findStartNode = (): AugmentedScanTreeNode => {
+      const root = this.augmented.root_node
+
+      if (this.settings.value().select_floor_based_on_previous_solution && this.original_interface_capture) {
+        const known_position = this.parent.getAssumedPlayerPositionByLastClueSolution()
+        const floor_distinction = asFloorDistinctionNode(root)
+
+        if (known_position && floor_distinction) {
+
+          const known_level = known_position.origin.level
+
+          const dl = this.original_interface_capture.isDifferentLevel()
+
+          const selection = floor_distinction.find(e => dl ? e.level != known_level : e.level == known_level)
+
+          if (selection) return selection.node
+        }
+      }
+
+      return root
+    }
+
+    this.setNode(findStartNode())
   }
 
   protected end() {

@@ -2173,6 +2173,7 @@ input[type=checkbox] + span {
     flex-basis: 40%;
     padding: 10px;
     background-color: #00000040;
+    max-width: 200px;
 }
 
 .ctr-section-control-menu-header {

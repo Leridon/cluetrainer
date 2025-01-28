@@ -214,4 +214,11 @@ export namespace Rectangle {
       y: rect.topleft.y - rect.botright.y + 1,
     }
   }
+
+  export function move(rect: Rectangle, offset: Vector2): Rectangle {
+    return {
+      topleft: Vector2.add(rect.topleft, offset),
+      botright: Vector2.add(rect.botright, offset)
+    }
+  }
 }

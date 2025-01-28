@@ -85,6 +85,10 @@ export namespace C {
     })
   }
 
+  export function link(href: string): Widget {
+    return c("<a target='_blank'></a>").setAttribute("href", href)
+  }
+
   export function npc(name: string, clickable: boolean = false): Widget {
     return c("<span class='nisl-npc'></span>").toggleClass("ctr-clickable", clickable).text(name)
   }

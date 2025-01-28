@@ -1,5 +1,5 @@
 import Behaviour, {SingleBehaviour} from "../../../lib/ui/Behaviour";
-import {Application} from "../../application";
+import {ClueTrainer} from "../../ClueTrainer";
 import TheoryCraftingSidebar from "./TheoryCraftingSidebar";
 import OverviewLayer from "./OverviewLayer";
 import {AugmentedMethod, MethodPackManager} from "../../model/MethodPackManager";
@@ -12,7 +12,7 @@ export default class TheoryCrafter extends Behaviour {
 
   method_editor = this.withSub(new SingleBehaviour<MethodEditor>())
 
-  constructor(public app: Application) {
+  constructor(public app: ClueTrainer) {
     super();
 
     MethodPackManager.instance().saved.on(async () => {

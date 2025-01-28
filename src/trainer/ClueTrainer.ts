@@ -26,8 +26,6 @@ import {TransportData} from "../data/transports";
 import {PathGraphics} from "./ui/path_graphics";
 import {CrowdSourcing} from "./CrowdSourcing";
 import {Notification, NotificationBar} from "./ui/NotificationBar";
-import {Alt1MainHotkeyEvent} from "../lib/alt1/Alt1MainHotkeyEvent";
-import {Alt1ContextMenuDetection} from "../lib/alt1/Alt1ContextMenuDetection";
 import {Log} from "../lib/util/Log";
 import {Changelog} from "./ChangeLog";
 import {DevelopmentModal} from "../devtools/DevelopmentMenu";
@@ -151,7 +149,7 @@ export namespace ScanTrainerCommands {
       steps: Path.raw,
       target?: TileRectangle,
       start_state?: Path.movement_state
-    }) => (app: Application): void => {
+    }) => (app: ClueTrainer): void => {
       // TODO: Fix the PathEditor behaviour stuff
 
       /*
@@ -182,7 +180,7 @@ export namespace ScanTrainerCommands {
       tiers: (tiers: ClueTier[]) => tiers.join(","),
       types: (tiers: ClueType[]) => tiers.join(",")
     },
-    instantiate: ({tiers, types}) => (app: Application): void => {
+    instantiate: ({tiers, types}) => (app: ClueTrainer): void => {
       //TODO app.main_behaviour.set(new SimpleLayerBehaviour(app.map, new OverviewLayer(clues.filter(c => tiers.indexOf(c.tier) >= 0 && types.indexOf(c.type) >= 0), app)))
     },
   }
@@ -198,7 +196,7 @@ export namespace ScanTrainerCommands {
     serializer: {
       // method: (a) => exp({type: "scantree", version: 0}, true, true)(a)
     },
-    instantiate: ({method}) => (app: Application): void => {
+    instantiate: ({method}) => (app: ClueTrainer): void => {
       //let resolved = resolve(method)
       //let resolved = withClue(method, app.data.clues.byId(method.clue_id) as ScanStep)
 
@@ -249,7 +247,7 @@ export class SettingsManagement {
 }
 
 class UpdateAlt1Modal extends FormModal<number> {
-  constructor(private app: Application) {super();}
+  constructor(private app: ClueTrainer) {super();}
 
   render() {
     super.render();
@@ -304,9 +302,8 @@ class UpdateAlt1Modal extends FormModal<number> {
 namespace UpdateAlt1Modal {
   const earliest_reminder_time = new storage.Variable<number>("preferences/dontremindtoupdatealt1until", () => null)
 
-  export async function maybeRemind(app: Application) {
+  export async function maybeRemind(app: ClueTrainer) {
     if (window.alt1?.permissionInstalled && alt1.version == "1.5.6") {
-
       if (earliest_reminder_time.get() < Date.now()) {
         const reminder = await new UpdateAlt1Modal(app).do()
 
@@ -319,7 +316,7 @@ namespace UpdateAlt1Modal {
 }
 
 class MigrateToCluetrainerAppDomain extends FormModal<number> {
-  constructor(private app: Application) {super();}
+  constructor(private app: ClueTrainer) {super();}
 
   render() {
     super.render();
@@ -377,10 +374,7 @@ class MigrateToCluetrainerAppDomain extends FormModal<number> {
           .onClick(() => this.confirm(1 * 24 * 60 * 60 * 1000))
       ]
     }
-
-
   }
-
 }
 
 namespace MigrateToCluetrainerAppDomain {
@@ -395,7 +389,7 @@ namespace MigrateToCluetrainerAppDomain {
   }
 }
 
-export class Application extends Behaviour {
+export class ClueTrainer extends Behaviour {
   crowdsourcing: CrowdSourcing = new CrowdSourcing(this, "https://api.cluetrainer.app")
 
   settings = new SettingsManagement()
@@ -411,9 +405,6 @@ export class Application extends Behaviour {
   favourites: FavoriteIndex
 
   main_behaviour = this.withSub(new SingleBehaviour())
-
-  main_hotkey = new Alt1MainHotkeyEvent()
-  context_menu = new Alt1ContextMenuDetection()
 
   template_resolver = new TemplateResolver(
     {name: "surge", apply: () => [{type: "domelement", value: inlineimg('assets/icons/surge.png')}]},
@@ -476,7 +467,7 @@ export class Application extends Behaviour {
 
   data_dump: DataExport
 
-  private startup_settings_storage = new storage.Variable<Application.Preferences>("preferences/startupsettings", () => ({}))
+  private startup_settings_storage = new storage.Variable<ClueTrainer.Preferences>("preferences/startupsettings", () => ({}))
   startup_settings = observe(this.startup_settings_storage.get())
 
   notifications: NotificationBar
@@ -644,24 +635,9 @@ export class Application extends Behaviour {
 
   protected end() {
   }
-
-  /*
-  mode(): "development" | "live" | "preview" {
-    return "preview"
-
-    if (window.location.host.includes("localhost"))
-      return "development"
-
-    if (window.location.host == "leridon.github.io") {
-      if (window.location.pathname.startsWith("/cluetrainer-live")) return "live"
-      if (window.location.pathname.startsWith("/rs3scantrainer")) return "preview"
-    }
-
-    return "development"
-  }*/
 }
 
-namespace Application {
+namespace ClueTrainer {
   export type Preferences = {
     last_loaded_version?: number,
     earliest_next_cluetrainer_dot_app_migration_notice?: number
@@ -669,56 +645,7 @@ namespace Application {
 }
 
 export function initialize() {
-  let app = new Application()
+  let app = new ClueTrainer()
   Dependencies.instance().app = app
   app.start()
-
-
-  //scantrainer.select(clues.find((c) => c.id == 361)) // zanaris
-  //scantrainer.select(clues.find((c) => c.id == 399)) // compass
-  // scantrainer.sidepanels.clue_panel.selectClue(clues.find((c) => c.id == 364)) // falador
-
-  /*
-      let player = YouTubePlayer('my-player', {
-          events: undefined,
-          height: undefined,
-          host: "",
-          playerVars: {
-              autoplay: 1,
-              controls: 1,
-              enablejsapi: 1,
-              end: 7,
-              fs: 0,
-              iv_load_policy: 3,
-              loop: 1,
-              modestbranding: 1,
-              list: "U9pFPB6gjug",
-              rel: 0,
-              start: 3
-
-          },
-          videoId: "U9pFPB6gjug",
-          width: undefined
-      })
-
-      player.mute()
-          .then(() =>
-              player.loadVideoById({
-                  videoId: "U9pFPB6gjug",
-                  startSeconds: 3,
-                  endSeconds: 7
-              }))
-          .then(() => player.playVideo())
-
-      // TODO: Check the current time on a loop and reset when close to end
-
-
-      /*
-          player.loadVideoByUrl({
-              mediaContentUrl: "U9pFPB6gjug",
-              startSeconds: 2,
-              endSeconds: 3,
-          })*/
-
-  //player.playVideo()
 }

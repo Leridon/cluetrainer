@@ -17,6 +17,7 @@ import {ChatboxFinder} from "./chatreader/ChatboxFinder";
 import {ChatAnchors} from "./chatreader/ChatAnchors";
 import {CapturedChatbox} from "./chatreader/CapturedChatbox";
 import {MessageBuffer} from "./chatreader/ChatBuffer";
+import { Alt1Color } from "../Alt1Color";
 
 /**
  * A service class to read chat messages. It will search for chat boxes periodically, so it will find the chat
@@ -101,7 +102,7 @@ export class ChatReader extends DerivedCaptureService {
 
         this.chatboxes.forEach(box => {
           this.debug_overlay.rect2(box.chatbox.body.screenRectangle(), {
-            color: A1Color.fromHex("#FF0000"),
+            color: Alt1Color.red,
             width: 1
           })
         })

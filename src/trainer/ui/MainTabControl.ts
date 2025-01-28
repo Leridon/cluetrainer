@@ -1,6 +1,6 @@
 import Widget from "../../lib/ui/Widget";
 import {C} from "../../lib/ui/constructors";
-import {Application} from "../application";
+import {ClueTrainer} from "../ClueTrainer";
 import {PathEditor} from "./pathedit/PathEditor";
 import {GameLayer} from "../../lib/gamemap/GameLayer";
 import TheoryCrafter from "./theorycrafting/TheoryCrafter";
@@ -14,6 +14,7 @@ import {SettingsModal} from "./settings/SettingsEdit";
 import {AboutModal} from "../AboutModal";
 import {Alt1Modal} from "../Alt1Modal";
 import {HoverTileDisplay} from "./devutilitylayer/UtilityLayer";
+import {ClueTrainerWiki} from "../wiki";
 import spacer = C.spacer;
 import span = C.span;
 
@@ -40,7 +41,7 @@ class MenuButton extends Button {
 export class SimpleMapBehaviour extends Behaviour {
   private layer = new GameLayer()
 
-  constructor(private app: Application) {
+  constructor(private app: ClueTrainer) {
     super();
 
     this.layer.add(new HoverTileDisplay())
@@ -67,7 +68,7 @@ export default class MainTabControl extends Widget {
 
   private active_tab: Observable<MainTabControl.Tab> = observe(null)
 
-  constructor(public app: Application) {
+  constructor(public app: ClueTrainer) {
     super();
 
     this.addClass("ctr-menubar")
@@ -162,6 +163,17 @@ export default class MainTabControl extends Widget {
               placement: "right",
               hideOnClick: false
             }),
+      new MenuButton("Guide", "assets/icons/ribbon_osh.png")
+        .onClick(() => ClueTrainerWiki.openOnPage()
+        )
+        .setActive(true)
+        .addTippy(
+          new Properties().header("Cluepedia")
+            .row(c().text("Cluepedia is a mini wiki included with Clue Trainer that contains guides and explanations of clue mechanics.").css("font-style", "italic"))
+          , {
+            placement: "right",
+            hideOnClick: false
+          }),
       this.settings_button = new MenuButton("Settings", "assets/icons/ribbon_options.webp").onClick(() => {
           new SettingsModal().do()
         })

@@ -26,17 +26,23 @@ export namespace Changelog {
     render: layout => {
       layout
         .row(new List()
+          .item("Spots that trigger a triple pulse no longer have their own button in scan trees. Instead, clicking the triple-line opens a new page with those spots.")
+          .item("For scans, you can now click dig spots directly on the map to move the scan tree there.")
+          .item("Triple spots are no longer included in the zoom for scan trees by default.", new List()
+            .item("This change only affects new users, and can still be toggled on in the settings. Playtesting showed that with the change before this, seeing all triple spots all the time isn't necessary anymore, so I encourage existing users to also change this setting.")
+          )
+          .item("Removed spot numbers on scans when not needed to declutter the map.")
+          .item("Fixed bug that caused the map to go to the wrong floor for some scans.")
+          .item("Compasses will now utilize the previous clue's solution area up to 4 chunks wide and high.")
+          .item("Fixed conflicting zoom for compasses where clue trainer didn't zoom in to the path for the last remaining spot.")
           .item("A separate path section will now be created for the arrival point if a path ends with a long distance transport.")
-          .item("You can now click dig spots on the map to move the scan tree there.")
-          .item("You can now click the line for triple pulses to get to a selection node where you can select the specific spot by number.")
-          .item("Removed spot numbers when not needed to declutter the map.")
-          .item("Fixed bug that caused the wrong floor to be selected for some scans.")
-          .item("Compasses will now utilize the previous clue's solution area up to 4 chunks wide an high.")
+          .item("Replaced obstructive arrows for far transports in paths with small circles at their arrival location.")
           .item("Added a minimum similarity for map clues to prevent misreads due to partially loaded maps.")
           .item("Improved the accuracy of the emote area for various easy clues.")
-          .item("Made cursor types on the map more consistent.")
-          .item("Replaced obstructive arrows for far transports in paths with small circles at their arrival location.")
-          .item("Fixed conflicting zoom for compasses where clue trainer didn't zoom in to the path for the last remaining spot.")
+          .item("Changed the cursor style on the map to no be a grabbing hand permanently.")
+          .item("Reduced default time allocated to solving sliders down to 0.2 seconds",
+            new List().item("Existing users should consider changing this setting as well. With the new shuffle introduced in december, this is enough and allocating more time barely finds an improvement.")
+          )
         )
     }
   }, {

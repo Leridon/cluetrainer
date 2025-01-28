@@ -1,4 +1,4 @@
-import {initialize} from "./trainer/application";
+import {initialize} from "./trainer/ClueTrainer";
 
 document.addEventListener("DOMContentLoaded", (e) => {
   //check if we are running inside alt1 by checking if the alt1 global exists

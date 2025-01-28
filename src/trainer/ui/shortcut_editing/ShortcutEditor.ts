@@ -19,7 +19,7 @@ import * as lodash from "lodash";
 import {ShortcutEdit} from "./ShortcutEdit";
 import ContextMenu, {Menu} from "../widgets/ContextMenu";
 import ControlWithHeader from "../map/ControlWithHeader";
-import {Application} from "../../application";
+import {ClueTrainer} from "../../ClueTrainer";
 
 class EditControl extends GameMapControl<ControlWithHeader> {
   private remove_handler: EwentHandler<any> = null
@@ -169,7 +169,7 @@ export class ShortcutEditor extends Behaviour {
 
   sidebar: ShortcutEditSidePanel
 
-  constructor(public app: Application) {
+  constructor(public app: ClueTrainer) {
     super();
 
     this.data = observeArray([].concat(

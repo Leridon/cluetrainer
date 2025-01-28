@@ -4,7 +4,7 @@ import {lazy, Lazy} from "../../../../lib/properties/Lazy";
 import * as leaflet from "leaflet";
 import {EquivalenceClass, ScanEquivalenceClasses, ScanEquivalenceClassOptions} from "../../../../lib/cluetheory/scans/EquivalenceClasses";
 import {areaToPolygon} from "../../polygon_helpers";
-import {type Application} from "../../../application";
+import {type ClueTrainer} from "../../../ClueTrainer";
 import {AdaptiveScanRadiusMarker, ScanRegionPolygon} from "../../neosolving/ScanLayer";
 import {PathEditor} from "../../pathedit/PathEditor";
 import {OpacityGroup} from "../../../../lib/gamemap/layers/OpacityLayer";
@@ -68,8 +68,6 @@ export class ScanEditLayer extends GameLayer {
     this.markers = spots.map(s => new ScanEditLayer.MarkerPair(s))
 
     this.markers.forEach((m, i) => {
-      //m.setNumber(i + 1)
-
       m.regular.addTo(this)
       m.complement.addTo(this)
     })
@@ -139,7 +137,6 @@ export namespace ScanEditLayer {
       this.complement.setTiming(timing)
     }
   }
-
 
   export class SpotMarker extends MapEntity {
     spot_on_map: TileCoordinates = null
@@ -515,7 +512,7 @@ export default class ScanEditor extends MethodSubEditor {
 
   constructor(
     public parent: MethodEditor,
-    public app: Application,
+    public app: ClueTrainer,
     public value: AugmentedMethod<ScanTreeMethod, Clues.Scan>,
     public side_panel: Widget
   ) {
