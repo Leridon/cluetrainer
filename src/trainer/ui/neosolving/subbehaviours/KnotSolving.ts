@@ -35,7 +35,7 @@ class KnotSolvingProcess extends AbstractPuzzleProcess {
   private initialization: util.AsyncInitialization<{ reader: KnotReader }>
 
   constructor(private parent: KnotSolving) {
-    super(parent.parent.app.capture_service);
+    super();
 
     this.last_successful_read = Date.now()
 

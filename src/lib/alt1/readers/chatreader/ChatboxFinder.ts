@@ -3,7 +3,7 @@ import {CapturedImage} from "../../capture";
 import {ScreenRectangle} from "../../ScreenRectangle";
 import {Vector2} from "../../../math";
 import {OCR} from "../../OCR";
-import {async_lazy, lazy} from "../../../properties/Lazy";
+import {async_lazy, lazy} from "../../../Lazy";
 import * as lodash from "lodash";
 import {CapturedChatbox} from "./CapturedChatbox";
 import {ChatAnchors} from "./ChatAnchors";

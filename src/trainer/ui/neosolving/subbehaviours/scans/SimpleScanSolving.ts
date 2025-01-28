@@ -12,6 +12,7 @@ import {GameLayer} from "../../../../../lib/gamemap/GameLayer";
 import {GameMapMouseEvent} from "../../../../../lib/gamemap/MapEvents";
 import {ScanEditLayer} from "../../../theorycrafting/scanedit/ScanEditor";
 import digSpotArea = Clues.digSpotArea;
+import {MinimapReader} from "../../../../../lib/alt1/readers/MinimapReader";
 
 export class SimpleScanSolving extends NeoSolvingSubBehaviour {
   settings: ScanSolving.Settings
@@ -26,7 +27,7 @@ export class SimpleScanSolving extends NeoSolvingSubBehaviour {
     this.settings = deps().app.settings.settings.solving.scans
 
     if (this.original_interface_capture) {
-      this.minimap_overlay = this.withSub(new ScanMinimapOverlay(this.parent.app.minimapreader, parent.app.settings.observable_settings.map(s => s.solving.scans).structuralEquality(), "manual").setRange(Scans.range(clue, this.original_interface_capture.hasMeerkats())))
+      this.minimap_overlay = this.withSub(new ScanMinimapOverlay(MinimapReader.instance(), parent.app.settings.observable_settings.map(s => s.solving.scans).structuralEquality(), "manual").setRange(Scans.range(clue, this.original_interface_capture.hasMeerkats())))
     }
   }
 

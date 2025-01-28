@@ -343,7 +343,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     })
 
     if (reader) {
-      this.process = new CompassReader.Service(this.parent.app.capture_service,
+      this.process = new CompassReader.Service(
         this.reader.capture,
         this.settings.enable_status_overlay
       )

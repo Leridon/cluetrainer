@@ -4,7 +4,7 @@ import {angleDifference, circularMean, degreesToRadians, normalizeAngle, radians
 import * as lodash from "lodash";
 import {OverlayGeometry} from "../../../../lib/alt1/OverlayGeometry";
 import {CapturedCompass} from "./capture/CapturedCompass";
-import {lazy, Lazy} from "../../../../lib/properties/Lazy";
+import {lazy, Lazy} from "../../../../lib/Lazy";
 import {NisModal} from "../../../../lib/ui/NisModal";
 import {GameMapMiniWidget, levelIcon} from "../../../../lib/gamemap/GameMap";
 import {GameLayer} from "../../../../lib/gamemap/GameLayer";
@@ -16,7 +16,7 @@ import {GameMapMouseEvent} from "../../../../lib/gamemap/MapEvents";
 import {tilePolygon} from "../../polygon_helpers";
 import {EwentHandler, observe} from "../../../../lib/reactive";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
-import {CapturedImage, CaptureInterval, ScreenCaptureService} from "../../../../lib/alt1/capture";
+import {CapturedImage, CaptureInterval} from "../../../../lib/alt1/capture";
 import {deps} from "../../../dependencies";
 import {util} from "../../../../lib/util/util";
 import LightButton from "../../widgets/LightButton";
@@ -32,6 +32,7 @@ import {Alt1} from "../../../../lib/alt1/Alt1";
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
 import log = Log.log;
 import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
+import {Alt1ScreenCaptureService} from "../../../../lib/alt1/capture/Alt1ScreenCaptureService";
 
 class AngularKeyframeFunction {
   private constructor(private readonly keyframes: {
@@ -956,7 +957,6 @@ export namespace CompassReader {
     initialization: AsyncInitialization<{ finder: Finder<CapturedCompass> }>
 
     constructor(
-      private capturing_service: ScreenCaptureService,
       private matched_ui: CapturedCompass,
       private show_overlay: boolean,
       private disable_calibration: boolean = false,
@@ -984,7 +984,7 @@ export namespace CompassReader {
     protected begin() {
 
       this.lifetime_manager.bind(
-        this.capturing_service.subscribe({
+        Alt1.instance().capturing.subscribe({
           options: time => {
             return {
               interval: CaptureInterval.fromApproximateInterval(50),
@@ -1192,7 +1192,7 @@ export namespace CompassReader {
         this.handler.remove()
       })
 
-      this.reader = new Service(deps().app.capture_service, null, true, true, true).start()
+      this.reader = new Service(null, true, true, true).start()
     }
 
     delete() {

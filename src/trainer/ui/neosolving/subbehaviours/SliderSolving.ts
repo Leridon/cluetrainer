@@ -13,7 +13,7 @@ import {AbstractPuzzleSolving} from "./AbstractPuzzleSolving";
 import {AbstractPuzzleProcess} from "./AbstractPuzzleProcess";
 import {PDBSolver} from "../../../../lib/cluetheory/sliders/PDBSolver";
 import {RegionChainDistanceTable} from "../../../../lib/cluetheory/sliders/RegionChainDistanceTable";
-import {async_lazy, lazy} from "../../../../lib/properties/Lazy";
+import {async_lazy, lazy} from "../../../../lib/Lazy";
 import KeyValueStore from "../../../../lib/util/KeyValueStore";
 import {Observable, observe} from "../../../../lib/reactive";
 import {RandomSolver} from "../../../../lib/cluetheory/sliders/RandomSolver";
@@ -69,7 +69,7 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
   private arrow_keys_inverted: boolean = false
 
   constructor(private parent: SliderSolving, public solver: Sliders.Solver) {
-    super(parent.parent.app.capture_service)
+    super()
 
     this.puzzle = parent.puzzle.puzzle
   }

@@ -1,7 +1,7 @@
 import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
 import * as OCR from "alt1/ocr";
 import {Vector2} from "../../../../../lib/math";
-import {async_lazy, LazyAsync} from "../../../../../lib/properties/Lazy";
+import {async_lazy, LazyAsync} from "../../../../../lib/Lazy";
 import {ImageDetect} from "alt1";
 import {CapturedImage} from "../../../../../lib/alt1/capture";
 import {Finder} from "../../../../../lib/alt1/capture/Finder";

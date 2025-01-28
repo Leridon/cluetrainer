@@ -31,15 +31,12 @@ import {DevelopmentModal} from "../devtools/DevelopmentMenu";
 import {LogViewer} from "../devtools/LogViewer";
 import {DataExport} from "./DataExport";
 import {BookmarkStorage} from "./ui/pathedit/BookmarkStorage";
-import {ChatReader} from "../lib/alt1/readers/ChatReader";
-import {MinimapReader} from "../lib/alt1/readers/MinimapReader";
-import {ScreenCaptureService} from "../lib/alt1/capture";
 import {SectionMemory} from "./ui/neosolving/PathControl";
 import {Alt1UpdateNotice} from "./startup_messages/Alt1UpdateNotice";
 import {ClueTrainerAppMigrationNotice} from "./startup_messages/ClueTrainerAppMigrationNotice";
 import {PermissionChecker} from "./startup_messages/PermissionChecker";
 import {SuccessfullInstallationNotice} from "./startup_messages/SuccessfullInstallationNotice";
-import {lazy} from "../lib/properties/Lazy";
+import {lazy} from "../lib/Lazy";
 import {Alt1} from "../lib/alt1/Alt1";
 import ActiveTeleportCustomization = Transportation.TeleportGroup.ActiveTeleportCustomization;
 import TeleportSettings = Settings.TeleportSettings;
@@ -249,12 +246,6 @@ export class ClueTrainer extends Behaviour {
   private startup_settings_storage = new storage.Variable<ClueTrainer.Preferences>("preferences/startupsettings", () => ({}))
   startup_settings = observe(this.startup_settings_storage.get())
 
-  notifications: NotificationBar
-
-  capture_service: ScreenCaptureService = new ScreenCaptureService()
-  chatreader: ChatReader = new ChatReader(this.capture_service)
-  minimapreader: MinimapReader = new MinimapReader(this.capture_service)
-
   constructor() {
     super()
 
@@ -271,28 +262,22 @@ export class ClueTrainer extends Behaviour {
     if (this.in_dev_mode) {
       log().log("In development mode")
     }
-
-    //this.capture_service.run()
-    //this.chatreader.run()
-    this.chatreader/*.subscribe({
-      options: () => ({interval: CaptureInterval.fromApproximateInterval(300)})
-    })*/
-    this.minimapreader//.registerInterest(true)
   }
 
   protected async begin() {
-    const container = Widget.wrap(jquery("#main-content"))
 
     this.startup_settings.subscribe(s => this.startup_settings_storage.set(s))
 
-    let map_widget: Widget
+    NotificationBar.instance().appendTo(jquery("body"))
 
-    this.notifications = NotificationBar.instance().appendTo(jquery("body"))
+    const map_widget: Widget = c("<div style='flex-grow: 1; height: 100%'></div>")
 
-    container.append(
-      this.menu_bar = new MainTabControl(this),
-      this.main_content = c("<div style='display: flex; height: 100%; flex-grow: 1'></div>")
-        .append(map_widget = c("<div style='flex-grow: 1; height: 100%'></div>"))
+    this.menu_bar = new MainTabControl(this)
+    this.main_content = c("<div style='display: flex; height: 100%; flex-grow: 1'></div>").append(map_widget)
+
+    Widget.wrap(jquery("#main-content")).append(
+      this.menu_bar,
+      this.main_content
     )
 
     this.map_widget = new GameMapWidget(map_widget.container)

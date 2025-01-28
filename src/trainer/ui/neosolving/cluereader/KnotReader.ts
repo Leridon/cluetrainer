@@ -8,7 +8,7 @@ import * as lodash from "lodash";
 import {identity} from "lodash";
 import {CapturedImage} from "../../../../lib/alt1/capture";
 import {CapturedModal} from "./capture/CapturedModal";
-import {async_lazy, lazy} from "../../../../lib/properties/Lazy";
+import {async_lazy, lazy} from "../../../../lib/Lazy";
 import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
 
 export class KnotReader {

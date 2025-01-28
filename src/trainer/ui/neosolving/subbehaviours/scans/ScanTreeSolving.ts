@@ -36,6 +36,7 @@ import spotNumber = ScanTree.spotNumber;
 import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 import digSpotArea = Clues.digSpotArea;
 import {Alt1} from "../../../../../lib/alt1/Alt1";
+import {MinimapReader} from "../../../../../lib/alt1/readers/MinimapReader";
 
 function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): AugmentedScanTreeNode {
   function searchDown(node: AugmentedScanTreeNode): AugmentedScanTreeNode {
@@ -104,10 +105,10 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
 
     if (this.parent.app.in_alt1) {
       if (this.settings.value().show_minimap_overlay_scantree) {
-        this.minimap_overlay = this.withSub(new ScanMinimapOverlay(this.parent.app.minimapreader, settings, "scantree").setRange(this.method.method.tree.assumed_range))
+        this.minimap_overlay = this.withSub(new ScanMinimapOverlay(MinimapReader.instance(), settings, "scantree").setRange(this.method.method.tree.assumed_range))
       }
 
-      this.scan_panel_capture_service = new ScanCaptureService(this.parent.app.capture_service, this.original_interface_capture)
+      this.scan_panel_capture_service = new ScanCaptureService(this.original_interface_capture)
       this.scan_panel_overlay = this.withSub(new ScanPanelOverlay(this.scan_panel_capture_service))
       this.scan_input_control = this.withSub(new ScanControlPrototype(this.scan_panel_capture_service))
 

@@ -1,5 +1,5 @@
-import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken, NeedleImage, ScreenCaptureService} from "../capture";
-import {async_lazy, lazy} from "../../properties/Lazy";
+import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken, NeedleImage} from "../capture";
+import {async_lazy, lazy} from "../../Lazy";
 import {OverlayGeometry} from "../OverlayGeometry";
 import {degreesToRadians, normalizeAngle, Vector2} from "../../math";
 import {ScreenRectangle} from "../ScreenRectangle";
@@ -8,6 +8,8 @@ import {Log} from "../../util/Log";
 import {Finder} from "../capture/Finder";
 import over = OverlayGeometry.over;
 import log = Log.log;
+import {Alt1ScreenCaptureService} from "../capture/Alt1ScreenCaptureService";
+import {Alt1} from "../Alt1";
 
 export class MinimapReader extends DerivedCaptureService<MinimapReader.Options, MinimapReader.CapturedMinimap> {
 
@@ -21,7 +23,7 @@ export class MinimapReader extends DerivedCaptureService<MinimapReader.Options, 
 
   private _initialized: Promise<any>
 
-  constructor(private capture_service: ScreenCaptureService) {
+  private constructor(private capture_service: Alt1ScreenCaptureService) {
     super()
 
     this._initialized = (async () => {
@@ -79,6 +81,12 @@ export class MinimapReader extends DerivedCaptureService<MinimapReader.Options, 
     this.debug_mode = debug
 
     return this
+  }
+
+  static readonly _instance = lazy(() => new MinimapReader(Alt1.instance().capturing))
+
+  static instance(): MinimapReader {
+    return MinimapReader._instance.get()
   }
 }
 

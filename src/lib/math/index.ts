@@ -1,4 +1,4 @@
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {util} from "../util/util";
 import {Vector2} from "./Vector2";
 import positive_mod = util.positive_mod;

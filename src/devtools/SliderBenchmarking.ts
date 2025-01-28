@@ -15,7 +15,7 @@ import {util} from "../lib/util/util";
 import Widget from "../lib/ui/Widget";
 import {Checkbox} from "../lib/ui/controls/Checkbox";
 import {C} from "../lib/ui/constructors";
-import {async_lazy} from "../lib/properties/Lazy";
+import {async_lazy} from "../lib/Lazy";
 import {DropdownSelection} from "../trainer/ui/widgets/DropdownSelection";
 import {BigNisButton} from "../trainer/ui/widgets/BigNisButton";
 import {NislIcon} from "../trainer/ui/nisl";

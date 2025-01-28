@@ -1,6 +1,6 @@
 import {TileCoordinates} from "../../../../lib/runescape/coordinates";
 import Behaviour, {SingleBehaviour} from "../../../../lib/ui/Behaviour";
-import {lazy, Lazy} from "../../../../lib/properties/Lazy";
+import {lazy, Lazy} from "../../../../lib/Lazy";
 import * as leaflet from "leaflet";
 import {EquivalenceClass, ScanEquivalenceClasses, ScanEquivalenceClassOptions} from "../../../../lib/cluetheory/scans/EquivalenceClasses";
 import {areaToPolygon} from "../../polygon_helpers";

@@ -1,4 +1,4 @@
-import {async_lazy, LazyAsync} from "../../../properties/Lazy";
+import {async_lazy, LazyAsync} from "../../../Lazy";
 import {NeedleImage} from "../../capture";
 import {CapturedChatbox} from "./CapturedChatbox";
 

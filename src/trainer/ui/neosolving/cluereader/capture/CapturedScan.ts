@@ -1,7 +1,7 @@
 import {CapturedImage} from "../../../../../lib/alt1/capture";
 import {Vector2} from "../../../../../lib/math";
 import {ImageDetect} from "alt1";
-import {async_lazy, Lazy, lazy, LazyAsync} from "../../../../../lib/properties/Lazy";
+import {async_lazy, Lazy, lazy, LazyAsync} from "../../../../../lib/Lazy";
 import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
 import {util} from "../../../../../lib/util/util";
 import * as lodash from "lodash"

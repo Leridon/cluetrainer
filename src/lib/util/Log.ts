@@ -1,4 +1,4 @@
-import {lazy} from "../properties/Lazy";
+import {lazy} from "../Lazy";
 import {util} from "./util";
 
 type Attachment = { type: "object", value: any } | { type: "image", value: string }

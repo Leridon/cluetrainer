@@ -1,23 +1,24 @@
-import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken, NeedleImage, ScreenCaptureService} from "../capture";
+import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken, NeedleImage} from "../capture";
 import {OverlayGeometry} from "../OverlayGeometry";
 import {util} from "../../util/util";
 import {ScreenRectangle} from "../ScreenRectangle";
 import {OCR} from "../OCR";
 import {ColortTriplet} from "alt1/ocr";
-import {async_lazy} from "../../properties/Lazy";
+import {async_lazy, lazy} from "../../Lazy";
 import {defaultcolors} from "alt1/chatbox";
 import * as a1lib from "alt1";
 import {Log} from "../../util/Log";
-import over = OverlayGeometry.over;
-import log = Log.log;
-import A1Color = util.A1Color;
-import AsyncInitialization = util.AsyncInitialization;
-import async_init = util.async_init;
 import {ChatboxFinder} from "./chatreader/ChatboxFinder";
 import {ChatAnchors} from "./chatreader/ChatAnchors";
 import {CapturedChatbox} from "./chatreader/CapturedChatbox";
 import {MessageBuffer} from "./chatreader/ChatBuffer";
-import { Alt1Color } from "../Alt1Color";
+import {Alt1Color} from "../Alt1Color";
+import {Alt1ScreenCaptureService} from "../capture/Alt1ScreenCaptureService";
+import {Alt1} from "../Alt1";
+import over = OverlayGeometry.over;
+import log = Log.log;
+import AsyncInitialization = util.AsyncInitialization;
+import async_init = util.async_init;
 
 /**
  * A service class to read chat messages. It will search for chat boxes periodically, so it will find the chat
@@ -43,7 +44,7 @@ export class ChatReader extends DerivedCaptureService {
     finder: ChatboxFinder
   }>
 
-  constructor(private capturing: ScreenCaptureService, private search_interval: number = 6000) {
+  private constructor(capturing: Alt1ScreenCaptureService, private search_interval: number = 6000) {
     super();
 
     this.new_message.on(msg => {
@@ -125,6 +126,12 @@ export class ChatReader extends DerivedCaptureService {
     this.debug_mode = debug
 
     return this
+  }
+
+  static readonly _instance = lazy(() => new ChatReader(Alt1.instance().capturing))
+
+  static instance(): ChatReader {
+    return ChatReader._instance.get()
   }
 }
 

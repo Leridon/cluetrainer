@@ -28,8 +28,7 @@ class LockboxSolvingProcess extends AbstractPuzzleProcess {
   private initialization: util.AsyncInitialization<{ reader: LockBoxReader }>
 
   constructor(private parent: LockboxSolving) {
-    super(parent.parent.app.capture_service);
-
+    super();
 
     this.initialization = async_init(async () => {
       return {

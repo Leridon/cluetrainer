@@ -1,4 +1,4 @@
-import {async_lazy, LazyAsync} from "../../../../../lib/properties/Lazy";
+import {async_lazy, LazyAsync} from "../../../../../lib/Lazy";
 import {ImageDetect} from "alt1";
 import {CapturedImage} from "../../../../../lib/alt1/capture";
 import {Vector2} from "../../../../../lib/math";

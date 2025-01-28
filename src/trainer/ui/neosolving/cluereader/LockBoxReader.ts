@@ -3,7 +3,7 @@ import {OverlayGeometry} from "../../../../lib/alt1/OverlayGeometry";
 import {Lockboxes} from "../../../../lib/cluetheory/Lockboxes";
 import {ImageFingerprint} from "../../../../lib/util/ImageFingerprint";
 import {ImageDetect} from "alt1";
-import {async_lazy, LazyAsync} from "../../../../lib/properties/Lazy";
+import {async_lazy, LazyAsync} from "../../../../lib/Lazy";
 import {Vector2} from "../../../../lib/math";
 import {util} from "../../../../lib/util/util";
 import {CapturedModal} from "./capture/CapturedModal";

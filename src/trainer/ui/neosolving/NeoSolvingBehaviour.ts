@@ -69,6 +69,7 @@ import log = Log.log;
 import default_interactive_area = Transportation.EntityTransportation.default_interactive_area;
 import digSpotArea = Clues.digSpotArea;
 import findBestMatch = util.findBestMatch;
+import {Alt1} from "../../../lib/alt1/Alt1";
 
 class NeoSolvingLayer extends GameLayer {
   public clue_container: Widget
@@ -326,7 +327,7 @@ class ClueSolvingReadingBehaviour extends Behaviour {
   protected begin() {
     const interval = CaptureInterval.fromApproximateInterval(300)
 
-    this.lifetime_manager.bind(this.parent.app.capture_service.subscribe({
+    this.lifetime_manager.bind(Alt1.instance().capturing.subscribe({
       options: (time: AbstractCaptureService.CaptureTime) => ({interval: interval, area: null}),
       paused: () => (!this.autoSolve || this.parent.active_behaviour.get()?.pausesClueReader()),
       handle: (img) => this.solve(img.value, true)
@@ -373,7 +374,7 @@ class ClueSolvingReadingBehaviour extends Behaviour {
       return
     }
 
-    const img = await this.parent.app.capture_service.captureOnce({options: {area: null, interval: null}})
+    const img = await Alt1.instance().capturing.captureOnce({options: {area: null, interval: null}})
 
     const found = this.solve(img.value, false)
 

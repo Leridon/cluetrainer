@@ -1,4 +1,4 @@
-import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken, ScreenCaptureService} from "../../../../../lib/alt1/capture";
+import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken} from "../../../../../lib/alt1/capture";
 import {CapturedScan} from "../../cluereader/capture/CapturedScan";
 import {OverlayGeometry} from "../../../../../lib/alt1/OverlayGeometry";
 import {Finder} from "../../../../../lib/alt1/capture/Finder";
@@ -10,6 +10,8 @@ import A1Color = util.A1Color;
 import {Vector2} from "../../../../../lib/math";
 import {EwentHandler, observe} from "../../../../../lib/reactive";
 import {Alt1Color} from "../../../../../lib/alt1/Alt1Color";
+import {Alt1ScreenCaptureService} from "../../../../../lib/alt1/capture/Alt1ScreenCaptureService";
+import {Alt1} from "../../../../../lib/alt1/Alt1";
 
 
 export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
@@ -29,7 +31,7 @@ export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService
     time: number
   } = null
 
-  constructor(private capture_service: ScreenCaptureService, private original_captured_interface: CapturedScan | null) {
+  constructor(private original_captured_interface: CapturedScan | null) {
     super()
 
     if (original_captured_interface) {
@@ -39,7 +41,7 @@ export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService
       }
     }
 
-    this.capture_interest = this.addDataSource<ScanCaptureService.UpstreamOptions, CapturedImage>(capture_service as any/*The types are fine, but the signature of addDataSource isn't accurate*/, () => {
+    this.capture_interest = this.addDataSource<ScanCaptureService.UpstreamOptions, CapturedImage>(Alt1.instance().capturing as any/*The types are fine, but the signature of addDataSource isn't accurate*/, () => {
       const should_refind = this.last_successfull_capture == null || this.last_successfull_capture.time < (Date.now() - 5000)
 
       return {

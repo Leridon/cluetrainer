@@ -4,7 +4,7 @@ import {CapturedModal} from "./capture/CapturedModal";
 import {Towers} from "../../../../lib/cluetheory/Towers";
 import * as OCR from "alt1/ocr";
 import {util} from "../../../../lib/util/util";
-import {async_lazy, Lazy} from "../../../../lib/properties/Lazy";
+import {async_lazy, Lazy} from "../../../../lib/Lazy";
 import {ImageDetect} from "alt1";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
 

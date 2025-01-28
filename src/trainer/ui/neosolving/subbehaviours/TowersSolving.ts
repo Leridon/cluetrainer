@@ -1,10 +1,9 @@
 import NeoSolvingBehaviour from "../NeoSolvingBehaviour";
 import {ClueReader} from "../cluereader/ClueReader";
-import {CapturedImage, ScreenCaptureService} from "../../../../lib/alt1/capture";
+import {CapturedImage} from "../../../../lib/alt1/capture";
 import {CapturedModal} from "../cluereader/capture/CapturedModal";
 import {TowersReader} from "../cluereader/TowersReader";
 import {Towers} from "../../../../lib/cluetheory/Towers";
-import {mixColor} from "alt1";
 import {Vector2} from "../../../../lib/math";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
 import {AbstractPuzzleSolving} from "./AbstractPuzzleSolving";
@@ -13,6 +12,7 @@ import {deps} from "../../../dependencies";
 import {util} from "../../../../lib/util/util";
 import async_init = util.async_init;
 import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
+import {Alt1ScreenCaptureService} from "../../../../lib/alt1/capture/Alt1ScreenCaptureService";
 
 class TowersSolvingProcess extends AbstractPuzzleProcess {
   settings = deps().app.settings.settings.solving.puzzles.towers
@@ -26,8 +26,8 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
 
   private initialization: util.AsyncInitialization<{ reader: TowersReader }>
 
-  constructor(private parent: TowersSolving, capturing: ScreenCaptureService) {
-    super(capturing);
+  constructor(private parent: TowersSolving) {
+    super();
 
     this.last_successful_read = Date.now()
 
@@ -255,7 +255,7 @@ export class TowersSolving extends AbstractPuzzleSolving<ClueReader.Result.Puzzl
   }
 
   protected constructProcess(): TowersSolvingProcess {
-    return new TowersSolvingProcess(this, this.parent.app.capture_service)
+    return new TowersSolvingProcess(this)
   }
 
   pausesClueReader(): boolean {
