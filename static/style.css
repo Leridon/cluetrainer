@@ -1561,6 +1561,7 @@ input[type=checkbox] + span {
 .nisl-modal {
     border-radius: 10px;
     border: 2px solid rgb(43, 58, 67);
+    max-height: 100%;
 }
 
 .nisl-modal-footer {
@@ -2252,16 +2253,19 @@ input[type=checkbox] + span {
     filter: grayscale(1)
 }
 
+.modal-dialog {
+    max-height: 100%;
+}
+
+.modal-dialog > .nisl-modal {
+    max-height: 100%;
+}
+
 .ctr-modal-fullscreen {
     --bs-modal-margin: 0.25rem;
     max-width: revert;
     width: calc(100% - 2 * var(--bs-modal-margin));
     height: calc(100% - 2 * var(--bs-modal-margin));
-}
-
-.ctr-modal-fullscreen > .nisl-modal {
-    min-height: 100%;
-    max-height: 100%;
 }
 
 .ctr-modal-fullscreen > .nisl-modal {
@@ -2442,4 +2446,9 @@ input[type=checkbox] + span {
 
 .ctr-log-viewer-message > *:not(:last-child) {
     margin-right: 6px;
+}
+
+.ctr-striked {
+    text-decoration: line-through;
+    color: gray;
 }

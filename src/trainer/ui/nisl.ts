@@ -113,6 +113,29 @@ export class ArrowIcon extends NislIcon {
   }
 }
 
+export class ExpandIcon extends NislIcon {
+  expanded: Observable<boolean>
+
+  constructor() {
+    super();
+
+    this.img.css("width", "15px")
+
+    this.expanded = observe(false)
+
+    this.expanded.subscribe(expanded => {
+
+      if (expanded) this.setSource(`assets/nis/minus.png`)
+      else this.setSource(`assets/nis/plus.png`)
+    }, true)
+  }
+
+  setExpanded(value: boolean): this {
+    this.expanded.set(value)
+    return this
+  }
+}
+
 export namespace ArrowIcon {
   export type direction = "left" | "right" | "up" | "down"
 }

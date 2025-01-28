@@ -9,7 +9,7 @@ import {Finder} from "../../../../../lib/alt1/capture/Finder";
 import {OCR} from "../../../../../lib/alt1/OCR";
 import index = util.index;
 import stringSimilarity = util.stringSimilarity;
-import ColortTriplet = OCR.ColortTriplet;
+import ColortTriplet = OCR.ColorTriplet;
 
 type Line = { debugArea: { x: number; y: number; w: number; h: number }; text: string; fragments: OCR.TextFragment[] }
 

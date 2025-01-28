@@ -376,6 +376,12 @@ export namespace util {
     return `${padInteger(date.getHours(), 2)}:${padInteger(date.getMinutes(), 2)}:${padInteger(date.getSeconds(), 2)}.${padInteger(date.getMilliseconds(), 4)}`
   }
 
+  export function formatTimeWithoutMilliseconds(timestamp: number): string {
+    const date = new Date(timestamp)
+
+    return `${padInteger(date.getHours(), 2)}:${padInteger(date.getMinutes(), 2)}:${padInteger(date.getSeconds(), 2)}`
+  }
+
   export class AsyncInitialization<T = any> {
     private _is_initialized: boolean = false
     private _value: T = undefined
@@ -408,5 +414,17 @@ export namespace util {
 
   export async function delay(t: number): Promise<void> {
     return new Promise(done => setTimeout(done, t));
+  }
+
+  export function renderTimespan(milliseconds: number): string {
+    const SECOND =  1000
+    const MINUTE = 60 * SECOND
+    const HOUR = 60 * MINUTE
+    const DAY = 24 * HOUR
+
+    if (milliseconds > 2 * DAY) return plural(Math.floor(milliseconds / DAY), "day")
+    if (milliseconds > 3 * HOUR) return plural(Math.floor(milliseconds / HOUR), "hour")
+    if (milliseconds > 2 * MINUTE) return plural(Math.floor(milliseconds / MINUTE), "minute")
+    return plural(Math.floor(milliseconds / SECOND), "second")
   }
 }

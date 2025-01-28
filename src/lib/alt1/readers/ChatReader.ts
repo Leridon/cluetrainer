@@ -4,21 +4,23 @@ import {util} from "../../util/util";
 import {ScreenRectangle} from "../ScreenRectangle";
 import {OCR} from "../OCR";
 import {ColortTriplet} from "alt1/ocr";
-import {async_lazy, lazy} from "../../Lazy";
-import {defaultcolors} from "alt1/chatbox";
+import {async_lazy} from "../../Lazy";
 import * as a1lib from "alt1";
 import {Log} from "../../util/Log";
 import {ChatboxFinder} from "./chatreader/ChatboxFinder";
 import {ChatAnchors} from "./chatreader/ChatAnchors";
 import {CapturedChatbox} from "./chatreader/CapturedChatbox";
 import {MessageBuffer} from "./chatreader/ChatBuffer";
-import {Alt1Color} from "../Alt1Color";
-import {Alt1ScreenCaptureService} from "../capture/Alt1ScreenCaptureService";
-import {Alt1} from "../Alt1";
+import * as lodash from "lodash";
 import over = OverlayGeometry.over;
 import log = Log.log;
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
+import Message = MessageBuffer.Message;
+import {Alt1} from "../Alt1";
+import {lazy} from "../../Lazy";
+import {Alt1ScreenCaptureService} from "../capture/Alt1ScreenCaptureService";
+import {Alt1Color} from "../Alt1Color";
 
 /**
  * A service class to read chat messages. It will search for chat boxes periodically, so it will find the chat
@@ -50,7 +52,7 @@ export class ChatReader extends DerivedCaptureService {
     this.new_message.on(msg => {
       if (!this.debug_mode) return
 
-      console.log(msg.text)
+      console.log(Message.toString(msg))
     })
 
     this.initialization = async_init(async () => {
@@ -58,7 +60,17 @@ export class ChatReader extends DerivedCaptureService {
       const needles = await ChatAnchors.Needles.instance.get()
       const icons = await ChatReader.ChatIcons.instance.get()
 
-      this.capture_interest = this.addDataSource(capturing, () => null)
+      this.capture_interest = this.addDataSource(capturing, (time) => {
+        const should_refind = time.time - this.search_interval > this.last_search || this.chatboxes.length == 0
+
+        if (should_refind) return null
+
+        const area = ScreenRectangle.union(...this.chatboxes.map(c => c.chatbox.body.screen_rectangle))
+
+        if (area.origin.x > 3000) debugger
+
+        return {area: ScreenRectangle.union(...this.chatboxes.map(c => c.chatbox.body.screen_rectangle)), interval: null}
+      })
 
       return {
         needles: needles,
@@ -69,10 +81,13 @@ export class ChatReader extends DerivedCaptureService {
   }
 
   processNotifications(interested_tokens: InterestedToken<AbstractCaptureService.Options, null>[]): null {
-    const capture = this.capture_interest.lastNotification().value
+    const notification = this.capture_interest.lastNotification()
+    const capture = notification.value
 
     try {
-      if (Date.now() - this.search_interval > this.last_search) {
+      if (notification.time.time - this.search_interval > this.last_search || this.chatboxes.length == 0) {
+        this.last_search = notification.time.time
+
         const current_boxes = this.initialization.get().finder.find(capture)
 
         // Remove readers that weren't found anymore
@@ -147,18 +162,25 @@ export namespace ChatReader {
     export const instance = async_lazy<ChatIcons>(async () => {
 
       return [
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgevip.data.png"), character: "\u2730"}, //SHADOWED WHITE STAR
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgepmod.data.png"), character: "\u2655"}, //WHITE CHESS QUEEN
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgepmodvip.data.png"), character: "\u2655"}, //WHITE CHESS QUEEN
+        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badge_broadcast_bronze.data.png"), character: "\u2746"}, //HEAVY CHEVRON SNOWFLAKE
         {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badge_broadcast_gold.data.png"), character: "\u2746"}, //HEAVY CHEVRON SNOWFLAKE
         {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badge_broadcast_silver.data.png"), character: "\u2746"}, //HEAVY CHEVRON SNOWFLAKE
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badge_broadcast_bronze.data.png"), character: "\u2746"}, //HEAVY CHEVRON SNOWFLAKE
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgeironman.data.png"), character: "\u26AF"}, //UNMARRIED PARTNERSHIP SYMBOL
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgehcim.data.png"), character: "\u{1F480}"}, //SKULL
         {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badge_hcimdeath.png"), character: "\u{1F480}"}, //SKULL
+        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgegim.data.png"), character: "\u3289"}, //CIRCLED IDEOGRAPH TEN
+        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgehcim.data.png"), character: "\u{1F480}"}, //SKULL
+        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgeironman.data.png"), character: "\u26AF"}, //UNMARRIED PARTNERSHIP SYMBOL
+        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgepmod.data.png"), character: "\u2655"}, //WHITE CHESS QUEEN
+        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgepmodvip.data.png"), character: "\u2655"}, //WHITE CHESS QUEEN
+        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgergim.data.png"), character: "\u328F"}, //CIRCLED IDEOGRAPH EARTH
+        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgevip.data.png"), character: "\u2730"}, //SHADOWED WHITE STAR
         {image: await NeedleImage.fromURL("alt1anchors/chat/icons/chat_link.data.png"), character: "\u{1F517}"}, //LINK SYMBOL
+        {image: await NeedleImage.fromURL("alt1anchors/chat/chatbubble.png"), character: "\u{1F5E8}"}, // Left Speech Bubble
       ]
     })
+
+    export const ironman_icons = [
+      "\u{1F480}", "\u26AF", "\u3289", "\u328F"
+    ]
   }
 
   import index = util.index;
@@ -173,22 +195,28 @@ export namespace ChatReader {
 
     }
 
-    private readLine(i: number): string {
+    private readLine(i: number): Message.Fragment[] {
       const line = this.chatbox.line(i)
       const line_img = line.getData()
 
       const fodef = this.chatbox.font.def
 
-      const fragments: string[] = []
+      const fragments: Message.Fragment[] = []
 
       let scan_x = 0
       const baseline = this.chatbox.font.baseline_y
 
-      const read_string = (colors: ColortTriplet[] = defaultcolors as ColortTriplet[]): boolean => {
+      const read_string = (colors: ColortTriplet[] = ChatReader.all_colors as ColortTriplet[]): boolean => {
         const data = OCR.readLine(line_img, fodef, colors, scan_x, baseline, true, false);
 
         if (data.text) {
-          fragments.push(data.text)
+          data.fragments.forEach(frag => {
+            fragments.push({
+              text: frag.text,
+              color: frag.color
+            })
+          })
+
 
           scan_x = index(data.fragments, -1).xend
 
@@ -199,7 +227,6 @@ export namespace ChatReader {
       };
 
       const read_icon = (): boolean => {
-
         for (const addspace of [true, false]) {
           const badgeleft = scan_x + (addspace ? fodef.spacewidth : 0)
 
@@ -209,9 +236,9 @@ export namespace ChatReader {
           )
 
           if (matched_icon) {
-            if (addspace) fragments.push(" ")
+            if (addspace) fragments.push({text: " ", color: null})
 
-            fragments.push(matched_icon.character)
+            fragments.push({text: matched_icon.character, color: null})
 
             scan_x = badgeleft + matched_icon.image.underlying.width
 
@@ -227,7 +254,7 @@ export namespace ChatReader {
       const has_timestamp = timestamp_open?.chr == "["
 
       if (has_timestamp) {
-        fragments.push("[")
+        fragments.push({text: "[", color: [255, 255, 255]})
 
         scan_x += timestamp_open.basechar.width
       }
@@ -237,22 +264,46 @@ export namespace ChatReader {
 
       while (scan_x < this.chatbox.body.screen_rectangle.origin.x + this.chatbox.body.screen_rectangle.size.x - this.chatbox.font.def.width) {
         if (!read_icon()) break
-        if (!read_string()) break
+        if (!read_string(ChatReader.all_colors)) break
       }
 
-      return fragments.join("")
+      return fragments
     }
 
-    private commit(message: string): boolean {
-      let m = message.match(/^\[(\d{2}):(\d{2}):(\d{2})]/);
+    private commit(message: { text: string, fragments: Message.Fragment[] }): boolean {
+      const now = Date.now()
+
+      let m = message.text.match(/^\[(\d{2}):(\d{2}):(\d{2})]/);
 
       if (!m) return false // Reject messages without a timestamp
 
-      const timestamp = (+m[1]) * 60 * 60 + (+m[2]) * 60 + (+m[3]);
+      const hours = +m[1]
+      const minutes = +m[2]
+      const seconds = +m[3]
+
+      function addDays(date: Date, days: number): Date {
+        const new_date = new Date(date.valueOf());
+        new_date.setDate(new_date.getDate() + days);
+        return new_date;
+      }
+
+      const today = new Date(Date.now())
+
+      today.setHours(hours)
+      today.setMinutes(minutes)
+      today.setSeconds(seconds)
+      today.setMilliseconds(0)
+
+      const date = lodash.minBy([today, addDays(today, -1), addDays(today, 1)], date => Math.abs(now - date.valueOf()))
 
       return this.buffer.add({
-        timestamp: timestamp,
-        text: message.substring(11) // Strip timestamp from message itself
+        local_timestamp: {
+          stamp: hours * 60 * 60 + minutes * 60 + seconds,
+          hours, minutes, seconds
+        },
+        fragments: message.fragments,
+        timestamp: date.valueOf(),
+        text: message.text.substring(11) // Strip timestamp from message itself
       })
     }
 
@@ -264,19 +315,19 @@ export namespace ChatReader {
       const max_rows = this.chatbox.visibleRows()
 
       while (row < max_rows) {
-        const components: string[] = []
+        const component_lines: Message.Fragment[][] = []
 
-        while (row < max_rows && !index(components, -1)?.startsWith("[")) {
-          components.push(this.readLine(row))
+        while (row < max_rows && !index(component_lines, -1)?.[0]?.text.startsWith("[")) {
+          component_lines.push(this.readLine(row))
 
           row++
         }
 
-        const line = components.reverse().join(" ")
+        const line = component_lines.reverse().map(l => l.map(f => f.text).join("")).join(" ")
 
         if (!line.startsWith("[")) return
 
-        const actually_new_message = this.commit(line)
+        const actually_new_message = this.commit({text: line, fragments: component_lines.flat()})
 
         if (!actually_new_message) break
       }
@@ -312,6 +363,9 @@ export namespace ChatReader {
     [164, 153, 125], //brownish gray friends/fc/cc list name
     [215, 195, 119], //interface preset color
     [45, 185, 20], // Green in "Completion time" for bosses
-    [254, 128, 0]
+    [254, 128, 0],
+    [223, 112, 0],
+    [51, 199, 20],
+    [60, 183, 30]
   ]
 }
