@@ -1,5 +1,5 @@
 import {Sliders} from "../lib/cluetheory/Sliders";
-import {Application} from "./application";
+import {ClueTrainer} from "./ClueTrainer";
 import * as lodash from "lodash";
 import {storage} from "../lib/util/storage";
 import {Log} from "../lib/util/Log";
@@ -16,7 +16,7 @@ export class CrowdSourcing {
     () => null
   )
 
-  constructor(private parent: Application, private server_url: string) {
+  constructor(private parent: ClueTrainer, private server_url: string) {
 
   }
 

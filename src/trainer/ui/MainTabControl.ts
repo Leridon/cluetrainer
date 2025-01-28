@@ -1,6 +1,6 @@
 import Widget from "../../lib/ui/Widget";
 import {C} from "../../lib/ui/constructors";
-import {Application} from "../application";
+import {ClueTrainer} from "../ClueTrainer";
 import {PathEditor} from "./pathedit/PathEditor";
 import {GameLayer} from "../../lib/gamemap/GameLayer";
 import TheoryCrafter from "./theorycrafting/TheoryCrafter";
@@ -41,7 +41,7 @@ class MenuButton extends Button {
 export class SimpleMapBehaviour extends Behaviour {
   private layer = new GameLayer()
 
-  constructor(private app: Application) {
+  constructor(private app: ClueTrainer) {
     super();
 
     this.layer.add(new HoverTileDisplay())
@@ -68,7 +68,7 @@ export default class MainTabControl extends Widget {
 
   private active_tab: Observable<MainTabControl.Tab> = observe(null)
 
-  constructor(public app: Application) {
+  constructor(public app: ClueTrainer) {
     super();
 
     this.addClass("ctr-menubar")

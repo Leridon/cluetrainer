@@ -1,7 +1,7 @@
-import {type Application} from "./application";
+import {type ClueTrainer} from "./ClueTrainer";
 
 export default class Dependencies {
-  app: Application = null
+  app: ClueTrainer = null
   //template_resolver: Observable<TemplateResolver> = observe(null)
 
   private static _instance: Dependencies = null

@@ -1,5 +1,5 @@
 import Behaviour, {SingleBehaviour} from "../../../lib/ui/Behaviour";
-import {Application} from "../../application";
+import {ClueTrainer} from "../../ClueTrainer";
 import {GameLayer} from "../../../lib/gamemap/GameLayer";
 import {GameMapControl} from "../../../lib/gamemap/GameMapControl";
 import {C} from "../../../lib/ui/constructors";
@@ -431,7 +431,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
     return null
   }
 
-  constructor(public app: Application, public tetracompass_only: boolean) {
+  constructor(public app: ClueTrainer, public tetracompass_only: boolean) {
     super();
 
     this.path_control.section_selected.on(p => {

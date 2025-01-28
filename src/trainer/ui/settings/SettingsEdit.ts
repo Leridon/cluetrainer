@@ -1,5 +1,5 @@
 import Widget from "../../../lib/ui/Widget";
-import {Application} from "../../application";
+import {ClueTrainer} from "../../ClueTrainer";
 import {deps} from "../../dependencies";
 import {C} from "../../../lib/ui/constructors";
 import {Observable, observe} from "../../../lib/reactive";
@@ -1549,7 +1549,7 @@ class DataManagementEdit extends Widget {
 export class SettingsEdit extends Widget {
   value: Settings.Settings
 
-  constructor(app: Application, start_section: SettingsEdit.section_id) {
+  constructor(app: ClueTrainer, start_section: SettingsEdit.section_id) {
     super();
 
     this.value = lodash.cloneDeep(app.settings.settings)

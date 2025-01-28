@@ -4,7 +4,7 @@ import {lazy, Lazy} from "../../../../lib/properties/Lazy";
 import * as leaflet from "leaflet";
 import {EquivalenceClass, ScanEquivalenceClasses, ScanEquivalenceClassOptions} from "../../../../lib/cluetheory/scans/EquivalenceClasses";
 import {areaToPolygon} from "../../polygon_helpers";
-import {type Application} from "../../../application";
+import {type ClueTrainer} from "../../../ClueTrainer";
 import {AdaptiveScanRadiusMarker, ScanRegionPolygon} from "../../neosolving/ScanLayer";
 import {PathEditor} from "../../pathedit/PathEditor";
 import {OpacityGroup} from "../../../../lib/gamemap/layers/OpacityLayer";
@@ -512,7 +512,7 @@ export default class ScanEditor extends MethodSubEditor {
 
   constructor(
     public parent: MethodEditor,
-    public app: Application,
+    public app: ClueTrainer,
     public value: AugmentedMethod<ScanTreeMethod, Clues.Scan>,
     public side_panel: Widget
   ) {

@@ -1,12 +1,12 @@
 import Behaviour from "../../lib/ui/Behaviour";
-import {Application} from "../application";
+import {ClueTrainer} from "../ClueTrainer";
 import UtilityLayer from "./devutilitylayer/UtilityLayer";
 
 
 export default class MapUtilityBehaviour extends Behaviour {
   layer: UtilityLayer = null
 
-  constructor(private app: Application) {
+  constructor(private app: ClueTrainer) {
     super();
   }
 
