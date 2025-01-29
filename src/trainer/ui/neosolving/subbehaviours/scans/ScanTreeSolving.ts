@@ -28,6 +28,7 @@ import {ScanCaptureService, ScanPanelOverlay} from "./ScanPanelReader";
 import {ScanControlPrototype} from "./ScanInputBehaviour";
 import {ScanMinimapOverlay} from "./ScanMinimapOverlay";
 import {MinimapReader} from "../../../../../lib/alt1/readers/MinimapReader";
+import {ClueTrainerWiki} from "../../../../wiki";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import activate = TileArea.activate;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
@@ -36,6 +37,9 @@ import Order = util.Order;
 import spotNumber = ScanTree.spotNumber;
 import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 import digSpotArea = Clues.digSpotArea;
+import hbox = C.hbox;
+import spacer = C.spacer;
+import inlineimg = C.inlineimg;
 
 function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): AugmentedScanTreeNode {
   function searchDown(node: AugmentedScanTreeNode): AugmentedScanTreeNode {
@@ -212,18 +216,28 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
     let content = cls("ctr-neosolving-solution-row").appendTo(this.tree_widget)
 
     {
-      let ui_nav = c()
 
-      let list = c("<ol class='breadcrumb' style='margin-bottom: unset'></ol>").appendTo(ui_nav)
+      const list = c("<ol class='breadcrumb' style='margin-bottom: unset'></ol>")
+        .append(
+          ...AugmentedScanTree.collect_parents(node)
+            .map(n =>
+              c("<li>").addClass("breadcrumb-item")
+                .append(
+                  c("<span class='nisl-textlink'>")
+                    .on("click", () => this.setNode(n))
+                    .text(AugmentedScanTree.decision_string(n))
+                )
+            )
+        )
 
-      AugmentedScanTree.collect_parents(node)
-        .map(n =>
-          c("<span class='nisl-textlink'>")
-            .on("click", () => this.setNode(n))
-            .text(AugmentedScanTree.decision_string(n))
-        ).forEach(w => w.appendTo(c("<li>").addClass("breadcrumb-item").appendTo(list)))
+      const ui_nav = hbox(
+        list,
+        spacer(),
+        inlineimg("assets/icons/info_nis.png").css("height", "1em").css("margin-top", "2px").addClass("ctr-clickable")
+          .on("click", () => ClueTrainerWiki.openOnPage("scantrees"))
+      )
 
-      let last = list.container.children().last()
+      const last = list.container.children().last()
 
       last.text(last.children().first().text()).addClass("active")
 

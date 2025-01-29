@@ -4,6 +4,7 @@ import italic = C.italic;
 import img = C.img;
 import hboxc = C.hboxc;
 import bold = C.bold;
+import mediaContainer = C.mediaContainer;
 
 export class WikiPageTooFarDifferentLevel extends WikiPage {
   render(): void {
@@ -11,9 +12,9 @@ export class WikiPageTooFarDifferentLevel extends WikiPage {
       "In some cases, scan clues suggest to ", italic("try scanning a different level"), ". Counterintuitively, this does not just indicate that the player is on the wrong floor, but can also appear when the dig spot is in an underground area while the player is on the surface or vice versa. This article explains how this mechanic works exactly and how it can be used to optimize scans such as Taverley Dungeon or Dorgesh-Kaan."
     )
 
-    this.row(hboxc(
-      img("/media/wiki/differentlevel.png").css2({"max-width": "200px", margin: "0 auto"}),
-      img("/media/wiki/toofar.png").css2({"max-width": "200px", margin: "0 auto"}),
+    this.row(mediaContainer(
+      img("/media/wiki/differentlevel.png").css2({"max-width": "120px"}),
+      img("/media/wiki/toofar.png").css2({"max-width": "120px"}),
     ))
 
     this.header("The Basic Case: Floor Differences")
@@ -36,11 +37,8 @@ export class WikiPageTooFarDifferentLevel extends WikiPage {
 
     this.paragraph("Clue Trainer shows ", bold("complement spots"), " (underground/surface projections of dig spots) on the map, as well as the complement range square when applicable.")
 
-    this.row(hboxc(
+    this.row(mediaContainer(
       img("/media/wiki/complement_range.png")
-        .css2({
-          "max-width": "200px"
-        })
     ))
   }
 }

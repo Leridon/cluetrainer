@@ -4,6 +4,7 @@ import {ClueTrainerWiki} from "../../index";
 import Widget from "../../../../lib/ui/Widget";
 import text_link = C.text_link;
 import hboxc = C.hboxc;
+import mediaContainer = C.mediaContainer;
 
 export class WikiPageScanClues extends WikiPage {
   render(): void {
@@ -25,21 +26,22 @@ export class WikiPageScanClues extends WikiPage {
 
     const videos: Widget[] = [
       c("<video controls loop><source src='/media/wiki/single.webm' type='video/webm'></video>").css2({
-        width: "120px",
-        height: "200px",
-        margin: "0 auto",
+        "max-width": "120px",
+        height: "auto",
       }),
       c("<video controls loop><source src='/media/wiki/double.webm' type='video/webm'></video>").css2({
-        width: "120px",
-        height: "200px",
-        margin: "0 auto",
+        "max-width": "120px",
+        height: "auto",
       }),
       c("<video controls loop><source src='/media/wiki/triple.webm' type='video/webm'></video>").css2({
-        width: "120px",
-        height: "200px",
-        margin: "0 auto",
+        "max-width": "120px",
+        height: "auto",
       }),
     ]
+
+    mediaContainer(
+      ...videos
+    )
 
     videos.forEach(v => {
       v.on("play", (e) => {
@@ -49,7 +51,7 @@ export class WikiPageScanClues extends WikiPage {
       })
     })
 
-    this.row(hboxc(
+    this.row(mediaContainer(
       ...videos
     ))
 

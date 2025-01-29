@@ -123,4 +123,8 @@ export namespace C {
   export function cls(c: string): Widget {
     return C.div().addClass(c)
   }
+
+  export function mediaContainer(...children: Widget[]) {
+    return cls("ctr-media-container").append(...children)
+  }
 }

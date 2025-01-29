@@ -2456,3 +2456,16 @@ input[type=checkbox] + span {
     text-decoration: line-through;
     color: gray;
 }
+
+.ctr-media-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.ctr-media-container > * {
+    max-width: 200px;
+    min-width: 10px;
+    flex: 1 1 auto;
+}
