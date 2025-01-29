@@ -51,7 +51,7 @@ export namespace ClueTrainerWiki {
     else {
       const modal = new class extends NisModal {
         constructor() {
-          super({size: "fullscreen"});
+          super({size: "large"});
 
           this.setTitle("Cluepedia")
         }

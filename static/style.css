@@ -1561,7 +1561,7 @@ input[type=checkbox] + span {
 .nisl-modal {
     border-radius: 10px;
     border: 2px solid rgb(43, 58, 67);
-    max-height: 100%;
+    max-height: calc(100vh - 2 * var(--bs-modal-margin));
 }
 
 .nisl-modal-footer {
@@ -1601,6 +1601,7 @@ input[type=checkbox] + span {
     flex: 1 1 auto;
     padding: 0.5rem;
     overflow-y: auto;
+    display: flex;
 }
 
 /* Big Nis Button */
@@ -2156,6 +2157,7 @@ input[type=checkbox] + span {
 
 .ctr-section-control {
     display: flex;
+    width: 100%;
 }
 
 .ctr-section-control-content {
@@ -2171,6 +2173,7 @@ input[type=checkbox] + span {
 }
 
 .ctr-section-control-menu {
+    overflow-y: auto;
     flex-basis: 40%;
     padding: 10px;
     background-color: #00000040;
@@ -2258,7 +2261,7 @@ input[type=checkbox] + span {
 }
 
 .modal-dialog > .nisl-modal {
-    max-height: 100%;
+
 }
 
 .ctr-modal-fullscreen {

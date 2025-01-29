@@ -1554,75 +1554,76 @@ export class SettingsEdit extends Widget {
 
     this.value = lodash.cloneDeep(app.settings.settings)
 
-    new SectionControl<SettingsEdit.section_id>([
-      {
-        name: "Solving", entries: [{
-          id: "solving_general",
-          name: "General",
-          short_name: "General",
-          renderer: () => new GeneralSolvingSettingsEdit(this.value.solving.general)
+    this.init(
+      new SectionControl<SettingsEdit.section_id>([
+        {
+          name: "Solving", entries: [{
+            id: "solving_general",
+            name: "General",
+            short_name: "General",
+            renderer: () => new GeneralSolvingSettingsEdit(this.value.solving.general)
+          }, {
+            id: "solving_interface",
+            name: "Interface",
+            short_name: "Interface",
+            renderer: () => new InterfaceSettingsEdit(this.value.solving.info_panel)
+          }, {
+            id: "sliders",
+            name: "Slider Puzzle Solving",
+            short_name: "Sliders",
+            renderer: () => new PuzzleSettingsEdit(this.value.solving.puzzles.sliders)
+          }, {
+            id: "knots",
+            name: "Celtic Knot Solving",
+            short_name: "Knots",
+            renderer: () => new KnotSettingsEdit(this.value.solving.puzzles.knots)
+          }, {
+            id: "lockboxes",
+            name: "Lockbox Solving",
+            short_name: "Lockboxes",
+            renderer: () => new LockboxSettingsEdit(this.value.solving.puzzles.lockboxes)
+          }, {
+            id: "towers",
+            name: "Towers Solving",
+            short_name: "Towers",
+            renderer: () => new TowersSettingsEdit(this.value.solving.puzzles.towers)
+          }, {
+            id: "compass",
+            name: "Compass Solving",
+            short_name: "Compass",
+            renderer: () => new CompassSettingsEdit(this.value.solving.compass)
+          }, {
+            id: "scans",
+            name: "Scan Solving",
+            short_name: "Scans",
+            renderer: () => new ScanSettingsEdit(this.value.solving.scans)
+          }
+          ]
         }, {
-          id: "solving_interface",
-          name: "Interface",
-          short_name: "Interface",
-          renderer: () => new InterfaceSettingsEdit(this.value.solving.info_panel)
+          name: "Map", entries: [{
+            id: "teleports",
+            name: "Teleport Customization",
+            short_name: "Teleports",
+            renderer: () => new TeleportSettingsEdit(this.value.teleport_customization)
+          }
+          ]
         }, {
-          id: "sliders",
-          name: "Slider Puzzle Solving",
-          short_name: "Sliders",
-          renderer: () => new PuzzleSettingsEdit(this.value.solving.puzzles.sliders)
-        }, {
-          id: "knots",
-          name: "Celtic Knot Solving",
-          short_name: "Knots",
-          renderer: () => new KnotSettingsEdit(this.value.solving.puzzles.knots)
-        }, {
-          id: "lockboxes",
-          name: "Lockbox Solving",
-          short_name: "Lockboxes",
-          renderer: () => new LockboxSettingsEdit(this.value.solving.puzzles.lockboxes)
-        }, {
-          id: "towers",
-          name: "Towers Solving",
-          short_name: "Towers",
-          renderer: () => new TowersSettingsEdit(this.value.solving.puzzles.towers)
-        }, {
-          id: "compass",
-          name: "Compass Solving",
-          short_name: "Compass",
-          renderer: () => new CompassSettingsEdit(this.value.solving.compass)
-        }, {
-          id: "scans",
-          name: "Scan Solving",
-          short_name: "Scans",
-          renderer: () => new ScanSettingsEdit(this.value.solving.scans)
-        }
-        ]
-      }, {
-        name: "Map", entries: [{
-          id: "teleports",
-          name: "Teleport Customization",
-          short_name: "Teleports",
-          renderer: () => new TeleportSettingsEdit(this.value.teleport_customization)
-        }
-        ]
-      }, {
-        name: "Advanced", entries: [{
-          id: "crowdsourcing",
-          name: "Crowdsourcing",
-          short_name: "Crowdsourcing",
-          renderer: () => new CrowdSourcingSettingsEdit(this.value.crowdsourcing)
-        }, {
-          id: "dataexport",
-          name: "Data Export",
-          short_name: "Data",
-          renderer: () => new DataManagementEdit()
-        }
-        ]
-      },
-    ])
-      .setActiveSection(start_section)
-      .appendTo(this)
+          name: "Advanced", entries: [{
+            id: "crowdsourcing",
+            name: "Crowdsourcing",
+            short_name: "Crowdsourcing",
+            renderer: () => new CrowdSourcingSettingsEdit(this.value.crowdsourcing)
+          }, {
+            id: "dataexport",
+            name: "Data Export",
+            short_name: "Data",
+            renderer: () => new DataManagementEdit()
+          }
+          ]
+        },
+      ])
+        .setActiveSection(start_section)
+    )
   }
 }
 
