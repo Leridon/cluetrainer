@@ -35,6 +35,8 @@ export class SectionControl<id_type extends string = string> extends Widget {
               .text(e.original.entry.name),
             e.original.entry.renderer()
           )
+
+          this.content.raw().scrollTo(0, 0)
         }
       })
     })

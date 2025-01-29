@@ -130,7 +130,7 @@ export class ScanRadiusMarker extends MapEntity {
         botright: {x: this.spot.x + (this.range + 15), y: this.spot.y - (this.range + 15)}
       }).setStyle({
         interactive: false
-      }).setStyle({color: "blue", fillOpacity: 0}).addTo(this)
+      }).setStyle({color: "#8adc13", fillOpacity: 0}).addTo(this)
     } else {
       boxPolygon({
         topleft: {x: this.spot.x - this.range, y: this.spot.y + this.range},

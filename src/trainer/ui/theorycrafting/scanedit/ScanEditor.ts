@@ -45,6 +45,7 @@ import ScanTreeNode = ScanTree.ScanTreeNode;
 import ScanRegion = ScanTree.ScanRegion;
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import ClueAssumptions = SolvingMethods.ClueAssumptions;
+import {ClueTrainerWiki} from "../../../wiki";
 
 export class ScanEditLayer extends GameLayer {
   marker: AdaptiveScanRadiusMarker
@@ -245,13 +246,7 @@ export namespace ScanEditLayer {
           type: "basic",
           text: "About complement spots",
           handler: () => {
-            (new class extends NisModal {
-              override render() {
-                super.render();
-
-                this.body.text("Sorry, this explanation is still missing.")
-              }
-            }).show()
+            ClueTrainerWiki.openOnPage("toofardifferentlevel")
           }
         })
       }

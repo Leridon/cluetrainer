@@ -340,10 +340,10 @@ export namespace ScanControlPrototype {
         if (!this.area) return
 
         if (this.is_default_action.value()) {
-          overlay.text("Auto", Vector2.add(this.area.origin, {x: this.area.size.x - 30, y: 20}), {
+          overlay.text("Auto", Vector2.add(this.area.origin, {x: this.area.size.x - 20, y: 10}), {
             color: Alt1Color.white,
             centered: true,
-            width: 12
+            width: 8
           })
         }
       }

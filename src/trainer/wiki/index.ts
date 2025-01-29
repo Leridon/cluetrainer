@@ -8,6 +8,7 @@ import {WikiPageScanEquivalenceClasses} from "./pages/scans/WikiPageScanEquivale
 import {WikiPageMethodEditing} from "./pages/WikiPageMethodEditing";
 import {WikiPageScanTreeEditing} from "./pages/WikiPageScanTreeEditing";
 import {WikiPageInteractiveOverlays} from "./pages/WikiPageInteractiveOverlay";
+import {WikiPageTooFarDifferentLevel} from "./pages/scans/WikiPageTooFarDifferentLevel";
 
 export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
   constructor() {
@@ -22,6 +23,7 @@ export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
         {id: "scans", name: "Scan Clues", renderer: () => new WikiPageScanClues()},
         {id: "scantrees", name: "Scan Trees", renderer: () => new WikiPageScanTrees()},
         {id: "scantreecontroloverlay", name: "Scan Tree Control Overlay", short_name: "Tree Control", renderer: () => new WikiPageScanTreeControlOverlay()},
+        {id: "toofardifferentlevel", name: "Try scanning a different level.", short_name: "Different Level", renderer: () => new WikiPageTooFarDifferentLevel()}
       ]
     }, {
       name: "Miscellaneous",
@@ -30,13 +32,13 @@ export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
       ]
     },
       {
-      name: "Method Creation",
-      entries: [
-        {id: "methodediting", name: "Method Editing", short_name: "General", renderer: () => new WikiPageMethodEditing()},
-        {id: "scantreeediting", name: "Creating Scan Trees", short_name: "Scan Trees", renderer: () => new WikiPageScanTreeEditing()},
-        {id: "scanequivalenceclasses", name: "Scan Tree Equivalence Classes", short_name: "Equivalence Classes", renderer: () => new WikiPageScanEquivalenceClasses()},
-      ]
-    }]);
+        name: "Method Creation",
+        entries: [
+          {id: "methodediting", name: "Method Editing", short_name: "General", renderer: () => new WikiPageMethodEditing()},
+          {id: "scantreeediting", name: "Creating Scan Trees", short_name: "Scan Trees", renderer: () => new WikiPageScanTreeEditing()},
+          {id: "scanequivalenceclasses", name: "Scan Tree Equivalence Classes", short_name: "Equivalence Classes", renderer: () => new WikiPageScanEquivalenceClasses()},
+        ]
+      }]);
   }
 }
 

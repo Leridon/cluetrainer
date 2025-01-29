@@ -181,14 +181,14 @@ class TeleportSettingsEdit extends Widget {
     this.layout.row(
       new ButtonRow()
         .buttons(
-          new LightButton("New Preset")
+          new LightButton("New Profile")
             .onClick(() => {
               const next_id = Math.max(...this.value.presets.map(p => p.id)) + 1
 
               let name: string = null
 
               for (let name_index = 1; name_index < 100; name_index++) {
-                const potential_name = `New Preset ${name_index}`
+                const potential_name = `New Profile ${name_index}`
 
                 const exists = this.value.presets.some(p => p.name == potential_name)
 
@@ -238,7 +238,7 @@ class TeleportSettingsEdit extends Widget {
                 constructor() {
                   super();
 
-                  this.title.set("Rename Teleport Preset")
+                  this.title.set("Rename Teleport Profile")
 
                   this.shown.on(() => {
                     this.input.raw().focus()

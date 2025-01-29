@@ -163,7 +163,7 @@ export default class MainTabControl extends Widget {
               placement: "right",
               hideOnClick: false
             }),
-      new MenuButton("Guide", "assets/icons/ribbon_osh.png")
+      new MenuButton("Wiki", "assets/icons/ribbon_osh.png")
         .onClick(() => ClueTrainerWiki.openOnPage()
         )
         .setActive(true)
