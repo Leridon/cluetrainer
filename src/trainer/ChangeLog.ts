@@ -43,6 +43,7 @@ export namespace Changelog {
           .item("Reduced default time allocated to solving sliders down to 0.2 seconds",
             new List().item("Existing users should consider changing this setting as well. With the new shuffle introduced in december, this is enough and allocating more time barely finds an improvement.")
           )
+          .item("Added paths for a missing part of the fremmenik isles scan.")
         )
     }
   }, {

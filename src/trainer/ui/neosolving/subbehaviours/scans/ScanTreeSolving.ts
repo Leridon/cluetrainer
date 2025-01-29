@@ -27,6 +27,7 @@ import {ScanEditLayer} from "../../../theorycrafting/scanedit/ScanEditor";
 import {ScanCaptureService, ScanPanelOverlay} from "./ScanPanelReader";
 import {ScanControlPrototype} from "./ScanInputBehaviour";
 import {ScanMinimapOverlay} from "./ScanMinimapOverlay";
+import {MinimapReader} from "../../../../../lib/alt1/readers/MinimapReader";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import activate = TileArea.activate;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
@@ -35,8 +36,6 @@ import Order = util.Order;
 import spotNumber = ScanTree.spotNumber;
 import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 import digSpotArea = Clues.digSpotArea;
-import {Alt1} from "../../../../../lib/alt1/Alt1";
-import {MinimapReader} from "../../../../../lib/alt1/readers/MinimapReader";
 
 function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): AugmentedScanTreeNode {
   function searchDown(node: AugmentedScanTreeNode): AugmentedScanTreeNode {
@@ -274,7 +273,7 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
     if (node == this.node) return
     this.node = node
 
-    this.scan_input_control.setActiveNode(node)
+    if (this.scan_input_control) this.scan_input_control.setActiveNode(node)
 
     if (node.children.some(c => c.key.pulse != 3) || node.remaining_candidates.length <= 1) this.parent.layer.scan_layer.setSpotOrder(null)
     else this.parent.layer.scan_layer.setSpotOrder(this.method.method.tree.ordered_spots)
