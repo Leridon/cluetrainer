@@ -31,6 +31,7 @@ export namespace Changelog {
           .item("Triple spots are no longer included in the zoom for scan trees by default.", new List()
             .item("This change only affects new users, and can still be toggled on in the settings. Playtesting showed that with the change before this, seeing all triple spots all the time isn't necessary anymore, so I encourage existing users to also change this setting.")
           )
+          .item("The minimap scan range overlay now uses standardized colors.")
           .item("Removed spot numbers on scans when not needed to declutter the map.")
           .item("Fixed bug that caused the map to go to the wrong floor for some scans.")
           .item("Compasses will now utilize the previous clue's solution area up to 4 chunks wide and high.")
