@@ -8,8 +8,6 @@ export abstract class Alt1Overlay extends Behaviour {
 
   private heartbeat_process: Process
 
-  private parent: Alt1Overlay | null = null
-
   protected visible = observe(true)
 
   constructor(private clear_before_render: boolean,
@@ -44,18 +42,16 @@ export abstract class Alt1Overlay extends Behaviour {
   }
 
   protected begin() {
-    if (!this.parent) {
-      const self = this
+    const self = this
 
-      this.heartbeat_process = new class extends Process.Interval {
-        constructor() {super(self.minimum_refresh_rate);}
+    this.heartbeat_process = new class extends Process.Interval {
+      constructor() {super(self.minimum_refresh_rate);}
 
-        tick(): void | Promise<void> {
-          self.overlay.render()
-        }
+      tick(): void | Promise<void> {
+        self.overlay.render()
       }
-      this.heartbeat_process.run()
     }
+    this.heartbeat_process.run()
 
     this.refresh()
   }
