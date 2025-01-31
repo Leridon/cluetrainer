@@ -118,12 +118,6 @@ export class OverlayGeometry {
     return this
   }
 
-  transform(transform: Transform): this {
-    todo()
-
-    return this
-  }
-
   private push_draw_calls(): this {
     alt1.overLaySetGroup(this.group_name)
 
