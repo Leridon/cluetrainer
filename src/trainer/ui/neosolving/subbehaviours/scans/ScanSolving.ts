@@ -3,9 +3,12 @@ import {ScanTreeSolving} from "./ScanTreeSolving";
 import {util} from "../../../../../lib/util/util";
 import {SettingsNormalization} from "../../../../../lib/util/SettingsNormalization";
 import {ScanControlPrototype} from "./ScanInputBehaviour";
+import {Alt1Color} from "../../../../../lib/alt1/Alt1Color";
+import {Scans} from "../../../../../lib/runescape/clues/scans";
 
 export namespace ScanSolving {
 
+  import SimplifiedPulseForContext = Scans.Pulse.SimplifiedPulseForContext;
   export type Simple = SimpleScanSolving
   export type ScanTree = ScanTreeSolving
 
@@ -54,5 +57,27 @@ export namespace ScanSolving {
         force_small_back_button: SettingsNormalization.bool(false),
       })
     })
+  }
+
+  export namespace PulseColors {
+    import Pulse = Scans.Pulse;
+
+    export const different_level = Alt1Color.fromHex("#8adc13")
+    export const triple = Alt1Color.fromHex("#d51918")
+    export const double = Alt1Color.fromHex("#e1a53f")
+    export const single = Alt1Color.fromHex("#0f91d3")
+
+    const pulsecolors: Alt1Color[] = [
+      different_level, // 0 is special for "different level"
+      single, double, triple
+    ]
+
+    export function forContextPulse(pulse: SimplifiedPulseForContext) {
+      return pulse.type ? pulsecolors[pulse.type] : pulsecolors[pulse.text == "DL" ? 0 : 1]
+    }
+
+    export function forPulse(pulse: Pulse) {
+      return pulsecolors[pulse.pulse]
+    }
   }
 }

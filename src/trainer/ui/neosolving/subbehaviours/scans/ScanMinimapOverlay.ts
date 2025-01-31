@@ -69,7 +69,7 @@ export class ScanMinimapOverlay extends Behaviour {
               this.minimap_overlay.polyline(
                 unit_square.map(v => Vector2.transform_point(v, transform)),
                 true, {
-                  color: Alt1Color.fromHex("#d51918")
+                  color: ScanSolving.PulseColors.triple
                 }
               )
             }
@@ -86,7 +86,7 @@ export class ScanMinimapOverlay extends Behaviour {
               this.minimap_overlay.polyline(
                 unit_square.map(v => Vector2.transform_point(v, transform2)),
                 true, {
-                  color: Alt1Color.fromHex("#e1a53f")
+                  color: ScanSolving.PulseColors.double
                 }
               )
             }

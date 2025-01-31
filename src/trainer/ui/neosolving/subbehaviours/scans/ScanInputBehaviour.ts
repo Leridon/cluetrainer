@@ -15,6 +15,7 @@ import {deps} from "../../../../dependencies";
 import {Alt1} from "../../../../../lib/alt1/Alt1";
 import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 import {ClueTrainerWiki} from "../../../../wiki";
+import {ScanSolving} from "./ScanSolving";
 
 
 export class ScanControlPrototype extends Behaviour {
@@ -314,7 +315,7 @@ export namespace ScanControlPrototype {
       constructor(public readonly pulse: Pulse) {
         super(null, {
           style: {
-            stroke: {width: 2, color: pulsecolors[pulse.pulse]},
+            stroke: {width: 2, color: ScanSolving.PulseColors.forPulse(pulse)},
             constrast: {width: 1, color: Alt1Color.black},
             font: {
               width: 12,
@@ -323,7 +324,7 @@ export namespace ScanControlPrototype {
             }
           },
           active_style: {
-            stroke: {width: 4, color: pulsecolors[pulse.pulse]},
+            stroke: {width: 4, color: ScanSolving.PulseColors.forPulse(pulse)},
           }
         });
 
@@ -376,9 +377,9 @@ export namespace ScanControlPrototype {
         if (txt) {
           if (position.size.x > 100) config.text = (txt.long)
           else config.text = (txt.short)
-        } else config.text = (null)
+        } else config.text = null
 
-        const color = this.context.type ? pulsecolors[this.context.type] : pulsecolors[this.context.text == "DL" ? 0 : 1]
+        const color = ScanSolving.PulseColors.forContextPulse(this.context)
 
         config.style.stroke.color = color
         config.active_style.stroke.color = color
@@ -391,13 +392,6 @@ export namespace ScanControlPrototype {
   const text: Record<SimplifiedPulseForContext["text"], { long: string, short: string }> = {
     DL: {long: "Different Level", short: "DL"}, TF: {long: "Too Far", short: "TF"}
   }
-
-  const pulsecolors: Alt1Color[] = [
-    Alt1Color.fromHex("#8adc13"), // 0 is special for "different level"
-    Alt1Color.fromHex("#0f91d3"),
-    Alt1Color.fromHex("#e1a53f"),
-    Alt1Color.fromHex("#d51918")
-  ]
 
   export function determineChild(node: AugmentedScanTreeNode, info: Pulse): AugmentedScanTreeNode {
     {
