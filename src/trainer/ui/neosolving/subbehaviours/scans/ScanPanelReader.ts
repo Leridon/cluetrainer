@@ -1,17 +1,16 @@
 import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken} from "../../../../../lib/alt1/capture";
 import {CapturedScan} from "../../cluereader/capture/CapturedScan";
-import {OverlayGeometry} from "../../../../../lib/alt1/OverlayGeometry";
+import {Alt1OverlayDrawCalls, OverlayGeometry} from "../../../../../lib/alt1/OverlayGeometry";
 import {Finder} from "../../../../../lib/alt1/capture/Finder";
 import {util} from "../../../../../lib/util/util";
-import AsyncInitialization = util.AsyncInitialization;
-import async_init = util.async_init;
 import Behaviour from "../../../../../lib/ui/Behaviour";
-import A1Color = util.A1Color;
 import {Vector2} from "../../../../../lib/math";
 import {EwentHandler, observe} from "../../../../../lib/reactive";
 import {Alt1Color} from "../../../../../lib/alt1/Alt1Color";
-import {Alt1ScreenCaptureService} from "../../../../../lib/alt1/capture/Alt1ScreenCaptureService";
 import {Alt1} from "../../../../../lib/alt1/Alt1";
+import {ScanSolving} from "./ScanSolving";
+import AsyncInitialization = util.AsyncInitialization;
+import async_init = util.async_init;
 
 
 export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
@@ -161,13 +160,14 @@ export class ScanPanelOverlay extends Behaviour {
     // TODO: Maybe replace 'DL' with an appropriate icon
     this.scan_interface_overlay.text("DL", Vector2.add(center, {x: -25, y: 0}), {
       centered: true,
-      color: state.different_level ? Alt1Color.fromHex("#8adc13") : Alt1Color.fromHex("#888888"),
+      color: state.different_level ? ScanSolving.PulseColors.different_level : Alt1Color.gray,
       width: 15,
     })
 
     {
-      const options: OverlayGeometry.StrokeOptions = {
-        color: state.triple ? Alt1Color.fromHex("#E00000") : Alt1Color.fromHex("#888888"),
+      const options: Alt1OverlayDrawCalls.StrokeOptions = {
+        color: state.triple ? ScanSolving.PulseColors.triple
+          : Alt1Color.gray,
         width: 2
       }
 

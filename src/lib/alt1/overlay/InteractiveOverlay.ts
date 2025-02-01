@@ -5,7 +5,7 @@ import {Circle} from "../../math/Circle";
 import {ScreenRectangle} from "../ScreenRectangle";
 import {Vector2} from "../../math";
 import * as a1lib from "alt1";
-import {OverlayGeometry} from "../OverlayGeometry";
+import {Alt1OverlayDrawCalls, OverlayGeometry} from "../OverlayGeometry";
 import {Alt1TooltipManager} from "../Alt1TooltipManager";
 
 export abstract class InteractiveOverlay extends Alt1Overlay {
@@ -85,7 +85,7 @@ export abstract class InteractiveOverlay extends Alt1Overlay {
   }
 
   refresh() {
-    if (this.isHovered() && this.tooltip && !this.active_tooltip) {
+    if (this.isHovered() && this.tooltip && !this.active_tooltip && alt1.rsActive) {
       this.active_tooltip = Alt1.instance().tooltips.setTooltip(this.tooltip)
     } else if (!this.isHovered() && this.active_tooltip) {
       this.active_tooltip.remove()
@@ -209,11 +209,11 @@ export namespace InteractiveOverlay {
   }
 
   export namespace Button {
-    import StrokeOptions = OverlayGeometry.StrokeOptions;
+    import StrokeOptions = Alt1OverlayDrawCalls.StrokeOptions;
 
     export type Style = {
       stroke?: StrokeOptions,
-      font?: OverlayGeometry.TextOptions
+      font?: Alt1OverlayDrawCalls.TextOptions
       constrast?: StrokeOptions
     }
 
