@@ -1,22 +1,21 @@
 import Behaviour from "../../../../../lib/ui/Behaviour";
 import {Vector2} from "../../../../../lib/math";
-import {OverlayGeometry} from "../../../../../lib/alt1/OverlayGeometry";
+import {Alt1OverlayDrawCalls} from "../../../../../lib/alt1/OverlayGeometry";
 import {ewent, observe} from "../../../../../lib/reactive";
 import {ScanCaptureService} from "./ScanPanelReader";
 import {Circle} from "../../../../../lib/math/Circle";
-import {Alt1Overlay} from "../../../../../lib/alt1/Alt1Overlay";
 import {ScanTree} from "../../../../../lib/cluetheory/scans/ScanTree";
 import {Scans} from "../../../../../lib/runescape/clues/scans";
 import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
 import {Alt1Color} from "../../../../../lib/alt1/Alt1Color";
-import {InteractiveOverlay} from "../../../../../lib/alt1/overlay/InteractiveOverlay";
-import * as lodash from "lodash"
+import lodash from "lodash";
 import {deps} from "../../../../dependencies";
 import {Alt1} from "../../../../../lib/alt1/Alt1";
-import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 import {ClueTrainerWiki} from "../../../../wiki";
 import {ScanSolving} from "./ScanSolving";
-
+import {Alt1Overlay} from "../../../../../lib/alt1/overlay/Alt1Overlay";
+import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
+import {Alt1OverlayButton} from "../../../../../lib/alt1/overlay/Alt1OverlayButton";
 
 export class ScanControlPrototype extends Behaviour {
   private overlay: ScanControlPrototype.Overlay
@@ -62,7 +61,7 @@ export namespace ScanControlPrototype {
     public node_selection = ewent<AugmentedScanTreeNode>()
 
     constructor(private config: Overlay.Config) {
-      super(true);
+      super();
 
       this.createButtons()
     }
@@ -83,9 +82,10 @@ export namespace ScanControlPrototype {
 
       this.pulse_buttons = all_options.map(r => r.map(p => new Overlay.PulseButton(p)))
 
-      this.pulse_buttons.flat().forEach(b => b.main_hotkey_pressed.on(() => this.node_selection.trigger(determineChild(this.node, b.pulse))))
+      this.pulse_buttons.flat().forEach(b => b
+        .interactivity().main_hotkey_pressed.on(() => this.node_selection.trigger(determineChild(this.node, b.pulse))))
 
-      this.back_button = new InteractiveOverlay.Button(
+      this.back_button = new Alt1OverlayButton(
         null, {
           style: {
             stroke: {width: 1, color: Alt1Color.white},
@@ -102,7 +102,7 @@ export namespace ScanControlPrototype {
         }
       )
 
-      this.help_button = new InteractiveOverlay.Button(
+      this.help_button = new Alt1OverlayButton(
         null, {
           text: "?",
           style: {
@@ -124,13 +124,15 @@ export namespace ScanControlPrototype {
             }
           }
         }
-      ).setTooltip("Press Alt+1 while hovering this button for an explanation.")
+      )
 
-      this.help_button.main_hotkey_pressed.on(() => {
+      this.help_button.interactivity().setTooltip("Press Alt+1 while hovering this button for an explanation.")
+
+      this.help_button.interactivity().main_hotkey_pressed.on(() => {
         ClueTrainerWiki.openOnPage("scantreecontroloverlay")
       })
 
-      this.back_button.main_hotkey_pressed.on(e => { if (this.node.parent) this.node_selection.trigger(this.node.parent.node) })
+      this.back_button.interactivity().main_hotkey_pressed.on(e => { if (this.node.parent) this.node_selection.trigger(this.node.parent.node) })
     }
 
     private pulse_buttons: Overlay.PulseButton[][] = []
@@ -154,7 +156,7 @@ export namespace ScanControlPrototype {
 
       this.updatePossible()
 
-      this.refresh()
+      this.rerender()
     }
 
     setScanPanelState(state: ScanCaptureService.ScanState) {
@@ -171,24 +173,23 @@ export namespace ScanControlPrototype {
 
       this.updatePossible()
 
-      if (meerkats_changed) this.refresh()
+      if (meerkats_changed) this.rerender()
     }
 
     private updatePossible() {
       const possibles = this.pulse_buttons.flat().filter(b => b.isRelevant() && b.isPossible())
 
-      if (possibles.length == 1) possibles[0].makeDefaultAction()
-      else InteractiveOverlay.setDefaultElement(null)
+      if (possibles.length == 1) possibles[0].interactivity().makeDefaultHotkeyHandler()
+      else Alt1Overlay.Interactivity.setDefaultMainHotkeyHandler(null)
     }
 
-    refresh() {
-      super.refresh();
-    }
+    private back_button: Alt1OverlayButton = null
+    private help_button: Alt1OverlayButton = null
 
-    private back_button: InteractiveOverlay.Button = null
-    private help_button: InteractiveOverlay.Button = null
+    override renderWithBuilder(overlay: Alt1OverlayDrawCalls.GeometryBuilder) {
 
-    renderSelf(overlay: OverlayGeometry) {
+      if (!this.node) return
+
       const UPPER_ROW_HEIGHT = 25
 
       const GUTTER = this.config.gutter
@@ -290,7 +291,7 @@ export namespace ScanControlPrototype {
     setConfig(config: Overlay.Config) {
       this.config = lodash.cloneDeep(config)
 
-      this.refresh()
+      this.rerender()
     }
   }
 
@@ -308,7 +309,7 @@ export namespace ScanControlPrototype {
       force_small_back_button: boolean,
     }
 
-    export class PulseButton extends InteractiveOverlay.Button {
+    export class PulseButton extends Alt1OverlayButton {
       private possible = observe(true)
       private relevant = observe(true)
 
@@ -335,12 +336,12 @@ export namespace ScanControlPrototype {
         this.relevant.subscribe(v => this.setVisible(v))
       }
 
-      renderSelf(overlay: OverlayGeometry) {
-        super.renderSelf(overlay);
+      renderWithBuilder(overlay: Alt1OverlayDrawCalls.GeometryBuilder) {
+        super.renderWithBuilder(overlay);
 
         if (!this.area) return
 
-        if (this.is_default_action.value()) {
+        if (this.interactivity().is_default_action.value()) {
           overlay.text("Auto", Vector2.add(this.area.origin, {x: this.area.size.x - 20, y: 10}), {
             color: Alt1Color.white,
             centered: true,

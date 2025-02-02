@@ -11,7 +11,6 @@
     "alt1": "^0.0.9",
     "assert": "^2.1.0",
     "assert-browserify": "^2.0.0",
-    "process": "^0.11.10",
     "buffer": "^6.0.3",
     "byte-base64": "^1.1.0",
     "dompurify": "^3.1.6",

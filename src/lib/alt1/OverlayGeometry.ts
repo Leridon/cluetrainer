@@ -166,6 +166,19 @@ export namespace Alt1OverlayDrawCalls {
       this.line(start, mid, {color: done_color, width: thickness})
       this.line(mid, end, {color: remaining_color, width: thickness})
     }
+
+
+    text(text: string, position: Vector2,
+         options: Alt1OverlayDrawCalls.TextOptions = Alt1OverlayDrawCalls.TextOptions.DEFAULT): this {
+      this.primitives.push({
+        type: "text",
+        text: text,
+        position: position,
+        options: options
+      })
+
+      return this
+    }
   }
 }
 

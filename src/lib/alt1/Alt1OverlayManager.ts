@@ -1,6 +1,6 @@
 import {Process} from "../Process";
 import {ewent, EwentHandler} from "../reactive";
-import {Alt1OverlayInstance} from "./overlay/Alt1OverlayInstance";
+import {Alt1Overlay} from "./overlay/Alt1Overlay";
 
 export class Alt1OverlayManager {
   private process: Process
@@ -35,7 +35,7 @@ export class Alt1OverlayManager {
     return handler
   }
 
-  create(): Alt1OverlayInstance {
-    return new Alt1OverlayInstance(this)
+  create(): Alt1Overlay {
+    return new Alt1Overlay(this)
   }
 }
