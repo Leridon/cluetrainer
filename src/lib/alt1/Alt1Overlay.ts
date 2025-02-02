@@ -4,7 +4,7 @@ import {Process} from "../Process";
 import {observe} from "../reactive";
 
 export abstract class Alt1Overlay extends Behaviour {
-  private overlay: OverlayGeometry = new OverlayGeometry()
+  private readonly overlay: OverlayGeometry = new OverlayGeometry()
 
   private heartbeat_process: Process
 
