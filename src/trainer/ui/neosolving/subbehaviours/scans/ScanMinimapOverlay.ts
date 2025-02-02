@@ -4,9 +4,8 @@ import {Observable} from "../../../../../lib/reactive";
 import {deps} from "../../../../dependencies";
 import {Transform, Vector2} from "../../../../../lib/math";
 import {ScanSolving} from "./ScanSolving";
-
 import {Alt1Overlay} from "../../../../../lib/alt1/overlay/Alt1Overlay";
-import {Alt1OverlayDrawCalls} from "../../../../../lib/alt1/OverlayGeometry";
+import {Alt1OverlayDrawCalls} from "../../../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
 
 export class ScanMinimapOverlay extends Alt1Overlay {
   private minimap_interest: AbstractCaptureService.InterestToken<AbstractCaptureService.Options, MinimapReader.CapturedMinimap>

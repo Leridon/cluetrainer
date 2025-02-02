@@ -1,6 +1,6 @@
 import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken} from "../../../../../lib/alt1/capture";
 import {CapturedScan} from "../../cluereader/capture/CapturedScan";
-import {Alt1OverlayDrawCalls, OverlayGeometry} from "../../../../../lib/alt1/OverlayGeometry";
+import {LegacyOverlayGeometry} from "../../../../../lib/alt1/LegacyOverlayGeometry";
 import {Finder} from "../../../../../lib/alt1/capture/Finder";
 import {util} from "../../../../../lib/util/util";
 import Behaviour from "../../../../../lib/ui/Behaviour";
@@ -11,11 +11,12 @@ import {Alt1} from "../../../../../lib/alt1/Alt1";
 import {ScanSolving} from "./ScanSolving";
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
+import {Alt1OverlayDrawCalls} from "../../../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
 
 
 export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
   private debug: boolean = false
-  private debug_overlay: OverlayGeometry = new OverlayGeometry()
+  private debug_overlay: LegacyOverlayGeometry = new LegacyOverlayGeometry()
 
   private capture_interest: AbstractCaptureService.InterestToken<ScanCaptureService.UpstreamOptions, CapturedImage>
   private interface_finder: Finder<CapturedScan>
@@ -134,7 +135,7 @@ export namespace ScanCaptureService {
 
 export class ScanPanelOverlay extends Behaviour {
   private scan_capture_interest: AbstractCaptureService.InterestToken<ScanCaptureService.Options, CapturedScan>
-  private scan_interface_overlay: OverlayGeometry = new OverlayGeometry()
+  private scan_interface_overlay: LegacyOverlayGeometry = new LegacyOverlayGeometry()
     .withTime(10000)
 
   private last_refresh = -1

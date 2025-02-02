@@ -1,4 +1,3 @@
-import {Alt1OverlayDrawCalls} from "../OverlayGeometry";
 import {util} from "../../util/util";
 import Behaviour from "../../ui/Behaviour";
 import {Alt1OverlayManager} from "../Alt1OverlayManager";
@@ -11,6 +10,7 @@ import {Circle} from "../../math/Circle";
 import {ScreenRectangle} from "../ScreenRectangle";
 import {Vector2} from "../../math";
 import uuid = util.uuid;
+import {Alt1OverlayDrawCalls} from "./Alt1OverlayDrawCalls";
 
 export class Alt1Overlay extends Behaviour {
   private group_name: string = uuid()

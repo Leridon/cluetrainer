@@ -1,5 +1,5 @@
 import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken, NeedleImage} from "../capture";
-import {OverlayGeometry} from "../OverlayGeometry";
+import {LegacyOverlayGeometry} from "../LegacyOverlayGeometry";
 import {util} from "../../util/util";
 import {ScreenRectangle} from "../ScreenRectangle";
 import {OCR} from "../OCR";
@@ -12,7 +12,7 @@ import {ChatAnchors} from "./chatreader/ChatAnchors";
 import {CapturedChatbox} from "./chatreader/CapturedChatbox";
 import {MessageBuffer} from "./chatreader/ChatBuffer";
 import * as lodash from "lodash";
-import over = OverlayGeometry.over;
+import over = LegacyOverlayGeometry.over;
 import log = Log.log;
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
@@ -135,7 +135,7 @@ export class ChatReader extends DerivedCaptureService {
     return null
   }
 
-  private debug_overlay: OverlayGeometry = over()
+  private debug_overlay: LegacyOverlayGeometry = over()
 
   setDebugEnabled(debug: boolean = true): this {
     this.debug_mode = debug

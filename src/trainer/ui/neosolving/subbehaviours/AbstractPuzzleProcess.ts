@@ -1,5 +1,5 @@
 import {ewent} from "../../../../lib/reactive";
-import {OverlayGeometry} from "../../../../lib/alt1/OverlayGeometry";
+import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
 import {AbstractCaptureService, CapturedImage, CaptureInterval} from "../../../../lib/alt1/capture";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
 import Behaviour from "../../../../lib/ui/Behaviour";
@@ -9,8 +9,8 @@ import {Alt1} from "../../../../lib/alt1/Alt1";
 export abstract class AbstractPuzzleProcess extends Behaviour {
   puzzle_closed = ewent<this>()
 
-  solution_overlay = new OverlayGeometry()
-  debug_overlay = new OverlayGeometry()
+  solution_overlay = new LegacyOverlayGeometry()
+  debug_overlay = new LegacyOverlayGeometry()
 
   protected start_time: number
 

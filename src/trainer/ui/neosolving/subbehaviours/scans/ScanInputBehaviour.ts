@@ -1,6 +1,5 @@
 import Behaviour from "../../../../../lib/ui/Behaviour";
 import {Vector2} from "../../../../../lib/math";
-import {Alt1OverlayDrawCalls} from "../../../../../lib/alt1/OverlayGeometry";
 import {ewent, observe} from "../../../../../lib/reactive";
 import {ScanCaptureService} from "./ScanPanelReader";
 import {Circle} from "../../../../../lib/math/Circle";
@@ -16,6 +15,7 @@ import {ScanSolving} from "./ScanSolving";
 import {Alt1Overlay} from "../../../../../lib/alt1/overlay/Alt1Overlay";
 import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 import {Alt1OverlayButton} from "../../../../../lib/alt1/overlay/Alt1OverlayButton";
+import {Alt1OverlayDrawCalls} from "../../../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
 
 export class ScanControlPrototype extends Behaviour {
   private overlay: ScanControlPrototype.Overlay

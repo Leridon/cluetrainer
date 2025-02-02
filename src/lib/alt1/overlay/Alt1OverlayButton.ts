@@ -1,8 +1,8 @@
 import {Observable, observe} from "../../reactive";
 import {ScreenRectangle} from "../ScreenRectangle";
 import {Vector2} from "../../math";
-import {Alt1OverlayDrawCalls} from "../OverlayGeometry";
 import {Alt1Overlay} from "./Alt1Overlay";
+import {Alt1OverlayDrawCalls} from "./Alt1OverlayDrawCalls";
 
 export class Alt1OverlayButton  extends Alt1Overlay {
   protected config: Observable<Alt1OverlayButton.Config>

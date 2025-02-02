@@ -1,7 +1,7 @@
 import {Sliders} from "../../../../lib/cluetheory/Sliders";
 import {Rectangle, Transform, Vector2} from "../../../../lib/math";
 import {mixColor} from "alt1";
-import {OverlayGeometry} from "../../../../lib/alt1/OverlayGeometry";
+import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
 import {SlideReader} from "../cluereader/SliderReader";
 import {deps} from "../../../dependencies";
 import * as lodash from "lodash";
@@ -30,7 +30,7 @@ import SliderPuzzle = Sliders.SliderPuzzle;
 import SliderState = Sliders.SliderState;
 import SolvingProcess = Sliders.SolvingProcess;
 import AnnotatedMoveList = Sliders.AnnotatedMoveList;
-import over = OverlayGeometry.over;
+import over = LegacyOverlayGeometry.over;
 import Move = Sliders.Move;
 import MoveList = Sliders.MoveList;
 
@@ -57,9 +57,9 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
 
   private solution: AnnotatedMoveList = null
 
-  private progress_overlay: OverlayGeometry = null
-  private solving_overlay: OverlayGeometry = null
-  private move_overlay: OverlayGeometry = null
+  private progress_overlay: LegacyOverlayGeometry = null
+  private solving_overlay: LegacyOverlayGeometry = null
+  private move_overlay: LegacyOverlayGeometry = null
 
   private last_overlay_render: number = -1
 
@@ -247,7 +247,7 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
     const overlap_prevention_map = new Array(25).fill(false)
     overlap_prevention_map[current_blank] = true
 
-    const move_overlays: OverlayGeometry[] = []
+    const move_overlays: LegacyOverlayGeometry[] = []
 
     for (let i = 0; i < moves.length; ++i) {
       const move = moves[i]

@@ -2,7 +2,7 @@ import {Compasses} from "../../../../lib/cluetheory/Compasses";
 import {mixColor} from "alt1";
 import {angleDifference, circularMean, degreesToRadians, normalizeAngle, radiansToDegrees, Rectangle, Vector2} from "../../../../lib/math";
 import * as lodash from "lodash";
-import {OverlayGeometry} from "../../../../lib/alt1/OverlayGeometry";
+import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
 import {CapturedCompass} from "./capture/CapturedCompass";
 import {lazy, Lazy} from "../../../../lib/Lazy";
 import {NisModal} from "../../../../lib/ui/NisModal";
@@ -423,7 +423,7 @@ export namespace CompassReader {
     | { type: "likely_concealed", details: string }
     | { type: "likely_solved" }
 
-  export const debug_overlay = new OverlayGeometry()
+  export const debug_overlay = new LegacyOverlayGeometry()
 
   export const calibration_tables = {
     "off": AngularKeyframeFunction.fromCalibrationSamples([
@@ -971,7 +971,7 @@ export namespace CompassReader {
       })
     }
 
-    private overlay: OverlayGeometry = new OverlayGeometry()
+    private overlay: LegacyOverlayGeometry = new LegacyOverlayGeometry()
 
     private tick_counter = 0
     private last_ticks: Record<AngleResult["type"], number> = {

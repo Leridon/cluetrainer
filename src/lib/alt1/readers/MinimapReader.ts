@@ -1,12 +1,12 @@
 import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken, NeedleImage} from "../capture";
 import {async_lazy, lazy} from "../../Lazy";
-import {OverlayGeometry} from "../OverlayGeometry";
+import {LegacyOverlayGeometry} from "../LegacyOverlayGeometry";
 import {degreesToRadians, normalizeAngle, Vector2} from "../../math";
 import {ScreenRectangle} from "../ScreenRectangle";
 import * as lodash from "lodash";
 import {Log} from "../../util/Log";
 import {Finder} from "../capture/Finder";
-import over = OverlayGeometry.over;
+import over = LegacyOverlayGeometry.over;
 import log = Log.log;
 import {Alt1ScreenCaptureService} from "../capture/Alt1ScreenCaptureService";
 import {Alt1} from "../Alt1";
@@ -129,7 +129,7 @@ export namespace MinimapReader {
       }).setName("Map")
     }
 
-    debugOverlay(overlay: OverlayGeometry = new OverlayGeometry()): OverlayGeometry {
+    debugOverlay(overlay: LegacyOverlayGeometry = new LegacyOverlayGeometry()): LegacyOverlayGeometry {
       this.body.debugOverlay(overlay)
       this.compass.debugOverlay(overlay)
       this.energy.debugOverlay(overlay)

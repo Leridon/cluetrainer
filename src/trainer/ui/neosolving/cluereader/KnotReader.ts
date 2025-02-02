@@ -1,7 +1,7 @@
 import {CelticKnots} from "../../../../lib/cluetheory/CelticKnots";
 import {Rectangle, Vector2} from "../../../../lib/math";
 import {util} from "../../../../lib/util/util";
-import {OverlayGeometry} from "../../../../lib/alt1/OverlayGeometry";
+import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
 import {ImageDetect, mixColor} from "alt1";
 import {ImageFingerprint} from "../../../../lib/util/ImageFingerprint";
 import * as lodash from "lodash";
@@ -206,7 +206,7 @@ export namespace KnotReader {
     }[]
   }
 
-  let overlay: OverlayGeometry = new OverlayGeometry().withTime(2000)
+  let overlay: LegacyOverlayGeometry = new LegacyOverlayGeometry().withTime(2000)
 
   type Tile = {
     pos: Vector2,
