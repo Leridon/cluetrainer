@@ -39,4 +39,7 @@ export namespace Alt1Color {
   export const red = Alt1Color.fromHex("#FF0000")
   export const green = Alt1Color.fromHex("#00FF00")
   export const blue = Alt1Color.fromHex("#0000FF")
+  export const yellow = Alt1Color.fromHex("#FFFF00")
+  export const magenta = Alt1Color.fromHex("#FF00FF")
+  export const cyan = Alt1Color.fromHex("#00FFFF")
 }

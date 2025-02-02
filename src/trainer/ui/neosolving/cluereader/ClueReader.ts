@@ -11,7 +11,7 @@ import {Notification} from "../../NotificationBar";
 import {CompassReader} from "./CompassReader";
 import {KnotReader} from "./KnotReader";
 import {CapturedImage} from "../../../../lib/alt1/capture";
-import {OverlayGeometry} from "../../../../lib/alt1/OverlayGeometry";
+import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
 import {Sliders} from "../../../../lib/cluetheory/Sliders";
 import {LockBoxReader} from "./LockBoxReader";
 import {CapturedModal} from "./capture/CapturedModal";
@@ -35,7 +35,7 @@ import AsyncInitialization = util.AsyncInitialization;
 
 const CLUEREADERDEBUG = false
 
-let CLUEREADER_DEBUG_OVERLAY: OverlayGeometry = null
+let CLUEREADER_DEBUG_OVERLAY: LegacyOverlayGeometry = null
 
 export class ClueReader {
 
@@ -72,7 +72,7 @@ export class ClueReader {
     const readers = this.initialization.get()
 
     if (CLUEREADERDEBUG) {
-      if (!CLUEREADER_DEBUG_OVERLAY) CLUEREADER_DEBUG_OVERLAY = new OverlayGeometry().withTime(5000)
+      if (!CLUEREADER_DEBUG_OVERLAY) CLUEREADER_DEBUG_OVERLAY = new LegacyOverlayGeometry().withTime(5000)
 
       CLUEREADER_DEBUG_OVERLAY.clear()
     }

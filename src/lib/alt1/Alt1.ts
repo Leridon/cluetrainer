@@ -6,6 +6,7 @@ import * as a1lib from "alt1"
 import {Vector2} from "../math";
 import {Alt1TooltipManager} from "./Alt1TooltipManager";
 import {Alt1ScreenCaptureService} from "./capture/Alt1ScreenCaptureService";
+import {Alt1OverlayManager} from "./Alt1OverlayManager";
 
 export class Alt1 {
   public readonly mouse_tracking = new Alt1MouseTracking()
@@ -13,6 +14,7 @@ export class Alt1 {
   public readonly context_menu = new Alt1ContextMenuDetection()
   public readonly tooltips = new Alt1TooltipManager()
   public readonly capturing = new Alt1ScreenCaptureService()
+  public readonly overlays = new Alt1OverlayManager()
 
   private static _instance = lazy(() => new Alt1())
 

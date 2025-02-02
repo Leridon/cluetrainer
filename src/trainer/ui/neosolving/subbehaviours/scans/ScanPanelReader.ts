@@ -1,22 +1,22 @@
 import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken} from "../../../../../lib/alt1/capture";
 import {CapturedScan} from "../../cluereader/capture/CapturedScan";
-import {OverlayGeometry} from "../../../../../lib/alt1/OverlayGeometry";
+import {LegacyOverlayGeometry} from "../../../../../lib/alt1/LegacyOverlayGeometry";
 import {Finder} from "../../../../../lib/alt1/capture/Finder";
 import {util} from "../../../../../lib/util/util";
-import AsyncInitialization = util.AsyncInitialization;
-import async_init = util.async_init;
 import Behaviour from "../../../../../lib/ui/Behaviour";
-import A1Color = util.A1Color;
 import {Vector2} from "../../../../../lib/math";
 import {EwentHandler, observe} from "../../../../../lib/reactive";
 import {Alt1Color} from "../../../../../lib/alt1/Alt1Color";
-import {Alt1ScreenCaptureService} from "../../../../../lib/alt1/capture/Alt1ScreenCaptureService";
 import {Alt1} from "../../../../../lib/alt1/Alt1";
+import {ScanSolving} from "./ScanSolving";
+import AsyncInitialization = util.AsyncInitialization;
+import async_init = util.async_init;
+import {Alt1OverlayDrawCalls} from "../../../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
 
 
 export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
   private debug: boolean = false
-  private debug_overlay: OverlayGeometry = new OverlayGeometry()
+  private debug_overlay: LegacyOverlayGeometry = new LegacyOverlayGeometry()
 
   private capture_interest: AbstractCaptureService.InterestToken<ScanCaptureService.UpstreamOptions, CapturedImage>
   private interface_finder: Finder<CapturedScan>
@@ -135,7 +135,7 @@ export namespace ScanCaptureService {
 
 export class ScanPanelOverlay extends Behaviour {
   private scan_capture_interest: AbstractCaptureService.InterestToken<ScanCaptureService.Options, CapturedScan>
-  private scan_interface_overlay: OverlayGeometry = new OverlayGeometry()
+  private scan_interface_overlay: LegacyOverlayGeometry = new LegacyOverlayGeometry()
     .withTime(10000)
 
   private last_refresh = -1
@@ -161,13 +161,14 @@ export class ScanPanelOverlay extends Behaviour {
     // TODO: Maybe replace 'DL' with an appropriate icon
     this.scan_interface_overlay.text("DL", Vector2.add(center, {x: -25, y: 0}), {
       centered: true,
-      color: state.different_level ? Alt1Color.fromHex("#8adc13") : Alt1Color.fromHex("#888888"),
+      color: state.different_level ? ScanSolving.PulseColors.different_level : Alt1Color.gray,
       width: 15,
     })
 
     {
-      const options: OverlayGeometry.StrokeOptions = {
-        color: state.triple ? Alt1Color.fromHex("#E00000") : Alt1Color.fromHex("#888888"),
+      const options: Alt1OverlayDrawCalls.StrokeOptions = {
+        color: state.triple ? ScanSolving.PulseColors.triple
+          : Alt1Color.gray,
         width: 2
       }
 

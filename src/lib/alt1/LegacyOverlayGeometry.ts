@@ -1,21 +1,20 @@
-import {Rectangle, Transform, Vector2} from "../math";
+import {Rectangle, Vector2} from "../math";
 import {util} from "../util/util";
-import {mixColor} from "alt1";
 import * as lodash from "lodash";
 import {ScreenRectangle} from "./ScreenRectangle";
-import todo = util.todo;
-import uuid = util.uuid;
 import {Circle} from "../math/Circle";
 import {Alt1Color} from "./Alt1Color";
+import uuid = util.uuid;
+import { Alt1OverlayDrawCalls } from "./overlay/Alt1OverlayDrawCalls";
 
-export class OverlayGeometry {
+export class LegacyOverlayGeometry {
   private is_frozen = false
 
   private group_name: string = null
 
   private alive_time: number = 10000
 
-  private geometry: OverlayGeometry.Geometry[] = []
+  private primitives: Alt1OverlayDrawCalls.Primitive[] = []
 
   setGroupName(name: string): void {
     this.group_name = name
@@ -26,24 +25,24 @@ export class OverlayGeometry {
     return this
   }
 
-  rect(rect: Rectangle, options: OverlayGeometry.StrokeOptions = OverlayGeometry.StrokeOptions.DEFAULT): this {
-    this.geometry.push({type: "rect", rect: rect, options: options})
+  rect(rect: Rectangle, options: Alt1OverlayDrawCalls.StrokeOptions = Alt1OverlayDrawCalls.StrokeOptions.DEFAULT): this {
+    this.primitives.push({type: "rect", rect: rect, options: options})
     return this
   }
 
-  rect2(rect: ScreenRectangle, options: OverlayGeometry.StrokeOptions = OverlayGeometry.StrokeOptions.DEFAULT): this {
-    this.geometry.push({type: "rect", rect: ScreenRectangle.toRectangle(rect), options: options})
+  rect2(rect: ScreenRectangle, options: Alt1OverlayDrawCalls.StrokeOptions = Alt1OverlayDrawCalls.StrokeOptions.DEFAULT): this {
+    this.primitives.push({type: "rect", rect: ScreenRectangle.toRectangle(rect), options: options})
     return this
   }
 
-  line(from: Vector2, to: Vector2, options: OverlayGeometry.StrokeOptions = OverlayGeometry.StrokeOptions.DEFAULT) {
-    this.geometry.push({type: "line", from: from, to: to, options: options})
+  line(from: Vector2, to: Vector2, options: Alt1OverlayDrawCalls.StrokeOptions = Alt1OverlayDrawCalls.StrokeOptions.DEFAULT) {
+    this.primitives.push({type: "line", from: from, to: to, options: options})
     return this
   }
 
   polyline(points: Vector2[],
            close: boolean = false,
-           stroke: OverlayGeometry.StrokeOptions = OverlayGeometry.StrokeOptions.DEFAULT): this {
+           stroke: Alt1OverlayDrawCalls.StrokeOptions = Alt1OverlayDrawCalls.StrokeOptions.DEFAULT): this {
     for (let i = 0; i < points.length; i++) {
       const next = (i + 1) % points.length
 
@@ -64,7 +63,7 @@ export class OverlayGeometry {
   }
 
   circle(circle: Circle, resolution: number = 8,
-         stroke: OverlayGeometry.StrokeOptions = OverlayGeometry.StrokeOptions.DEFAULT): this {
+         stroke: Alt1OverlayDrawCalls.StrokeOptions = Alt1OverlayDrawCalls.StrokeOptions.DEFAULT): this {
 
     const points: Vector2[] = []
 
@@ -99,8 +98,8 @@ export class OverlayGeometry {
   }
 
   text(text: string, position: Vector2,
-       options: OverlayGeometry.TextOptions = OverlayGeometry.TextOptions.DEFAULT): this {
-    this.geometry.push({
+       options: Alt1OverlayDrawCalls.TextOptions = Alt1OverlayDrawCalls.TextOptions.DEFAULT): this {
+    this.primitives.push({
       type: "text",
       text: text,
       position: position,
@@ -110,16 +109,10 @@ export class OverlayGeometry {
     return this
   }
 
-  add(...other: OverlayGeometry[]): this {
+  add(...other: LegacyOverlayGeometry[]): this {
     other.forEach(other => {
-      this.geometry.push(...other.geometry)
+      this.primitives.push(...other.primitives)
     })
-
-    return this
-  }
-
-  transform(transform: Transform): this {
-    todo()
 
     return this
   }
@@ -127,7 +120,7 @@ export class OverlayGeometry {
   private push_draw_calls(): this {
     alt1.overLaySetGroup(this.group_name)
 
-    for (let element of this.geometry) {
+    for (let element of this.primitives) {
       switch (element.type) {
         case "rect":
           const origin = Rectangle.screenOrigin(element.rect)
@@ -178,7 +171,7 @@ export class OverlayGeometry {
   }
 
   clear(): this {
-    this.geometry = []
+    this.primitives = []
 
     return this
   }
@@ -207,65 +200,8 @@ export class OverlayGeometry {
   }
 }
 
-export namespace OverlayGeometry {
-  export type Geometry = {
-    type: "line",
-    from: Vector2,
-    to: Vector2,
-    options: StrokeOptions
-  } | {
-    type: "rect",
-    rect: Rectangle,
-    options: StrokeOptions
-  } | {
-    type: "text",
-    text: string,
-    position: Vector2,
-    options: TextOptions,
-  }
-
-  export namespace Geometry {
-    export function transform(geometry: Geometry, trans: Transform): Geometry {
-      switch (geometry.type) {
-        case "rect":
-          return {
-            type: "rect",
-            rect: Rectangle.transform(geometry.rect, trans),
-            options: geometry.options
-          }
-        case "line":
-          break;
-      }
-    }
-  }
-
-  export type StrokeOptions = {
-    color: Alt1Color,
-    width?: number
-  }
-
-  export namespace StrokeOptions {
-    export const DEFAULT: StrokeOptions = {
-      width: 2,
-      color: Alt1Color.red
-    }
-  }
-
-  export type TextOptions = StrokeOptions & {
-    centered?: boolean,
-    shadow?: boolean
-  }
-
-  export namespace TextOptions {
-    export const DEFAULT: TextOptions = {
-      width: 20,
-      color: Alt1Color.red,
-      centered: true,
-      shadow: true
-    }
-  }
-
-  export function over(): OverlayGeometry {
-    return new OverlayGeometry()
+export namespace LegacyOverlayGeometry {
+  export function over(): LegacyOverlayGeometry {
+    return new LegacyOverlayGeometry()
   }
 }

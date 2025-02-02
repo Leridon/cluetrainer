@@ -1,5 +1,5 @@
 import {CapturedImage} from "../../../../lib/alt1/capture";
-import {OverlayGeometry} from "../../../../lib/alt1/OverlayGeometry";
+import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
 import {Lockboxes} from "../../../../lib/cluetheory/Lockboxes";
 import {ImageFingerprint} from "../../../../lib/util/ImageFingerprint";
 import {ImageDetect} from "alt1";
@@ -78,7 +78,7 @@ export namespace LockBoxReader {
 
   export class CapturedLockbox {
 
-    private debug_overlay: OverlayGeometry
+    private debug_overlay: LegacyOverlayGeometry
 
     tile_area: CapturedImage
 
@@ -170,7 +170,7 @@ export namespace LockBoxReader {
 
     showDebugOverlay() {
       if (!this.debug_overlay) {
-        this.debug_overlay = new OverlayGeometry()
+        this.debug_overlay = new LegacyOverlayGeometry()
       }
 
       this.debug_overlay.clear()
