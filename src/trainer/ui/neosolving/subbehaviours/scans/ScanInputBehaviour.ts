@@ -24,9 +24,11 @@ export class ScanControlPrototype extends Behaviour {
     private panel_reader: ScanCaptureService) {
     super();
 
-    this.overlay = this.withSub(new ScanControlPrototype.Overlay(deps().app.settings.settings.solving.scans.input_control_configuration))
+    if (deps().app.settings.settings.solving.scans.input_control_enabled) {
+      this.overlay = this.withSub(new ScanControlPrototype.Overlay(deps().app.settings.settings.solving.scans.input_control_configuration))
 
-    panel_reader.onStateChange(s => this.overlay.setScanPanelState(s))
+      panel_reader.onStateChange(s => this.overlay.setScanPanelState(s))
+    }
 
     this.overlay.setScanPanelState(this.panel_reader.getState())
   }
@@ -92,12 +94,17 @@ export namespace ScanControlPrototype {
             constrast: {width: 1, color: Alt1Color.black},
             font: {
               width: 16,
-              color: Alt1Color.fromHex("#FFFFFF"),
+              color: Alt1Color.white,
               centered: true
             }
           },
           active_style: {
             stroke: {width: 2, color: Alt1Color.white},
+            font: {
+              width: 18,
+              color: Alt1Color.white,
+              centered: true
+            }
           }
         }
       )
@@ -110,7 +117,7 @@ export namespace ScanControlPrototype {
             constrast: {width: 1, color: Alt1Color.black},
             font: {
               width: 14,
-              color: Alt1Color.fromHex("#FFFFFF"),
+              color: Alt1Color.white,
               centered: true
             }
           },
@@ -119,7 +126,7 @@ export namespace ScanControlPrototype {
             constrast: {width: 1, color: Alt1Color.black},
             font: {
               width: 18,
-              color: Alt1Color.fromHex("#FFFFFF"),
+              color: Alt1Color.white,
               centered: true
             }
           }

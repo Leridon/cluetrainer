@@ -463,15 +463,17 @@ class ScanSettingsEdit extends Widget {
 
     if (Alt1.exists()) {
       this.layout.setting(new Checkbox(hbox("Show interactive control overlay", spacer(), new LightButton("Configure")
-        .onClick(async () => {
-          const result = await new ScanInputOverlayConfigModal(this.value.input_control_configuration)
-            .do()
+          .onClick(async () => {
+            const result = await new ScanInputOverlayConfigModal(this.value.input_control_configuration)
+              .do()
 
-          if (result) {
-            this.value.input_control_configuration = result
-          }
-        }))
-      ))
+            if (result) {
+              this.value.input_control_configuration = result
+            }
+          }))
+        ).setValue(this.value.input_control_enabled)
+          .onCommit(v => this.value.input_control_enabled = v),
+      )
     }
   }
 }

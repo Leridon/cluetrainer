@@ -26,6 +26,7 @@ export namespace ScanSolving {
 
     select_floor_based_on_previous_solution: boolean
 
+    input_control_enabled: boolean
     input_control_configuration: ScanControlPrototype.Overlay.Config
   }
 
@@ -42,6 +43,7 @@ export namespace ScanSolving {
       zoom_behaviour_include_doubles: SettingsNormalization.bool(false),
       zoom_behaviour_include_singles: SettingsNormalization.bool(false),
       select_floor_based_on_previous_solution: SettingsNormalization.bool(true),
+      input_control_enabled: SettingsNormalization.bool(true),
       input_control_configuration: SettingsNormalization.normaliz<ScanControlPrototype.Overlay.Config>({
         position: SettingsNormalization.normaliz({
           x: compose(SettingsNormalization.number(0), SettingsNormalization.clamp(-2000, 2000)),

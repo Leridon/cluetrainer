@@ -30,6 +30,7 @@ import {ScanMinimapOverlay} from "./ScanMinimapOverlay";
 import {MinimapReader} from "../../../../../lib/alt1/readers/MinimapReader";
 import {ClueTrainerWiki} from "../../../../wiki";
 import {SettingsModal} from "../../../settings/SettingsEdit";
+import {deps} from "../../../../dependencies";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import activate = TileArea.activate;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
@@ -114,9 +115,12 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
 
       this.scan_panel_capture_service = new ScanCaptureService(this.original_interface_capture)
       this.scan_panel_overlay = this.withSub(new ScanPanelOverlay(this.scan_panel_capture_service))
-      this.scan_input_control = this.withSub(new ScanControlPrototype(this.scan_panel_capture_service))
 
-      this.scan_input_control.onNodeSelection(node => this.setNode(node))
+      if (deps().app.settings.settings.solving.scans.input_control_enabled) {
+        this.scan_input_control = this.withSub(new ScanControlPrototype(this.scan_panel_capture_service))
+
+        this.scan_input_control.onNodeSelection(node => this.setNode(node))
+      }
     }
   }
 
@@ -237,7 +241,7 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
         inlineimg("assets/icons/info_nis.png").css("height", "1em").css("margin-top", "2px").addClass("ctr-clickable")
           .on("click", () => ClueTrainerWiki.openOnPage("scantrees"))
           .tooltip("Learn more about scan trees."),
-        inlineimg("assets/icons/settings.png").addClass("ctr-clickable")
+        inlineimg("assets/icons/settings.png").addClass("ctr-clickable").css("height", "1em").css("margin-top", "2px").addClass("ctr-clickable")
           .on("click", async () => await new SettingsModal("scans").do()),
       )
 

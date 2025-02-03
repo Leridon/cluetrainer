@@ -13,7 +13,6 @@ import {Alt1Overlay} from "../../../../../lib/alt1/overlay/Alt1Overlay";
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
 
-
 export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
   private debug: boolean = false
   private debug_overlay: LegacyOverlayGeometry = new LegacyOverlayGeometry()
@@ -187,6 +186,8 @@ export class ScanPanelOverlay extends Alt1Overlay {
   }
 
   protected begin() {
+    super.begin()
+
     this.lifetime_manager.bind(
       this.scan_capture_interest = this.service.subscribe({
         options: () => ({interval: CaptureInterval.fromApproximateInterval(100)}),
