@@ -482,6 +482,7 @@ class ScanInputOverlayConfigModal extends FormModal<ScanControlPrototype.Overlay
   private value: Observable<ScanControlPrototype.Overlay.Config>
 
   private overlay: ScanControlPrototype.Overlay
+  private restored_visibility: boolean = undefined
 
   constructor(value: ScanControlPrototype.Overlay.Config) {
     super({size: "small"});
@@ -497,7 +498,11 @@ class ScanInputOverlayConfigModal extends FormModal<ScanControlPrototype.Overlay
     this.shown.on(() => {
       this.overlay = ScanControlPrototype.Overlay.getActive()
 
-      if (!this.overlay) {
+      if (this.overlay) {
+        this.restored_visibility = this.overlay.isVisible()
+
+        this.overlay?.setVisible(true)
+      } else {
         this.lifetime_manager.bind(
           this.overlay = new ScanControlPrototype.Overlay(this.value.value())
         )
@@ -515,6 +520,12 @@ class ScanInputOverlayConfigModal extends FormModal<ScanControlPrototype.Overlay
       }
 
       this.overlay.setConfig(this.value.value())
+    })
+
+    this.hidden.on(() => {
+      if (this.restored_visibility != undefined) {
+        this.overlay.setVisible(this.restored_visibility)
+      }
     })
   }
 

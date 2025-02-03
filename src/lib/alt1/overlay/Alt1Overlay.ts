@@ -9,20 +9,27 @@ import {lazy} from "../../Lazy";
 import {Circle} from "../../math/Circle";
 import {ScreenRectangle} from "../ScreenRectangle";
 import {Vector2} from "../../math";
-import uuid = util.uuid;
 import {Alt1OverlayDrawCalls} from "./Alt1OverlayDrawCalls";
+import {Log} from "../../util/Log";
+import uuid = util.uuid;
+import log = Log.log;
 
 export class Alt1Overlay extends Behaviour {
+  private parent: Alt1Overlay | null = null
+
   private group_name: string = uuid()
   private is_frozen = false
   private visible = observe(true)
+
+  private is_actually_visible = observe(true)
 
   private overlay: Alt1OverlayDrawCalls.Buffer = new Alt1OverlayDrawCalls.Buffer([])
 
   constructor(private heartbeater: Alt1OverlayManager = Alt1.instance().overlays) {
     super();
 
-    this.visible.subscribe(() => this.refresh())
+    this.visible.subscribe(() => this.refreshVisibility())
+    this.is_actually_visible.subscribe(() => this.refresh())
   }
 
   private readonly _interactivity = lazy(() => {
@@ -54,12 +61,10 @@ export class Alt1Overlay extends Behaviour {
       this._interactivity.get().refreshTooltip()
     }
 
-    const visible = this.visible.value()
-
     this.freeze()
     alt1.overLayClearGroup(this.group_name)
 
-    if (visible) {
+    if (this.isVisible()) {
       alt1.overLaySetGroup(this.group_name)
       this.overlay.playback()
       alt1.overLaySetGroup("")
@@ -106,11 +111,32 @@ export class Alt1Overlay extends Behaviour {
   }
 
   public isVisible(): boolean {
-    return this.visible.value()
+    return this.is_actually_visible.value()
   }
 
   setVisible(v: boolean): this {
     this.visible.set(v)
+
+    return this
+  }
+
+  private refreshVisibility() {
+    this.is_actually_visible.set(this.visible.value() && (this.parent == null || this.parent.isVisible()))
+  }
+
+  public addTo(parent: Alt1Overlay): this {
+    if (this.parent != null) {
+      log().log("ERROR: Overlay already has a parent.", "Overlays")
+      return this
+    }
+
+    this.parent = parent
+
+    this.parent.is_actually_visible.subscribe(() => this.refreshVisibility())
+
+    this.refreshVisibility()
+
+    parent.withSub(this)
 
     return this
   }

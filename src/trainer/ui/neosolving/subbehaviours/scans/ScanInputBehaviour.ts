@@ -1,4 +1,3 @@
-import Behaviour from "../../../../../lib/ui/Behaviour";
 import {Vector2} from "../../../../../lib/math";
 import {ewent, observe} from "../../../../../lib/reactive";
 import {ScanCaptureService} from "./ScanPanelReader";
@@ -15,26 +14,31 @@ import {ScanSolving} from "./ScanSolving";
 import {Alt1Overlay} from "../../../../../lib/alt1/overlay/Alt1Overlay";
 import {Alt1OverlayButton} from "../../../../../lib/alt1/overlay/Alt1OverlayButton";
 import {Alt1OverlayDrawCalls} from "../../../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
+import Behaviour from "../../../../../lib/ui/Behaviour";
 import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 
 export class ScanControlPrototype extends Behaviour {
-  private overlay: ScanControlPrototype.Overlay
+  private actual_overlay: ScanControlPrototype.Overlay
 
   constructor(
     private panel_reader: ScanCaptureService) {
     super();
 
-    if (deps().app.settings.settings.solving.scans.input_control_enabled) {
-      this.overlay = this.withSub(new ScanControlPrototype.Overlay(deps().app.settings.settings.solving.scans.input_control_configuration))
+    this.actual_overlay = this.withSub(new ScanControlPrototype.Overlay(deps().app.settings.settings.solving.scans.input_control_configuration)
+      .setVisible(deps().app.settings.settings.solving.scans.input_control_enabled)
+    )
 
-      panel_reader.onStateChange(s => this.overlay.setScanPanelState(s))
-    }
+    panel_reader.onStateChange(s => this.actual_overlay.setScanPanelState(s))
 
-    this.overlay.setScanPanelState(this.panel_reader.getState())
+    this.actual_overlay.setScanPanelState(this.panel_reader.getState())
   }
 
   setActiveNode(node: AugmentedScanTreeNode) {
-    this.overlay.setNode(node)
+    this.actual_overlay.setNode(node)
+  }
+
+  onNodeSelection(f: (_: AugmentedScanTreeNode) => void) {
+    this.actual_overlay.node_selection.on(f)
   }
 
   protected begin() {
@@ -43,8 +47,8 @@ export class ScanControlPrototype extends Behaviour {
   protected end() {
   }
 
-  onNodeSelection(f: (_: AugmentedScanTreeNode) => void) {
-    this.overlay.node_selection.on(f)
+  refreshVisibility() {
+    this.actual_overlay.setVisible(deps().app.settings.settings.solving.scans.input_control_enabled)
   }
 }
 
@@ -82,7 +86,7 @@ export namespace ScanControlPrototype {
         ]
       ]
 
-      this.pulse_buttons = all_options.map(r => r.map(p => new Overlay.PulseButton(p)))
+      this.pulse_buttons = all_options.map(r => r.map(p => new Overlay.PulseButton(p).addTo(this)))
 
       this.pulse_buttons.flat().forEach(b => b
         .interactivity().main_hotkey_pressed.on(() => this.node_selection.trigger(determineChild(this.node, b.pulse))))
@@ -107,7 +111,7 @@ export namespace ScanControlPrototype {
             }
           }
         }
-      )
+      ).addTo(this)
 
       this.help_button = new Alt1OverlayButton(
         null, {
@@ -131,7 +135,7 @@ export namespace ScanControlPrototype {
             }
           }
         }
-      )
+      ).addTo(this)
 
       this.help_button.interactivity().setTooltip("Press Alt+1 while hovering this button for an explanation.")
 
@@ -145,10 +149,6 @@ export namespace ScanControlPrototype {
     private pulse_buttons: Overlay.PulseButton[][] = []
 
     protected begin() {
-      this.pulse_buttons.flat().map(b => b.start())
-      this.back_button.start()
-      this.help_button.start()
-
       super.begin();
 
       Overlay.registerActive(this)
@@ -287,14 +287,6 @@ export namespace ScanControlPrototype {
           option.setPositionAndContext(rect, context)
         })
       })
-    }
-
-    protected end() {
-      super.end();
-
-      this.back_button.stop()
-      this.help_button.stop()
-      this.pulse_buttons.flat().forEach(b => b.stop())
     }
 
     setConfig(config: Overlay.Config) {
