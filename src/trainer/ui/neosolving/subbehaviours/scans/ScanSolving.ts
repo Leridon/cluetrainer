@@ -48,8 +48,8 @@ export namespace ScanSolving {
           y: compose(SettingsNormalization.number(0), SettingsNormalization.clamp(0, 2000))
         }),
         size: SettingsNormalization.normaliz({
-          x: compose(SettingsNormalization.number(500), SettingsNormalization.clamp(160, 1000)),
-          y: compose(SettingsNormalization.number(250), SettingsNormalization.clamp(100, 1000))
+          x: compose(SettingsNormalization.number(160), SettingsNormalization.clamp(160, 1000)),
+          y: compose(SettingsNormalization.number(100), SettingsNormalization.clamp(100, 1000))
         }),
         gutter: compose(SettingsNormalization.number(5), SettingsNormalization.clamp(1, 20)),
         warn_for_meerkats: SettingsNormalization.bool(true),

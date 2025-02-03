@@ -29,6 +29,7 @@ import {ScanControlPrototype} from "./ScanInputBehaviour";
 import {ScanMinimapOverlay} from "./ScanMinimapOverlay";
 import {MinimapReader} from "../../../../../lib/alt1/readers/MinimapReader";
 import {ClueTrainerWiki} from "../../../../wiki";
+import {SettingsModal} from "../../../settings/SettingsEdit";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import activate = TileArea.activate;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
@@ -235,6 +236,9 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
         spacer(),
         inlineimg("assets/icons/info_nis.png").css("height", "1em").css("margin-top", "2px").addClass("ctr-clickable")
           .on("click", () => ClueTrainerWiki.openOnPage("scantrees"))
+          .tooltip("Learn more about scan trees."),
+        inlineimg("assets/icons/settings.png").addClass("ctr-clickable")
+          .on("click", async () => await new SettingsModal("scans").do()),
       )
 
       const last = list.container.children().last()

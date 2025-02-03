@@ -13,9 +13,9 @@ import {Alt1} from "../../../../../lib/alt1/Alt1";
 import {ClueTrainerWiki} from "../../../../wiki";
 import {ScanSolving} from "./ScanSolving";
 import {Alt1Overlay} from "../../../../../lib/alt1/overlay/Alt1Overlay";
-import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 import {Alt1OverlayButton} from "../../../../../lib/alt1/overlay/Alt1OverlayButton";
 import {Alt1OverlayDrawCalls} from "../../../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
+import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 
 export class ScanControlPrototype extends Behaviour {
   private overlay: ScanControlPrototype.Overlay
@@ -143,6 +143,8 @@ export namespace ScanControlPrototype {
       this.help_button.start()
 
       super.begin();
+
+      Overlay.registerActive(this)
     }
 
     setNode(node: AugmentedScanTreeNode): void {
@@ -296,6 +298,17 @@ export namespace ScanControlPrototype {
   }
 
   export namespace Overlay {
+    let active_overlay: Overlay = null
+
+    export function registerActive(overlay: Overlay) {
+      active_overlay = overlay
+    }
+
+    export function getActive(): Overlay {
+      if (active_overlay?.isActive()) return active_overlay
+
+      return null
+    }
 
     import simplify_with_context = Scans.Pulse.simplify_with_context;
     import SimplifiedPulseForContext = Scans.Pulse.SimplifiedPulseForContext;

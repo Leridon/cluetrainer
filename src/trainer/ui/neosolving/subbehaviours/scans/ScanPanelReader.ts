@@ -144,7 +144,6 @@ export class ScanPanelOverlay extends Alt1Overlay {
     super();
   }
 
-
   protected override renderWithBuilder(builder: Alt1OverlayDrawCalls.GeometryBuilder) {
     const scaninterface = this.service.lastValidInterface()
 

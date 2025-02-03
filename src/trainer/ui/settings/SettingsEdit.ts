@@ -493,20 +493,26 @@ class ScanInputOverlayConfigModal extends FormModal<ScanControlPrototype.Overlay
       })
 
     this.shown.on(() => {
-      this.lifetime_manager.bind(
-        this.overlay = new ScanControlPrototype.Overlay(this.value.value())
-      )
+      this.overlay = ScanControlPrototype.Overlay.getActive()
 
-      this.overlay.node_selection.on(node => this.overlay.setNode(node))
+      if (!this.overlay) {
+        this.lifetime_manager.bind(
+          this.overlay = new ScanControlPrototype.Overlay(this.value.value())
+        )
 
-      const example = AugmentedMethod.create(ScanInputOverlayConfigModal.example_method, null)
+        this.overlay.node_selection.on(node => this.overlay.setNode(node))
 
-      const ex = ScanTree.Augmentation.synthesize_triple_nodes(ScanTree.Augmentation.basic_augmentation(example.method.tree, example.clue.clue as Clues.Scan))
+        const example = AugmentedMethod.create(ScanInputOverlayConfigModal.example_method, null)
 
-      this.overlay.setScanPanelState({meerkats: true, triple: false, different_level: false})
-      this.overlay.setNode(ex.root_node)
+        const ex = ScanTree.Augmentation.synthesize_triple_nodes(ScanTree.Augmentation.basic_augmentation(example.method.tree, example.clue.clue as Clues.Scan))
 
-      this.overlay.start()
+        this.overlay.setScanPanelState({meerkats: true, triple: false, different_level: false})
+        this.overlay.setNode(ex.root_node)
+
+        this.overlay.start()
+      }
+
+      this.overlay.setConfig(this.value.value())
     })
   }
 
