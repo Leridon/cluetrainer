@@ -18,6 +18,8 @@ export class ScanMinimapOverlay extends Alt1Overlay {
   }
 
   protected begin() {
+    super.begin()
+
     if (!deps().app.in_alt1) return
 
     this.lifetime_manager.bind(
@@ -34,6 +36,8 @@ export class ScanMinimapOverlay extends Alt1Overlay {
   }
 
   protected end() {
+    super.end()
+
     if (!deps().app.in_alt1) return
   }
 

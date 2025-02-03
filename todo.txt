@@ -7,6 +7,7 @@ Elite Playtesting:
 
 Blockers for v35:
     - Clean up panel overlay + Configurability
+        - Add info button, Add tooltips
     - Clean up Changelog
 
 
