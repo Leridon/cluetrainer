@@ -6,7 +6,6 @@ Elite Playtesting:
 
 
 Blockers for v35:
-    - Scan Overlay should hide after x seconds without valid read
     - Clean up panel overlay + Configurability
     - Better default settings for control overlay
     - Use existing control overlay for config
