@@ -77,6 +77,7 @@ export namespace Changelog {
           )
           .item("Some overlays are now automatically hidden when closing or reloading Clue Trainer instead of lingering until they time out.", new List()
             .item("Not all overlays have been changed to support that yet."))
+          .item("Added interface code for Life Altar teleport.")
         )
     }
   }, {
