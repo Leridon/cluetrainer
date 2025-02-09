@@ -113,7 +113,7 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
       }
 
       this.scan_panel_capture_service = new ScanCaptureService(this.original_interface_capture)
-      this.scan_panel_overlay = this.withSub(new ScanPanelOverlay(this.scan_panel_capture_service))
+      this.scan_panel_overlay = this.withSub(new ScanPanelOverlay().connect(this.scan_panel_capture_service))
 
       this.scan_input_control = this.withSub(new ScanControlPrototype(this.scan_panel_capture_service)
       )

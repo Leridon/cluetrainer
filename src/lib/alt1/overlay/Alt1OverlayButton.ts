@@ -3,6 +3,7 @@ import {ScreenRectangle} from "../ScreenRectangle";
 import {Vector2} from "../../math";
 import {Alt1Overlay} from "./Alt1Overlay";
 import {Alt1OverlayDrawCalls} from "./Alt1OverlayDrawCalls";
+import {Alt1Color} from "../Alt1Color";
 
 export class Alt1OverlayButton  extends Alt1Overlay {
   protected config: Observable<Alt1OverlayButton.Config>
@@ -84,5 +85,28 @@ export namespace Alt1OverlayButton {
     text?: string,
     style: Style,
     active_style?: Style
+  }
+
+  export function white(text: string = undefined): Config {
+    return {
+      text: text,
+      style: {
+        stroke: {width: 1, color: Alt1Color.white},
+        constrast: {width: 1, color: Alt1Color.black},
+        font: {
+          width: 14,
+          color: Alt1Color.white,
+          centered: true
+        }
+      },
+      active_style: {
+        stroke: {width: 2, color: Alt1Color.white},
+        font: {
+          width: 16,
+          color: Alt1Color.white,
+          centered: true
+        }
+      }
+    }
   }
 }

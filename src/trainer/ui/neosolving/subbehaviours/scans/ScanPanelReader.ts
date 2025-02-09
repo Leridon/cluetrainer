@@ -12,6 +12,11 @@ import {Alt1OverlayDrawCalls} from "../../../../../lib/alt1/overlay/Alt1OverlayD
 import {Alt1Overlay} from "../../../../../lib/alt1/overlay/Alt1Overlay";
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
+import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
+import {Circle} from "../../../../../lib/math/Circle";
+import {Alt1OverlayButton} from "../../../../../lib/alt1/overlay/Alt1OverlayButton";
+import {SettingsModal} from "../../../settings/SettingsEdit";
+import {ClueTrainerWiki} from "../../../../wiki";
 
 export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
   private debug: boolean = false
@@ -137,44 +142,85 @@ export namespace ScanCaptureService {
 }
 
 export class ScanPanelOverlay extends Alt1Overlay {
-  private scan_capture_interest: AbstractCaptureService.InterestToken<ScanCaptureService.Options, CapturedScan>
+  private position_center = observe<Vector2>(null).structuralEquality()
+  private state = observe<ScanCaptureService.ScanState>(null).structuralEquality()
 
-  constructor(private service: ScanCaptureService) {
+  private triple_indicator: ScanPanelOverlay.TriplePulseOverlay = new ScanPanelOverlay.TriplePulseOverlay().addTo(this)
+  private different_level_indicator: ScanPanelOverlay.DifferentLevelIndicator = new ScanPanelOverlay.DifferentLevelIndicator().addTo(this)
+  private info_button: Alt1OverlayButton = new Alt1OverlayButton(null, Alt1OverlayButton.white("i")).addTo(this)
+  private settings_button: Alt1OverlayButton = new Alt1OverlayButton(null, Alt1OverlayButton.white("⚙")).addTo(this)
+
+  constructor() {
     super();
+
+    this.position_center.subscribe2(center_of_text => {
+      if (center_of_text) {
+        this.triple_indicator.setPosition(Vector2.add(center_of_text, {x: 25, y: 100}))
+        this.different_level_indicator.setPosition(Vector2.add(center_of_text, {x: -25, y: 100}))
+
+        this.settings_button.setPosition(ScreenRectangle.centeredOn(Vector2.add(center_of_text, {x: 60, y: -70}), 10))
+        this.info_button.setPosition(ScreenRectangle.centeredOn(Vector2.add(center_of_text, {x: -60, y: -70}), 10))
+      }
+    })
+
+    this.state.subscribe2(s => {
+      if (s) {
+        this.triple_indicator.setState(s.triple)
+        this.different_level_indicator.setState(s.different_level)
+      }
+
+      this.rerender()
+    })
+
+    this.settings_button.interactivity()
+      .setTooltip("(Alt+1) Configure this overlay")
+      .main_hotkey_pressed.on(() => {
+      SettingsModal.openOnPage("scans")
+    })
+
+    this.info_button.interactivity()
+      .setTooltip("(Alt+1) Learn more about scans.")
+      .main_hotkey_pressed.on(() => {
+      ClueTrainerWiki.openOnPage("scans")
+    })
+  }
+
+  public connect(service: ScanCaptureService): this {
+    const interest = service.subscribe({
+      options: () => ({interval: CaptureInterval.fromApproximateInterval(100)}),
+      handle: s => {
+        this.setVisible(service.lastSuccessfulReadTime() > Date.now() - 1000)
+
+        this.setState(service.getState())
+
+        this.setPosition(s.value?.center_of_text?.get())
+      }
+    })
+
+    this.lifetime_manager.bind(interest)
+
+    return this
+  }
+
+  public setState(state: ScanCaptureService.ScanState) {
+    this.state.set(state)
+
+    return this
+  }
+
+  private setPosition(pos: Vector2): this {
+    this.position_center.set(pos)
+    return this
   }
 
   protected override renderWithBuilder(builder: Alt1OverlayDrawCalls.GeometryBuilder) {
-    const scaninterface = this.service.lastValidInterface()
+    const state = this.state.value()
 
-    const state = this.service.getState()
+    const position = this.position_center.value()
 
-    if (!scaninterface) return
+    if (!position) return
 
-    const center = Vector2.add(scaninterface.center_of_text.get(), {x: 0, y: 100})
-
-    // TODO: Decide whether to gray out status indicators for 'false' or hide them completely
-
-    // TODO: Maybe replace 'DL' with an appropriate icon
-    builder.text("DL", Vector2.add(center, {x: -25, y: 0}), {
-      centered: true,
-      color: state.different_level ? ScanSolving.PulseColors.different_level : Alt1Color.gray,
-      width: 15,
-    })
-
-    {
-      const options: Alt1OverlayDrawCalls.StrokeOptions = {
-        color: state.triple ? ScanSolving.PulseColors.triple
-          : Alt1Color.gray,
-        width: 2
-      }
-
-      const triple_center = Vector2.add(center, {x: 22, y: 0})
-
-      builder
-        .circle({center: triple_center, radius: 12}, 16, options)
-        .circle({center: triple_center, radius: 8}, 16, options)
-        .circle({center: triple_center, radius: 4}, 16, options)
-    }
+    const center = Vector2.add(this.position_center.value(), {x: 0, y: 100})
 
     if (!state.meerkats) {
       builder.text("No Meerkats", Vector2.add(center, {x: 0, y: 30}), {
@@ -184,18 +230,115 @@ export class ScanPanelOverlay extends Alt1Overlay {
       })
     }
   }
+}
 
-  protected begin() {
-    super.begin()
+export namespace ScanPanelOverlay {
+  export class TriplePulseOverlay extends Alt1Overlay {
+    private position = observe<Vector2>(null).structuralEquality()
+    private state = observe<boolean>(null)
 
-    this.lifetime_manager.bind(
-      this.scan_capture_interest = this.service.subscribe({
-        options: () => ({interval: CaptureInterval.fromApproximateInterval(100)}),
-        handle: s => {
-          this.setVisible(this.service.lastSuccessfulReadTime() > Date.now() - 1000)
+    constructor() {
+      super()
+
+      this.position.subscribe2(pos => {
+        if (pos) {
+          this.interactivity().setBounds({
+            type: "circle",
+            area: {center: pos, radius: 20}
+          })
         }
-      }),
-      this.service.onStateChange(() => this.rerender())
-    )
+
+        this.rerender()
+      })
+      this.state.subscribe2(s => {
+        this.interactivity().setTooltip(s ? "Triple Pulse" : "No triple pulse")
+
+        this.rerender()
+      })
+
+      this.interactivity().refreshTooltip()
+    }
+
+    setPosition(p: Vector2): this {
+      this.position.set(p)
+
+      return this
+    }
+
+    setState(state: boolean): this {
+      this.state.set(state)
+      return this
+    }
+
+    override renderWithBuilder(builder: Alt1OverlayDrawCalls.GeometryBuilder) {
+      const is_triple = this.state.value()
+      const position = this.position.value()
+
+      if (!position) return
+
+      const options: Alt1OverlayDrawCalls.StrokeOptions = {
+        color: is_triple ? ScanSolving.PulseColors.triple : Alt1Color.gray,
+        width: 2
+      }
+
+      const triple_center = position
+
+      builder
+        .circle({center: triple_center, radius: 12}, 16, options)
+        .circle({center: triple_center, radius: 8}, 16, options)
+        .circle({center: triple_center, radius: 4}, 16, options)
+    }
+  }
+
+  export class DifferentLevelIndicator extends Alt1Overlay {
+
+    private position = observe<Vector2>(null).structuralEquality()
+    private state = observe<boolean>(null)
+
+    constructor() {
+      super();
+
+      this.position.subscribe2(pos => {
+        if (pos) {
+          this.interactivity().setBounds({
+            type: "rectangle",
+            area: ScreenRectangle.centeredOn(pos, 20)
+          })
+        } else this.interactivity().setBounds(null)
+
+        this.rerender()
+      })
+      this.state.subscribe2(s => {
+        this.interactivity().setTooltip(
+          s
+            ? "Try scanning a different level."
+            : "Too far."
+        )
+
+        this.rerender()
+      })
+    }
+
+    setPosition(p: Vector2): this {
+      this.position.set(p)
+
+      return this
+    }
+
+    setState(state: boolean): this {
+      this.state.set(state)
+      return this
+    }
+
+    override renderWithBuilder(builder: Alt1OverlayDrawCalls.GeometryBuilder) {
+      const center = this.position.value()
+      const is_dl = this.state.value()
+
+      builder.text("DL", center, {
+        centered: true,
+        color: is_dl ? ScanSolving.PulseColors.different_level : Alt1Color.gray,
+        width: 15,
+      })
+    }
   }
 }

@@ -35,7 +35,7 @@ export class SimpleScanSolving extends NeoSolvingSubBehaviour {
     }
 
     this.scan_panel_capture_service = new ScanCaptureService(this.original_interface_capture)
-    this.scan_panel_overlay = this.withSub(new ScanPanelOverlay(this.scan_panel_capture_service))
+    this.scan_panel_overlay = this.withSub(new ScanPanelOverlay().connect(this.scan_panel_capture_service))
   }
 
   private selected_solution: TileCoordinates = null
