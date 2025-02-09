@@ -342,7 +342,7 @@ export namespace ScanControlPrototype {
         });
 
         this.possible.subscribe(v => {
-          this.updateConfig(c => c.style.stroke.width = v ? 3 : 1)
+          // this.updateConfig(c => c.style.stroke.width = v ? 3 : 1)
         })
 
         this.relevant.subscribe(v => this.setVisible(v))
