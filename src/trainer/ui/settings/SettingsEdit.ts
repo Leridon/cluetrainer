@@ -1,5 +1,5 @@
 import Widget from "../../../lib/ui/Widget";
-import {ClueTrainer} from "../../ClueTrainer";
+import {ClueTrainer, SettingsManagement} from "../../ClueTrainer";
 import {deps} from "../../dependencies";
 import {C} from "../../../lib/ui/constructors";
 import {Observable, observe} from "../../../lib/reactive";
@@ -60,6 +60,7 @@ import TeleportGroup = Transportation.TeleportGroup;
 import span = C.span;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import Appendable = C.Appendable;
+import {ScanPanelOverlay} from "../neosolving/subbehaviours/scans/ScanPanelReader";
 
 class SettingsLayout extends Properties {
   constructor() {super();}
@@ -475,10 +476,27 @@ class ScanSettingsEdit extends Widget {
           .onCommit(v => this.value.input_control_enabled = v),
       )
     }
+
+    if (Alt1.exists()) {
+      this.layout.section("Scan Panel Status Overlay")
+
+      this.layout.setting(new Checkbox(hbox("Show status overlay for scan panel", spacer(), new LightButton("Configure")
+          .onClick(async () => {
+            const result = await new ScanPanelStatusOverlayConfigModal().do()
+
+            if (result) {
+              this.value.panel_status_overlay_configuration = result
+            }
+          }))
+        ).setValue(this.value.panel_status_overlay_enabled)
+          .onCommit(v => this.value.panel_status_overlay_enabled = v),
+      )
+    }
+
   }
 }
 
-class ScanInputOverlayConfigModal extends FormModal<ScanControlPrototype.Overlay.Config> {
+export class ScanInputOverlayConfigModal extends FormModal<ScanControlPrototype.Overlay.Config> {
   private value: Observable<ScanControlPrototype.Overlay.Config>
 
   private overlay: ScanControlPrototype.Overlay
@@ -573,9 +591,16 @@ class ScanInputOverlayConfigModal extends FormModal<ScanControlPrototype.Overlay
       new BigNisButton("Confirm", "confirm").onClick(() => this.confirm(this.value.value())),
     ]
   }
+
+  static async openStandalone() {
+    const result = await new ScanInputOverlayConfigModal(deps().app.settings.settings.solving.scans.input_control_configuration)
+      .do()
+
+    if (result) deps().app.settings.update(s => s.solving.scans.input_control_configuration = result)
+  }
 }
 
-namespace ScanInputOverlayConfigModal {
+export namespace ScanInputOverlayConfigModal {
   export const example_method: SolvingMethods.ScanTreeMethod = {
     "id": "037949db-71ad-46d5-a038-d162003e92ae",
     "type": "scantree",
@@ -698,6 +723,12 @@ namespace ScanInputOverlayConfigModal {
       }
     },
     "expected_time": 22.225
+  }
+}
+
+export class ScanPanelStatusOverlayConfigModal extends FormModal<ScanPanelOverlay.Config> {
+  constructor() {
+    super();
   }
 }
 
@@ -1691,8 +1722,7 @@ export class SettingsModal extends FormModal<{
   static openOnPage(page?: SettingsEdit.section_id): Promise<{ saved: boolean; value: Settings.Settings }> {
     if (SettingsModal.instance) {
       SettingsModal.instance.edit.section_control.setActiveSection(page)
-    }
-    else {
+    } else {
       const modal = new SettingsModal(page)
 
       SettingsModal.instance = modal

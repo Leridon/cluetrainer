@@ -234,6 +234,8 @@ export class ScanPanelOverlay extends Alt1Overlay {
 }
 
 export namespace ScanPanelOverlay {
+  export type Config = {}
+
   export class TriplePulseOverlay extends Alt1Overlay {
     private position = observe<Vector2>(null).structuralEquality()
     private state = observe<boolean>(null)
