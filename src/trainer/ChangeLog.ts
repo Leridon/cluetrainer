@@ -46,6 +46,8 @@ export namespace Changelog {
             new List().item("Existing users should consider changing this setting as well. With the new shuffle introduced in december, this is enough and allocating more time barely finds an improvement.")
           )
           .item("Added paths for a missing part of the fremmenik isles scan.")
+          .item("Some overlays are now automatically hidden when closing or reloading Clue Trainer instead of lingering until they time out.", new List()
+            .item("Not all overlays have been changed to support that yet."))
         )
     }
   }, {

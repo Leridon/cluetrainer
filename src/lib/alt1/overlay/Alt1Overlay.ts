@@ -43,7 +43,7 @@ export class Alt1Overlay extends Behaviour {
     return inter
   })
 
-  public interactivity(create_if_not_exists: boolean = true) {
+  public interactivity(create_if_not_exists: boolean = true): Alt1Overlay.Interactivity {
     if (!create_if_not_exists && !this._interactivity.hasValue()) return null
 
     return this._interactivity.get()
@@ -94,6 +94,8 @@ export class Alt1Overlay extends Behaviour {
   protected begin() {
     this.heartbeater.onHeartbeat(() => this.refresh())
       .bindTo(this.lifetime_manager)
+
+    this.heartbeater.bindToPageLifetime(this)
 
     this.refresh()
   }
