@@ -1568,13 +1568,15 @@ class DataManagementEdit extends Widget {
 export class SettingsEdit extends Widget {
   value: Settings.Settings
 
+  section_control: SectionControl<SettingsEdit.section_id>
+
   constructor(app: ClueTrainer, start_section: SettingsEdit.section_id) {
     super();
 
     this.value = lodash.cloneDeep(app.settings.settings)
 
     this.init(
-      new SectionControl<SettingsEdit.section_id>([
+      this.section_control = new SectionControl<SettingsEdit.section_id>([
         {
           name: "Solving", entries: [{
             id: "solving_general",
@@ -1669,7 +1671,7 @@ export class SettingsModal extends FormModal<{
 
   private last_saved_value: Settings.Settings = null
 
-  constructor(private start_section: SettingsEdit.section_id = undefined) {
+  private constructor(private start_section: SettingsEdit.section_id = undefined) {
     super();
 
     this.title.set("Settings")
@@ -1682,6 +1684,23 @@ export class SettingsModal extends FormModal<{
   private save() {
     this.last_saved_value = lodash.cloneDeep(this.edit.value)
     deps().app.settings.set(this.last_saved_value)
+  }
+
+  private static instance: SettingsModal = null
+
+  static openOnPage(page?: SettingsEdit.section_id): Promise<{ saved: boolean; value: Settings.Settings }> {
+    if (SettingsModal.instance) {
+      SettingsModal.instance.edit.section_control.setActiveSection(page)
+    }
+    else {
+      const modal = new SettingsModal(page)
+
+      SettingsModal.instance = modal
+
+      modal.hiding.on(() => SettingsModal.instance = null)
+    }
+
+    return SettingsModal.instance.do()
   }
 
   render() {

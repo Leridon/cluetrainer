@@ -397,7 +397,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
           .tooltip("Reset compass solver."),
         inlineimg("assets/icons/settings.png").addClass("ctr-clickable")
           .on("click", async () => {
-            const result = await new SettingsModal("compass").do()
+            const result = await SettingsModal.openOnPage("compass")
 
             if (result.saved) this.settings = result.value.solving.compass
           }),

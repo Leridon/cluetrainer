@@ -242,7 +242,7 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
           .tooltip("Learn more about scan trees."),
         inlineimg("assets/icons/settings.png").addClass("ctr-clickable").css("height", "1em").css("margin-top", "2px").addClass("ctr-clickable")
           .on("click", async () => {
-            await new SettingsModal("scans").do()
+            await SettingsModal.openOnPage("scans")
             this.scan_input_control.refreshVisibility()
           }),
       )

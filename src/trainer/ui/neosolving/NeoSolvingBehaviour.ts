@@ -279,7 +279,7 @@ namespace NeoSolvingLayer {
             .setToggled(this.fullscreen_preference.get()),
           new MainControlButton({icon: "assets/icons/settings.png", centered: true})
             .tooltip("Open settings")
-            .onClick(() => new SettingsModal("solving_general").do())
+            .onClick(() => SettingsModal.openOnPage("solving_general"))
         ).css("flex-grow", "1"),
       )
 
