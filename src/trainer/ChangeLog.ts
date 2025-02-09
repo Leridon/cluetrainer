@@ -8,6 +8,7 @@ export namespace Changelog {
 
   import hbox = C.hbox;
   import div = C.div;
+  import italic = C.italic;
   type Layout = Properties
 
   type LogEntry = {
@@ -25,19 +26,48 @@ export namespace Changelog {
     title: "TBD",
     render: layout => {
       layout
+        .header("New Scan Tree Flow", "left")
+        .row(new List()
+          .item("Added an interactive overlay usable to navigte scan trees without having to click in the Clue Trainer window.", new List()
+            .item("Interactive overlay buttons can be used to select the next child node or go back up the tree.")
+            .item("Position and size of the overlay can be freely configured.")
+            .item("The overlay also includes a progress bar showing your progress through the tree.")
+            .item("In triple pulse and 'different level' situations, the correct pulse can be automatically detected.")
+            .item(italic("Dev note: From personal playtesting this is a significant improvement for actively using scan tree guidance while solving, since inputting pulse information is much less disruptive than before. I encourage everyone who found scan trees to annoying to use to give it another go."))
+          )
+          .item("Added a status overlay to the in-game scan panel similar to the angle overlay for compasses, including some interactive components.")
+        )
+        .paragraph("Interactive overlays are a new piece of Alt1 tech that allows overlays to react to being hovered, right clicked or having the main hotkey (Alt+1) pressed while being hovered, or even having tooltips. Over time they will probably be used in more places across Clue Trainer, so let me know if you have any suggestions where you they might be useful.")
+        .header("General Scan Improvements", "left")
         .row(new List()
           .item("Spots that trigger a triple pulse no longer have their own button in scan trees. Instead, clicking the triple-line opens a new page with those spots.")
-          .item("For scans, you can now click dig spots directly on the map to move the scan tree there.")
+          .item("You can now click dig spots directly on the map to move the scan tree there.")
           .item("Triple spots are no longer included in the zoom for scan trees by default.", new List()
-            .item("This change only affects new users, and can still be toggled on in the settings. Playtesting showed that with the change before this, seeing all triple spots all the time isn't necessary anymore, so I encourage existing users to also change this setting.")
+            .item(italic("Dev note: This change only affects new users, and can still be toggled on in the settings. Playtesting showed that with the change before this, seeing all triple spots all the time isn't necessary anymore, so I encourage existing users to also change this setting."))
           )
           .item("Standardized colors for scan pulse types to be closer to the ingame visuals.")
           .item("Added a contrast shadow to the scan range on the map.")
           .item("Removed spot numbers on scans when not needed to declutter the map.")
           .item("Fixed bug that caused the map to go to the wrong floor for some scans.")
+          .item("Added paths for a missing part of the fremmenik isles scan.")
+        )
+        .header("Cluepedia", "left")
+        .row(new List()
+          .item("Added Cluepedia, Clue Trainer's integrated wiki explaining clue mechanics and Clue Trainer features.", new List()
+            .item("Cluepedia can be accessed via the sidebar menu or from various other places linking directly to specific pages.")
+          )
+          .item("Added a page explaning scans and pulse mechanics.")
+          .item("Added a page explaining scan trees.")
+          .item("Added a page explaining the new interactive overlay to control scan trees.")
+          .item("Added a page explaining the 'different level' mechanic for scans.")
+          .item("Added a page explaining interactive overlays in general.")
+        )
+        .paragraph("Cluepedia is an ongoing project. Let me know if there are any particular things you would like to see for it.")
+        .header("Other", "left")
+        .row(new List()
+          .item("A separate path section will now be created for the arrival point if a path ends with a long distance transport.")
           .item("Compasses will now utilize the previous clue's solution area up to 4 chunks wide and high.")
           .item("Fixed conflicting zoom for compasses where clue trainer didn't zoom in to the path for the last remaining spot.")
-          .item("A separate path section will now be created for the arrival point if a path ends with a long distance transport.")
           .item("Replaced obstructive arrows for far transports in paths with small circles at their arrival location.")
           .item("Added a minimum similarity for map clues to prevent misreads due to partially loaded maps.")
           .item("Improved the accuracy of the emote area for various easy clues.")
@@ -45,7 +75,6 @@ export namespace Changelog {
           .item("Reduced default time allocated to solving sliders down to 0.2 seconds",
             new List().item("Existing users should consider changing this setting as well. With the new shuffle introduced in december, this is enough and allocating more time barely finds an improvement.")
           )
-          .item("Added paths for a missing part of the fremmenik isles scan.")
           .item("Some overlays are now automatically hidden when closing or reloading Clue Trainer instead of lingering until they time out.", new List()
             .item("Not all overlays have been changed to support that yet."))
         )
