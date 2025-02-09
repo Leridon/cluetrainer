@@ -312,7 +312,7 @@ export namespace ScanPanelOverlay {
         this.interactivity().setTooltip(
           s
             ? "Try scanning a different level."
-            : "Too far."
+            : "You are on the correct level."
         )
 
         this.rerender()
@@ -332,6 +332,8 @@ export namespace ScanPanelOverlay {
 
     override renderWithBuilder(builder: Alt1OverlayDrawCalls.GeometryBuilder) {
       const center = this.position.value()
+      if (!center) return
+
       const is_dl = this.state.value()
 
       builder.text("DL", center, {

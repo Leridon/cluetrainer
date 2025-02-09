@@ -188,6 +188,8 @@ export namespace AbstractCaptureService {
         this.handle(value)
       } catch (e) {
         if (e instanceof Error) {
+          console.error(e.stack)
+
           log().log(e.toString(), "Capturing")
         }
       }
