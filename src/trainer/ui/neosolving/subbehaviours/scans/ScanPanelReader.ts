@@ -17,6 +17,7 @@ import {Circle} from "../../../../../lib/math/Circle";
 import {Alt1OverlayButton} from "../../../../../lib/alt1/overlay/Alt1OverlayButton";
 import {SettingsModal} from "../../../settings/SettingsEdit";
 import {ClueTrainerWiki} from "../../../../wiki";
+import lodash from "lodash";
 
 export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
   private debug: boolean = false
@@ -191,7 +192,7 @@ export class ScanPanelOverlay extends Alt1Overlay {
       handle: s => {
         this.setVisible(service.lastSuccessfulReadTime() > Date.now() - 1000)
 
-        this.setState(service.getState())
+        this.setState(lodash.cloneDeep(service.getState()))
 
         this.setPosition(s.value?.center_of_text?.get())
       }
