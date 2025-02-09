@@ -26,7 +26,7 @@ export abstract class Modal2 {
     this.state.subscribe(s => {
       switch (s) {
         case "shown":
-          if(this.should_hide) this.hide()
+          if (this.should_hide) this.hide()
           this.shown.trigger(this);
           break;
         case "hiding":
@@ -79,6 +79,10 @@ export abstract class Modal2 {
   }
 
   async show(): Promise<this> {
+    if (this.state.value() != "unmounted" && this.state.value() != "hidden") {
+      return this
+    }
+
     let promise = new Promise<this>((resolve) => {
       this.hidden.on(() => resolve(this))
     })
