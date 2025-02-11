@@ -33,6 +33,8 @@ export namespace CTRIcon {
     {id: "spell/bake_pie" as const, name: "Bake Pie", file_name: "bake_pie.webp", size_on_map: {x: 20, y: 20}},
     {id: "item/black_dhide_body" as const, name: "Black dragonhide body", file_name: "black_dhide_body.webp", size_on_map: {x: 20, y: 19}},
     {id: "item/combatdummymk2" as const, name: "Combat dummy MKII", file_name: "Combat_dummy_MKII.webp", size_on_map: {x: 22, y: 31}},
+    {id: "item/globetrotter_jacket" as const, name: "Globetrotter Jacket", file_name: "Globetrotter_jacket.webp", size_on_map: {x: 27, y: 24}},
+    {id: "item/globetrotter_backpack" as const, name: "Globetrotter Backpack", file_name: "Globetrotter_backpack.webp", size_on_map: {x: 25, y: 23}},
     ...CursorType.all().map(c => ({id: `cursor/${c.type}`, name: c.description, file_name: `${c.short_icon}.png`, size_on_map: {x: 28, y: 31}}))
   ]
 

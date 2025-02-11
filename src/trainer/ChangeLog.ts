@@ -21,7 +21,7 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([{
-    version: 35,
+    version: 36,
     date: new Date(Date.parse("TBD")),
     title: "TBD",
     render: layout => {
@@ -82,22 +82,34 @@ export namespace Changelog {
         )
     }
   }, {
-    version: 34,
-    date: new Date(Date.parse("2025-01-22")),
-    title: "Some Teleport Additions",
-    render: layout => {
-      layout
-        .row(new List()
-          .item("Added the Fremennik sea boots teleport to Relekka Market.")
-          .item("Added the Clan vexillum teleport to Falador.")
-          .item("Added Amulet of nature teleport to hops patch north of McGrubor's wood and the fruit tree patch at Tree Gnome Village")
-          .item("Added the Shattered Worlds teleport.")
-          .item("Added the Soul Wars portal transport.")
-          .item("Added the ladder to and from the Obelisk of Water.")
-          .item("Updated the path for a coordinate step in medium clues in mort myre swamp.")
-        )
-    }
+    version: 35,
+    date: new Date(Date.parse("2025-02-11")),
+    title: "Collision Fixes",
+    render: layout => layout
+      .row(new List()
+        .item("Updated collision data in the path editor to the latest game update.")
+        .item("Replaced a builtin path for an easy clue at Port Khazard that became impossible due to changed collision of the campfire.")
+        .item("Added Globetrotter Jacket and Backpack as possible icons for notes in paths.")
+        .item("Added interface code for Life Altar teleport.")
+      )
   },
+    {
+      version: 34,
+      date: new Date(Date.parse("2025-01-22")),
+      title: "Some Teleport Additions",
+      render: layout => {
+        layout
+          .row(new List()
+            .item("Added the Fremennik sea boots teleport to Relekka Market.")
+            .item("Added the Clan vexillum teleport to Falador.")
+            .item("Added Amulet of nature teleport to hops patch north of McGrubor's wood and the fruit tree patch at Tree Gnome Village")
+            .item("Added the Shattered Worlds teleport.")
+            .item("Added the Soul Wars portal transport.")
+            .item("Added the ladder to and from the Obelisk of Water.")
+            .item("Updated the path for a coordinate step in medium clues in mort myre swamp.")
+          )
+      }
+    },
     {
       version: 33,
       date: new Date(Date.parse("2025-01-13")),
