@@ -4,9 +4,9 @@ export class Alt1TooltipManager {
   private active_instance: Alt1TooltipManager.Instance = null
 
   setTooltip(tooltip: string): Alt1TooltipManager.Instance {
-    alt1.setTooltip(tooltip)
-
     if (this.active_instance) this.removeTooltip(this.active_instance)
+
+    alt1.setTooltip(tooltip)
 
     return this.active_instance = new Alt1TooltipManager.Instance(
       tooltip,
