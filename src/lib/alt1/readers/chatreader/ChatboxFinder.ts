@@ -3,7 +3,7 @@ import {CapturedImage} from "../../capture";
 import {ScreenRectangle} from "../../ScreenRectangle";
 import {Vector2} from "../../../math";
 import {OCR} from "../../OCR";
-import {async_lazy, lazy} from "../../../properties/Lazy";
+import {async_lazy, lazy} from "../../../Lazy";
 import * as lodash from "lodash";
 import {CapturedChatbox} from "./CapturedChatbox";
 import {ChatAnchors} from "./ChatAnchors";
@@ -15,55 +15,75 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
   ) {
   }
 
+  /**
+   * Finds all chat boxes in the given image.
+   * @param img The image to search for chat boxes.
+   */
   find(img: CapturedImage): CapturedChatbox[] {
 
-    const trs: { capture: ScreenRectangle, expanded: boolean }[] = [
+    // First, find plus/minus icons that indicate the top right of the chatbox. FIXME Currently, this fails when the button is hovered.
+    const top_rights: { capture: ScreenRectangle, expanded: boolean }[] = [
       ...img.findNeedle(this.needles.tr_minus).map(img => ({capture: img.screen_rectangle, expanded: true})),
       ...img.findNeedle(this.needles.tr_plus).map(img => ({capture: img.screen_rectangle, expanded: false})),
     ]
 
-    if (trs.length == 0) return []
+    if (top_rights.length == 0) return []
 
-    const entertochat = this.needles.entertochat
+    // Next, search for quickchat bubbles. We are interested in the ones in the bottom chat line.
+    const initial_bubbles = img.findNeedle(this.needles.chatbubble)
 
-    const bubbles = img.findNeedle(this.needles.chatbubble)
+    function isWhite(pixel: [number, number, number, number]): boolean {
+      return pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255
+    }
+
+    // We need to filter out the quickchat bubbles used for quick responses.
+    // To do so, we check for the colon directly to the right of the detected bubble and see if it matches our expected layout.
+    const bubbles = initial_bubbles
       .map(b => b.screen_rectangle)
-      .filter(loc => {
+      .filter(bubble_location => {
 
+        // Get a 1 pixel wide, 10 pixel high column of pixels to the right of the chatbubble. This strip should contain exactly to fully white pixels that make up the colon.
         const data = img.getSubSection(ScreenRectangle.move(
-          loc, {x: 102, y: 1}, {x: 33, y: 10}
+          bubble_location, {x: 14, y: 0}, {x: 1, y: 10}
         )).getData()
 
+        // To distinguish this colon from the ones in the chat, we need to match for an exact order of pixels instead of just counting white pixels
+        // From top to bottom, this array describes whether the respective pixel should or should not be white
+        const colon_signature = [false, false, false, true, false, false, false, true, false]
+
+        // Sometimes, the bubble is vertically off by 1 pixel. So we need to check 2 possible positions, which we iterate through with this loop
         for (let dy = 0; dy <= 1; dy++) {
-          if (data.pixelCompare(entertochat.underlying, 0, dy) != Infinity // 102 click here to chat
-            || data.pixelCompare(entertochat.underlying, 5, dy) != Infinity //107 press enter to chat
-          ) {
-            loc.origin.y -= dy;
+
+          // Check for the colon_signature at the current dy.
+          if (colon_signature.every((should_be_white, y) => {
+            return isWhite(data.getPixel(0, y + dy)) == should_be_white
+          })) {
+            // If the signature fully matches, we've found a correct chatbox
+            bubble_location.origin.y -= dy;
             return true
           }
         }
 
         // Chat is active, look for white border
-        const pixels = img.getSubSection(ScreenRectangle.move(
-          loc, {x: 0, y: -6}, {x: 1, y: 2}
+        /*const pixels = img.getSubSection(ScreenRectangle.move(
+          bubble_location, {x: 0, y: -6}, {x: 1, y: 2}
         )).getData()
 
         if (pixels.data[4] == 255) return true
         if (pixels.data[0] == 255) {
-          loc.origin.y -= 1
+          bubble_location.origin.y -= 1
           return true
-        }
+        }*/
 
         return false
       })
-
 
     if (bubbles.length == 0) return []
 
     type PositionCandidate = { taken: boolean, position: Vector2 }
 
     const bubble_map: { taken: boolean, position: Vector2 }[] = bubbles.map(b => ({taken: false, position: b.origin}))
-    const tr_map: { taken: boolean, position: { capture: ScreenRectangle, expanded: boolean } }[] = trs.map(b => ({taken: false, position: b}))
+    const tr_map: { taken: boolean, position: { capture: ScreenRectangle, expanded: boolean } }[] = top_rights.map(b => ({taken: false, position: b}))
 
     const viable_pairs: {
       bubble: PositionCandidate,
@@ -84,13 +104,7 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
     }
 
     return viable_pairs.map(pair => {
-
       if (pair.bubble.taken || pair.top_right.taken) return []
-
-      const nameline = img.getSubSection(ScreenRectangle.fromPixels(
-        Vector2.add(pair.bubble.position, {x: 9, y: -5}),
-        Vector2.add(pair.bubble.position, {x: -110, y: 15}),
-      )).getData()
 
       const nameread = null // OCR.readLine(nameline, CapturedChatbox.chatfont, [255, 255, 255], 110, 13, false, true);
 

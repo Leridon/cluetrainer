@@ -313,7 +313,6 @@ h2 {
 }
 
 .marktele {
-    cursor: default;
     transform-origin: center;
     position: absolute;
     color: #fff;
@@ -956,6 +955,7 @@ video {
     column-gap: 5px;
     row-gap: 2px;
     grid-template-columns: [name] min-content [content] minmax(0, 1fr);
+    width: 100%;
 }
 
 .nisl-property-header {
@@ -1562,6 +1562,7 @@ input[type=checkbox] + span {
 .nisl-modal {
     border-radius: 10px;
     border: 2px solid rgb(43, 58, 67);
+    max-height: calc(100vh - 2 * var(--bs-modal-margin));
 }
 
 .nisl-modal-footer {
@@ -1601,6 +1602,7 @@ input[type=checkbox] + span {
     flex: 1 1 auto;
     padding: 0.5rem;
     overflow-y: auto;
+    display: flex;
 }
 
 /* Big Nis Button */
@@ -1720,7 +1722,7 @@ input[type=checkbox] + span {
 
 .nisl-checkbox {
     display: grid;
-    grid-template-columns: 1em auto auto;
+    grid-template-columns: 1em auto;
     gap: 0.5em;
 }
 
@@ -2144,10 +2146,19 @@ input[type=checkbox] + span {
     outline: none;
 }
 
+.leaflet-grab {
+    cursor: default;
+}
+
+.leaflet-drag-target {
+    cursor: move !important;
+}
+
 /* Settings */
 
 .ctr-section-control {
     display: flex;
+    width: 100%;
 }
 
 .ctr-section-control-content {
@@ -2163,9 +2174,11 @@ input[type=checkbox] + span {
 }
 
 .ctr-section-control-menu {
+    overflow-y: auto;
     flex-basis: 40%;
     padding: 10px;
     background-color: #00000040;
+    max-width: 200px;
 }
 
 .ctr-section-control-menu-header {
@@ -2244,16 +2257,19 @@ input[type=checkbox] + span {
     filter: grayscale(1)
 }
 
+.modal-dialog {
+    max-height: 100%;
+}
+
+.modal-dialog > .nisl-modal {
+
+}
+
 .ctr-modal-fullscreen {
     --bs-modal-margin: 0.25rem;
     max-width: revert;
     width: calc(100% - 2 * var(--bs-modal-margin));
     height: calc(100% - 2 * var(--bs-modal-margin));
-}
-
-.ctr-modal-fullscreen > .nisl-modal {
-    min-height: 100%;
-    max-height: 100%;
 }
 
 .ctr-modal-fullscreen > .nisl-modal {
@@ -2434,4 +2450,22 @@ input[type=checkbox] + span {
 
 .ctr-log-viewer-message > *:not(:last-child) {
     margin-right: 6px;
+}
+
+.ctr-striked {
+    text-decoration: line-through;
+    color: gray;
+}
+
+.ctr-media-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.ctr-media-container > * {
+    max-width: 200px;
+    min-width: 10px;
+    flex: 1 1 auto;
 }

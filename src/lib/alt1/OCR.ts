@@ -15,7 +15,7 @@ export namespace OCR {
   import rgbSimilarity = util.rgbSimilarity;
   export type TextFragment = {
     text: string,
-    color: ColortTriplet,
+    color: ColorTriplet,
     index: number,
     xstart: number,
     xend: number
@@ -37,7 +37,7 @@ export namespace OCR {
     minrating?: number,
     maxspaces?: number
   };
-  export type ColortTriplet = [number, number, number];
+  export type ColorTriplet = [number, number, number];
 
   type Chardebug = { chr: string, rawscore: number, score: number, img: ImageData };
   export var debugout = {} as { [id: string]: Chardebug[] };
@@ -216,7 +216,7 @@ export namespace OCR {
   /**
    * brute force to the exact position of the text
    */
-  export function findChar(buffer: ImageData, font: FontDefinition, col: ColortTriplet, x: number, y: number, w: number, h: number) {
+  export function findChar(buffer: ImageData, font: FontDefinition, col: ColorTriplet, x: number, y: number, w: number, h: number) {
     if (x < 0) { return null; }
     if (y - font.basey < 0) { return null; }
     if (x + w + font.width > buffer.width) { return null; }
@@ -240,7 +240,7 @@ export namespace OCR {
    * reads text with unknown exact coord or color. The given coord should be inside the text
    * color selection not implemented yet
    */
-  export function findReadLine(buffer: ImageData, font: FontDefinition, cols: ColortTriplet[], x: number, y: number, w = -1, h = -1) {
+  export function findReadLine(buffer: ImageData, font: FontDefinition, cols: ColorTriplet[], x: number, y: number, w = -1, h = -1) {
     if (w == -1) {
       w = font.width + font.spacewidth;
       x -= Math.ceil(w / 2);
@@ -264,7 +264,7 @@ export namespace OCR {
     return readLine(buffer, font, cols, chr.x, chr.y, true, true);
   }
 
-  export function getChatColorMono(buf: ImageData, rect: RectLike, colors: ColortTriplet[]) {
+  export function getChatColorMono(buf: ImageData, rect: RectLike, colors: ColorTriplet[]) {
     var colormap = colors.map(c => ({col: c, score: 0}));
     if (rect.x < 0 || rect.y < 0 || rect.x + rect.width > buf.width || rect.y + rect.height > buf.height) { return colormap; }
     var data = buf.data;
@@ -305,7 +305,7 @@ export namespace OCR {
   }
 
 
-  export function getChatColor(buf: ImageData, rect: RectLike, colors: ColortTriplet[]): ColortTriplet {
+  export function getChatColor(buf: ImageData, rect: RectLike, colors: ColorTriplet[]): ColorTriplet {
 
     const scored_colors = scoreAll(colors, col => {
       let score = 0
@@ -355,10 +355,10 @@ export namespace OCR {
   /**
    * reads a line of text with exactly known position and color. y should be the y coord of the text base line, x should be the first pixel of a new character
    */
-  export function readLine(buffer: ImageData, font: FontDefinition, colors: ColortTriplet | ColortTriplet[], x: number, y: number, forward: boolean, backward = false) {
-    if (typeof colors[0] != "number" && colors.length == 1) { colors = colors[0] as ColortTriplet; }
+  export function readLine(buffer: ImageData, font: FontDefinition, colors: ColorTriplet | ColorTriplet[], x: number, y: number, forward: boolean, backward = false) {
+    if (typeof colors[0] != "number" && colors.length == 1) { colors = colors[0] as ColorTriplet; }
     var multicol = typeof colors[0] != "number";
-    var allcolors: ColortTriplet[] = multicol ? colors as ColortTriplet[] : [colors as ColortTriplet];
+    var allcolors: ColorTriplet[] = multicol ? colors as ColorTriplet[] : [colors as ColorTriplet];
 
     var detectcolor = function (sx: number, sy: number, backward: boolean) {
       const w = font.width;
@@ -374,7 +374,7 @@ export namespace OCR {
 
     let fragtext = "";
     let fraghadprimary = false;
-    var lastcol: ColortTriplet | null = null;
+    var lastcol: ColorTriplet | null = null;
     let addfrag = (forward: boolean) => {
       if (!fragtext) { return; }
       let frag: TextFragment = {
@@ -400,7 +400,7 @@ export namespace OCR {
       var fragenddx = dx;
       var triedspaces = 0;
       var triedrecol = false;
-      var col = multicol ? null : colors as ColortTriplet;
+      var col = multicol ? null : colors as ColorTriplet;
 
       while (true) {
         col = col || detectcolor(x + dx, y, !dirforward);
@@ -452,7 +452,7 @@ export namespace OCR {
    * empty space after the char before the next char starts.
    * The coordinates should be near the end of the string, or a rectangle with high 1 containing all points where the string can end.
    */
-  export function readSmallCapsBackwards(buffer: ImageData, font: FontDefinition, cols: ColortTriplet[], x: number, y: number, w = -1, h = -1) {
+  export function readSmallCapsBackwards(buffer: ImageData, font: FontDefinition, cols: ColorTriplet[], x: number, y: number, w = -1, h = -1) {
     if (w == -1) {
       w = font.width + font.spacewidth;
       x -= Math.ceil(w / 2);
@@ -491,7 +491,7 @@ export namespace OCR {
    * @param y exact y location of the baseline pixel of the character
    * @param backwards read in backwards direction, the x location should be the first pixel after the character domain in that case
    */
-  export function readChar(buffer: ImageData, font: FontDefinition, col: ColortTriplet, x: number, y: number, backwards: boolean, allowSecondary?: boolean): ReadCharInfo | null {
+  export function readChar(buffer: ImageData, font: FontDefinition, col: ColorTriplet, x: number, y: number, backwards: boolean, allowSecondary?: boolean): ReadCharInfo | null {
     const DETECTION_THRESHOLD = 400
 
     y -= font.basey;

@@ -2,9 +2,9 @@ import {Compasses} from "../../../../lib/cluetheory/Compasses";
 import {mixColor} from "alt1";
 import {angleDifference, circularMean, degreesToRadians, normalizeAngle, radiansToDegrees, Rectangle, Vector2} from "../../../../lib/math";
 import * as lodash from "lodash";
-import {OverlayGeometry} from "../../../../lib/alt1/OverlayGeometry";
+import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
 import {CapturedCompass} from "./capture/CapturedCompass";
-import {lazy, Lazy} from "../../../../lib/properties/Lazy";
+import {lazy, Lazy} from "../../../../lib/Lazy";
 import {NisModal} from "../../../../lib/ui/NisModal";
 import {GameMapMiniWidget, levelIcon} from "../../../../lib/gamemap/GameMap";
 import {GameLayer} from "../../../../lib/gamemap/GameLayer";
@@ -16,7 +16,7 @@ import {GameMapMouseEvent} from "../../../../lib/gamemap/MapEvents";
 import {tilePolygon} from "../../polygon_helpers";
 import {EwentHandler, observe} from "../../../../lib/reactive";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
-import {CapturedImage, CaptureInterval, ScreenCaptureService} from "../../../../lib/alt1/capture";
+import {CapturedImage, CaptureInterval} from "../../../../lib/alt1/capture";
 import {deps} from "../../../dependencies";
 import {util} from "../../../../lib/util/util";
 import LightButton from "../../widgets/LightButton";
@@ -28,8 +28,11 @@ import Widget from "../../../../lib/ui/Widget";
 import {Log} from "../../../../lib/util/Log";
 import Behaviour from "../../../../lib/ui/Behaviour";
 import {Finder} from "../../../../lib/alt1/capture/Finder";
+import {Alt1} from "../../../../lib/alt1/Alt1";
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
 import log = Log.log;
+import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
+import {Alt1ScreenCaptureService} from "../../../../lib/alt1/capture/Alt1ScreenCaptureService";
 
 class AngularKeyframeFunction {
   private constructor(private readonly keyframes: {
@@ -226,7 +229,7 @@ export class CompassReader {
         if (CompassReader.DEBUG_COMPASS_READER) {
           CompassReader.debug_overlay.rect(
             Rectangle.centeredOn(Vector2.add(self.capture.compass_area.screenRectangle().origin, CENTER_OFFSET, {x, y}), 0),
-            {color: isArrow(x, y) ? mixColor(255, 0, 0) : mixColor(0, 255, 0), width: 1})
+            {color: isArrow(x, y) ? Alt1Color.red : Alt1Color.green, width: 1})
         }
 
       }
@@ -276,7 +279,7 @@ export class CompassReader {
         CompassReader.debug_overlay.line(
           Vector2.add(this.capture.compass_area.screenRectangle().origin, CENTER_OFFSET),
           Vector2.add(this.capture.compass_area.screenRectangle().origin, CENTER_OFFSET, p),
-          {width: 1, color: mixColor(255, 0, 0)}
+          {width: 1, color: Alt1Color.red}
         )
       }
 
@@ -420,7 +423,7 @@ export namespace CompassReader {
     | { type: "likely_concealed", details: string }
     | { type: "likely_solved" }
 
-  export const debug_overlay = new OverlayGeometry()
+  export const debug_overlay = new LegacyOverlayGeometry()
 
   export const calibration_tables = {
     "off": AngularKeyframeFunction.fromCalibrationSamples([
@@ -954,7 +957,6 @@ export namespace CompassReader {
     initialization: AsyncInitialization<{ finder: Finder<CapturedCompass> }>
 
     constructor(
-      private capturing_service: ScreenCaptureService,
       private matched_ui: CapturedCompass,
       private show_overlay: boolean,
       private disable_calibration: boolean = false,
@@ -969,7 +971,7 @@ export namespace CompassReader {
       })
     }
 
-    private overlay: OverlayGeometry = new OverlayGeometry()
+    private overlay: LegacyOverlayGeometry = new LegacyOverlayGeometry()
 
     private tick_counter = 0
     private last_ticks: Record<AngleResult["type"], number> = {
@@ -982,7 +984,7 @@ export namespace CompassReader {
     protected begin() {
 
       this.lifetime_manager.bind(
-        this.capturing_service.subscribe({
+        Alt1.instance().capturing.subscribe({
           options: time => {
             return {
               interval: CaptureInterval.fromApproximateInterval(50),
@@ -1070,7 +1072,7 @@ export namespace CompassReader {
             shadow: true,
             centered: true,
             width: 12,
-            color: mixColor(128, 128, 128)
+            color: Alt1Color.fromHex("#808080")
           })
       } else if (state.type == "likely_solved") {
 
@@ -1081,7 +1083,7 @@ export namespace CompassReader {
             {x: 55, y: 52}
           ), {
             width: 2,
-            color: mixColor(0, 255, 0),
+            color: Alt1Color.green,
           }
         )
 
@@ -1090,7 +1092,7 @@ export namespace CompassReader {
             shadow: true,
             centered: true,
             width: 12,
-            color: mixColor(0, 255, 0),
+            color: Alt1Color.green,
           })
 
         this.committed_state.set({angle: null, state: "solved"})
@@ -1135,7 +1137,7 @@ export namespace CompassReader {
               shadow: true,
               centered: true,
               width: 15,
-              color: mixColor(255, 255, 255)
+              color: Alt1Color.white
             })
         }
       }
@@ -1181,7 +1183,7 @@ export namespace CompassReader {
 
       this.samples = lodash.cloneDeep(samples)
 
-      this.handler = deps().app.main_hotkey.subscribe(0, (e) => {
+      this.handler = Alt1.instance().main_hotkey.subscribe(0, (e) => {
         this.commit()
       })
 
@@ -1190,7 +1192,7 @@ export namespace CompassReader {
         this.handler.remove()
       })
 
-      this.reader = new Service(deps().app.capture_service, null, true, true, true).start()
+      this.reader = new Service(null, true, true, true).start()
     }
 
     delete() {

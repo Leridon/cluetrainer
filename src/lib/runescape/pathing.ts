@@ -32,7 +32,8 @@ export namespace Path {
 
   type step_base = {
     type: string,
-    description?: string
+    description?: string,
+    is_arrival_only?: boolean
   }
 
   export type step_orientation = step_base & {
@@ -745,7 +746,7 @@ export namespace Path {
 
   export function bounds(path: Path.raw, prune_far_transports: boolean = true): TileRectangle {
     return TileRectangle.lift(Rectangle.combine(...path.map((s, i) => {
-      const prune = prune_far_transports ? (i == 0 ? "start" : "end") : false
+      const prune: { keep: "start" | "end", threshold?: number } | null = prune_far_transports ? {keep: (i == 0 ? "start" : "end")} : null
 
       return Step.bounds(s, prune)
     })), level(path))
@@ -756,7 +757,7 @@ export namespace Path {
   }
 
   export namespace Step {
-    export function bounds(step: Step, prune_far_transports: "start" | "end" | false = false): Rectangle {
+    export function bounds(step: Step, prune_far_transports: { keep: "start" | "end", threshold?: number } | null | false = null): Rectangle {
       switch (step.type) {
         case "ability":
           return Rectangle.from(step.from, step.to)
@@ -769,22 +770,26 @@ export namespace Path {
         case "powerburst":
           return Rectangle.from(step.where)
         case "cheat":
+          if (step.is_arrival_only) return TileRectangle.from(step.target)
+
           if (!step.assumed_start) return Rectangle.from(step.target)
 
-          if (prune_far_transports && Vector2.max_axis(Vector2.sub(step.target, step.assumed_start)) > 64) {
-            if (prune_far_transports == "start") return Rectangle.from(step.target)
+          if (prune_far_transports && isFar(step, null, prune_far_transports.threshold ?? FAR_TRANSPORT_THRESHOLD)) {
+            if (prune_far_transports.keep == "start") return Rectangle.from(step.target)
             else return Rectangle.from(step.assumed_start)
           } else {
             return Rectangle.from(step.assumed_start, step.target)
           }
 
         case "transport":
-          let bounds: Rectangle = step.internal.clickable_area
-
           const ends_up = Path.ends_up([step])
 
+          if (step.is_arrival_only) return TileRectangle.from(ends_up)
+
+          let bounds: Rectangle = step.internal.clickable_area
+
           if (prune_far_transports && (!step.assumed_start || Vector2.max_axis(Vector2.sub(ends_up, step.assumed_start)) >= 64)) {
-            if (prune_far_transports == "start") {
+            if (prune_far_transports.keep == "start") {
               bounds = Rectangle.extendTo(bounds, ends_up)
             } else {
               if (step.assumed_start) bounds = Rectangle.extendTo(bounds, step.assumed_start)
@@ -840,9 +845,8 @@ export namespace Path {
   export type SectionedPath = TreeArray<Step, { name: string }>
 
   export namespace Section {
-
-    export function split_into_sections(path: Path.raw, root_name: string = "root"): TreeArray.InnerNode<Step, { name: string }> {
-      let section_dividers: number[] = []
+    export function split_into_sections(path: Path.raw, root_name: string = "root", far_threshold: number = FAR_TRANSPORT_THRESHOLD): TreeArray.InnerNode<Step, { name: string }> {
+      const section_dividers: number[] = []
 
       const division = (i: number) => {
         if (i > 0 && (section_dividers.length == 0 || index(section_dividers, -1) != i)) section_dividers.push(i)
@@ -851,14 +855,14 @@ export namespace Path {
       let pos: TileCoordinates = null
 
       for (let i = 0; i < path.length; i++) {
-        let step = path[i]
-        let new_pos = ends_up([step])
+        const step = path[i]
+        const new_pos = ends_up([step])
 
         if (step.type == "teleport") {
           if (i >= 1 && path[i - 1].type == "orientation") division(i - 1)
           else division(i)
         } else if ((step.type == "transport" || step.type == "cheat") && pos) {
-          if (Vector2.max_axis(Vector2.sub(new_pos, pos)) > 64 || new_pos.level != pos?.level) {
+          if ((pos && new_pos?.level != pos.level) || isFar(step)) {
             division(i + 1)
           }
         }
@@ -868,20 +872,56 @@ export namespace Path {
 
       division(path.length)
 
-      let root = TreeArray.init({name: root_name})
+      const root = TreeArray.init({name: root_name})
+
+      let bleeding_arrival: Path.Step = null
 
       section_dividers.forEach((end, i) => {
-        let sect = TreeArray.add(root,
+        const sect = TreeArray.add(root,
           TreeArray.inner({name: `Section ${i + 1}`})
         )
 
-        let prev = i == 0 ? 0 : section_dividers[i - 1]
+        const begin = i == 0 ? 0 : section_dividers[i - 1]
 
-        sect.children = TreeArray.leafs(path.slice(prev, end))
+        const slice = path.slice(begin, end)
+        if (bleeding_arrival) slice.splice(0, 0, bleeding_arrival)
+        sect.children = TreeArray.leafs(slice)
+
+        bleeding_arrival = null
+
+        const last = slice[slice.length - 1]
+
+        if (isFar(last, {path: path, position: end - 1}, far_threshold)) {
+          bleeding_arrival = {...last, is_arrival_only: true}
+        }
       })
+
+      if (bleeding_arrival) {
+        TreeArray.add(root,
+          TreeArray.inner({name: `Section ${section_dividers.length + 1}`}, TreeArray.leafs([bleeding_arrival]))
+        )
+      }
 
       return root
     }
+  }
+
+  const FAR_TRANSPORT_THRESHOLD = 16
+
+  export function isFar(step: Path.Step, context: { position: number, path: Path } = null, threshold: number = FAR_TRANSPORT_THRESHOLD): boolean {
+    switch (step.type) {
+      case "transport":
+      case "cheat":
+        const new_pos = ends_up([step])
+
+        return Vector2.max_axis(Vector2.sub(step.assumed_start, new_pos)) > threshold
+      case "teleport":
+        if (context) return context.position > 0 && context.path[context.position - 1].type == "orientation"
+        return false
+      default:
+        return false
+    }
+
   }
 
 }

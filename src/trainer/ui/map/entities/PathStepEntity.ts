@@ -43,7 +43,7 @@ export class PathStepEntity extends MapEntity {
   }
 
   bounds(): Rectangle {
-    return Path.Step.bounds(this.step, false)
+    return Path.Step.bounds(this.step, null)
   }
 
   protected override async render_implementation(options: MapEntity.RenderProps): Promise<Element> {
@@ -177,6 +177,8 @@ export class PathStepEntity extends MapEntity {
               }).addTo(this)
           }
 
+          // TODO: Render access in some way.
+
           return marker.getElement()
         }
         case "redclick": {
@@ -218,19 +220,29 @@ export class PathStepEntity extends MapEntity {
 
           const center_of_entity = TileRectangle.center(entity.clickable_area, false)
 
-          const to = is_remote ? center_of_entity : ends_up;
+          const is_too_far_for_arrow = is_remote || Path.isFar(step, null, 16)
 
-          (Vector2.eq(step.assumed_start, to) ? leaflet.circle(
-            Vector2.toLatLong(to), {radius: 0.1}
-          ) : arrow(offsetTowards(step.assumed_start, to, 0.2), to))
-            .setStyle({
+          if (step.is_arrival_only || Vector2.eq(step.assumed_start, ends_up) || is_too_far_for_arrow) {
+            leaflet.circle(
+              Vector2.toLatLong(ends_up), {radius: 0.1}
+            ).setStyle({
               color: "#069334",
               weight: weight,
-              dashArray: '10, 10',
               className: cls,
               pane: GameMap.pathArrowPane,
               opacity
             }).addTo(this)
+          } else {
+            arrow(offsetTowards(step.assumed_start, ends_up, 0.2), ends_up)
+              .setStyle({
+                color: "#069334",
+                weight: weight,
+                dashArray: '10, 10',
+                className: cls,
+                pane: GameMap.pathArrowPane,
+                opacity
+              }).addTo(this)
+          }
 
           const marker = new MapIcon(center_of_entity, {
             icon: CursorType.getIcon(action.cursor),
@@ -246,7 +258,9 @@ export class PathStepEntity extends MapEntity {
             ? Rectangle.center(Rectangle.from(step.assumed_start, step.target), false)
             : step.target
 
-          if (step.assumed_start) {
+          const is_too_far_for_arrow = Path.isFar(step, null, 16)
+
+          if (step.assumed_start && !is_too_far_for_arrow) {
             arrow(offsetTowards(step.assumed_start, step.target, 0.2), step.target)
               .setStyle({
                 color: "#069334",
@@ -256,6 +270,16 @@ export class PathStepEntity extends MapEntity {
                 pane: GameMap.pathArrowPane,
                 opacity
               }).addTo(this)
+          } else {
+            leaflet.circle(
+              Vector2.toLatLong(step.target), {radius: 0.1}
+            ).setStyle({
+              color: "#069334",
+              weight: weight,
+              className: cls,
+              pane: GameMap.pathArrowPane,
+              opacity
+            }).addTo(this)
           }
 
           const marker = new MapIcon(marker_pos, {

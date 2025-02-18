@@ -1,7 +1,7 @@
 import {Sliders} from "../../../../lib/cluetheory/Sliders";
 import {Rectangle, Transform, Vector2} from "../../../../lib/math";
 import {mixColor} from "alt1";
-import {OverlayGeometry} from "../../../../lib/alt1/OverlayGeometry";
+import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
 import {SlideReader} from "../cluereader/SliderReader";
 import {deps} from "../../../dependencies";
 import * as lodash from "lodash";
@@ -13,7 +13,7 @@ import {AbstractPuzzleSolving} from "./AbstractPuzzleSolving";
 import {AbstractPuzzleProcess} from "./AbstractPuzzleProcess";
 import {PDBSolver} from "../../../../lib/cluetheory/sliders/PDBSolver";
 import {RegionChainDistanceTable} from "../../../../lib/cluetheory/sliders/RegionChainDistanceTable";
-import {async_lazy, lazy} from "../../../../lib/properties/Lazy";
+import {async_lazy, lazy} from "../../../../lib/Lazy";
 import KeyValueStore from "../../../../lib/util/KeyValueStore";
 import {Observable, observe} from "../../../../lib/reactive";
 import {RandomSolver} from "../../../../lib/cluetheory/sliders/RandomSolver";
@@ -22,6 +22,7 @@ import {RegionDistanceTable} from "../../../../lib/cluetheory/sliders/RegionDist
 import {Log} from "../../../../lib/util/Log";
 import {CapturedImage} from "../../../../lib/alt1/capture";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
+import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
 import profileAsync = util.profileAsync;
 import log = Log.log;
 import index = util.index;
@@ -29,7 +30,7 @@ import SliderPuzzle = Sliders.SliderPuzzle;
 import SliderState = Sliders.SliderState;
 import SolvingProcess = Sliders.SolvingProcess;
 import AnnotatedMoveList = Sliders.AnnotatedMoveList;
-import over = OverlayGeometry.over;
+import over = LegacyOverlayGeometry.over;
 import Move = Sliders.Move;
 import MoveList = Sliders.MoveList;
 
@@ -56,9 +57,9 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
 
   private solution: AnnotatedMoveList = null
 
-  private progress_overlay: OverlayGeometry = null
-  private solving_overlay: OverlayGeometry = null
-  private move_overlay: OverlayGeometry = null
+  private progress_overlay: LegacyOverlayGeometry = null
+  private solving_overlay: LegacyOverlayGeometry = null
+  private move_overlay: LegacyOverlayGeometry = null
 
   private last_overlay_render: number = -1
 
@@ -68,7 +69,7 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
   private arrow_keys_inverted: boolean = false
 
   constructor(private parent: SliderSolving, public solver: Sliders.Solver) {
-    super(parent.parent.app.capture_service)
+    super()
 
     this.puzzle = parent.puzzle.puzzle
   }
@@ -145,7 +146,7 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
         `Done! ${total_time.toFixed(1)}s, ${moves_per_second.toFixed(1)} moves/s`,
         center,
         {
-          color: mixColor(255, 255, 255),
+          color: Alt1Color.white,
           centered: true,
           shadow: true,
           width: 12
@@ -166,7 +167,7 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
           `Slider Speed ${estimated_slider_speed.toFixed(3)}`,
           Vector2.add(center, {x: 0, y: 20}),
           {
-            color: mixColor(255, 255, 255),
+            color: Alt1Color.white,
             centered: true,
             shadow: true,
             width: 12
@@ -181,7 +182,7 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
 
       if (solution_length) {
         this.progress_overlay.text(solution_length.toString(), Vector2.add(center, {x: length / 2 + 20, y: 0}), {
-          color: mixColor(255, 255, 255),
+          color: Alt1Color.white,
           width: 12,
           shadow: true,
           centered: true
@@ -192,7 +193,7 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
         const total_time = (now - this.start_time) / 1000
 
         this.progress_overlay.text(`${total_time.toFixed(1)}s`, Vector2.add(center, {x: -(length / 2 + 25), y: 0}), {
-          color: mixColor(255, 255, 255),
+          color: Alt1Color.white,
           width: 12,
           shadow: true,
           centered: true
@@ -203,7 +204,7 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
           const moves_per_second = this.current_mainline_index / solving_time
 
           this.progress_overlay.text(`${moves_per_second.toFixed(1)}/s`, center, {
-            color: mixColor(255, 255, 255),
+            color: Alt1Color.white,
             width: 12,
             shadow: true,
             centered: true
@@ -246,7 +247,7 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
     const overlap_prevention_map = new Array(25).fill(false)
     overlap_prevention_map[current_blank] = true
 
-    const move_overlays: OverlayGeometry[] = []
+    const move_overlays: LegacyOverlayGeometry[] = []
 
     for (let i = 0; i < moves.length; ++i) {
       const move = moves[i]
@@ -272,7 +273,7 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
 
       const STROKE = 3
       const CONTRAST_BORDER = 2
-      const CONTRAST_COLOR = mixColor(1, 1, 1)
+      const CONTRAST_COLOR = Alt1Color.black
 
       if (as_key) {
         const rotation = (() => {
@@ -316,9 +317,9 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
             .polyline(points, true, {width: STROKE + 2 * CONTRAST_BORDER, color: CONTRAST_COLOR})
             .polyline(points, true, {
                 width: STROKE,
-                color: is_recovery_move
+                color: Alt1Color.fromNumber(is_recovery_move
                   ? this.settings.color_recovery_move
-                  : this.settings.color_mainline_move
+                  : this.settings.color_mainline_move)
               }
             )
         )
@@ -327,11 +328,11 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
           over()
             .rect(
               Rectangle.centeredOn(this.posToScreen(move.clicked_tile), size + CONTRAST_BORDER),
-              {width: STROKE + 2 * CONTRAST_BORDER, color: mixColor(1, 1, 1)}
+              {width: STROKE + 2 * CONTRAST_BORDER, color: Alt1Color.black}
             )
             .rect(
               Rectangle.centeredOn(this.posToScreen(move.clicked_tile), size),
-              {width: STROKE, color: is_recovery_move ? this.settings.color_recovery_move : this.settings.color_mainline_move}
+              {width: STROKE, color: is_recovery_move ? Alt1Color.fromNumber(this.settings.color_recovery_move) : Alt1Color.fromNumber(this.settings.color_mainline_move)}
             )
         )
       }
@@ -364,8 +365,8 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
         {
           width: 2,
           color: is_recovery_move
-            ? this.settings.color_recovery_line
-            : this.settings.color_mainline_line
+            ? Alt1Color.fromNumber(this.settings.color_recovery_line)
+            : Alt1Color.fromNumber(this.settings.color_mainline_line)
         }
       )
 
@@ -401,7 +402,7 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
             this.parent.puzzle.reader.body.screenRectangle().origin,
             TEXT_POSITION
           ),
-          {color: mixColor(255, 255, 255), width: 20, centered: true, shadow: true}
+          {color: Alt1Color.white, width: 20, centered: true, shadow: true}
         )
 
       this.solving_overlay.progressbar(Vector2.add(
@@ -415,7 +416,7 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
             this.parent.puzzle.reader.body.screenRectangle().origin,
             TEXT_POSITION
           ),
-          {color: mixColor(255, 0, 0), width: 20, centered: true, shadow: true}
+          {color: Alt1Color.red, width: 20, centered: true, shadow: true}
         )
     }
 
@@ -871,18 +872,18 @@ export namespace SlideGuider {
   }
 
   export namespace Settings {
-    import A1Color = util.A1Color;
+
     export const DEFAULT: Settings = {
       mode: "mouse",
       autostart: true,
       max_lookahead: 5,
       prevent_overlap: true,
       display_recovery: true,
-      color_mainline_move: A1Color.fromHex("#5ca000"),
-      color_mainline_line: A1Color.fromHex("#41740e"),
-      color_recovery_move: A1Color.fromHex("#FF0000"),
-      color_recovery_line: A1Color.fromHex("#ff6600"),
-      solve_time_ms: 1000,
+      color_mainline_move: Alt1Color.fromHex("#5ca000").for_overlay,
+      color_mainline_line: Alt1Color.fromHex("#41740e").for_overlay,
+      color_recovery_move: Alt1Color.fromHex("#FF0000").for_overlay,
+      color_recovery_line: Alt1Color.fromHex("#ff6600").for_overlay,
+      solve_time_ms: 200,
       estimate_slider_speed: false,
       improve_slider_matches_backtracking: true,
       continue_solving_after_initial_solve: true

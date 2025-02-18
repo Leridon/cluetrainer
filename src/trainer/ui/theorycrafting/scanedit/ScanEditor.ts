@@ -1,10 +1,10 @@
 import {TileCoordinates} from "../../../../lib/runescape/coordinates";
 import Behaviour, {SingleBehaviour} from "../../../../lib/ui/Behaviour";
-import {lazy, Lazy} from "../../../../lib/properties/Lazy";
+import {lazy, Lazy} from "../../../../lib/Lazy";
 import * as leaflet from "leaflet";
 import {EquivalenceClass, ScanEquivalenceClasses, ScanEquivalenceClassOptions} from "../../../../lib/cluetheory/scans/EquivalenceClasses";
 import {areaToPolygon} from "../../polygon_helpers";
-import {type Application} from "../../../application";
+import {type ClueTrainer} from "../../../ClueTrainer";
 import {AdaptiveScanRadiusMarker, ScanRegionPolygon} from "../../neosolving/ScanLayer";
 import {PathEditor} from "../../pathedit/PathEditor";
 import {OpacityGroup} from "../../../../lib/gamemap/layers/OpacityLayer";
@@ -45,14 +45,14 @@ import ScanTreeNode = ScanTree.ScanTreeNode;
 import ScanRegion = ScanTree.ScanRegion;
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import ClueAssumptions = SolvingMethods.ClueAssumptions;
+import {ClueTrainerWiki} from "../../../wiki";
 
 export class ScanEditLayer extends GameLayer {
   marker: AdaptiveScanRadiusMarker
 
   private markers: ScanEditLayer.MarkerPair[] = []
 
-  constructor(private spots: TileCoordinates[]
-  ) {
+  constructor(private spots: TileCoordinates[]) {
     super();
 
     this.marker = new AdaptiveScanRadiusMarker().addTo(this)
@@ -69,8 +69,6 @@ export class ScanEditLayer extends GameLayer {
     this.markers = spots.map(s => new ScanEditLayer.MarkerPair(s))
 
     this.markers.forEach((m, i) => {
-      //m.setNumber(i + 1)
-
       m.regular.addTo(this)
       m.complement.addTo(this)
     })
@@ -140,7 +138,6 @@ export namespace ScanEditLayer {
       this.complement.setTiming(timing)
     }
   }
-
 
   export class SpotMarker extends MapEntity {
     spot_on_map: TileCoordinates = null
@@ -249,13 +246,7 @@ export namespace ScanEditLayer {
           type: "basic",
           text: "About complement spots",
           handler: () => {
-            (new class extends NisModal {
-              override render() {
-                super.render();
-
-                this.body.text("Sorry, this explanation is still missing.")
-              }
-            }).show()
+            ClueTrainerWiki.openOnPage("toofardifferentlevel")
           }
         })
       }
@@ -516,7 +507,7 @@ export default class ScanEditor extends MethodSubEditor {
 
   constructor(
     public parent: MethodEditor,
-    public app: Application,
+    public app: ClueTrainer,
     public value: AugmentedMethod<ScanTreeMethod, Clues.Scan>,
     public side_panel: Widget
   ) {

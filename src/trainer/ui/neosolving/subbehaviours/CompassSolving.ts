@@ -31,6 +31,8 @@ import {SettingsModal} from "../../settings/SettingsEdit";
 import * as assert from "assert";
 import {Log} from "../../../../lib/util/Log";
 import {angleDifference} from "lib/math";
+import {TextRendering} from "../../TextRendering";
+import {Alt1} from "../../../../lib/alt1/Alt1";
 import span = C.span;
 import cls = C.cls;
 import TeleportGroup = Transportation.TeleportGroup;
@@ -45,6 +47,7 @@ import count = util.count;
 import digSpotArea = Clues.digSpotArea;
 import vbox = C.vbox;
 import log = Log.log;
+import render_digspot = TextRendering.render_digspot;
 
 class CompassHandlingLayer extends GameLayer {
   private lines: {
@@ -136,7 +139,7 @@ class KnownCompassSpot extends MapEntity {
     this.setTooltip(() => {
       const layout = new Properties()
 
-      layout.header(`Compass spot ${this.spot.spot_id + 1}`)
+      layout.header(c().append("Compass spot ", render_digspot(this.spot.spot_id + 1)))
 
       layout.paragraph("Click to select as solution and view pathing.")
 
@@ -340,7 +343,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     })
 
     if (reader) {
-      this.process = new CompassReader.Service(this.parent.app.capture_service,
+      this.process = new CompassReader.Service(
         this.reader.capture,
         this.settings.enable_status_overlay
       )
@@ -394,7 +397,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
           .tooltip("Reset compass solver."),
         inlineimg("assets/icons/settings.png").addClass("ctr-clickable")
           .on("click", async () => {
-            const result = await new SettingsModal("compass").do()
+            const result = await SettingsModal.openOnPage("compass")
 
             if (result.saved) this.settings = result.value.solving.compass
           }),
@@ -622,8 +625,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
   setSelectedSpot(spot: CompassSolving.SpotData, set_as_solution: boolean) {
     this.selected_spot.set(spot)
 
-    console.log("Setting")
-
     if (set_as_solution && set_as_solution) {
       this.registerSolution(digSpotArea(spot.spot))
     }
@@ -692,10 +693,8 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     // Fit camera view to only the remaining possible spots. (TODO: This conflicts with the camera zoom that happens when setting the method for the most likely spot)
     if (maybe_fit) {
-      if (possible.length > 0 && (information.length > 0 || possible.length < 50)) {
-        this.layer.getMap().fitView(TileRectangle.from(...possible.map(s => s.spot)),
-          {maxZoom: 2}
-        )
+      if (!this.parent.active_method && possible.length > 1 && (information.length > 0 || possible.length < 50)) {
+        this.parent.layer.fit(TileRectangle.from(...possible.map(s => s.spot)))
       }
     }
 
@@ -802,8 +801,10 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
         const size = activate(assumed_position_from_previous_clue).size
 
+        const COMPASS_PREVIOUS_AREA_MAX_SIZE = 256
+
         // Only use positions that are reasonably small
-        if (Vector2.max_axis(size) > 192) {
+        if (Vector2.max_axis(size) > COMPASS_PREVIOUS_AREA_MAX_SIZE) {
           Log.log().log(`Not using previous solution because solution area is too large (${size.x} x ${size.y})`, "Compass Solving")
 
           return
@@ -880,7 +881,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     if (this.reader) {
       this.process?.start()
 
-      this.parent.app.main_hotkey.subscribe(0, e => {
+      Alt1.instance().main_hotkey.subscribe(0, e => {
         if (e.text) {
           const matched_teleport = CompassSolving.teleport_hovers.findBest(e.text)
 

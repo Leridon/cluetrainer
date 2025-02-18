@@ -4,7 +4,7 @@ import {Sliders} from "../../../../lib/cluetheory/Sliders";
 import {ImageFingerprint} from "../../../../lib/util/ImageFingerprint";
 import {deps} from "../../../dependencies";
 import {Vector2} from "../../../../lib/math";
-import {async_lazy, LazyAsync} from "../../../../lib/properties/Lazy";
+import {async_lazy, LazyAsync} from "../../../../lib/Lazy";
 import SliderPuzzle = Sliders.SliderPuzzle;
 import {Log} from "../../../../lib/util/Log";
 import log = Log.log;

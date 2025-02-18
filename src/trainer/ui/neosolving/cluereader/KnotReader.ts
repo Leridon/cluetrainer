@@ -1,14 +1,15 @@
 import {CelticKnots} from "../../../../lib/cluetheory/CelticKnots";
 import {Rectangle, Vector2} from "../../../../lib/math";
 import {util} from "../../../../lib/util/util";
-import {OverlayGeometry} from "../../../../lib/alt1/OverlayGeometry";
+import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
 import {ImageDetect, mixColor} from "alt1";
 import {ImageFingerprint} from "../../../../lib/util/ImageFingerprint";
 import * as lodash from "lodash";
 import {identity} from "lodash";
 import {CapturedImage} from "../../../../lib/alt1/capture";
 import {CapturedModal} from "./capture/CapturedModal";
-import {async_lazy, lazy} from "../../../../lib/properties/Lazy";
+import {async_lazy, lazy} from "../../../../lib/Lazy";
+import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
 
 export class KnotReader {
   constructor(private rune_references: ImageFingerprint[]) {}
@@ -205,7 +206,7 @@ export namespace KnotReader {
     }[]
   }
 
-  let overlay: OverlayGeometry = new OverlayGeometry().withTime(2000)
+  let overlay: LegacyOverlayGeometry = new LegacyOverlayGeometry().withTime(2000)
 
   type Tile = {
     pos: Vector2,
@@ -574,11 +575,11 @@ export namespace KnotReader {
       this.readPuzzle()
 
       const colors = [
-        mixColor(0, 0, 255), // blue
-        mixColor(255, 0, 0), // red
-        mixColor(23, 23, 100), // darkblue
-        mixColor(235, 167, 0),  // yellow
-        mixColor(255, 255, 255),   // gray
+        Alt1Color.blue,
+        Alt1Color.red,
+        Alt1Color.fromRGB(23, 23, 100), // darkblue
+        Alt1Color.fromRGB(235, 167, 0),  // yellow
+        Alt1Color.white,   // gray
       ]
 
       overlay?.clear()
@@ -587,7 +588,7 @@ export namespace KnotReader {
         overlay.rect(
           Rectangle.centeredOn(Vector2.add(this.relevant_body.screenRectangle().origin, this.interception_point), 5),
           {
-            color: mixColor(255, 255, 255),
+            color: Alt1Color.white,
             width: 2
           }
         )
@@ -633,7 +634,7 @@ export namespace KnotReader {
 
             if (show_grid) {
               overlay.rect(Rectangle.fromOriginAndSize(o, TILE_SIZE),
-                {color: mixColor(255, 0, 0), width: 1}
+                {color: Alt1Color.red, width: 1}
               )
             }
 
@@ -652,7 +653,7 @@ export namespace KnotReader {
               overlay.text(text, Vector2.add(o, Vector2.scale(0.5, TILE_SIZE)), {
                   width: 12,
                   shadow: true,
-                  color: text_mode == "runeid" ? colors[tile.rune.strip_color] : mixColor(255, 255, 255),
+                  color: text_mode == "runeid" ? colors[tile.rune.strip_color] : Alt1Color.white,
                   centered: true
                 }
               )

@@ -17,11 +17,13 @@ export class MethodProperties extends Properties {
     this.named("Name", c().text(this.method.method.name))
     this.named("Assumptions", c().append(...AssumptionProperty.icons(this.method.method.assumptions)))
 
-    this.header("Description")
-    this.row(c().text(this.method.method.description
-        ? this.method.method.description
-        : "None"
-      ).css("font-style", "italic")
-    )
+    if (this.method.method.description) {
+      this.header("Description")
+      this.row(c().text(this.method.method.description
+          ? this.method.method.description
+          : "None"
+        ).css("font-style", "italic")
+      )
+    }
   }
 }

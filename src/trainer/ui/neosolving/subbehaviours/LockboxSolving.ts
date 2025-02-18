@@ -4,7 +4,6 @@ import {Lockboxes} from "../../../../lib/cluetheory/Lockboxes";
 import {CapturedImage} from "../../../../lib/alt1/capture";
 import {LockBoxReader} from "../cluereader/LockBoxReader";
 import {Vector2} from "../../../../lib/math";
-import {mixColor} from "alt1";
 import * as lodash from "lodash";
 import {CapturedModal} from "../cluereader/capture/CapturedModal";
 import {AbstractPuzzleProcess} from "./AbstractPuzzleProcess";
@@ -13,6 +12,7 @@ import {deps} from "../../../dependencies";
 import {Log} from "../../../../lib/util/Log";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
 import {util} from "../../../../lib/util/util";
+import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
 import log = Log.log;
 import async_init = util.async_init;
 
@@ -28,8 +28,7 @@ class LockboxSolvingProcess extends AbstractPuzzleProcess {
   private initialization: util.AsyncInitialization<{ reader: LockBoxReader }>
 
   constructor(private parent: LockboxSolving) {
-    super(parent.parent.app.capture_service);
-
+    super();
 
     this.initialization = async_init(async () => {
       return {
@@ -53,7 +52,7 @@ class LockboxSolvingProcess extends AbstractPuzzleProcess {
           Vector2.add(Vector2.scale(0.5, LockBoxReader.TILE_SIZE), reader.tileOrigin({x, y}, true), {x: 3, y: 0}),
           {
             width: 24,
-            color: this.settings.overlay_color
+            color: Alt1Color.fromNumber(this.settings.overlay_color)
           }
         )
       }
@@ -62,7 +61,7 @@ class LockboxSolvingProcess extends AbstractPuzzleProcess {
     if (is_desynced) {
       this.solution_overlay.text("Detected Client Desync - Overlay paused", reader.tileOrigin({x: 2, y: -2}, true), {
         width: 16,
-        color: mixColor(200, 0, 0),
+        color: Alt1Color.fromHex("#C80000"),
         centered: true,
         shadow: true
       })
@@ -205,7 +204,7 @@ export namespace LockboxSolving {
     export const DEFAULT: Settings = {
       autostart: true,
       two_click_factor: 1.3,
-      overlay_color: mixColor(255, 255, 255)
+      overlay_color: Alt1Color.white.for_overlay
     }
 
     export function normalize(settings: Settings): Settings {

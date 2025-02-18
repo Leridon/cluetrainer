@@ -17,7 +17,6 @@ export class Alt1Modal extends NisModal {
   private addToAlt1Link(): string {
     if (this.url_override) {
       return `alt1://addapp/${this.url_override}/appconfig.json`
-
     } else {
       return `alt1://addapp/${window.location.protocol}//${window.location.host}${window.location.pathname.slice(0, window.location.pathname.lastIndexOf("/") + 1)}appconfig.json`
     }

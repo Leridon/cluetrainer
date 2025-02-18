@@ -15,6 +15,7 @@ import {util} from "../../../../lib/util/util";
 import PuzzleState = CelticKnots.PuzzleState;
 import log = Log.log;
 import async_init = util.async_init;
+import { Alt1Color } from "lib/alt1/Alt1Color";
 
 const CENTER_TEXT_SIZE = 20
 const MOVE_FONT_SIZE = 24
@@ -34,7 +35,7 @@ class KnotSolvingProcess extends AbstractPuzzleProcess {
   private initialization: util.AsyncInitialization<{ reader: KnotReader }>
 
   constructor(private parent: KnotSolving) {
-    super(parent.parent.app.capture_service);
+    super();
 
     this.last_successful_read = Date.now()
 
@@ -107,7 +108,7 @@ class KnotSolvingProcess extends AbstractPuzzleProcess {
 
             this.solution_overlay.text(Math.abs(move.offset).toString(),
               Vector2.add(reader.tileOrigin(pos, true), {x: 12, y: 12}), {
-                color: mixColor(255, 255, 255),
+                color: Alt1Color.white,
                 centered: true,
                 shadow: true,
                 width: MOVE_FONT_SIZE
@@ -118,7 +119,7 @@ class KnotSolvingProcess extends AbstractPuzzleProcess {
           this.solution_overlay.text(CelticKnots.PuzzleShape.hash(this.puzzle.shape).toString(),
             Vector2.add(reader.ui.body.screenRectangle().origin, CENTRAL_TEXT_OFFSET, Vector2.scale(0.5, reader.ui.body.screenRectangle().size)),
             {
-              color: mixColor(255, 255, 255),
+              color: Alt1Color.white,
               width: CENTER_TEXT_SIZE,
             }
           )
@@ -129,7 +130,7 @@ class KnotSolvingProcess extends AbstractPuzzleProcess {
         this.solution_overlay.text("Not enough information",
           Vector2.add(reader.ui.body.screenRectangle().origin, CENTRAL_TEXT_OFFSET, Vector2.scale(0.5, reader.ui.body.screenRectangle().size)),
           {
-            color: mixColor(255, 255, 255),
+            color: Alt1Color.white,
             width: CENTER_TEXT_SIZE,
           }
         )
@@ -137,7 +138,7 @@ class KnotSolvingProcess extends AbstractPuzzleProcess {
         this.solution_overlay.rect2(
           ScreenRectangle.move(reader.ui.body.screenRectangle(), {x: 4, y: 282}, {x: 121, y: 26}),
           {
-            color: mixColor(255, 255, 255),
+            color: Alt1Color.white,
             width: 2,
           }
         )
@@ -147,7 +148,7 @@ class KnotSolvingProcess extends AbstractPuzzleProcess {
         this.solution_overlay.text("Solved",
           Vector2.add(reader.ui.body.screenRectangle().origin, CENTRAL_TEXT_OFFSET, Vector2.scale(0.5, reader.ui.body.screenRectangle().size)),
           {
-            color: mixColor(0, 255, 0),
+            color: Alt1Color.green,
             width: CENTER_TEXT_SIZE,
           }
         )
@@ -155,7 +156,7 @@ class KnotSolvingProcess extends AbstractPuzzleProcess {
         this.solution_overlay.rect2(
           ScreenRectangle.move(reader.ui.body.screenRectangle(), {x: 372, y: 282}, {x: 121, y: 26}),
           {
-            color: mixColor(0, 255, 0),
+            color: Alt1Color.green,
             width: 2,
           }
         )

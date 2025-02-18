@@ -1,5 +1,5 @@
 import Behaviour, {SingleBehaviour} from "../../../lib/ui/Behaviour";
-import {Application} from "../../application";
+import {ClueTrainer} from "../../ClueTrainer";
 import {GameLayer} from "../../../lib/gamemap/GameLayer";
 import {GameMapControl} from "../../../lib/gamemap/GameMapControl";
 import {C} from "../../../lib/ui/constructors";
@@ -36,7 +36,7 @@ import {Notification} from "../NotificationBar";
 import TransportLayer from "../map/TransportLayer";
 import {NeoSolvingSubBehaviour} from "./NeoSolvingSubBehaviour";
 import {CompassSolving} from "./subbehaviours/CompassSolving";
-import {ScanTreeSolving} from "./subbehaviours/ScanTreeSolving";
+import {ScanTreeSolving} from "./subbehaviours/scans/ScanTreeSolving";
 import {KnotSolving} from "./subbehaviours/KnotSolving";
 import {Alt1Modal} from "../../Alt1Modal";
 import {LockboxSolving} from "./subbehaviours/LockboxSolving";
@@ -44,8 +44,8 @@ import {TowersSolving} from "./subbehaviours/TowersSolving";
 import {Log} from "../../../lib/util/Log";
 import {CapturedScan} from "./cluereader/capture/CapturedScan";
 import {AbstractCaptureService, CapturedImage, CaptureInterval} from "../../../lib/alt1/capture";
-import {SimpleScanSolving} from "./subbehaviours/SimpleScanSolving";
-import {ScanSolving} from "./subbehaviours/ScanSolving";
+import {SimpleScanSolving} from "./subbehaviours/scans/SimpleScanSolving";
+import {ScanSolving} from "./subbehaviours/scans/ScanSolving";
 import {Transportation} from "../../../lib/runescape/transportation";
 import {Rectangle, Vector2} from "../../../lib/math";
 import {SettingsNormalization} from "../../../lib/util/SettingsNormalization";
@@ -69,6 +69,7 @@ import log = Log.log;
 import default_interactive_area = Transportation.EntityTransportation.default_interactive_area;
 import digSpotArea = Clues.digSpotArea;
 import findBestMatch = util.findBestMatch;
+import {Alt1} from "../../../lib/alt1/Alt1";
 
 class NeoSolvingLayer extends GameLayer {
   public clue_container: Widget
@@ -278,7 +279,7 @@ namespace NeoSolvingLayer {
             .setToggled(this.fullscreen_preference.get()),
           new MainControlButton({icon: "assets/icons/settings.png", centered: true})
             .tooltip("Open settings")
-            .onClick(() => new SettingsModal("solving_general").do())
+            .onClick(() => SettingsModal.openOnPage("solving_general"))
         ).css("flex-grow", "1"),
       )
 
@@ -326,7 +327,7 @@ class ClueSolvingReadingBehaviour extends Behaviour {
   protected begin() {
     const interval = CaptureInterval.fromApproximateInterval(300)
 
-    this.lifetime_manager.bind(this.parent.app.capture_service.subscribe({
+    this.lifetime_manager.bind(Alt1.instance().capturing.subscribe({
       options: (time: AbstractCaptureService.CaptureTime) => ({interval: interval, area: null}),
       paused: () => (!this.autoSolve || this.parent.active_behaviour.get()?.pausesClueReader()),
       handle: (img) => this.solve(img.value, true)
@@ -373,7 +374,7 @@ class ClueSolvingReadingBehaviour extends Behaviour {
       return
     }
 
-    const img = await this.parent.app.capture_service.captureOnce({options: {area: null, interval: null}})
+    const img = await Alt1.instance().capturing.captureOnce({options: {area: null, interval: null}})
 
     const found = this.solve(img.value, false)
 
@@ -431,7 +432,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
     return null
   }
 
-  constructor(public app: Application, public tetracompass_only: boolean) {
+  constructor(public app: ClueTrainer, public tetracompass_only: boolean) {
     super();
 
     this.path_control.section_selected.on(p => {

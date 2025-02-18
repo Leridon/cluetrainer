@@ -1,10 +1,9 @@
 import NeoSolvingBehaviour from "../NeoSolvingBehaviour";
 import {ClueReader} from "../cluereader/ClueReader";
-import {CapturedImage, ScreenCaptureService} from "../../../../lib/alt1/capture";
+import {CapturedImage} from "../../../../lib/alt1/capture";
 import {CapturedModal} from "../cluereader/capture/CapturedModal";
 import {TowersReader} from "../cluereader/TowersReader";
 import {Towers} from "../../../../lib/cluetheory/Towers";
-import {mixColor} from "alt1";
 import {Vector2} from "../../../../lib/math";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
 import {AbstractPuzzleSolving} from "./AbstractPuzzleSolving";
@@ -12,6 +11,8 @@ import {AbstractPuzzleProcess} from "./AbstractPuzzleProcess";
 import {deps} from "../../../dependencies";
 import {util} from "../../../../lib/util/util";
 import async_init = util.async_init;
+import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
+import {Alt1ScreenCaptureService} from "../../../../lib/alt1/capture/Alt1ScreenCaptureService";
 
 class TowersSolvingProcess extends AbstractPuzzleProcess {
   settings = deps().app.settings.settings.solving.puzzles.towers
@@ -25,8 +26,8 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
 
   private initialization: util.AsyncInitialization<{ reader: TowersReader }>
 
-  constructor(private parent: TowersSolving, capturing: ScreenCaptureService) {
-    super(capturing);
+  constructor(private parent: TowersSolving) {
+    super();
 
     this.last_successful_read = Date.now()
 
@@ -114,14 +115,14 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
               this.solution_overlay.text(
                 "✓",
                 TR, {
-                  color: A1Color.fromHex("#41740e"),
+                  color: Alt1Color.fromHex("#41740e"),
                   width: 8
                 }
               )*/
 
               this.solution_overlay.rect2(
                 {origin: Vector2.add(origin, {x: -1, y: -1}), size: Vector2.add(TowersReader.TILE_SIZE, {x: 3, y: 3})}, {
-                  color: mixColor(0, 255, 0),
+                  color: Alt1Color.green,
                   width: 2
                 }
               )
@@ -133,7 +134,7 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
               this.solution_overlay.text(
                 should.toString(),
                 TR, {
-                  color: mixColor(200, 200, 200),
+                  color: Alt1Color.fromHex("#C8C8C8"),
                   width: 10
                 }
               )
@@ -149,7 +150,7 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
               this.solution_overlay.text(
                 "+" + difference.toString(),
                 pos, {
-                  color: mixColor(200, 200, 200),
+                  color: Alt1Color.fromHex("#C8C8C8"),
                   width: 10
                 }
               )
@@ -161,7 +162,7 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
 
               this.solution_overlay.rect2(
                 {origin: Vector2.add(origin, {x: -1, y: -1}), size: Vector2.add(TowersReader.TILE_SIZE, {x: 3, y: 3})}, {
-                  color: mixColor(255, 0, 0),
+                  color: Alt1Color.red,
                   width: 2
                 }
               )
@@ -178,7 +179,7 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
       this.solution_overlay.text(
         "Solved",
         Vector2.add(reader.tileOrigin({x: 2, y: 2}, true), {x: 21, y: 21}), {
-          color: mixColor(0, 255, 0),
+          color: Alt1Color.green,
           width: 20
         }
       )
@@ -188,7 +189,7 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
       this.solution_overlay.rect2(
         ScreenRectangle.subRect(reader.modal.body.screenRectangle(), CHECK_RECTANGLE),
         {
-          color: mixColor(0, 255, 0),
+          color: Alt1Color.green,
           width: 2,
         }
       )
@@ -254,7 +255,7 @@ export class TowersSolving extends AbstractPuzzleSolving<ClueReader.Result.Puzzl
   }
 
   protected constructProcess(): TowersSolvingProcess {
-    return new TowersSolvingProcess(this, this.parent.app.capture_service)
+    return new TowersSolvingProcess(this)
   }
 
   pausesClueReader(): boolean {

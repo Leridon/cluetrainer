@@ -2,11 +2,12 @@ import {ScreenRectangle} from "../ScreenRectangle";
 import {Vector2} from "../../math";
 import * as a1lib from "alt1";
 import {ImgRef, ImgRefData} from "alt1";
-import {OverlayGeometry} from "../OverlayGeometry";
+import {LegacyOverlayGeometry} from "../LegacyOverlayGeometry";
 import {NeedleImage} from "./NeedleImage";
 import {util} from "../../util/util";
 import * as lodash from "lodash";
 import A1Color = util.A1Color;
+import {Alt1Color} from "../Alt1Color";
 
 export class CapturedImage {
   private _name: string = undefined
@@ -183,12 +184,12 @@ export class CapturedImage {
     }
   }
 
-  debugOverlay(overlay: OverlayGeometry = new OverlayGeometry()): OverlayGeometry {
+  debugOverlay(overlay: LegacyOverlayGeometry = new LegacyOverlayGeometry()): LegacyOverlayGeometry {
     overlay.rect2(this.screenRectangle())
 
     if (this._name) {
       overlay.text(this._name, this.screen_rectangle.origin,
-        {width: 10, centered: false, color: A1Color.fromHex("#FFFFFF")}
+        {width: 10, centered: false, color: Alt1Color.white}
       )
     }
 

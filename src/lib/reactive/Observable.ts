@@ -71,12 +71,18 @@ export namespace Observable {
       if (!this.equality_f(old, this._value)) this.trigger_changed(old)
     }
 
-    subscribe(handler: (new_value: T, old: T) => any, trigger_once: boolean = false, handler_f: (_: EwentHandler<any>) => void = null): this {
+    subscribe2(handler: (new_value: T, old: T) => any, trigger_once: boolean = false): EwentHandler<any> {
       let h = this.changed.on((o) => handler(o.value, o.old))
 
-      if (handler_f) handler_f(h)
-
       if (trigger_once) handler(this._value, undefined)
+
+      return h
+    }
+
+    subscribe(handler: (new_value: T, old: T) => any, trigger_once: boolean = false, handler_f: (_: EwentHandler<any>) => void = null): this {
+      let h = this.subscribe2(handler, trigger_once)
+
+      if (handler_f) handler_f(h)
 
       return this
     }

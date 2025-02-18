@@ -85,6 +85,10 @@ export namespace C {
     })
   }
 
+  export function link(href: string): Widget {
+    return c("<a target='_blank'></a>").setAttribute("href", href).tooltip(href)
+  }
+
   export function npc(name: string, clickable: boolean = false): Widget {
     return c("<span class='nisl-npc'></span>").toggleClass("ctr-clickable", clickable).text(name)
   }
@@ -118,5 +122,9 @@ export namespace C {
 
   export function cls(c: string): Widget {
     return C.div().addClass(c)
+  }
+
+  export function mediaContainer(...children: Widget[]) {
+    return cls("ctr-media-container").append(...children)
   }
 }

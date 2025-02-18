@@ -15,6 +15,7 @@ import {Menu} from "../widgets/ContextMenu";
 import Properties from "../widgets/Properties";
 import ScanRegion = ScanTree.ScanRegion;
 import observe_combined = Observable.observe_combined;
+import {ScanSolving} from "./subbehaviours/scans/ScanSolving";
 
 export class ScanRegionPolygon extends ActiveOpacityGroup {
   polygon: leaflet.Polygon
@@ -129,21 +130,24 @@ export class ScanRadiusMarker extends MapEntity {
         topleft: {x: this.spot.x - (this.range + 15), y: this.spot.y + (this.range + 15)},
         botright: {x: this.spot.x + (this.range + 15), y: this.spot.y - (this.range + 15)}
       }).setStyle({
-        interactive: false
-      }).setStyle({color: "blue", fillOpacity: 0}).addTo(this)
+        interactive: false,
+        className: "ctr-step-graphics"
+      }).setStyle({color: ScanSolving.PulseColors.different_level.css_string, fillOpacity: 0, }).addTo(this)
     } else {
       boxPolygon({
         topleft: {x: this.spot.x - this.range, y: this.spot.y + this.range},
         botright: {x: this.spot.x + this.range, y: this.spot.y - this.range}
       }).setStyle({
-        interactive: false
-      }).setStyle({color: "#e51c02", fillOpacity: 0, dashArray: [9, 6, 9, 6, 9, 18]}).addTo(this)
+        interactive: false,
+        className: "ctr-step-graphics"
+      }).setStyle({color: ScanSolving.PulseColors.triple.css_string, fillOpacity: 0, dashArray: [9, 6, 9, 6, 9, 18]}).addTo(this)
       boxPolygon({
         topleft: {x: this.spot.x - 2 * this.range, y: this.spot.y + 2 * this.range},
         botright: {x: this.spot.x + 2 * this.range, y: this.spot.y - 2 * this.range}
       }).setStyle({
-        interactive: false
-      }).setStyle({color: "#fff40b", fillOpacity: 0, dashArray: [9, 9, 9, 18]}).addTo(this)
+        interactive: false,
+        className: "ctr-step-graphics"
+      }).setStyle({color: ScanSolving.PulseColors.double.css_string, fillOpacity: 0, dashArray: [9, 9, 9, 18]}).addTo(this)
     }
 
     return this.marker?.marker?.getElement()

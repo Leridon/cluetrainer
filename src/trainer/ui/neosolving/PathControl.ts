@@ -17,7 +17,7 @@ import {GameLayer} from "../../../lib/gamemap/GameLayer";
 import KeyValueStore from "../../../lib/util/KeyValueStore";
 import {PathStepHeader} from "../pathing/PathStepHeader";
 import {deps} from "../../dependencies";
-import {lazy} from "../../../lib/properties/Lazy";
+import {lazy} from "../../../lib/Lazy";
 import {ScanTree} from "../../../lib/cluetheory/scans/ScanTree";
 import hbox = C.hbox;
 import span = C.span;

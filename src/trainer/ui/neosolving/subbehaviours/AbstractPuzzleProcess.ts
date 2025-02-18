@@ -1,20 +1,22 @@
 import {ewent} from "../../../../lib/reactive";
-import {OverlayGeometry} from "../../../../lib/alt1/OverlayGeometry";
-import {AbstractCaptureService, CapturedImage, CaptureInterval, ScreenCaptureService} from "../../../../lib/alt1/capture";
+import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
+import {AbstractCaptureService, CapturedImage, CaptureInterval} from "../../../../lib/alt1/capture";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
 import Behaviour from "../../../../lib/ui/Behaviour";
+import {Alt1ScreenCaptureService} from "../../../../lib/alt1/capture/Alt1ScreenCaptureService";
+import {Alt1} from "../../../../lib/alt1/Alt1";
 
 export abstract class AbstractPuzzleProcess extends Behaviour {
   puzzle_closed = ewent<this>()
 
-  solution_overlay = new OverlayGeometry()
-  debug_overlay = new OverlayGeometry()
+  solution_overlay = new LegacyOverlayGeometry()
+  debug_overlay = new LegacyOverlayGeometry()
 
   protected start_time: number
 
-  private token: AbstractCaptureService.InterestToken<ScreenCaptureService.Options, CapturedImage>
+  private token: AbstractCaptureService.InterestToken<Alt1ScreenCaptureService.Options, CapturedImage>
 
-  protected constructor(protected readonly capture_service: ScreenCaptureService) {
+  protected constructor() {
     super()
   }
 
@@ -22,9 +24,9 @@ export abstract class AbstractPuzzleProcess extends Behaviour {
     this.start_time = Date.now();
 
     this.lifetime_manager.bind(
-      this.token = this.capture_service.subscribe({
+      this.token = Alt1.instance().capturing.subscribe({
         options: (time: AbstractCaptureService.CaptureTime) => ({interval: CaptureInterval.fromApproximateInterval(20), area: this.area()}),
-        handle: async (value: AbstractCaptureService.TimedValue<CapturedImage, ScreenCaptureService.Options>) => {
+        handle: async (value: AbstractCaptureService.TimedValue<CapturedImage, Alt1ScreenCaptureService.Options>) => {
           try {
             this.tick(value.value)
           } catch (e) {

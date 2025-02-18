@@ -3,8 +3,11 @@ import {ewent, observe} from "../reactive";
 import Widget from "./Widget";
 import {C} from "./constructors";
 import cls = C.cls;
+import {LifetimeManager} from "../lifetime/LifetimeManager";
 
 export abstract class Modal2 {
+  protected lifetime_manager = new LifetimeManager()
+
   state = observe<"unmounted" | "showing" | "shown" | "hiding" | "hidden">("unmounted")
 
   shown = ewent<this>()
@@ -23,10 +26,12 @@ export abstract class Modal2 {
     this.state.subscribe(s => {
       switch (s) {
         case "shown":
-          if(this.should_hide) this.hide()
+          if (this.should_hide) this.hide()
           this.shown.trigger(this);
           break;
         case "hiding":
+          this.lifetime_manager.endLifetime()
+
           this.hiding.trigger(this)
           break;
         case"hidden":
@@ -74,6 +79,10 @@ export abstract class Modal2 {
   }
 
   async show(): Promise<this> {
+    if (this.state.value() != "unmounted" && this.state.value() != "hidden") {
+      return this
+    }
+
     let promise = new Promise<this>((resolve) => {
       this.hidden.on(() => resolve(this))
     })

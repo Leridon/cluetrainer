@@ -1,13 +1,15 @@
-import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken, NeedleImage, ScreenCaptureService} from "../capture";
-import {async_lazy, lazy} from "../../properties/Lazy";
-import {OverlayGeometry} from "../OverlayGeometry";
+import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken, NeedleImage} from "../capture";
+import {async_lazy, lazy} from "../../Lazy";
+import {LegacyOverlayGeometry} from "../LegacyOverlayGeometry";
 import {degreesToRadians, normalizeAngle, Vector2} from "../../math";
 import {ScreenRectangle} from "../ScreenRectangle";
 import * as lodash from "lodash";
 import {Log} from "../../util/Log";
 import {Finder} from "../capture/Finder";
-import over = OverlayGeometry.over;
+import over = LegacyOverlayGeometry.over;
 import log = Log.log;
+import {Alt1ScreenCaptureService} from "../capture/Alt1ScreenCaptureService";
+import {Alt1} from "../Alt1";
 
 export class MinimapReader extends DerivedCaptureService<MinimapReader.Options, MinimapReader.CapturedMinimap> {
 
@@ -21,7 +23,7 @@ export class MinimapReader extends DerivedCaptureService<MinimapReader.Options, 
 
   private _initialized: Promise<any>
 
-  constructor(private capture_service: ScreenCaptureService) {
+  private constructor(private capture_service: Alt1ScreenCaptureService) {
     super()
 
     this._initialized = (async () => {
@@ -80,6 +82,12 @@ export class MinimapReader extends DerivedCaptureService<MinimapReader.Options, 
 
     return this
   }
+
+  static readonly _instance = lazy(() => new MinimapReader(Alt1.instance().capturing))
+
+  static instance(): MinimapReader {
+    return MinimapReader._instance.get()
+  }
 }
 
 export namespace MinimapReader {
@@ -121,7 +129,7 @@ export namespace MinimapReader {
       }).setName("Map")
     }
 
-    debugOverlay(overlay: OverlayGeometry = new OverlayGeometry()): OverlayGeometry {
+    debugOverlay(overlay: LegacyOverlayGeometry = new LegacyOverlayGeometry()): LegacyOverlayGeometry {
       this.body.debugOverlay(overlay)
       this.compass.debugOverlay(overlay)
       this.energy.debugOverlay(overlay)

@@ -24,7 +24,7 @@ export class CapturedChatbox {
   }
 
   public update(capture: CapturedImage) {
-    this.body = capture.getSubSection(this.body.screen_rectangle)
+    this.body = capture.getScreenSection(this.body.screen_rectangle)
   }
 
   /**

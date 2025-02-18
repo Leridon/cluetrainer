@@ -8,10 +8,9 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
-    "alt1": "^0.0.9",
+    "alt1": "^0.1.0",
     "assert": "^2.1.0",
     "assert-browserify": "^2.0.0",
-    "process": "^0.11.10",
     "buffer": "^6.0.3",
     "byte-base64": "^1.1.0",
     "dompurify": "^3.1.6",
@@ -23,7 +22,8 @@
     "pako": "^2.1.0",
     "timers-browserify": "^2.0.12",
     "tippy.js": "^6.3.7",
-    "uuid": "^11.0.3"
+    "uuid": "^11.0.3",
+    "process": "^0.11.10"
   },
   "devDependencies": {
     "@alt1/imagedata-loader": "^1.0.0-alpha.6",

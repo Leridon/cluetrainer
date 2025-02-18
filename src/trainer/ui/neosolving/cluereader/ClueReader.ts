@@ -1,5 +1,4 @@
 import {Clues} from "../../../../lib/runescape/clues";
-import * as a1lib from "alt1";
 import {Rectangle, Vector2} from "../../../../lib/math";
 import {util} from "../../../../lib/util/util";
 import * as oldlib from "../../../../skillbertssolver/cluesolver/oldlib";
@@ -12,7 +11,7 @@ import {Notification} from "../../NotificationBar";
 import {CompassReader} from "./CompassReader";
 import {KnotReader} from "./KnotReader";
 import {CapturedImage} from "../../../../lib/alt1/capture";
-import {OverlayGeometry} from "../../../../lib/alt1/OverlayGeometry";
+import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
 import {Sliders} from "../../../../lib/cluetheory/Sliders";
 import {LockBoxReader} from "./LockBoxReader";
 import {CapturedModal} from "./capture/CapturedModal";
@@ -23,6 +22,7 @@ import {Log} from "../../../../lib/util/Log";
 import {CelticKnots} from "../../../../lib/cluetheory/CelticKnots";
 import {CapturedScan} from "./capture/CapturedScan";
 import {Finder} from "../../../../lib/alt1/capture/Finder";
+import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
 import stringSimilarity = util.stringSimilarity;
 import notification = Notification.notification;
 import findBestMatch = util.findBestMatch;
@@ -35,7 +35,7 @@ import AsyncInitialization = util.AsyncInitialization;
 
 const CLUEREADERDEBUG = false
 
-let CLUEREADER_DEBUG_OVERLAY: OverlayGeometry = null
+let CLUEREADER_DEBUG_OVERLAY: LegacyOverlayGeometry = null
 
 export class ClueReader {
 
@@ -72,7 +72,7 @@ export class ClueReader {
     const readers = this.initialization.get()
 
     if (CLUEREADERDEBUG) {
-      if (!CLUEREADER_DEBUG_OVERLAY) CLUEREADER_DEBUG_OVERLAY = new OverlayGeometry().withTime(5000)
+      if (!CLUEREADER_DEBUG_OVERLAY) CLUEREADER_DEBUG_OVERLAY = new LegacyOverlayGeometry().withTime(5000)
 
       CLUEREADER_DEBUG_OVERLAY.clear()
     }
@@ -86,7 +86,7 @@ export class ClueReader {
           if (CLUEREADERDEBUG) {
             CLUEREADER_DEBUG_OVERLAY.rect(Rectangle.fromOriginAndSize(modal.body.screenRectangle().origin, modal.body.screenRectangle().size), {
               width: 1,
-              color: a1lib.mixColor(255, 0, 0, 255)
+              color: Alt1Color.red
             }).render()
           }
 
@@ -173,7 +173,11 @@ export class ClueReader {
               case "map":
                 const fingerprint = oldlib.computeImageFingerprint(modal.body.getData(), 20, 20, 90, 25, 300, 240);
 
-                const best = findBestMatch(clue_data.map, c => comparetiledata(c.ocr_data, fingerprint), undefined, true)
+                const best = findBestMatch(clue_data.map, c => comparetiledata(c.ocr_data, fingerprint), 50000, true)
+
+                if (!best.score) return null
+
+                log().log(`Found ${best.value.id}, confidence ${best.score}`)
 
                 return {
                   type: "textclue",
@@ -269,7 +273,7 @@ export class ClueReader {
               )
 
               alt1.overLayText(`${res.theme}\n${tile.position}`,
-                a1lib.mixColor(0, 255, 0),
+                Alt1Color.green.for_overlay,
                 10,
                 pos.x,
                 pos.y,

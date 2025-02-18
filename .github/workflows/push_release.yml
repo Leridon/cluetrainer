@@ -42,7 +42,9 @@ jobs:
           clean-exclude: |
             CNAME
           tag: build-${{github.run_id}}
-
+      - name: Sleep for 5 minutes
+        run: sleep 300s
+        shell: bash
       - name: Purge Cloudflare cache
         uses: nathanvaughn/actions-cloudflare-purge@master
         with:

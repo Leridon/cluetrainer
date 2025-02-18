@@ -112,7 +112,7 @@ export class EntityTransportEntity extends MapEntity {
     }
 
     function render_transport_arrow(from: Vector2, to: Vector2, level_offset: number): OpacityGroup {
-      let group = new OpacityGroup().addLayer(arrow(from, to).setStyle({
+      const group = new OpacityGroup().addLayer(arrow(from, to).setStyle({
         color: COLORS.target_area,
         weight: 4,
       })).setStyle({interactive: true})
