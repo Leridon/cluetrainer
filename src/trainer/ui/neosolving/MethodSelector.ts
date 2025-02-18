@@ -57,7 +57,7 @@ export default class MethodSelector extends Widget {
 
     div.append(
       C.space(),
-      span(` (${method.method.expected_time.toFixed(method.method.type == "scantree" ? 1 : 0) ?? "?"} ticks)`)
+      span(` (${method.method.expected_time.toFixed(method.method.type == "scantree" ? 1 : 0) ?? "?"}t)`)
     )
 
     return div
