@@ -1,5 +1,5 @@
 import Widget from "../../../lib/ui/Widget";
-import {ClueTrainer, SettingsManagement} from "../../ClueTrainer";
+import {ClueTrainer} from "../../ClueTrainer";
 import {deps} from "../../dependencies";
 import {C} from "../../../lib/ui/constructors";
 import {Observable, observe} from "../../../lib/reactive";
@@ -46,6 +46,7 @@ import {ScanTree} from "lib/cluetheory/scans/ScanTree";
 import {AugmentedMethod} from "../../model/MethodPackManager";
 import {SolvingMethods} from "../../model/methods";
 import {SectionControl} from "../widgets/SectionControl";
+import {ScanPanelOverlay} from "../neosolving/subbehaviours/scans/ScanPanelReader";
 import cls = C.cls;
 import PotaColor = Settings.PotaColor;
 import hbox = C.hbox;
@@ -60,7 +61,6 @@ import TeleportGroup = Transportation.TeleportGroup;
 import span = C.span;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import Appendable = C.Appendable;
-import {ScanPanelOverlay} from "../neosolving/subbehaviours/scans/ScanPanelReader";
 
 class SettingsLayout extends Properties {
   constructor() {super();}
@@ -72,7 +72,7 @@ class SettingsLayout extends Properties {
   }
 
   setting(header: Appendable, explanation: Appendable = undefined): this {
-    this.header(hboxl(header, SettingsLayout.info(explanation)), "left", 1)
+    this.header(hboxl(header, SettingsLayout.info(explanation)).css("width", "100%"), "left", 1)
 
     return this
   }
@@ -472,7 +472,9 @@ class ScanSettingsEdit extends Widget {
               this.value.input_control_configuration = result
             }
           }))
-        ).setValue(this.value.input_control_enabled)
+        )
+        .css("width", "100%")
+          .setValue(this.value.input_control_enabled)
           .onCommit(v => this.value.input_control_enabled = v),
       )
     }
@@ -480,19 +482,18 @@ class ScanSettingsEdit extends Widget {
     if (Alt1.exists()) {
       this.layout.section("Scan Panel Status Overlay")
 
-      this.layout.setting(new Checkbox(hbox("Show status overlay for scan panel", spacer(), new LightButton("Configure")
+      this.layout.setting(new Checkbox(hbox("Show status overlay for scan panel"/*, spacer(), new LightButton("Configure")
           .onClick(async () => {
             const result = await new ScanPanelStatusOverlayConfigModal().do()
 
             if (result) {
               this.value.panel_status_overlay_configuration = result
             }
-          }))
+          })*/)
         ).setValue(this.value.panel_status_overlay_enabled)
           .onCommit(v => this.value.panel_status_overlay_enabled = v),
       )
     }
-
   }
 }
 

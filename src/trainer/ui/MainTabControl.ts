@@ -132,21 +132,7 @@ export default class MainTabControl extends Widget {
           , {
             placement: "right",
             hideOnClick: false
-          }),
-
-      this.app.in_dev_mode ?
-        this.utility_button = new MenuButton("Utility", "assets/icons/ribbon_notes.webp")
-          .onClick(() => {
-            this.switchToTab("utility")
           })
-          .addTippy(
-            new Properties().header("Development Utility")
-              .row(c().text("This tab contains some internal utilities for development. Don't try to make sense out of it.").css("font-style", "italic"))
-            , {
-              placement: "right",
-              hideOnClick: false
-            })
-        : undefined
       ,
       spacer(),
       this.app.in_alt1 ? undefined :

@@ -150,7 +150,9 @@ export class ScanPanelOverlay extends Alt1Overlay {
   private meerkat_indicator: ScanPanelOverlay.MeerkatIndicator = new ScanPanelOverlay.MeerkatIndicator().addTo(this)
 
   private info_button: Alt1OverlayButton = new Alt1OverlayButton(null, Alt1OverlayButton.white("i")).addTo(this)
-  private settings_button: Alt1OverlayButton = new Alt1OverlayButton(null, Alt1OverlayButton.white("⚙")).addTo(this)
+  private settings_button: Alt1OverlayButton = new Alt1OverlayButton(null, Alt1OverlayButton.white("⚙"))
+    .setVisible(false) // Disable button for now, configuration is not implemented
+    .addTo(this)
 
   constructor() {
     super();
@@ -245,7 +247,7 @@ export namespace ScanPanelOverlay {
         this.rerender()
       })
       this.state.subscribe2(s => {
-        this.interactivity().setTooltip(s ? "Triple Pulse" : null)
+        this.interactivity().setTooltip(s ? "Triple Pulse" : "No triple pulse")
 
         this.rerender()
       })
@@ -270,19 +272,17 @@ export namespace ScanPanelOverlay {
 
       if (!position) return
 
-      if (is_triple) {
-        const options: Alt1OverlayDrawCalls.StrokeOptions = {
-          color: is_triple ? ScanSolving.PulseColors.triple : Alt1Color.gray,
-          width: 2
-        }
-
-        const triple_center = position
-
-        builder
-          .circle({center: triple_center, radius: 12}, 16, options)
-          .circle({center: triple_center, radius: 8}, 16, options)
-          .circle({center: triple_center, radius: 4}, 16, options)
+      const options: Alt1OverlayDrawCalls.StrokeOptions = {
+        color: is_triple ? ScanSolving.PulseColors.triple : Alt1Color.gray,
+        width: 2
       }
+
+      const triple_center = position
+
+      builder
+        .circle({center: triple_center, radius: 12}, 16, options)
+        .circle({center: triple_center, radius: 8}, 16, options)
+        .circle({center: triple_center, radius: 4}, 16, options)
     }
   }
 
@@ -307,11 +307,15 @@ export namespace ScanPanelOverlay {
       this.state.subscribe2(s => {
         this.interactivity().setTooltip(
           s
-            ? "Try scanning a different level."
-            : "You are on the correct level."
+            ? "Try scanning a different level.\n(Alt+1) to learn more"
+            : "You are on the correct level.\n(Alt+1) to learn more"
         )
 
         this.rerender()
+      })
+
+      this.interactivity().main_hotkey_pressed.on(() => {
+        ClueTrainerWiki.openOnPage("toofardifferentlevel")
       })
     }
 
