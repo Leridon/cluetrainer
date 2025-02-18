@@ -1722,7 +1722,7 @@ input[type=checkbox] + span {
 
 .nisl-checkbox {
     display: grid;
-    grid-template-columns: 1em auto auto;
+    grid-template-columns: 1em auto;
     gap: 0.5em;
 }
 

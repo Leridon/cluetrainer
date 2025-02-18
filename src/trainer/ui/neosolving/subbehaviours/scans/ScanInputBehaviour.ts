@@ -137,7 +137,7 @@ export namespace ScanControlPrototype {
         }
       ).addTo(this)
 
-      this.help_button.interactivity().setTooltip("Press (Alt+1) for an explanation.")
+      this.help_button.interactivity().setTooltip("(Alt+1) for an explanation of this interactive overlay.")
 
       this.help_button.interactivity().main_hotkey_pressed.on(() => {
         ClueTrainerWiki.openOnPage("scantreecontroloverlay")
@@ -233,32 +233,31 @@ export namespace ScanControlPrototype {
 
       const meerkats_assumed = this.node.root.raw.assumed_range == (this.node.root.clue.range + 5)
 
-      if (!this.config.warn_for_meerkats || meerkats_assumed == this.panel_state.meerkats) {
-        overlay.progressbar(progress_bar_center, progress_bar_space.x - 2 * GUTTER, progress, PROGRESS_BAR_HEIGHT, PROGRESS_BAR_BORDER)
-        overlay.text(this.node.remaining_candidates.length != 1 ? `${this.node.remaining_candidates.length} spots` : "1 spot", Vector2.add(progress_bar_center, {
-          x: 0,
-          y: 12
-        }), {
-          width: 12,
-          color: Alt1Color.fromHex("#FFFFFF"),
-        })
-      } else {
+      overlay.progressbar(progress_bar_center, progress_bar_space.x - 2 * GUTTER, progress, PROGRESS_BAR_HEIGHT, PROGRESS_BAR_BORDER)
+      overlay.text(this.node.remaining_candidates.length != 1 ? `${this.node.remaining_candidates.length} spots` : "1 spot", Vector2.add(progress_bar_center, {
+        x: 0,
+        y: 12
+      }), {
+        width: 12,
+        color: Alt1Color.fromHex("#FFFFFF"),
+      })
+
+      const meerkat_warning = this.config.warn_for_meerkats && meerkats_assumed != this.panel_state.meerkats
+
+
+      if (meerkat_warning) {
         const text = this.panel_state.meerkats
           ? "Do not use meerkats for this scan tree!"
           : "Meerkats required for this scan tree!"
 
         overlay.text(text, Vector2.add(progress_bar_center, {
           x: 0,
-          y: 12
+          y: 12 + UPPER_ROW_HEIGHT
         }), {
           width: 14,
           color: Alt1Color.red,
         })
       }
-
-
-      if (this.node.root.raw.assumed_range)
-        this.panel_state.meerkats
 
       const visible_buttons = this.pulse_buttons.map(row => row.filter(b => b.isRelevant())).filter(r => r.length > 0)
 
@@ -266,7 +265,7 @@ export namespace ScanControlPrototype {
 
       const row_height = (this.config.size.y - (rows_n - 1) * GUTTER) / rows_n
 
-      const options_origin = Vector2.add(origin, {x: 0, y: UPPER_ROW_HEIGHT + GUTTER})
+      const options_origin = Vector2.add(origin, {x: 0, y: UPPER_ROW_HEIGHT + GUTTER + (meerkat_warning ? UPPER_ROW_HEIGHT : 0)})
 
       const context = visible_buttons.flat().map(b => b.pulse)
 

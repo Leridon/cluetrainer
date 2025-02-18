@@ -46,7 +46,7 @@ export class Alt1OverlayButton  extends Alt1Overlay {
     }
 
     if (config.text && style.font) {
-      overlay.text(config.text, Vector2.add(ScreenRectangle.center(this.area), {x: 2, y: -2}), {
+      overlay.text(config.text, Vector2.add(ScreenRectangle.center(this.area), {x: 1, y: -1}), {
         ...style.font,
         centered: true
       })
@@ -102,7 +102,7 @@ export namespace Alt1OverlayButton {
       active_style: {
         stroke: {width: 2, color: Alt1Color.white},
         font: {
-          width: 16,
+          width: 14,
           color: Alt1Color.white,
           centered: true
         }

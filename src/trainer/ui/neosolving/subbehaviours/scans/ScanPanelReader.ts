@@ -10,14 +10,13 @@ import {Alt1} from "../../../../../lib/alt1/Alt1";
 import {ScanSolving} from "./ScanSolving";
 import {Alt1OverlayDrawCalls} from "../../../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
 import {Alt1Overlay} from "../../../../../lib/alt1/overlay/Alt1Overlay";
-import AsyncInitialization = util.AsyncInitialization;
-import async_init = util.async_init;
 import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
-import {Circle} from "../../../../../lib/math/Circle";
 import {Alt1OverlayButton} from "../../../../../lib/alt1/overlay/Alt1OverlayButton";
 import {SettingsModal} from "../../../settings/SettingsEdit";
 import {ClueTrainerWiki} from "../../../../wiki";
 import lodash from "lodash";
+import AsyncInitialization = util.AsyncInitialization;
+import async_init = util.async_init;
 
 export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
   private debug: boolean = false
@@ -148,16 +147,21 @@ export class ScanPanelOverlay extends Alt1Overlay {
 
   private triple_indicator: ScanPanelOverlay.TriplePulseOverlay = new ScanPanelOverlay.TriplePulseOverlay().addTo(this)
   private different_level_indicator: ScanPanelOverlay.DifferentLevelIndicator = new ScanPanelOverlay.DifferentLevelIndicator().addTo(this)
+  private meerkat_indicator: ScanPanelOverlay.MeerkatIndicator = new ScanPanelOverlay.MeerkatIndicator().addTo(this)
+
   private info_button: Alt1OverlayButton = new Alt1OverlayButton(null, Alt1OverlayButton.white("i")).addTo(this)
-  private settings_button: Alt1OverlayButton = new Alt1OverlayButton(null, Alt1OverlayButton.white("⚙")).addTo(this)
+  private settings_button: Alt1OverlayButton = new Alt1OverlayButton(null, Alt1OverlayButton.white("⚙"))
+    .setVisible(false) // Disable button for now, configuration is not implemented
+    .addTo(this)
 
   constructor() {
     super();
 
     this.position_center.subscribe2(center_of_text => {
       if (center_of_text) {
-        this.triple_indicator.setPosition(Vector2.add(center_of_text, {x: 25, y: 100}))
-        this.different_level_indicator.setPosition(Vector2.add(center_of_text, {x: -25, y: 100}))
+        this.different_level_indicator.setPosition(Vector2.add(center_of_text, {x: -50, y: 100}))
+        this.triple_indicator.setPosition(Vector2.add(center_of_text, {x: 0, y: 100}))
+        this.meerkat_indicator.setPosition(Vector2.add(center_of_text, {x: 60, y: 100}))
 
         this.settings_button.setPosition(ScreenRectangle.centeredOn(Vector2.add(center_of_text, {x: 60, y: -70}), 10))
         this.info_button.setPosition(ScreenRectangle.centeredOn(Vector2.add(center_of_text, {x: -60, y: -70}), 10))
@@ -168,6 +172,7 @@ export class ScanPanelOverlay extends Alt1Overlay {
       if (s) {
         this.triple_indicator.setState(s.triple)
         this.different_level_indicator.setState(s.different_level)
+        this.meerkat_indicator.setState(s.meerkats)
       }
 
       this.rerender()
@@ -215,25 +220,15 @@ export class ScanPanelOverlay extends Alt1Overlay {
   }
 
   protected override renderWithBuilder(builder: Alt1OverlayDrawCalls.GeometryBuilder) {
-    const state = this.state.value()
-
     const position = this.position_center.value()
 
     if (!position) return
-
-    const center = Vector2.add(this.position_center.value(), {x: 0, y: 100})
-
-    if (!state.meerkats) {
-      builder.text("No Meerkats", Vector2.add(center, {x: 0, y: 30}), {
-        centered: true,
-        color: Alt1Color.red,
-        width: 15,
-      })
-    }
   }
 }
 
 export namespace ScanPanelOverlay {
+  export type Config = {}
+
   export class TriplePulseOverlay extends Alt1Overlay {
     private position = observe<Vector2>(null).structuralEquality()
     private state = observe<boolean>(null)
@@ -312,11 +307,15 @@ export namespace ScanPanelOverlay {
       this.state.subscribe2(s => {
         this.interactivity().setTooltip(
           s
-            ? "Try scanning a different level."
-            : "You are on the correct level."
+            ? "Try scanning a different level.\n(Alt+1) to learn more"
+            : "You are on the correct level.\n(Alt+1) to learn more"
         )
 
         this.rerender()
+      })
+
+      this.interactivity().main_hotkey_pressed.on(() => {
+        ClueTrainerWiki.openOnPage("toofardifferentlevel")
       })
     }
 
@@ -343,5 +342,64 @@ export namespace ScanPanelOverlay {
         width: 15,
       })
     }
+  }
+
+  export class MeerkatIndicator extends Alt1Overlay {
+
+    private position = observe<Vector2>(null).structuralEquality()
+    private state = observe<boolean>(null)
+
+    constructor() {
+      super();
+
+      this.position.subscribe2(pos => {
+        if (pos) {
+          this.interactivity().setBounds({
+            type: "rectangle",
+            area: ScreenRectangle.centeredOn(pos, 20)
+          })
+        } else this.interactivity().setBounds(null)
+
+        this.rerender()
+      })
+
+      this.state.subscribe2(s => {
+        this.interactivity().setTooltip(
+          s
+            ? "Meerkats are active."
+            : "Meerkats are NOT active."
+        )
+
+        this.rerender()
+      })
+    }
+
+    setPosition(p: Vector2): this {
+      this.position.set(p)
+
+      return this
+    }
+
+    setState(state: boolean): this {
+      this.state.set(state)
+      return this
+    }
+
+    override renderWithBuilder(builder: Alt1OverlayDrawCalls.GeometryBuilder) {
+      const center = this.position.value()
+      if (!center) return
+
+      const is_active = this.state.value()
+
+      builder.text("MK", center, {
+        centered: true,
+        color: is_active ? MeerkatIndicator.active_color : Alt1Color.gray,
+        width: 15,
+      })
+    }
+  }
+
+  export namespace MeerkatIndicator {
+    export const active_color = Alt1Color.fromHex("#00ffff")
   }
 }

@@ -47,7 +47,8 @@ module.exports = {
       "path": false,
       "child_process": false,
       "os": false,
-      "buffer": require.resolve("buffer/")
+      "buffer": require.resolve("buffer/"),
+      "process": require.resolve("process"),
     },
     modules: [
       path.resolve('./node_modules'),

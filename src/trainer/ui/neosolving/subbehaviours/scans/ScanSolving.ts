@@ -5,6 +5,7 @@ import {SettingsNormalization} from "../../../../../lib/util/SettingsNormalizati
 import {ScanControlPrototype} from "./ScanInputBehaviour";
 import {Alt1Color} from "../../../../../lib/alt1/Alt1Color";
 import {Scans} from "../../../../../lib/runescape/clues/scans";
+import {ScanPanelOverlay} from "./ScanPanelReader";
 
 export namespace ScanSolving {
 
@@ -28,6 +29,9 @@ export namespace ScanSolving {
 
     input_control_enabled: boolean
     input_control_configuration: ScanControlPrototype.Overlay.Config
+
+    panel_status_overlay_enabled: boolean,
+    panel_status_overlay_configuration: ScanPanelOverlay.Config
   }
 
   export namespace Settings {
@@ -57,7 +61,11 @@ export namespace ScanSolving {
         warn_for_meerkats: SettingsNormalization.bool(true),
         show_help_button: SettingsNormalization.bool(true),
         force_small_back_button: SettingsNormalization.bool(false),
-      })
+      }),
+      panel_status_overlay_enabled: SettingsNormalization.bool(true),
+      panel_status_overlay_configuration: SettingsNormalization.normaliz({
+
+      }),
     })
   }
 
