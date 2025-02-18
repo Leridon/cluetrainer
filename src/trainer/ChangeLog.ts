@@ -41,7 +41,7 @@ export namespace Changelog {
             .item(italic("Dev note: Due to time constraints, this overlay has no extensive configuration options yet. Let me know which options you would like to see in a future update."))
           )
         )
-        .paragraph("Interactive overlays are a new piece of Alt1 tech that allows overlays to react to being hovered, right clicked or having the main hotkey (Alt+1) pressed while being hovered, or even having tooltips. Over time they will probably be used in more places across Clue Trainer, so let me know if you have any suggestions where you they might be useful.")
+        .paragraph("Interactive overlays are a new piece of Alt1 tech that allows overlays to react to being hovered, right-clicked or having the main hotkey (Alt+1) pressed while being hovered, or even having tooltips. Over time, they will probably be used in more places across Clue Trainer, so let me know if you have any suggestions where they might be useful.")
         .header("General Scan Improvements", "left")
         .row(new List()
           .item("Spots that trigger a triple pulse no longer have their own button in scan trees. Instead, clicking the triple-line opens a new page with those spots.")
@@ -57,10 +57,10 @@ export namespace Changelog {
         )
         .header("Cluepedia", "left")
         .row(new List()
-          .item("Added Cluepedia, Clue Trainer's integrated wiki explaining clue mechanics and Clue Trainer features.", new List()
+          .item("Introduced Cluepedia, Clue Trainer's integrated wiki explaining clue mechanics and Clue Trainer features.", new List()
             .item("Cluepedia can be accessed via the sidebar menu or from various other places linking directly to specific pages.")
           )
-          .item("Added a page explaning scans and pulse mechanics.")
+          .item("Added a page explaining scans and pulse mechanics.")
           .item("Added a page explaining scan trees.")
           .item("Added a page explaining the new interactive overlay to control scan trees.")
           .item("Added a page explaining the 'different level' mechanic for scans.")
@@ -800,7 +800,7 @@ export namespace Changelog {
       layout.divider()
 
       log.forEach(entry => {
-        layout.header(c().text(`${entry.date.toLocaleDateString("en-gb")} - ${entry.title}`))
+        layout.header(c().text(`${entry.date.toLocaleDateString("en-gb")} (v${entry.version})  - ${entry.title}`))
 
         entry.render(layout)
 
