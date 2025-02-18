@@ -22,8 +22,9 @@ export namespace Changelog {
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([{
     version: 36,
-    date: new Date(Date.parse("TBD")),
-    title: "TBD",
+    date: new Date(Date.parse("2025-02-18")),
+    notification: "Cluepedia and reworked Scan Tree Solving has released!",
+    title: "Scan Improvements and Cluepedia",
     render: layout => {
       layout
         .header("New Scan Tree Flow", "left")
@@ -80,7 +81,6 @@ export namespace Changelog {
           )
           .item("Some overlays are now automatically hidden when closing or reloading Clue Trainer instead of lingering until they time out.", new List()
             .item("Not all overlays have been changed to support that yet."))
-          .item("Added interface code for Life Altar teleport.")
         )
     }
   }, {
