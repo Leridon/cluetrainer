@@ -31,7 +31,7 @@ export class WikiPageTooFarDifferentLevel extends WikiPage {
 
     this.paragraph("Dungeons and other underground areas are not actually below the surface. Instead, they exist on ", bold("floor 0"), " far away from the surface. Originally, underground areas where placed 6400 tiles (100 chunks) north of their logical surface location. As that area became crowded, newer underground areas use different placements.")
 
-    this.paragraph("To account for the placement logic of older dungeons, the ", italic("'Try scanning a different level.'"), " message appears when the player is logically above or below the target spot. More pecisely, it is shown when the target spot is within your ", bold("scan range + 15 tiles"), " of where your current position would be when moving it 6400 tiles north/south. This includes the +5 bonus from the meerkats familiar.")
+    this.paragraph("To account for the placement logic of older dungeons, the ", italic("'Try scanning a different level.'"), " message appears when the player is logically above or below the target spot. More precisely, it is shown when the target spot is within your ", bold("scan range + 15 tiles"), " of where your current position would be when moving it 6400 tiles north/south. This includes the +5 bonus from the meerkats familiar.")
 
     this.paragraph("This behaviour can help eliminate candidate spots that would otherwise take longer to reach. For example, Falador is logically above the eastern part of Taverley dungeon, so teleporting there first can determine whether to immediately go to that area.")
 
