@@ -55,10 +55,6 @@ export class ParserPairingEdit extends Widget {
     }).addTo(this.map.main_layer)
 
     this.properties = new Properties()
-      .css2({
-        "margin-left": "25%",
-        "margin-right": "25%",
-      })
 
     this.renderProps()
   }

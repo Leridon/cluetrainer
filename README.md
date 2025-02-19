@@ -77,14 +77,20 @@
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 
-Clue Trainer is a new clue solver for RuneScape 3 using the Alt1 Toolkit. 
-Some Highlights:
-- A more relaxed puzzle solver updating the move overlay in real time according to your actual solving speed and producing solutions with fewer steps.
-- Real time overlay updating for celtic knots, lockboxes and tower puzzles as well.
+Clue Trainer is a clue solver plugin for RuneScape 3 using the Alt1 Toolkit. It's being developed by a Clue Chaser for Clue Chasers and has accumulated more than a thousand daily users.
+
+Major Features include:
+- An upgraded puzzle solver that updates the move overlay in real time so you can go at your own pace.
 - Movement instructions shown on the map, so you can learn the most efficient paths along the way.
 - Advanced strategies for scan clues displayed in an interactive, easy to memorize fashion.
-- A compass solver more accurate than ever with the ability to select preset triangulation strategies.
+- Interactive overlays providing a completely new way to interact with Alt 1 plugins.
+- A compass solver more accurate than ever with the ability to set up reusable triangulation strategies. Over are the days of manually selecting teleports or struggling with minimap tracking misjudging your location.
 - A path and method editor so you can create, save, and share your own ways of solving clues.
+- An integrated Wiki (Cluepedia) that explains clue mechanics and Clue Trainer functionality.
+- Participate in Crowdsourcing projects to help understand clue scrolls even better.
+- Extensive configuration options to adjust Clue Trainer to your needs.
+
+Ready to get started? Visit [cluetrainer.app](https://cluetrainer.app) to use its web-features or install it for the Alt1 toolkit.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -119,7 +125,7 @@ Clue Trainer is a static website built using npm and TypeScript.
    cd dist
    python3 -m http.server 8000 --bind 127.0.0.1
    ````
-4. Visit `127.0.0.1` in your browser to use your local version and install it in your local Alt1 
+4. Visit `127.0.0.1:8000` in your browser to use your local version and install it in your local Alt1 
 
 Please do not enable any crowdsourcing options while using your local development version.
 
@@ -130,13 +136,16 @@ Please do not enable any crowdsourcing options while using your local developmen
 
 ## Roadmap
 
+Clue Trainer is very mature and has more thn a thousand daily  
+
 Clue Trainer is in active development and will continue to receive additional features and improvements to existing features, including but not limited to:
 
-- [ ] A full set of recommended paths for all clue tiers.
 - [ ] Display answers to challenge scrolls directly in the dialogue box.
+- [ ] Track charges of Globetrotter Jacket and Backpack and display them in an overlay and suggest when to use them.
+- [ ] Enter the hotkeys you have bound for teleports in game to have them displayed in Clue Trainer.
+- [ ] Reminder to charge your Totem of Treasure each week.
 - [ ] Improvements to the UI and general workflow for compass clues.
-- [ ] Improvements to the workflow of solving scan clues, including reading the current pulse color directly from the screen.
-- [ ] Recommendations for using charges of globetrotter backpack and jacket charges.
+- [ ] More integrated paths, including non-meta methods.
 
 Learn how to suggest features [here](#support-and-feedback).
 
@@ -147,7 +156,9 @@ Learn how to suggest features [here](#support-and-feedback).
 <!-- CONTRIBUTING -->
 ## Contributing
 
-Contributions to Clue Trainer in the form of either code or content are highly welcome. Check out [Getting Started](#getting-started) to see how to set up the project locally, so you can start coding.
+Contributions to Clue Trainer in the form of either features or content are highly welcome. Even if you don't code, you can contribute new methods or Cluepedia articles in whatever form you would like and I will transfer it to the required format. 
+
+Check out [Getting Started](#getting-started) to see how to set up the project locally, so you can start coding.
 If you are serious about contributing a feature to Clue Trainer, please get into touch as described [here](#support-and-feedback) to discuss the details before spending a large amount of effort.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -182,7 +193,7 @@ Project Link: [https://github.com/leridon/cluetrainer](https://github.com/lerido
 I owe thanks to the following persons for making Clue Trainer possible.
 
 * [Skillbert](https://runeapps.org/) for creating Alt1 in the first place and especially for allowing me to use code and data from the official clue solver, as well as for providing high quality map data for the world map.
-* Contributors from the Clue Chasers discord for providing knowledge about clues, and specifically Ngis for contributing content to Clue Trainer.
+* Contributors from the Clue Chasers discord for providing knowledge about clues, and specifically Ngis for contributing most of the builtin methods to Clue Trainer.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

@@ -50,6 +50,7 @@ import {Transportation} from "../../../lib/runescape/transportation";
 import {Rectangle, Vector2} from "../../../lib/math";
 import {SettingsNormalization} from "../../../lib/util/SettingsNormalization";
 import {util} from "../../../lib/util/util";
+import {Alt1} from "../../../lib/alt1/Alt1";
 import span = C.span;
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import interactionMarker = RenderingUtility.interactionMarker;
@@ -69,7 +70,6 @@ import log = Log.log;
 import default_interactive_area = Transportation.EntityTransportation.default_interactive_area;
 import digSpotArea = Clues.digSpotArea;
 import findBestMatch = util.findBestMatch;
-import {Alt1} from "../../../lib/alt1/Alt1";
 
 class NeoSolvingLayer extends GameLayer {
   public clue_container: Widget
@@ -111,8 +111,34 @@ class NeoSolvingLayer extends GameLayer {
     this.generic_solution_layer = new GameLayer().addTo(this)
   }
 
-  fit(view: TileRectangle): this {
+  fit(view: TileRectangle, extend_to_closest_teleport: boolean | "setting" = false): this {
     if (!view) return this
+
+    if (extend_to_closest_teleport == true || (extend_to_closest_teleport == "setting" && this.behaviour.app.settings.settings.solving.general.include_closest_teleport)) {
+      view = (() => {
+        const bounds = new BoundsBuilder()
+
+        bounds.addRectangle(view)
+
+        bounds.fixCenter().fixLevel()
+
+        const spots = this.transport_layer.getTeleportSpots()
+
+        const current_center = Rectangle.center(bounds.get())
+
+        const close_enough = spots.filter(e => Vector2.max_axis(Vector2.sub(e.centerOfTarget(), current_center)) < 32)
+
+        close_enough.forEach(s => bounds.addArea(s.targetArea()))
+
+        if (close_enough.length == 0) {
+          const closest = findBestMatch(spots, e => Vector2.max_axis(Vector2.sub(e.centerOfTarget(), current_center)), undefined, true)
+          
+          if (closest.score < 320) bounds.addArea(closest.value.targetArea())
+        }
+
+        return bounds.get()
+      })()
+    }
 
     let copy = lodash.cloneDeep(view)
 
@@ -542,25 +568,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
         break;
     }
 
-    if (bounds.get() && this.app.settings.settings.solving.general.include_closest_teleport) {
-      bounds.fixCenter().fixLevel()
-
-      const spots = this.layer.transport_layer.getTeleportSpots()
-
-      const current_center = Rectangle.center(bounds.get())
-
-      const close_enough = spots.filter(e => Vector2.max_axis(Vector2.sub(e.centerOfTarget(), current_center)) < 32)
-
-      close_enough.forEach(s => bounds.addArea(s.targetArea()))
-
-      if (close_enough.length == 0) {
-        const closest = findBestMatch(spots, e => Vector2.max_axis(Vector2.sub(e.centerOfTarget(), current_center)), undefined, true)
-
-        if (closest.score < 320) bounds.addArea(closest.value.targetArea())
-      }
-    }
-
-    this.layer.fit(bounds.get())
+    this.layer.fit(bounds.get(), "setting")
   }
 
   /**

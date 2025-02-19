@@ -691,10 +691,10 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     // Selected spot and possibilities have been updated, update the preview rendering of methods for spots that are possible but not the most likely.
     await this.updateMethodPreviews()
 
-    // Fit camera view to only the remaining possible spots. (TODO: This conflicts with the camera zoom that happens when setting the method for the most likely spot)
+    // Fit camera view to only the remaining possible spots
     if (maybe_fit) {
-      if (!this.parent.active_method && possible.length > 1 && (information.length > 0 || possible.length < 50)) {
-        this.parent.layer.fit(TileRectangle.from(...possible.map(s => s.spot)))
+      if (!this.parent.active_method && possible.length > 0 && (information.length > 0 || possible.length < 50)) {
+        this.parent.layer.fit(TileRectangle.from(...possible.map(s => s.spot)), "setting")
       }
     }
 

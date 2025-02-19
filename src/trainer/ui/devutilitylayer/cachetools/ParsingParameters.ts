@@ -23,6 +23,7 @@ import NumberSlider from "../../../../lib/ui/controls/NumberSlider";
 import ButtonRow from "../../../../lib/ui/ButtonRow";
 import {NislIcon} from "../../nisl";
 import {ProcessedCacheTypes} from "./ProcessedCacheTypes";
+import {Vector2} from "../../../../lib/math";
 import PrototypeInstance = ProcessedCacheTypes.PrototypeInstance;
 
 export abstract class ParsingParameter<T = any> {
@@ -379,7 +380,7 @@ export namespace ParsingParameter {
                       this.wip_value = null
 
                       this.commit({
-                        offset: v.offset
+                        offset: Transportation.EntityActionMovement.Offset.transform(v.offset, inverse_transform.matrix)
                       })
 
                       this.render()
@@ -463,7 +464,7 @@ export namespace ParsingParameter {
             this.control.empty().append(hboxl(
               this.wip_value
                 ? span(`${this.wip_value.tiles.length} tiles [${(this.wip_value.relative ? "rel" : "abs") + (this.wip_value.origin_only ? ", org" : "")}]`)
-                : span(`+${offset.x} | ${offset.y} | ${offset.level}`),
+                : span(`+ (${offset.x} | ${offset.y} | ${offset.level})`),
               spacer(),
               this.interaction ?
                 new ButtonRow()
