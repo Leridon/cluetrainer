@@ -26,6 +26,7 @@ export namespace Changelog {
     render: layout => layout
       .row(new List()
         .item("Fixed a styling bug that caused puzzle modals to be weird and double scrollbars to appear.")
+        .item("Fixed a bug with the scan panel overlay not disappearing when deactivated in the settings.")
       ),
     title: "",
     version: 37

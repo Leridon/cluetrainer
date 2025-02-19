@@ -1,5 +1,5 @@
 import {Vector2} from "../../../../../lib/math";
-import {ewent, observe} from "../../../../../lib/reactive";
+import {ewent, Observable, observe} from "../../../../../lib/reactive";
 import {ScanCaptureService} from "./ScanPanelReader";
 import {Circle} from "../../../../../lib/math/Circle";
 import {ScanTree} from "../../../../../lib/cluetheory/scans/ScanTree";
@@ -19,6 +19,7 @@ import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
 
 export class ScanControlPrototype extends Behaviour {
   private actual_overlay: ScanControlPrototype.Overlay
+  visible: Observable<boolean>
 
   constructor(
     private panel_reader: ScanCaptureService) {
@@ -27,6 +28,8 @@ export class ScanControlPrototype extends Behaviour {
     this.actual_overlay = this.withSub(new ScanControlPrototype.Overlay(deps().app.settings.settings.solving.scans.input_control_configuration)
       .setVisible(deps().app.settings.settings.solving.scans.input_control_enabled)
     )
+
+    this.visible = this.actual_overlay.visible
 
     panel_reader.onStateChange(s => this.actual_overlay.setScanPanelState(s))
 
@@ -45,10 +48,6 @@ export class ScanControlPrototype extends Behaviour {
   }
 
   protected end() {
-  }
-
-  refreshVisibility() {
-    this.actual_overlay.setVisible(deps().app.settings.settings.solving.scans.input_control_enabled)
   }
 }
 
