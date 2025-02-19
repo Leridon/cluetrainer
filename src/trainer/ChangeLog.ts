@@ -27,6 +27,7 @@ export namespace Changelog {
       .row(new List()
         .item("Fixed a styling bug that caused puzzle modals to be weird and double scrollbars to appear.")
         .item("Fixed a bug with the scan panel overlay not disappearing when deactivated in the settings.")
+        .item("Moved the info button on the scan status panel so it does not overlap with the text.")
       ),
     title: "",
     version: 37

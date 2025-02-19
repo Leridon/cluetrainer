@@ -171,8 +171,8 @@ export class ScanPanelOverlay extends Alt1Overlay {
         this.triple_indicator.setPosition(Vector2.add(center_of_text, {x: 0, y: 100}))
         this.meerkat_indicator.setPosition(Vector2.add(center_of_text, {x: 60, y: 100}))
 
-        this.settings_button.setPosition(ScreenRectangle.centeredOn(Vector2.add(center_of_text, {x: 60, y: -70}), 10))
-        this.info_button.setPosition(ScreenRectangle.centeredOn(Vector2.add(center_of_text, {x: -60, y: -70}), 10))
+        this.settings_button.setPosition(ScreenRectangle.centeredOn(Vector2.add(center_of_text, {x: 60, y: -77}), 10))
+        this.info_button.setPosition(ScreenRectangle.centeredOn(Vector2.add(center_of_text, {x: -60, y: -77}), 10))
       }
     })
 
