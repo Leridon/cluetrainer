@@ -20,6 +20,17 @@ export namespace Changelog {
     render: (_: Layout) => void
   }
 
+  export const stagingv37: LogEntry = {
+    date: undefined,
+    notification: "",
+    render: layout => layout
+      .row(new List()
+        .item("Fixed a styling bug that caused puzzle modals to be weird and double scrollbars to appear.")
+      ),
+    title: "",
+    version: 37
+  }
+
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([{
     version: 36,
     date: new Date(Date.parse("2025-02-18")),
