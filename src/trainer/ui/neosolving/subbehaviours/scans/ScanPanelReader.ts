@@ -4,7 +4,7 @@ import {LegacyOverlayGeometry} from "../../../../../lib/alt1/LegacyOverlayGeomet
 import {Finder} from "../../../../../lib/alt1/capture/Finder";
 import {util} from "../../../../../lib/util/util";
 import {Vector2} from "../../../../../lib/math";
-import {EwentHandler, observe} from "../../../../../lib/reactive";
+import {EwentHandler, Observable, observe} from "../../../../../lib/reactive";
 import {Alt1Color} from "../../../../../lib/alt1/Alt1Color";
 import {Alt1} from "../../../../../lib/alt1/Alt1";
 import {ScanSolving} from "./ScanSolving";
@@ -17,6 +17,7 @@ import {ClueTrainerWiki} from "../../../../wiki";
 import lodash from "lodash";
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
+import observe_combined = Observable.observe_combined;
 
 export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
   private debug: boolean = false
@@ -154,8 +155,15 @@ export class ScanPanelOverlay extends Alt1Overlay {
     .setVisible(false) // Disable button for now, configuration is not implemented
     .addTo(this)
 
+  private has_successful_read = observe(false)
+  public readonly enabled = observe(false)
+
   constructor() {
     super();
+
+    this.visible.bindTo(
+      observe_combined({read: this.has_successful_read, enabled: this.enabled}, this.lifetime_manager).map(v => v.enabled && v.read, this.lifetime_manager)
+    )
 
     this.position_center.subscribe2(center_of_text => {
       if (center_of_text) {
@@ -163,8 +171,8 @@ export class ScanPanelOverlay extends Alt1Overlay {
         this.triple_indicator.setPosition(Vector2.add(center_of_text, {x: 0, y: 100}))
         this.meerkat_indicator.setPosition(Vector2.add(center_of_text, {x: 60, y: 100}))
 
-        this.settings_button.setPosition(ScreenRectangle.centeredOn(Vector2.add(center_of_text, {x: 60, y: -70}), 10))
-        this.info_button.setPosition(ScreenRectangle.centeredOn(Vector2.add(center_of_text, {x: -60, y: -70}), 10))
+        this.settings_button.setPosition(ScreenRectangle.centeredOn(Vector2.add(center_of_text, {x: 60, y: -77}), 10))
+        this.info_button.setPosition(ScreenRectangle.centeredOn(Vector2.add(center_of_text, {x: -60, y: -77}), 10))
       }
     })
 
@@ -195,7 +203,7 @@ export class ScanPanelOverlay extends Alt1Overlay {
     const interest = service.subscribe({
       options: () => ({interval: CaptureInterval.fromApproximateInterval(100)}),
       handle: s => {
-        this.setVisible(service.lastSuccessfulReadTime() > Date.now() - 1000)
+        this.has_successful_read.set(service.lastSuccessfulReadTime() > Date.now() - 1000)
 
         this.setState(lodash.cloneDeep(service.getState()))
 

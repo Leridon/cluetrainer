@@ -1,6 +1,7 @@
 import * as lodash from "lodash";
 import {ewent, Ewent} from "./Ewent";
 import {EwentHandler, observe} from "./index";
+import {LifetimeManager} from "../lifetime/LifetimeManager";
 
 export interface Observable<T> {
   changed: Ewent<{ value: T, old?: T }>
@@ -15,7 +16,7 @@ export interface Observable<T> {
 
   subscribe(handler: (new_value: T, old: T) => any, trigger_once?: boolean, handler_f?: (_: EwentHandler<any>) => void): this
 
-  map<U>(f: (_: T) => U): Observable.Derived<U, T>
+  map<U>(f: (_: T) => U, lifetime_manager?: LifetimeManager): Observable.Derived<U, T>
 
   bindTo(other: Observable<T>): this
 
@@ -87,8 +88,8 @@ export namespace Observable {
       return this
     }
 
-    map<U>(f: (_: T) => U): Observable.Derived<U, T> {
-      return new Observable.Derived<U, T>(this, f)
+    map<U>(f: (_: T) => U, lifetime_manager: LifetimeManager = undefined): Observable.Derived<U, T> {
+      return new Observable.Derived<U, T>(this, f, lifetime_manager)
     }
 
     bindTo(other: Observable<T>): this {
@@ -108,10 +109,10 @@ export namespace Observable {
   }
 
   export class Derived<T, U> extends AbstractObservable<T> {
-    constructor(base: Observable<U>, f: (_: U) => T) {
+    constructor(base: Observable<U>, f: (_: U) => T, private lifetime_manager: LifetimeManager) {
       super();
 
-      base.subscribe((v) => this._set(f(v)), true)
+      base.subscribe((v) => this._set(f(v)), true, h => lifetime_manager?.bind(h))
     }
 
     set(v: T): void {
@@ -129,11 +130,11 @@ export namespace Observable {
 
   type ex<T> = T extends Observable<infer U> ? U : never
 
-  export function observe_combined<T extends Record<string, Observable<any>>>(o: T): Observable<{ [key in keyof T]?: ex<T[key]> }> {
+  export function observe_combined<T extends Record<string, Observable<any>>>(o: T, lifetime_manager: LifetimeManager = undefined): Observable<{ [key in keyof T]?: ex<T[key]> }> {
     let obs: Simple<{ [key in keyof T]?: ex<T[key]> }> = observe({})
 
     for (let key in o) {
-      o[key].subscribe(v => obs.update(observed => observed[key] = v), true)
+      o[key].subscribe(v => obs.update(observed => observed[key] = v), true, h => lifetime_manager?.bind(h))
     }
 
     return obs

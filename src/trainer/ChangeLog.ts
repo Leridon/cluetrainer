@@ -20,7 +20,21 @@ export namespace Changelog {
     render: (_: Layout) => void
   }
 
-  export const log: LogEntry[] = lodash.sortBy<LogEntry>([{
+  export const stagingv37: LogEntry = {
+    date: new Date(Date.parse("2025-02-19")),
+    render: layout => layout
+      .row(new List()
+        .item("Fixed a styling bug that caused puzzle modals to be weird and double scrollbars to appear.")
+        .item("Fixed a bug with the scan panel overlay not disappearing when deactivated in the settings.")
+        .item("Moved the info button on the scan status panel so it does not overlap with the text.")
+      ),
+    title: "Bugfixes",
+    version: 37
+  }
+
+  export const log: LogEntry[] = lodash.sortBy<LogEntry>([
+    stagingv37,
+    {
     version: 36,
     date: new Date(Date.parse("2025-02-18")),
     notification: "Cluepedia and reworked Scan Tree Solving has released!",

@@ -115,11 +115,13 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
       this.scan_panel_capture_service = new ScanCaptureService(this.original_interface_capture)
       this.scan_panel_overlay = this.withSub(new ScanPanelOverlay().connect(this.scan_panel_capture_service))
 
-      this.scan_input_control = this.withSub(new ScanControlPrototype(this.scan_panel_capture_service)
-      )
+      this.scan_panel_overlay.enabled.bindTo(this.parent.app.settings.observable_settings.map(s => s.solving.scans.panel_status_overlay_enabled, this.lifetime_manager))
+
+      this.scan_input_control = this.withSub(new ScanControlPrototype(this.scan_panel_capture_service))
+
+      this.scan_input_control.visible.bindTo(this.parent.app.settings.observable_settings.map(s => s.solving.scans.input_control_enabled, this.lifetime_manager))
 
       this.scan_input_control.onNodeSelection(node => this.setNode(node))
-
     }
   }
 
@@ -243,7 +245,6 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
         inlineimg("assets/icons/settings.png").addClass("ctr-clickable").css("height", "1em").css("margin-top", "2px").addClass("ctr-clickable")
           .on("click", async () => {
             await SettingsModal.openOnPage("scans")
-            this.scan_input_control.refreshVisibility()
           }),
       )
 

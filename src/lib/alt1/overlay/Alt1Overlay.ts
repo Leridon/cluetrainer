@@ -19,7 +19,7 @@ export class Alt1Overlay extends Behaviour {
 
   private group_name: string = uuid()
   private is_frozen = false
-  private visible = observe(true)
+  public readonly visible = observe(true)
 
   private is_actually_visible = observe(true)
 
