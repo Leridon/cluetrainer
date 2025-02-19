@@ -20,7 +20,18 @@ export namespace Changelog {
     render: (_: Layout) => void
   }
 
-  export const stagingv37: LogEntry = {
+  export const v38: LogEntry = {
+    date: new Date(Date.parse("2025-02-19")),
+    render: layout => layout
+      .row(new List()
+        .item("Fixed a bug that caused the map to not zoom in on the final compass spot when no method is selected for it.")
+        .item("Zooming in for compasses now includes the closest teleport if that option is enabled.")
+      ),
+    title: "Bugfixes",
+    version: 38
+  }
+
+  export const v37: LogEntry = {
     date: new Date(Date.parse("2025-02-19")),
     render: layout => layout
       .row(new List()
@@ -33,7 +44,8 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([
-    stagingv37,
+    v38,
+    v37,
     {
     version: 36,
     date: new Date(Date.parse("2025-02-18")),
