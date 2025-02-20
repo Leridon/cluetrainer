@@ -20,6 +20,18 @@ export namespace Changelog {
     render: (_: Layout) => void
   }
 
+  export const v39: LogEntry = {
+    date: new Date(Date.parse("2025-02-20")),
+    render: layout => layout
+      .row(new List()
+        .item("Increased the detection threshold for map clues to fix unrecognized steps.", new List()
+          .item(italic("Dev note: You may observe false reads again when a map clue is only partially loaded. This part of the clue reader is legacy code and needs a full replacement in the future."))
+        )
+      ),
+    title: "Clue Reader Bugfix",
+    version: 39
+  }
+
   export const v38: LogEntry = {
     date: new Date(Date.parse("2025-02-19")),
     render: layout => layout
@@ -44,6 +56,7 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([
+    v39,
     v38,
     v37,
     {
