@@ -379,7 +379,7 @@ export namespace clue_data {
         },
         {
           "x": 2651,
-          "y": 3351,
+          "y": 3356,
           "level": 0
         },
         {
@@ -558,8 +558,8 @@ export namespace clue_data {
           "level": 0
         },
         {
-          "x": 3362,
-          "y": 3403,
+          "x": 3358,
+          "y": 3402,
           "level": 0
         },
         {
@@ -663,7 +663,7 @@ export namespace clue_data {
           "level": 0
         },
         {
-          "x": 2777,
+          "x": 2778,
           "y": 3501,
           "level": 0
         },
@@ -673,13 +673,13 @@ export namespace clue_data {
           "level": 0
         },
         {
-          "x": 2832,
-          "y": 3473,
+          "x": 2848,
+          "y": 3471,
           "level": 0
         },
         {
-          "x": 2859,
-          "y": 3508,
+          "x": 2866,
+          "y": 3516,
           "level": 0
         },
         {
@@ -839,7 +839,7 @@ export namespace clue_data {
         },
         {
           "x": 2542,
-          "y": 3562,
+          "y": 3561,
           "level": 0
         },
         {
@@ -873,7 +873,7 @@ export namespace clue_data {
           "level": 0
         },
         {
-          "x": 2878,
+          "x": 2877,
           "y": 3529,
           "level": 0
         },
@@ -944,7 +944,7 @@ export namespace clue_data {
         },
         {
           "x": 3289,
-          "y": 3528,
+          "y": 3530,
           "level": 0
         },
         {
@@ -953,8 +953,8 @@ export namespace clue_data {
           "level": 0
         },
         {
-          "x": 3376,
-          "y": 3567,
+          "x": 3365,
+          "y": 3571,
           "level": 0
         },
         {
@@ -1218,13 +1218,13 @@ export namespace clue_data {
           "level": 0
         },
         {
-          "x": 2956,
-          "y": 3705,
+          "x": 3029,
+          "y": 3691,
           "level": 0
         },
         {
-          "x": 2965,
-          "y": 3740,
+          "x": 3037,
+          "y": 3706,
           "level": 0
         },
         {
@@ -1379,7 +1379,7 @@ export namespace clue_data {
         },
         {
           "x": 3432,
-          "y": 3754,
+          "y": 3752,
           "level": 0
         },
         {
@@ -1398,9 +1398,9 @@ export namespace clue_data {
           "level": 0
         },
         {
-          "x": 2185,
-          "y": 3637,
-          "level": 0
+          "x": 2705,
+          "y": 3822,
+          "level": 1
         },
         {
           "x": 2960,
@@ -1593,13 +1593,13 @@ export namespace clue_data {
           "level": 0
         },
         {
-          "x": 3388,
-          "y": 3930,
+          "x": 3367,
+          "y": 3928,
           "level": 0
         },
         {
-          "x": 3429,
-          "y": 3924,
+          "x": 3376,
+          "y": 3953,
           "level": 0
         },
         {
@@ -1673,13 +1673,13 @@ export namespace clue_data {
           "level": 0
         },
         {
-          "x": 3352,
-          "y": 3381,
+          "x": 3362,
+          "y": 3386,
           "level": 0
         },
         {
-          "x": 3358,
-          "y": 3353,
+          "x": 3362,
+          "y": 3352,
           "level": 0
         },
         {
@@ -1773,8 +1773,8 @@ export namespace clue_data {
           "level": 0
         },
         {
-          "x": 3347,
-          "y": 3273,
+          "x": 3348,
+          "y": 3272,
           "level": 0
         },
         {
@@ -1953,7 +1953,7 @@ export namespace clue_data {
           "level": 0
         },
         {
-          "x": 3391,
+          "x": 3390,
           "y": 3180,
           "level": 0
         },
@@ -2063,8 +2063,8 @@ export namespace clue_data {
           "level": 0
         },
         {
-          "x": 3383,
-          "y": 3019,
+          "x": 3378,
+          "y": 3011,
           "level": 0
         },
         {
@@ -2118,8 +2118,8 @@ export namespace clue_data {
           "level": 0
         },
         {
-          "x": 3376,
-          "y": 2988,
+          "x": 3380,
+          "y": 2989,
           "level": 0
         },
         {
@@ -2128,8 +2128,8 @@ export namespace clue_data {
           "level": 0
         },
         {
-          "x": 3404,
-          "y": 2992,
+          "x": 3392,
+          "y": 2988,
           "level": 0
         },
         {
@@ -2158,13 +2158,13 @@ export namespace clue_data {
           "level": 0
         },
         {
-          "x": 3296,
-          "y": 2891,
+          "x": 3291,
+          "y": 2896,
           "level": 0
         },
         {
-          "x": 3316,
-          "y": 2930,
+          "x": 3319,
+          "y": 2924,
           "level": 0
         },
         {
@@ -2198,8 +2198,8 @@ export namespace clue_data {
           "level": 0
         },
         {
-          "x": 3290,
-          "y": 2840,
+          "x": 3275,
+          "y": 2851,
           "level": 0
         },
         {
@@ -2233,9 +2233,9 @@ export namespace clue_data {
           "level": 0
         },
         {
-          "x": 3359,
-          "y": 2753,
-          "level": 0
+          "x": 3394,
+          "y": 2801,
+          "level": 1
         },
         {
           "x": 2703,
@@ -2374,7 +2374,7 @@ export namespace clue_data {
         },
         {
           "x": 2881,
-          "y": 2968,
+          "y": 2971,
           "level": 0
         },
         {
@@ -2385,6 +2385,46 @@ export namespace clue_data {
         {
           "x": 2958,
           "y": 2996,
+          "level": 0
+        },
+        {
+          "x": 2804,
+          "y": 2924,
+          "level": 0
+        },
+        {
+          "x": 2793,
+          "y": 2893,
+          "level": 0
+        },
+        {
+          "x": 2858,
+          "y": 2890,
+          "level": 0
+        },
+        {
+          "x": 2841,
+          "y": 2934,
+          "level": 0
+        },
+        {
+          "x": 2920,
+          "y": 2888,
+          "level": 0
+        },
+        {
+          "x": 2932,
+          "y": 2933,
+          "level": 0
+        },
+        {
+          "x": 2960,
+          "y": 2928,
+          "level": 0
+        },
+        {
+          "x": 2964,
+          "y": 2908,
           "level": 0
         },
         {
@@ -5941,7 +5981,153 @@ export namespace clue_data {
       "coordinates": {"latitude": {"degrees": 25, "minutes": 3, "direction": "north"}, "longitude": {"degrees": 23, "minutes": 24, "direction": "east"}}
     }]
 
+  export const legacywhitewolfscan : Clues.Scan = {
+    id: 500, range: 38, scantext: "", spots:  [
+      {
+        "x": 2859,
+        "y": 3454,
+        "level": 0
+      },
+      {
+        "x": 2804,
+        "y": 3515,
+        "level": 2
+      },
+      {
+        "x": 2815,
+        "y": 3517,
+        "level": 2
+      },
+      {
+        "x": 2817,
+        "y": 3506,
+        "level": 2
+      },
+      {
+        "x": 2805,
+        "y": 3503,
+        "level": 2
+      },
+      {
+        "x": 2869,
+        "y": 3454,
+        "level": 0
+      },
+      {
+        "x": 2870,
+        "y": 3431,
+        "level": 0
+      },
+      {
+        "x": 2870,
+        "y": 3460,
+        "level": 0
+      },
+      {
+        "x": 2870,
+        "y": 3476,
+        "level": 0
+      },
+      {
+        "x": 2868,
+        "y": 3514,
+        "level": 0
+      },
+      {
+        "x": 2876,
+        "y": 3513,
+        "level": 0
+      },
+      {
+        "x": 2839,
+        "y": 3491,
+        "level": 1
+      },
+      {
+        "x": 2836,
+        "y": 3492,
+        "level": 1
+      },
+      {
+        "x": 2825,
+        "y": 3512,
+        "level": 2
+      },
+      {
+        "x": 2857,
+        "y": 3517,
+        "level": 1
+      },
+      {
+        "x": 2848,
+        "y": 3516,
+        "level": 1
+      },
+      {
+        "x": 2878,
+        "y": 3501,
+        "level": 0
+      },
+      {
+        "x": 2857,
+        "y": 9912,
+        "level": 0
+      },
+      {
+        "x": 2824,
+        "y": 9909,
+        "level": 0
+      },
+      {
+        "x": 2837,
+        "y": 9914,
+        "level": 0
+      },
+      {
+        "x": 2819,
+        "y": 9946,
+        "level": 0
+      },
+      {
+        "x": 2845,
+        "y": 9947,
+        "level": 0
+      },
+      {
+        "x": 2851,
+        "y": 9970,
+        "level": 0
+      },
+      {
+        "x": 2863,
+        "y": 9926,
+        "level": 0
+      },
+      {
+        "x": 2867,
+        "y": 9941,
+        "level": 0
+      },
+      {
+        "x": 2866,
+        "y": 9963,
+        "level": 0
+      },
+      {
+        "x": 2889,
+        "y": 9938,
+        "level": 0
+      },
+      {
+        "x": 2883,
+        "y": 9965,
+        "level": 0
+      }
+    ], text: [""], tier: "elite", type: "scan"
+  }
+
   export const scan: Clues.Scan[] = [
+    legacywhitewolfscan,
     {
       "id": 36,
       "type": "scan",
