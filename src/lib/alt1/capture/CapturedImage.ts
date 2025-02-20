@@ -1,12 +1,11 @@
 import {ScreenRectangle} from "../ScreenRectangle";
 import {Vector2} from "../../math";
 import * as a1lib from "alt1";
-import {ImgRef, ImgRefData} from "alt1";
+import {capture, ImgRef, ImgRefBind, ImgRefData} from "alt1";
 import {LegacyOverlayGeometry} from "../LegacyOverlayGeometry";
 import {NeedleImage} from "./NeedleImage";
 import {util} from "../../util/util";
 import * as lodash from "lodash";
-import A1Color = util.A1Color;
 import {Alt1Color} from "../Alt1Color";
 
 export class CapturedImage {
@@ -41,7 +40,7 @@ export class CapturedImage {
   }
 
   private ensure_current() {
-    if (this.root() != CapturedImage.latest_capture) {
+    if (this.capture.img_ref instanceof ImgRefBind && this.root() != CapturedImage.latest_capture) {
       //debugger
       throw new Error("Tried to perform an operation on an expired ImgRefBind")
     }
@@ -69,7 +68,7 @@ export class CapturedImage {
   }
 
   find(needle: ImageData): CapturedImage[] {
-    const ref = alt1.bindFindSubImg
+    const ref = globalThis.alt1?.bindFindSubImg
       ? this.capture.img_ref
       : new ImgRefData(this.getData())
 
@@ -194,5 +193,14 @@ export class CapturedImage {
     }
 
     return overlay
+  }
+}
+
+export namespace CapturedImage {
+  export function bind(img: ImageData): CapturedImage {
+    return new CapturedImage(
+      {timestamp: Date.now(), img_ref: new ImgRefData(img)},
+      {origin: {x: 0, y: 0}, size: {x: img.width, y: img.height}},
+    )
   }
 }
