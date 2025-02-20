@@ -6,6 +6,7 @@ import {Circle} from "../math/Circle";
 import {Alt1Color} from "./Alt1Color";
 import uuid = util.uuid;
 import { Alt1OverlayDrawCalls } from "./overlay/Alt1OverlayDrawCalls";
+import {Alt1} from "./Alt1";
 
 export class LegacyOverlayGeometry {
   private is_frozen = false
@@ -159,6 +160,8 @@ export class LegacyOverlayGeometry {
   }
 
   render(): this {
+    if(!Alt1.exists()) return this
+
     if (!this.group_name) this.group_name = uuid()
 
     this.freeze()

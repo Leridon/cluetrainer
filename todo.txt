@@ -1,38 +1,46 @@
-Elite Playtesting:
+Backlog:
+    - Scan panel configurability
+    - Fix tooltips for spots in scan trees.
     - Highlighting first step of slider would be helpful
     - Teleport access needs to be rendered in some way, if applicable
+    - Tooltip for teleports in paths is bad, use the one for standalone teleports
     - Floors of scan areas aren't visualized.
-    - Fix tooltips for spots in scan trees.
-
-
-Blockers for v35:
-    - Clean up panel overlay + Configurability
-        - Add info button, Add tooltips
-    - Clean up Changelog
+    - Philippe Carnilean spot at um is missing
+    - Clean up implicit scan step instructions
+    - Direct links to cluepedia
+    - Default to last relevant section when setting a path (Configurable)
 
 
 - Compasses (v36?):
     - Commiting an angle sometimes has a noticeable delay
-        - Probably just lag because it's checking nearly 500 spots. Optimize with quad tree.
+        - ~~Probably just lag because it's checking nearly 500 spots. Optimize with quad tree.~~
+        - Bottleneck is most likely map rendering
     - Sometimes, the compass calibration is slightly off (https://discord.com/channels/332595657363685377/1103737270114209825/1318205858601107497)
         - This is due to antialiasing => Increase epsilon for AA
+        - Add interactive indicator to overlay
     - Being fast with b2b compasses and a skipped wizard between doesn't reset properly.
         - Some grayish backgrounds facilitate this because it thinks it's still open in the solved state. Needs finetuning
-
-
-
-
-
-
-
-Usability playtesting results:
-    - It's not immediately obvious what Solve, Auto-Solve, and Fullscreen do
-        => add tooltips
-    - When you're used to Alt1's sliders, adaptive slider speed can be confusing at first
-    - It's not obvious that you have to click the largest box first
-    - Compass solving isn't obvious (Neither is it with base Alt1 though)
-    - Settings are overwhelming at first
     - When the first beam narrows the spots down to only a few and you take a gamble going straight to one of them, it will commit an angle to the second teleport of the preset and delete the correct solution
+    - Add compass explanations to cluepedia
+
+- Configurable hotkeys (v37?):
+    - Global settings
+    - Profile settings
+
+
+- Globetrotter Charge Tracking (v??)
+
+
+- Totem Reminder (v??)
+
+
+- Large Method Renaming, Add non-meta methods (v??)
+
+
+- Tick Accuracy (v??)
+    - Run + Redclick does not account for the tick you have to wait after arriving
+    - Powerburst of Acceleration does not reset everything correctly (consult pup)
+
 
 
 Transport Backlog:
@@ -71,16 +79,12 @@ Path Editor:
     Custom sized square (to help map distances), purely for theorycrafting
     Some sort of parallel world method of displaying steps (with non static teleports), if implemented, preferably differentiatable between absolute and relative step instructions
 
-- Scan Tree Solver
-    - Auto read pulses
-
 - Solving Behaviour
     - Path Panel
         - [Feature] Disable default teleport render when contained in step
             - Render step instead
         - [Feature] Cleanup using "fake" steps:
             - Combine surges/dives following a powerburst into one "fake" step
-            - Duplicate shortcut step to exist in both sections
             - Combine run followed by shortcut into one
     - Preferences
         - Preferred npc spot
@@ -158,10 +162,7 @@ Content principles:
     - Prefer easy to identify target tiles
 
 Unscheduled (Post launch, if ever):
-- Track Jacket/Backpack Charges via Chat, display them as a permanent overlay
-- Totem reminder
 - Verified speedrunning
-- [What] Incorporate jacket/backpack recommmendations
 - Add some kind of discord integration with Fairy Nuff (Mike, if you stumble upon this: I have some ideas :) )
 - Better algorithm to combine equivalence classes.
 - Better algorithm to construct polygon for equivalence class (with hole support).

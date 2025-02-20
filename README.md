@@ -77,20 +77,24 @@
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 
-Clue Trainer is a clue solver plugin for RuneScape 3 using the Alt1 Toolkit. It's being developed by a Clue Chaser for Clue Chasers and has accumulated more than a thousand daily users.
+# Clue Trainer – The Ultimate Clue Solver for RuneScape 3
 
-Major Features include:
-- An upgraded puzzle solver that updates the move overlay in real time so you can go at your own pace.
-- Movement instructions shown on the map, so you can learn the most efficient paths along the way.
-- Advanced strategies for scan clues displayed in an interactive, easy to memorize fashion.
-- Interactive overlays providing a completely new way to interact with Alt 1 plugins.
-- A compass solver more accurate than ever with the ability to set up reusable triangulation strategies. Over are the days of manually selecting teleports or struggling with minimap tracking misjudging your location.
-- A path and method editor so you can create, save, and share your own ways of solving clues.
-- An integrated Wiki (Cluepedia) that explains clue mechanics and Clue Trainer functionality.
-- Participate in Crowdsourcing projects to help understand clue scrolls even better.
-- Extensive configuration options to adjust Clue Trainer to your needs.
+Clue Trainer is a powerful and highly configurable clue-solving plugin for RuneScape 3, designed for both newcomers and veteran clue chasers. Built for use with the **Alt1 Toolkit**, it enhances the clue-solving experience with interactive overlays, optimized movement strategies, and real-time puzzle assistance. Developed by a Clue Chaser for Clue Chasers, Clue Trainer has grown into a trusted tool with over a thousand daily users since its original release as Scan Trainer in 2023.
 
-Ready to get started? Visit [cluetrainer.app](https://cluetrainer.app) to use its web-features or install it for the Alt1 toolkit.
+## Key Features
+
+- **Upgraded Puzzle Solver** – Provides real-time move overlays, allowing you to solve puzzles at your own pace.
+- **Included Path Guidance** – Displays movement instructions on the map to help you learn the most efficient routes.
+- **Advanced Scan Clue Strategies** – Interactive, easy-to-memorize decision trees for solving scan clues faster.
+- **Interactive Overlays** – A new way to engage with Alt1 plugins.
+- **Highly Accurate Compass Solver** – Features reusable triangulation strategies, eliminating the need for manual teleport selection or struggling with minimap tracking.
+- **Customizable Path & Method Editor** – Create, save, and share your own clue-solving techniques.
+- **Integrated Wiki (Cluepedia)** – A built-in knowledge base explaining clue mechanics and Clue Trainer features.
+- **Crowdsourced Clue Research** – Participate in projects that expand our understanding of clue scrolls.
+- **Extensive Configuration Options** – Tailor Clue Trainer to fit your personal playstyle and preferences.
+
+Visit **[cluetrainer.app](https://cluetrainer.app)** to either explore its web features or to install it for the Alt1 Toolkit to enhance your RuneScape 3 clue-solving experience.
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

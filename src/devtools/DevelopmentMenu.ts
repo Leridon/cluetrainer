@@ -13,7 +13,9 @@ import {Log} from "../lib/util/Log";
 import {deps} from "../trainer/dependencies";
 import {SliderShuffleAnalysis} from "./SliderShuffleAnalysis";
 import {Notification} from "../trainer/ui/NotificationBar";
+import {ClueReader} from "../trainer/ui/neosolving/cluereader/ClueReader";
 import notification = Notification.notification;
+import {CapturedImage} from "../lib/alt1/capture";
 
 
 export class DevelopmentModal extends NisModal {
@@ -81,6 +83,20 @@ export class DevelopmentModal extends NisModal {
     layout.row(new LightButton("Calibration Tool")
       .onClick(() => {
         new CompassReader.CalibrationTool().show()
+      })
+    )
+
+    layout.header("Readers")
+
+    layout.row(new LightButton("Test Screenshot")
+      .onClick(async () => {
+        const reader = new ClueReader(false)
+
+        await reader.initialization.wait()
+
+        ImportModal.img(img => {
+          console.log(reader.read(CapturedImage.bind(img)))
+        })
       })
     )
 

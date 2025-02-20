@@ -134,7 +134,7 @@ export class ClueReader {
             ), m => m.score).value
 
             // Minimum score to avoid unrelated modals to be matched as something
-            if (best.score < 0.7) return null
+            if (!best?.score || best.score < 0.7) return null
 
             return best.value.type
           })()
@@ -160,7 +160,7 @@ export class ClueReader {
                     }
                   )
 
-                  if (best.score < 0.7) return null
+                  if (!best?.score || best.score < 0.7) return null
 
                   return {
                     type: "textclue",
@@ -173,11 +173,18 @@ export class ClueReader {
               case "map":
                 const fingerprint = oldlib.computeImageFingerprint(modal.body.getData(), 20, 20, 90, 25, 300, 240);
 
-                const best = findBestMatch(clue_data.map, c => comparetiledata(c.ocr_data, fingerprint), 50000, true)
+                const best = findBestMatch(clue_data.map, c => comparetiledata(c.ocr_data, fingerprint), 65000, true)
 
-                if (!best.score) return null
+                if (CLUEREADERDEBUG) {
+                  log().log("Best map match", "ClueReader")
+                  log().log(best, "ClueReader")
+                }
 
+                if (!best?.score) return null
+
+                if (CLUEREADERDEBUG) {
                 log().log(`Found ${best.value.id}, confidence ${best.score}`)
+                }
 
                 return {
                   type: "textclue",
