@@ -257,7 +257,6 @@ const raw_data: Transportation.TeleportGroup[] = [
     type: "teleports",
     id: "normalspellbook",
     name: "Normal Spellbook",
-    img: {url: ""},
     menu_ticks: 0,
     animation_ticks: default_teleport_ticks,
     spots: [
@@ -358,6 +357,24 @@ const raw_data: Transportation.TeleportGroup[] = [
         target: {"origin": {"x": 4314, "y": 817, "level": 0}, "size": {"x": 5, "y": 5}},
         img: {url: "tele-mazcab.png"},
         name: "Mazcab",
+      },
+      {
+        id: "westernanachronia",
+        target: {"origin": {"x": 5305, "y": 2286, "level": 0}}, // TODO: Inaccurate!
+        img: {url: "homeport.png"},
+        name: "Western Anachronia",
+      },
+      {
+        id: "easternanachronia",
+        target: {"origin": {"x": 5595, "y": 2351, "level": 0}}, // TODO: Inaccurate!
+        img: {url: "homeport.png"},
+        name: "Eastern Anachronia",
+      },
+      {
+        id: "lostgrove",
+        target: {"origin": {"x": 1378, "y": 5732, "level": 0}}, // TODO: Inaccurate!
+        img: {url: "homeport.png"},
+        name: "Lost Grove",
       },
     ],
     access: [{
@@ -501,6 +518,18 @@ const raw_data: Transportation.TeleportGroup[] = [
         target: {"origin": {"x": 2815, "y": 3674, "level": 0}, "size": {"x": 5, "y": 5}},
         img: {url: "tele-trollheim.png"},
         name: "Trollheim Farm",
+      },
+      {
+        id: "westernkharazi",
+        target: {"origin": {"x": 2779, "y": 2916, "level": 0}}, // TODO: Inaccurate!
+        img: {url: "homeport.png"},
+        name: "Western Kharazi Jungle",
+      },
+      {
+        id: "mountaincamp",
+        target: {"origin": {"x": 2783, "y": 3660, "level": 0}}, // TODO: Inaccurate!
+        img: {url: "homeport.png"},
+        name: "Mountain Camp",
       },
     ],
     access: [{
@@ -2889,6 +2918,12 @@ name: "Harmony Island",
         target: {"origin": {"x": 1863, "y": 4637, "level": 0}},
         name: "Death",
         code: "Death",
+      },
+      {
+        id: "time",
+        target: {"origin": {"x": 5355, "y": 2534, "level": 0}}, // TODO: Inaccurate!
+        name: "Time",
+        code: "Time",
       },
     ],
     access: [{
