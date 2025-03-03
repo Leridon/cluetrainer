@@ -20,6 +20,23 @@ export namespace Changelog {
     render: (_: Layout) => void
   }
 
+  export const v41: LogEntry = {
+    date: new Date(Date.parse("2025-03-04")),
+    render: layout => layout
+      .row(new List()
+        .item("Added new methods utilizing the new Kharazi teleport for two hard clue steps.")
+        .item("Added a new method for the emote clue at Jokkul's tent utilizing the new Mountain Camp teleport.")
+        .item("Added a new scan method for Kharazi Jungle utilizing the new Kharazi teleport.")
+        .item("Renamed methods for hard clues and elite scans so they clearly indicate which teleport they start with.")
+        .item("Updated a method for a medium clue so the pack consistently uses the Varrock teleport relocated to the church.")
+        )
+      .paragraph("As usual, many thanks to Ngis for providing the updated methods.")
+    ,
+    notification: "New methods using the new teleports have arrived",
+    title: "New Methods",
+    version: 41
+  }
+
   export const v40: LogEntry = {
     date: new Date(Date.parse("2025-03-03")),
     render: layout => layout
@@ -29,7 +46,7 @@ export namespace Changelog {
       )
       .paragraph("New paths utilizing these new teleports will be added as soon as possible.")
     ,
-    title: "New teleports",
+    title: "New Teleports",
     version: 40
   }
 
@@ -69,6 +86,7 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([
+    v41,
     v40,
     v39,
     v38,
