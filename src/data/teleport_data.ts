@@ -359,21 +359,21 @@ const raw_data: Transportation.TeleportGroup[] = [
         name: "Mazcab",
       },
       {
-        id: "westernanachronia",
-        target: {"origin": {"x": 5305, "y": 2286, "level": 0}}, // TODO: Inaccurate!
-        img: {url: "homeport.png"},
+        id: "northwesternanachronia",
+        target: {"origin": {"x": 5314, "y": 2492, "level": 0}, "size": {"x": 5, "y": 5}, "data": "573PAQ=="},
+        img: {url: "tele-northwesternanachronia.png"},
         name: "Western Anachronia",
       },
       {
         id: "easternanachronia",
-        target: {"origin": {"x": 5595, "y": 2351, "level": 0}}, // TODO: Inaccurate!
-        img: {url: "homeport.png"},
+        target: {"origin": {"x": 5598, "y": 2329, "level": 0}, "size": {"x": 5, "y": 5}},
+        img: {url: "tele-easternanachronia.png"},
         name: "Eastern Anachronia",
       },
       {
-        id: "lostgrove",
-        target: {"origin": {"x": 1378, "y": 5732, "level": 0}}, // TODO: Inaccurate!
-        img: {url: "homeport.png"},
+        id: "northlostgrove",
+        target: {"origin": {"x": 1402, "y": 5723, "level": 0}, "size": {"x": 5, "y": 5}, "data": "/3vvAQ=="},
+        img: {url: "tele-northlostgrove.png"},
         name: "Lost Grove",
       },
     ],
@@ -521,14 +521,14 @@ const raw_data: Transportation.TeleportGroup[] = [
       },
       {
         id: "westernkharazi",
-        target: {"origin": {"x": 2779, "y": 2916, "level": 0}}, // TODO: Inaccurate!
-        img: {url: "homeport.png"},
+        target: {"origin": {"x": 2801, "y": 2915, "level": 0}, "size": {"x": 5, "y": 5}, "data": "cf//AQ=="},
+        img: {url: "tele-westernkharazi.png"},
         name: "Western Kharazi Jungle",
       },
       {
         id: "mountaincamp",
-        target: {"origin": {"x": 2783, "y": 3660, "level": 0}}, // TODO: Inaccurate!
-        img: {url: "homeport.png"},
+        target: {"origin": {"x": 2783, "y": 3662, "level": 0}, "size": {"x": 5, "y": 5}, "data": "EL8NAQ=="},
+        img: {url: "tele-mountaincamp.png"},
         name: "Mountain Camp",
       },
     ],
@@ -2918,12 +2918,6 @@ name: "Harmony Island",
         target: {"origin": {"x": 1863, "y": 4637, "level": 0}},
         name: "Death",
         code: "Death",
-      },
-      {
-        id: "time",
-        target: {"origin": {"x": 5355, "y": 2534, "level": 0}}, // TODO: Inaccurate!
-        name: "Time",
-        code: "Time",
       },
     ],
     access: [{
