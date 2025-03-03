@@ -257,7 +257,6 @@ const raw_data: Transportation.TeleportGroup[] = [
     type: "teleports",
     id: "normalspellbook",
     name: "Normal Spellbook",
-    img: {url: ""},
     menu_ticks: 0,
     animation_ticks: default_teleport_ticks,
     spots: [
@@ -358,6 +357,24 @@ const raw_data: Transportation.TeleportGroup[] = [
         target: {"origin": {"x": 4314, "y": 817, "level": 0}, "size": {"x": 5, "y": 5}},
         img: {url: "tele-mazcab.png"},
         name: "Mazcab",
+      },
+      {
+        id: "northwesternanachronia",
+        target: {"origin": {"x": 5314, "y": 2492, "level": 0}, "size": {"x": 5, "y": 5}, "data": "573PAQ=="},
+        img: {url: "tele-northwesternanachronia.png"},
+        name: "Western Anachronia",
+      },
+      {
+        id: "easternanachronia",
+        target: {"origin": {"x": 5598, "y": 2329, "level": 0}, "size": {"x": 5, "y": 5}},
+        img: {url: "tele-easternanachronia.png"},
+        name: "Eastern Anachronia",
+      },
+      {
+        id: "northlostgrove",
+        target: {"origin": {"x": 1402, "y": 5723, "level": 0}, "size": {"x": 5, "y": 5}, "data": "/3vvAQ=="},
+        img: {url: "tele-northlostgrove.png"},
+        name: "Lost Grove",
       },
     ],
     access: [{
@@ -501,6 +518,18 @@ const raw_data: Transportation.TeleportGroup[] = [
         target: {"origin": {"x": 2815, "y": 3674, "level": 0}, "size": {"x": 5, "y": 5}},
         img: {url: "tele-trollheim.png"},
         name: "Trollheim Farm",
+      },
+      {
+        id: "westernkharazi",
+        target: {"origin": {"x": 2801, "y": 2915, "level": 0}, "size": {"x": 5, "y": 5}, "data": "cf//AQ=="},
+        img: {url: "tele-westernkharazi.png"},
+        name: "Western Kharazi Jungle",
+      },
+      {
+        id: "mountaincamp",
+        target: {"origin": {"x": 2783, "y": 3662, "level": 0}, "size": {"x": 5, "y": 5}, "data": "EL8NAQ=="},
+        img: {url: "tele-mountaincamp.png"},
+        name: "Mountain Camp",
       },
     ],
     access: [{
