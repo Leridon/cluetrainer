@@ -26,7 +26,6 @@ export namespace Changelog {
       .row(new List()
         .item("Added the new Anachronia and Lost Grove teleports from the normal spellbook.")
         .item("Added the new Western Kharazi Jungle and Mountain Camp teleports from the lunar spellbook.")
-        .item("Added the Time Altar teleport for the Wicked Hood.")
       )
       .paragraph("New paths utilizing these new teleports will be added as soon as possible.")
     ,
@@ -70,6 +69,7 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([
+    v40,
     v39,
     v38,
     v37,
