@@ -29,7 +29,10 @@ export namespace Changelog {
         .item("Added a new scan method for Kharazi Jungle utilizing the new Kharazi teleport.")
         .item("Renamed methods for hard clues and elite scans so they clearly indicate which teleport they start with.")
         .item("Updated a method for a medium clue so the pack consistently uses the Varrock teleport relocated to the church.")
+        .item("Updated the path editor collision data to the latest game version.", new List()
+          .item(italic("Dev note: The visuals will lag behind until the runeapps map is updated."))
         )
+      )
       .paragraph("As usual, many thanks to Ngis for providing the updated methods.")
     ,
     notification: "New methods using the new teleports have arrived",
