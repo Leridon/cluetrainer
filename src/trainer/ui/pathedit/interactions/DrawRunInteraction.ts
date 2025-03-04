@@ -6,14 +6,13 @@ import InteractionTopControl from "../../map/InteractionTopControl";
 import {Observable, observe} from "../../../../lib/reactive";
 import {util} from "../../../../lib/util/util";
 import {Path} from "../../../../lib/runescape/pathing";
-import {PathStepEntity} from "../../map/entities/PathStepEntity";
 import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
 import {PathGraphics} from "../../path_graphics";
+import * as leaflet from "leaflet";
+import {Vector2} from "../../../../lib/math";
 import index = util.index;
 import observe_combined = Observable.observe_combined;
 import arrow = PathGraphics.arrow;
-import * as leaflet from "leaflet";
-import {Vector2} from "../../../../lib/math";
 import createX = PathGraphics.createX;
 
 class DrawRunInteractionInternal extends ValueInteraction<{
@@ -45,7 +44,7 @@ class DrawRunInteractionInternal extends ValueInteraction<{
         if (v) {
           const preview = leaflet.featureGroup()
 
-          if(v.no_path_to) {
+          if (v.no_path_to) {
             arrow(index(v.path, -1), v.no_path_to).setStyle({
               color: "red"
             }).addTo(preview)
@@ -223,6 +222,16 @@ class DrawRunInteractionInternal extends ValueInteraction<{
   }
 }
 
+function normalizeWaypoints(waypoints: TileCoordinates[]): TileCoordinates[] {
+  const result: TileCoordinates[] = []
+
+  for (const p of waypoints) {
+    if (!TileCoordinates.equals(p, result[result.length - 1])) result.push(p)
+  }
+
+  return result
+}
+
 export default class DrawRunInteraction extends ValueInteraction<Path.step_run> {
   internal: DrawRunInteractionInternal
 
@@ -233,7 +242,7 @@ export default class DrawRunInteraction extends ValueInteraction<Path.step_run> 
       .onCommit(v => {
         this.commit(({
           type: "run",
-          waypoints: v.path
+          waypoints: normalizeWaypoints(v.path)
         }))
       })
       .onDiscarded(() => this.cancel())
