@@ -6,6 +6,8 @@ import {LifetimeManager} from "../lifetime/LifetimeManager";
 export class Alt1OverlayManager {
   private process: Process
 
+  public readonly HEARTBEAT = 20_000
+
   private heartbeat = ewent<null>()
 
   private page_lifetime_manager = new LifetimeManager()
@@ -23,7 +25,7 @@ export class Alt1OverlayManager {
 
     this.process = new class extends Process.Interval {
       constructor() {
-        super(20_000); // Beat every 20 seconds
+        super(self.HEARTBEAT); // Beat every 20 seconds
       }
 
       tick(): void {
@@ -47,6 +49,6 @@ export class Alt1OverlayManager {
   }
 
   create(): Alt1Overlay {
-    return new Alt1Overlay(this)
+    return new Alt1Overlay(undefined, this)
   }
 }
