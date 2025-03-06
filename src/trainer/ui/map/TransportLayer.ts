@@ -58,7 +58,7 @@ export default class TransportLayer extends GameLayer {
 
           trans.spots.forEach(spot => {
             this.teleports.push(
-              new TeleportSpotEntity(new TeleportGroup.Spot(trans, spot, trans.access[0]))
+              new TeleportSpotEntity(new TeleportGroup.Spot(trans, spot, undefined))
                 .setInteractive(interactive)
                 .addTo(this)
             )

@@ -22,6 +22,8 @@ import {GameMap} from "../../../../lib/gamemap/GameMap";
 import arrow = PathGraphics.arrow;
 import createX = PathGraphics.createX;
 import ArrowHeadOptions = PathGraphics.ArrowHeadOptions;
+import TeleportSpotProperties = TeleportSpotEntity.TeleportSpotProperties;
+import resolveTeleport = TransportData.resolveTeleport;
 
 function offsetTowards(from: Vector2, to: Vector2, scale: number): Vector2 {
   return Vector2.add(from, Vector2.scale(scale, Vector2.normalize(Vector2.sub(to, from))))

@@ -2599,6 +2599,7 @@ export namespace clue_data {
     "id": 470,
     type: "compass",
     tier: "tetracompass",
+    single_tile_target: true,
     text: [
       "The compass shows where you need to dig up the casket."
     ],
@@ -5402,7 +5403,11 @@ export namespace clue_data {
           "description": "at Piscatoris Fishing Colony",
           "range": {"origin": {"x": 2338, "y": 3673, "level": 0}, "size": {"x": 9, "y": 6}},
           "note": "350 qp."
-        }, {"id": "400qp", "description": "at the TzHaar fight Caves", "range": {"origin": {"x": 4610, "y": 5123, "level": 0}, "size": {"x": 8, "y": 8}}, "note": "400 qp."}]
+        },
+          {"id": "400qp", "description": "at the TzHaar fight Caves", "range": {"origin": {"x": 4610, "y": 5123, "level": 0}, "size": {"x": 8, "y": 8}}, "note": "400 qp."},
+          {"id": "450qp", "description": "in the City of Um", "range": {"origin": {"x": 1127, "y": 1719, "level": 1}, "size": {"x": 5, "y": 5}}, "note": "450 qp."},
+
+        ]
       }, "anagram": ["PIN HEIR ALL IN PLACE"]
     }, {
       "id": 312,

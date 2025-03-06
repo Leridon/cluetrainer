@@ -3,8 +3,12 @@ import {Path} from "../../../lib/runescape/pathing";
 import {TemplateResolver} from "../../../lib/util/TemplateResolver";
 import {C} from "../../../lib/ui/constructors";
 import {PathStepHeader} from "./PathStepHeader";
+import {TransportData} from "../../../data/transports";
 import inlineimg = C.inlineimg;
 import cls = C.cls;
+import resolveTeleport = TransportData.resolveTeleport;
+import {TeleportSpotEntity} from "../map/entities/TeleportSpotEntity";
+import TeleportSpotProperties = TeleportSpotEntity.TeleportSpotProperties;
 
 export class PathStepProperties extends Properties {
 
@@ -34,6 +38,7 @@ export class PathStepProperties extends Properties {
       this.info("This is the arrival point of the previously used method of transportation.")
     }
 
+    // Include hardcoded info, if any
     switch (this.step.type) {
       case "orientation":
         this.info(
@@ -74,6 +79,10 @@ export class PathStepProperties extends Properties {
       this.paragraph(...this.template_resolver.resolve(this.step.description))
     } else if (this.step.type == "cosmetic") {
       this.paragraph(C.italic("The author of this path has not added any further explanation."))
+    }
+
+    if (this.step.type == "teleport") {
+      TeleportSpotProperties.renderBody(resolveTeleport(this.step.id), this)
     }
   }
 }

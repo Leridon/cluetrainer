@@ -14,6 +14,7 @@ import * as assert from "assert";
 import {areaPolygon} from "../../polygon_helpers";
 import {floor_t} from "../../../../lib/runescape/coordinates";
 import {FloorLevels, ZoomLevels} from "../../../../lib/gamemap/ZoomLevels";
+import TeleportIcon from "../../widgets/TeleportIcon";
 import vbox = C.vbox;
 import entity = C.entity;
 import TeleportAccess = Transportation.TeleportAccess;
@@ -36,34 +37,7 @@ export class TeleportSpotEntity extends MapEntity {
       {floors: floor_t.all, value: {correct_level: false}},
     ])
 
-    this.setTooltip(() => {
-      let props = new Properties()
-
-      const teleport = this.teleport
-
-      props.header(`${teleport.group.name} - ${teleport.spot.name}`)
-      props.named("Time", `${teleport.props.menu_ticks + teleport.props.animation_ticks} (${teleport.props.menu_ticks} menu + ${teleport.props.animation_ticks} animation)`)
-      props.named("Static", teleport.spot.target.size ? "No" : "Yes")
-
-      if (teleport.spot.facing != null) {
-        props.named("Orientation", direction.toString(teleport.spot.facing))
-      }
-
-      props.named("Access", vbox(
-        ...teleport.group.access.map(access => {
-          switch (access.type) {
-            case "spellbook":
-              return C.div().text(access.name)
-            case "item":
-            case "entity":
-              return c().append(entity(access.name))
-          }
-
-        })
-      ))
-
-      return props
-    })
+    this.setTooltip(() => new TeleportSpotEntity.TeleportSpotProperties(this.teleport))
   }
 
   bounds(): Rectangle {
@@ -131,6 +105,9 @@ export class TeleportSpotEntity extends MapEntity {
 }
 
 export namespace TeleportSpotEntity {
+  import cls = C.cls;
+  import hbox = C.hbox;
+
   export class TeleportMapIcon extends leaflet.DivIcon {
     createIcon(oldIcon?: HTMLElement): HTMLElement {
       const scale = this.scale
@@ -170,6 +147,55 @@ export namespace TeleportSpotEntity {
       case "item":
       case "entity":
         return entity(access.name)
+    }
+  }
+
+  export class TeleportSpotProperties extends Properties {
+    constructor(private teleport: Transportation.TeleportGroup.Spot) {
+      super()
+
+      const props = this
+
+      const icon = cls("ctr-neosolving-path-stepicon").append(new TeleportIcon(this.teleport)
+        .css2({
+          "display": "inline-block",
+          "height": "20px"
+        }))
+
+      props.header(hbox(icon, C.space(), `${teleport.group.name} - ${teleport.spot.name}`))
+
+      TeleportSpotProperties.renderBody(this.teleport, this)
+    }
+  }
+
+  export namespace TeleportSpotProperties {
+    export function renderBody(teleport: Transportation.TeleportGroup.Spot, props: Properties) {
+      if (teleport.access) {
+        props.named("Accessed by", renderAccess(teleport.access))
+      }
+
+      props.named("Time", `${teleport.props.menu_ticks + teleport.props.animation_ticks} (${teleport.props.menu_ticks} menu + ${teleport.props.animation_ticks} animation)`)
+      props.named("Static", teleport.spot.target.size ? "No" : "Yes")
+
+      if (teleport.spot.facing != null) {
+        props.named("Orientation", direction.toString(teleport.spot.facing))
+      }
+
+      function renderAccess(access: TeleportAccess): Widget {
+        switch (access.type) {
+          case "spellbook":
+            return C.div().text(access.name)
+          case "item":
+          case "entity":
+            return c().append(entity(access.name))
+        }
+      }
+      
+      const alternative_accesses = teleport.group.access.filter(a => a != teleport.access)
+
+      if (alternative_accesses.length > 0) {
+        props.named(teleport.access ? "Alternative Access" : "Access", vbox(...alternative_accesses.map(renderAccess)))
+      }
     }
   }
 }

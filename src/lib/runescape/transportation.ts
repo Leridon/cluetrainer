@@ -174,7 +174,7 @@ export namespace Transportation {
 
       constructor(public readonly group: TeleportGroup,
                   public readonly spot: TeleportSpot,
-                  public readonly access: TeleportAccess
+                  public readonly access: TeleportAccess | undefined
       ) {
         this.refresh()
       }
@@ -182,7 +182,7 @@ export namespace Transportation {
       refresh() {
         this.customization = deps().app.settings.active_teleport_customization.value()
 
-        const pota = this.access.type == "item" && this.access.can_be_in_pota
+        const pota = this.access && this.access.type == "item" && this.access.can_be_in_pota
           ? this.customization.pota_slots.find((p) => p.jewellry.group_id == this.group.id)
           : null
 
@@ -199,7 +199,9 @@ export namespace Transportation {
           this.access?.per_spot_props?.[this.spot.id],
           this.access,
           this.spot,
-          this.group, {
+          this.group,
+          this.group.access.find(TeleportGroup.TeleportAccess.isAnywhere),
+          {
             animation_ticks: 0,
             menu_ticks: 0,
             code: "",

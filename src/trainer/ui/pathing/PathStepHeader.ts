@@ -9,8 +9,8 @@ import {CTRIcon} from "../../CTRIcon";
 import {C} from "../../../lib/ui/constructors";
 import {PathGraphics} from "../path_graphics";
 import {TransportData} from "../../../data/transports";
-import hboxl = C.hboxl;
 import {util} from "../../../lib/util/util";
+import hboxl = C.hboxl;
 
 
 export class PathStepHeader extends Widget {
@@ -39,8 +39,8 @@ export namespace PathStepHeader {
     icon?: Widget,
     content?: Widget
   } {
-    let icon = cls("ctr-neosolving-path-stepicon")
-    let content = div()
+    const icon = cls("ctr-neosolving-path-stepicon")
+    const content = div()
 
     switch (step.type) {
       case "orientation":
@@ -69,7 +69,6 @@ export namespace PathStepHeader {
             " "
           )
         }
-
 
         if (step.target) {
           content.append("on ", entity(step.target))
@@ -105,7 +104,7 @@ export namespace PathStepHeader {
           .css2({
             "display": "inline-block",
             "height": "20px"
-          }))
+          }));
 
         content.append(
           "Teleport to ",
