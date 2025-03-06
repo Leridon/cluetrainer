@@ -92,7 +92,7 @@ export class CapturedImage {
     })
 
     return find().map(pos => {
-      return this.getSubSection(ScreenRectangle.relativeTo(this.screen_rectangle, {origin: pos, size: {x: needle.underlying.width, y: needle.underlying.height}}))
+      return this.getScreenSection({origin: pos, size: {x: needle.underlying.width, y: needle.underlying.height}})
     });
   }
 
