@@ -111,7 +111,7 @@ export namespace Clues {
   }
 
   export type Anagram = StepShared & { type: "anagram", solution: Solution.TalkTo, anagram: string[] }
-  export type Compass = StepShared & { type: "compass", spots: TileCoordinates[], valid_area: TileRectangle }
+  export type Compass = StepShared & { type: "compass", spots: TileCoordinates[], valid_area: TileRectangle, single_tile_target?: boolean }
   export type Coordinate = StepShared & { type: "coordinates", coordinates: GieliCoordinates }
   export type Cryptic = StepShared & { type: "cryptic", solution: Solution }
   export type Emote = StepShared & {
@@ -191,7 +191,12 @@ export namespace Clues {
     }
 
     export function targetArea(spot: Clues.ClueSpot): TileArea[] {
-      if (spot.spot) return [digSpotArea(spot.spot)]
+      if (spot.spot) {
+
+        if (spot.clue.type == "compass" && spot.clue.single_tile_target) return [TileArea.fromTiles([spot.spot])]
+        
+        return [digSpotArea(spot.spot)]
+      }
 
       const sol = Clues.Step.solution(spot.clue)
 

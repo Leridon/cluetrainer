@@ -2599,6 +2599,7 @@ export namespace clue_data {
     "id": 470,
     type: "compass",
     tier: "tetracompass",
+    single_tile_target: true,
     text: [
       "The compass shows where you need to dig up the casket."
     ],
