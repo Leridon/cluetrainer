@@ -28,7 +28,6 @@ export namespace Changelog {
         .item("Add missing location for Philippe Carnillean.")
         .item("Updated outdated collision data for the path editor (for real this time).")
       ),
-    notification: "New methods using the new teleports have arrived",
     title: "New Tetracompass Methods",
     version: 42
   }

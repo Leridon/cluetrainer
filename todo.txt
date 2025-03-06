@@ -5,7 +5,6 @@ Backlog:
     - Teleport access needs to be rendered in some way, if applicable
     - Tooltip for teleports in paths is bad, use the one for standalone teleports
     - Floors of scan areas aren't visualized.
-    - Philippe Carnilean spot at um is missing
     - Clean up implicit scan step instructions
     - Direct links to cluepedia
     - Default to last relevant section when setting a path (Configurable)
