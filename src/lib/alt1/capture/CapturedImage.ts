@@ -83,7 +83,6 @@ export class CapturedImage {
   }
 
   findNeedle(needle: NeedleImage): CapturedImage[] {
-
     const find = ((): Vector2[] => {
       if (this.capture.img_ref instanceof a1lib.ImgRefBind && alt1.bindFindSubImg) {
 
@@ -109,7 +108,6 @@ export class CapturedImage {
     })
 
     return find().map(pos => {
-
       return this.getSubSection(ScreenRectangle.relativeTo(this.screen_rectangle, {origin: pos, size: {x: needle.underlying.width, y: needle.underlying.height}}))
     });
   }
