@@ -1,10 +1,9 @@
 import {ScreenRectangle} from "../ScreenRectangle";
 import {Vector2} from "../../math";
 import * as a1lib from "alt1";
-import {capture, ImgRef, ImgRefBind, ImgRefData} from "alt1";
+import {ImgRef, ImgRefBind, ImgRefData} from "alt1";
 import {LegacyOverlayGeometry} from "../LegacyOverlayGeometry";
 import {NeedleImage} from "./NeedleImage";
-import {util} from "../../util/util";
 import * as lodash from "lodash";
 import {Alt1Color} from "../Alt1Color";
 
@@ -84,7 +83,7 @@ export class CapturedImage {
 
   findNeedle(needle: NeedleImage): CapturedImage[] {
     const find = ((): Vector2[] => {
-      if (this.capture.img_ref instanceof a1lib.ImgRefBind && alt1.bindFindSubImg) {
+      if (this.capture.img_ref instanceof a1lib.ImgRefBind && alt1.bindFindSubImg && false) {
 
         this.ensure_current()
 
@@ -101,9 +100,9 @@ export class CapturedImage {
       } else {
         // Fallback:
 
-        return a1lib.ImageDetect.findSubbuffer(this.getData(), needle.underlying,
-          this.screen_rectangle.origin.x, this.screen_rectangle.origin.y,
-          this.screen_rectangle.size.x, this.screen_rectangle.size.y)
+        const found = a1lib.ImageDetect.findSubbuffer(this.getData(), needle.underlying)
+
+        return found.map(p => Vector2.add(this.screen_rectangle.origin, p))
       }
     })
 
