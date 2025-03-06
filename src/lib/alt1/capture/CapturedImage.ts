@@ -66,24 +66,9 @@ export class CapturedImage {
     return this._relativeRectangle
   }
 
-  find(needle: ImageData): CapturedImage[] {
-    const ref = globalThis.alt1?.bindFindSubImg
-      ? this.capture.img_ref
-      : new ImgRefData(this.getData())
-
-    this.ensure_current()
-
-    return ref.findSubimage(needle,
-      this.screen_rectangle.origin.x, this.screen_rectangle.origin.y,
-      this.screen_rectangle.size.x, this.screen_rectangle.size.y
-    ).map(position =>
-      this.getSubSection({origin: position, size: {x: needle.width, y: needle.height}})
-    )
-  }
-
   findNeedle(needle: NeedleImage): CapturedImage[] {
     const find = ((): Vector2[] => {
-      if (this.capture.img_ref instanceof a1lib.ImgRefBind && alt1.bindFindSubImg && false) {
+      if (this.capture.img_ref instanceof a1lib.ImgRefBind && alt1.bindFindSubImg) {
 
         this.ensure_current()
 

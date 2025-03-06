@@ -1,4 +1,4 @@
-import {CapturedImage} from "../../../../../lib/alt1/capture";
+import {CapturedImage, NeedleImage} from "../../../../../lib/alt1/capture";
 import {Vector2} from "../../../../../lib/math";
 import {ImageDetect} from "alt1";
 import {async_lazy, Lazy, lazy, LazyAsync} from "../../../../../lib/Lazy";
@@ -237,7 +237,7 @@ export namespace CapturedScan {
     return new class implements Finder<CapturedScan> {
       find(screen: CapturedImage): CapturedScan {
         const anchors: {
-          img: ImageData,
+          img: NeedleImage,
           origin_offset: Vector2
         }[] = [{
           img: anchor_images.scanfartext,
@@ -252,7 +252,7 @@ export namespace CapturedScan {
 
         const found_body = ((): CapturedImage => {
           for (let anchor of anchors) {
-            let locs = screen.find(anchor.img)
+            let locs = screen.findNeedle(anchor.img)
 
             if (locs.length > 0) {
               return screen.getSubSection(
@@ -274,9 +274,9 @@ export namespace CapturedScan {
 
   export const anchors = new LazyAsync(async () => {
     return {
-      scanleveltext: await ImageDetect.imageDataFromUrl("alt1anchors/differentlevel.png"),
-      scanfartext: await ImageDetect.imageDataFromUrl("alt1anchors/youaretofaraway.png"),
-      orbglows: await ImageDetect.imageDataFromUrl("alt1anchors/orbglows.png"),
+      scanleveltext: await NeedleImage.fromURL("/alt1anchors/differentlevel.png"),
+      scanfartext: await NeedleImage.fromURL("/alt1anchors/youaretofaraway.png"),
+      orbglows: await NeedleImage.fromURL("/alt1anchors/orbglows.png"),
     }
   })
 }
