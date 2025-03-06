@@ -28,6 +28,7 @@ export namespace Changelog {
         .item("Add missing location for Philippe Carnillean.")
         .item("Updated outdated collision data for the path editor (for real this time).")
         .item("Tetracompasses now consistently use the correct 1x1 excavation area.")
+        .item("Add more detail to the tooltip for teleports when used in a path.")
       ),
     title: "New Tetracompass Methods",
     version: 42
