@@ -1,5 +1,6 @@
 import teleport_data from "./teleport_data";
 import {Transportation} from "../lib/runescape/transportation";
+import {Lazy, lazy} from "../lib/Lazy";
 
 export namespace TransportData {
   import TeleportGroup = Transportation.TeleportGroup;
@@ -30,30 +31,28 @@ export namespace TransportData {
     return cached_data.all_transports
   }
 
-  let teleport_spots: Transportation.TeleportGroup.Spot[] = null
-
   export function getTeleportGroup(id: string): TeleportGroup {
     return teleports.find(g => g.id == id)
   }
 
-  export function getAllTeleportSpots(): Transportation.TeleportGroup.Spot[] {
-    if (!teleport_spots) {
-      teleport_spots = teleports.filter(TeleportGroup.canBeAccessedAnywhere).flatMap(group => {
-        return group.spots.map(spot => {
-          return new Transportation.TeleportGroup.Spot(group, spot, group.access[0])
-        })
+  const _teleport_spots: Lazy<Transportation.TeleportGroup.Spot[]> = lazy(() => {
+    return teleports.filter(TeleportGroup.canBeAccessedAnywhere).flatMap(group => {
+      return group.spots.map(spot => {
+        return new Transportation.TeleportGroup.Spot(group, spot, undefined)
       })
-    }
+    })
+  })
 
-    return teleport_spots
+  export function getAllTeleportSpots(): Transportation.TeleportGroup.Spot[] {
+    return _teleport_spots.get()
   }
 
   export function resolveTeleport(id: Transportation.TeleportGroup.SpotId): Transportation.TeleportGroup.Spot {
     const group = teleports.find(g => g.id == id.group)
     const spot = group?.spots?.find(s => s.id == id.spot)
-    const access = id.access ? group?.access?.find(a => a.id == id.access) : group?.access[0]
+    const access = id.access ? group?.access?.find(a => a.id == id.access) : undefined
 
-    if (!group || !spot || !access) {
+    if (!group || !spot || (id.access && !access)) {
       debugger
       return undefined
     }
