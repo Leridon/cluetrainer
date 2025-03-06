@@ -10,9 +10,10 @@ import {AbstractPuzzleSolving} from "./AbstractPuzzleSolving";
 import {AbstractPuzzleProcess} from "./AbstractPuzzleProcess";
 import {deps} from "../../../dependencies";
 import {util} from "../../../../lib/util/util";
-import async_init = util.async_init;
 import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
-import {Alt1ScreenCaptureService} from "../../../../lib/alt1/capture/Alt1ScreenCaptureService";
+import {Log} from "../../../../lib/util/Log";
+import async_init = util.async_init;
+import log = Log.log;
 
 class TowersSolvingProcess extends AbstractPuzzleProcess {
   settings = deps().app.settings.settings.solving.puzzles.towers
@@ -211,7 +212,7 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
       const capture = CapturedModal.assumeBody(capt)
       const reader = new TowersReader.CapturedTowers(capture, this.initialization.get().reader)
 
-      let puzzle = reader.getPuzzle()
+      const puzzle = reader.getPuzzle()
 
       const context_menu_area = reader.findContextMenu()
 
@@ -230,7 +231,12 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
       if (reader.getState() == "likelyclosed") this.puzzleClosed()
 
     } catch (e) {
-      console.error(e.toString())
+      if (e instanceof Error) {
+        log().log(e.toString())
+        log().log(e.stack)
+      } else {
+        console.error(e.toString())
+      }
     }
   }
 
