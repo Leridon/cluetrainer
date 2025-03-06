@@ -20,6 +20,16 @@ export namespace Changelog {
     render: (_: Layout) => void
   }
 
+  export const v43: LogEntry = {
+    date: new Date(Date.parse("TBD")),
+    render: layout => layout
+      .row(new List()
+        .item("Fixed a bug that caused solutions to tower puzzles to not appear for Runekit or Alt1 Electron users.")
+      ),
+    title: "Bugfixes",
+    version: 43
+  }
+
   export const v42: LogEntry = {
     date: new Date(Date.parse("2025-03-06")),
     render: layout => layout

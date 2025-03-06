@@ -3,7 +3,7 @@ import * as OCR from "alt1/ocr";
 import {Vector2} from "../../../../../lib/math";
 import {async_lazy, LazyAsync} from "../../../../../lib/Lazy";
 import {ImageDetect} from "alt1";
-import {CapturedImage} from "../../../../../lib/alt1/capture";
+import {CapturedImage, NeedleImage} from "../../../../../lib/alt1/capture";
 import {Finder} from "../../../../../lib/alt1/capture/Finder";
 
 export class CapturedModal {
@@ -55,16 +55,16 @@ export namespace CapturedModal {
     return new class implements Finder<CapturedModal> {
       find(img: CapturedImage): CapturedModal {
         for (let skin of anchor) {
-          const x = img.find(skin.close_x)[0]
+          const x = img.findNeedle(skin.close_x)[0]
 
           if (!x) continue
 
-          const top_left = img.find(skin.top_left)[0]
+          const top_left = img.findNeedle(skin.top_left)[0]
           if (!top_left) {
             return null;
           }
 
-          const bot_left = img.find(skin.bot_left)[0]
+          const bot_left = img.findNeedle(skin.bot_left)[0]
           if (!bot_left) {
             return null;
           }
@@ -95,9 +95,9 @@ export namespace CapturedModal {
 
   type SkinAnchors = {
     isLegacy: boolean
-    close_x: ImageData
-    top_left: ImageData
-    bot_left: ImageData,
+    close_x: NeedleImage
+    top_left: NeedleImage
+    bot_left: NeedleImage,
     BODY_TL_OFFSET_FROM_TL: Vector2
     BODY_BL_OFFSET_FROM_BL: Vector2,
     BODY_TR_OFFSET_FROM_X: Vector2,
@@ -106,18 +106,18 @@ export namespace CapturedModal {
   export const anchors = new LazyAsync<SkinAnchors[]>(async () => {
     return [{
       isLegacy: false,
-      close_x: await ImageDetect.imageDataFromUrl("alt1anchors/eocx.png"),
-      top_left: await ImageDetect.imageDataFromUrl("alt1anchors/eoctopleft.png"),
-      bot_left: await ImageDetect.imageDataFromUrl("alt1anchors/eocbotleft.png"),
+      close_x: await NeedleImage.fromURL("/alt1anchors/eocx.png"),
+      top_left: await NeedleImage.fromURL("/alt1anchors/eoctopleft.png"),
+      bot_left: await NeedleImage.fromURL("/alt1anchors/eocbotleft.png"),
 
       BODY_TL_OFFSET_FROM_TL: {x: 4, y: 29},
       BODY_BL_OFFSET_FROM_BL: {x: 3, y: 7},
       BODY_TR_OFFSET_FROM_X: {x: 10, y: 24},
     }, {
       isLegacy: true,
-      close_x: await ImageDetect.imageDataFromUrl("alt1anchors/legacyx.png"),
-      top_left: await ImageDetect.imageDataFromUrl("alt1anchors/legacytopleft.png"),
-      bot_left: await ImageDetect.imageDataFromUrl("alt1anchors/legacybotleft.png"),
+      close_x: await NeedleImage.fromURL("/alt1anchors/legacyx.png"),
+      top_left: await NeedleImage.fromURL("/alt1anchors/legacytopleft.png"),
+      bot_left: await NeedleImage.fromURL("/alt1anchors/legacybotleft.png"),
 
       BODY_TL_OFFSET_FROM_TL: {x: 4, y: 29},
       BODY_BL_OFFSET_FROM_BL: {x: 6, y: -2},
