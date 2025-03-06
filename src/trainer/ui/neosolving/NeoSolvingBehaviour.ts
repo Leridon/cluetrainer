@@ -888,7 +888,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
 
       behaviour.selected_spot.subscribe(async spot => {
         if (spot) {
-          const method = await this.getAutomaticMethod({clue: clue.id, spot: spot.spot})
+          const method = await this.getAutomaticMethod({clue: clue.id, spot: spot.spot.spot})
 
           this.setMethod(method)
         } else {
@@ -979,7 +979,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
     if ((this.state.step?.clue?.step?.type != "compass") || (active_behaviour instanceof CompassSolving && active_behaviour.selected_spot.value())) {
 
       const clue: ClueSpot.Id = active_behaviour instanceof CompassSolving
-        ? {clue: this.state.step.clue.step.id, spot: active_behaviour.selected_spot.value().spot}
+        ? {clue: this.state.step.clue.step.id, spot: active_behaviour.selected_spot.value().spot.spot}
         : {clue: this.state.step.clue.step.id}
 
       this.default_method_selector = new MethodSelector(this, clue)

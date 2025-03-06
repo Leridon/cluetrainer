@@ -117,7 +117,7 @@ class CompassHandlingLayer extends GameLayer {
         if (this.solving.entries.some(e => e.information) || !this.solving.reader) {
           this.solving.setSelectedSpot(event.active_entity.spot, true)
         } else {
-          this.solving.registerSpot(activate(digSpotArea(event.active_entity.spot.spot)), true)
+          this.solving.registerSpot(activate(this.solving.clue.single_tile_target ? TileArea.init(event.active_entity.spot.spot.spot) : digSpotArea(event.active_entity.spot.spot.spot)), true)
         }
       } else {
         this.solving.registerSpot(
@@ -172,7 +172,7 @@ class KnownCompassSpot extends MapEntity {
   }
 
   bounds(): Rectangle {
-    return Rectangle.from(this.spot.spot)
+    return Rectangle.from(this.spot.spot.spot)
   }
 
   protected async render_implementation(props: MapEntity.RenderProps): Promise<Element> {
@@ -180,8 +180,8 @@ class KnownCompassSpot extends MapEntity {
 
     const scale = (this.active ? 1 : 0.5) * (props.highlight ? 1.5 : 1)
 
-    const marker = leaflet.marker(Vector2.toLatLong(this.spot.spot), {
-      icon: levelIcon(this.spot.spot.level, scale),
+    const marker = leaflet.marker(Vector2.toLatLong(this.spot.spot.spot), {
+      icon: levelIcon(this.spot.spot.spot.level, scale),
       opacity: opacity,
       interactive: true,
       bubblingMouseEvents: true,
@@ -198,8 +198,9 @@ class KnownCompassSpot extends MapEntity {
       }))
     }
 
+
     if (this.active) {
-      DigSolutionEntity.areaGraphics(this.spot.spot).addTo(this)
+      DigSolutionEntity.areaGraphics(this.spot.spot.spot, this.spot.spot.clue.single_tile_target).addTo(this)
     }
 
     return marker.getElement()
@@ -333,7 +334,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     this.settings = deps().app.settings.settings.solving.compass
 
-    this.spots = clue.spots.map((s, i) => ({spot: s, isPossible: true, spot_id: i}))
+    this.spots = clue.spots.map((s, i) => ({spot: {clue: this.clue, spot: s}, isPossible: true, spot_id: i}))
 
     this.selected_spot.subscribe((spot, old_spot) => {
       spot?.marker?.setActive(true)
@@ -524,7 +525,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     const info = Compasses.TriangulationPoint.construct(CompassSolving.Spot.coords(entry.position), angle)
 
-    if (!this.spots.some(s => Compasses.isPossible([info], s.spot))) {
+    if (!this.spots.some(s => Compasses.isPossible([info], s.spot.spot))) {
       if (is_manual) notification("Refusing to lock in impossible angle.", "error").show()
 
       log().log(`Cowardly refusing to lock in impossible angle ${radiansToDegrees(info.angle_radians)}° from ${info.modified_origin.x} | ${info.modified_origin.y}`, "Compass Solving")
@@ -604,7 +605,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
       for (let spot of this.spots) {
         if (show_previews && spot.isPossible && !spot.path && spot != selected) {
-          const m = await this.parent.getAutomaticMethod({clue: this.clue.id, spot: spot.spot})
+          const m = await this.parent.getAutomaticMethod({clue: this.clue.id, spot: spot.spot.spot})
 
           if (m?.method?.type != "general_path") continue
 
@@ -626,7 +627,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     this.selected_spot.set(spot)
 
     if (set_as_solution && set_as_solution) {
-      this.registerSolution(digSpotArea(spot.spot))
+      this.registerSolution(this.clue.single_tile_target ? TileArea.fromTiles([spot.spot.spot]) : digSpotArea(spot.spot.spot))
     }
   }
 
@@ -644,7 +645,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     // Update all spots to see if they are still a possible candidate
     this.spots.forEach(m => {
-      const p = Compasses.isPossible(information, m.spot)
+      const p = Compasses.isPossible(information, m.spot.spot)
 
       m.isPossible = p
 
@@ -656,7 +657,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       Math.max(...information.map(info =>
           angleDifference(Compasses.getExpectedAngle(
             info.modified_origin,
-            p.spot
+            p.spot.spot
           ), info.angle_radians)
         )
       )
@@ -675,7 +676,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       const old_selection = this.selected_spot.value()
 
       // Reference comparison is fine because only the instances from the original array in the clue are handled
-      if (!possible.some(e => TileCoordinates.equals(old_selection?.spot, e.spot))) {
+      if (!possible.some(e => TileCoordinates.equals(old_selection?.spot?.spot, e.spot.spot))) {
         this.setSelectedSpot(possible[0], false)
       }
     } else {
@@ -683,7 +684,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     }
 
     if (possible.length > 0 && possible.length <= 5) {
-      const area = TileRectangle.extend(TileRectangle.from(...possible.map(s => s.spot)), 1)
+      const area = TileRectangle.extend(TileRectangle.from(...possible.map(s => s.spot.spot)), 1)
 
       this.registerSolution(TileArea.fromRect(area))
     }
@@ -694,7 +695,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     // Fit camera view to only the remaining possible spots
     if (maybe_fit) {
       if (!this.parent.active_method && possible.length > 0 && (information.length > 0 || possible.length < 50)) {
-        this.parent.layer.fit(TileRectangle.from(...possible.map(s => s.spot)), "setting")
+        this.parent.layer.fit(TileRectangle.from(...possible.map(s => s.spot.spot)), "setting")
       }
     }
 
@@ -909,8 +910,10 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 }
 
 export namespace CompassSolving {
+  import ClueSpot = Clues.ClueSpot;
+
   export type SpotData = {
-    spot: TileCoordinates,
+    spot: ClueSpot<Clues.Compass>,
     spot_id: number,
     isPossible: boolean,
     marker?: KnownCompassSpot,

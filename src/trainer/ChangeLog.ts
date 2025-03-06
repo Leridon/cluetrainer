@@ -27,6 +27,7 @@ export namespace Changelog {
         .item("Updated the tetracompass method pack to utilize the new teleports and so paths land exactly on the target tile.")
         .item("Add missing location for Philippe Carnillean.")
         .item("Updated outdated collision data for the path editor (for real this time).")
+        .item("Tetracompasses now consistently use the correct 1x1 excavation area.")
       ),
     title: "New Tetracompass Methods",
     version: 42

@@ -1,7 +1,7 @@
 import {Rectangle} from "lib/math";
 import {MapEntity} from "../../../lib/gamemap/MapEntity";
 import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
-import {areaPolygon, boxPolygon} from "../polygon_helpers";
+import {areaPolygon, boxPolygon, tilePolygon} from "../polygon_helpers";
 import {RenderingUtility} from "../map/RenderingUtility";
 import {TileCoordinates, TileRectangle} from "../../../lib/runescape/coordinates";
 import {CursorType} from "../../../lib/runescape/CursorType";
@@ -182,8 +182,8 @@ export namespace ClueEntities {
   }
 
   export namespace DigSolutionEntity {
-    export function areaGraphics(spot: TileCoordinates) {
-      return boxPolygon(digSpotRect(spot))
+    export function areaGraphics(spot: TileCoordinates, single_tile: boolean = false) {
+      return (single_tile ? tilePolygon(spot) : boxPolygon(digSpotRect(spot)))
         .setStyle({
           color: "gray",
           interactive: false,
