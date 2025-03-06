@@ -91,7 +91,7 @@ class PathEditorGameLayer extends GameLayer {
             event.add({
               type: "basic",
               text: "Walk here",
-              icon: "assets/icons/yellowclick.png",
+              icon: "/assets/icons/yellowclick.png",
               handler: async () => {
                 const path_to_tile = await PathFinder.find(
                   PathFinder.init_djikstra(this.editor.value.cursor_state.value().state.position.tile),
@@ -114,7 +114,7 @@ class PathEditorGameLayer extends GameLayer {
           event.add({
             type: "submenu",
             text: "Redclick",
-            icon: "assets/icons/cursor_redclick.png",
+            icon: "/assets/icons/cursor_redclick.png",
             children: CursorType.all().map((i): MenuEntry => ({
               type: "basic",
               text: i.description,
@@ -371,7 +371,7 @@ export class PathEditor extends Behaviour {
       if (state.position.tile) {
         this.you_are_here_marker = leaflet.marker(Vector2.toLatLong(state.position.tile), {
           icon: leaflet.icon({
-            iconUrl: "assets/icons/youarehere.png",
+            iconUrl: "/assets/icons/youarehere.png",
             iconSize: [25, 25],
             iconAnchor: [13, 13],
           })
@@ -558,14 +558,14 @@ export class PathEditor extends Behaviour {
 
     entries.push({
       type: "basic",
-      icon: "assets/icons/edit.png",
+      icon: "/assets/icons/edit.png",
       text: `Edit`,
       handler: () => this.editStepDetails(step)
     })
 
     entries.push({
       type: "basic",
-      icon: "assets/icons/delete.png",
+      icon: "/assets/icons/delete.png",
       text: `Remove`,
       handler: () => step.delete()
     })
@@ -573,7 +573,7 @@ export class PathEditor extends Behaviour {
     if (step.step.raw.type == "ability" || step.step.raw.type == "run" || step.step.raw.type == "cheat") {
       entries.push({
         type: "basic",
-        icon: "assets/icons/edit.png",
+        icon: "/assets/icons/edit.png",
         text: `Redraw on map`,
         handler: () => this.redrawAbility(step)
       })
@@ -583,7 +583,7 @@ export class PathEditor extends Behaviour {
 
       entries.push({
         type: "basic",
-        icon: "assets/icons/move.png",
+        icon: "/assets/icons/move.png",
         text: `Move on map`,
         handler: () => this.moveStep(step)
       })
@@ -592,7 +592,7 @@ export class PathEditor extends Behaviour {
     if (step.step.raw.type == "orientation") {
       entries.push({
         type: "submenu",
-        icon: "assets/icons/compass.png",
+        icon: "/assets/icons/compass.png",
         text: `Choose Direction`,
         children: direction.all.map(dir => ({
           type: "basic",
@@ -607,7 +607,7 @@ export class PathEditor extends Behaviour {
     if (step.step.raw.type == "cheat") {
       entries.push({
         type: "submenu",
-        icon: "assets/icons/Rotten_potato.png",
+        icon: "/assets/icons/Rotten_potato.png",
         text: "Choose Orientation",
         children: [undefined].concat(direction.all).map(dir => ({
           type: "basic",
@@ -622,7 +622,7 @@ export class PathEditor extends Behaviour {
     if (step.step.raw.type == "redclick") {
       entries.push({
         type: "submenu",
-        icon: "assets/icons/cursor_redclick.png",
+        icon: "/assets/icons/cursor_redclick.png",
         text: `Choose Cursor`,
         children: CursorType.all().map(cursor => ({
           type: "basic",

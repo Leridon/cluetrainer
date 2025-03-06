@@ -35,7 +35,7 @@ export class NislIcon extends Widget {
   }
 
   static dropdown(): NislIcon {
-    return new NislIcon().setSource("assets/nis/dropdown.png")
+    return new NislIcon().setSource("/assets/nis/dropdown.png")
   }
 
   static arrow(direction: ArrowIcon.direction = "down"): ArrowIcon {
@@ -43,7 +43,7 @@ export class NislIcon extends Widget {
   }
 
   static sectionArrow(direction: "right" | "left"): NislIcon {
-    const icon = new NislIcon().setSource("assets/nis/sectionarrowright.png")
+    const icon = new NislIcon().setSource("/assets/nis/sectionarrowright.png")
 
     if (direction == "left") icon.img.css("transform", "scaleX(-1)")
 
@@ -51,15 +51,15 @@ export class NislIcon extends Widget {
   }
 
   static info(): NislIcon {
-    return new NislIcon().css("cursor", "help").setSource("assets/icons/info_nis.png")
+    return new NislIcon().css("cursor", "help").setSource("/assets/icons/info_nis.png")
   }
 
   static delete(): NislIcon {
-    return new NislIcon().setSource("assets/icons/delete.png")
+    return new NislIcon().setSource("/assets/icons/delete.png")
   }
 
   static plus(): NislIcon {
-    return new NislIcon().setSource("assets/nis/plus.png")
+    return new NislIcon().setSource("/assets/nis/plus.png")
   }
 
   static from(url: string) {
@@ -67,11 +67,11 @@ export class NislIcon extends Widget {
   }
 
   static reset(): NislIcon {
-    return new NislIcon().setSource("assets/icons/reset_nis.png")
+    return new NislIcon().setSource("/assets/icons/reset_nis.png")
   }
 
   static reset2(): NislIcon {
-    return new NislIcon().setSource("assets/icons/reset.png").css("scale", 0.8)
+    return new NislIcon().setSource("/assets/icons/reset.png").css("scale", 0.8)
   }
 }
 
@@ -82,7 +82,7 @@ export class FavouriteIcon extends NislIcon {
     super();
 
     this.toggled.subscribe(v => {
-      this.setSource(v ? "assets/nis/favourite_on.png" : "assets/nis/favourite_off.png")
+      this.setSource(v ? "/assets/nis/favourite_on.png" : "/assets/nis/favourite_off.png")
     }, true)
 
     this.img.css("margin-bottom", "2px")

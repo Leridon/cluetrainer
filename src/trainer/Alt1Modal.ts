@@ -33,7 +33,7 @@ export class Alt1Modal extends NisModal {
       c(`<a href='${this.addToAlt1Link()}'></a>`)
         .append(new BigNisButton("", "confirm")
           .setContent(hbox(
-            inlineimg("assets/icons/Alt1.png"),
+            inlineimg("/assets/icons/Alt1.png"),
             "Add to Alt1 Toolkit"
           )))
     )

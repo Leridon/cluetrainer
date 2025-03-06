@@ -76,8 +76,8 @@ export namespace PathGraphics {
                           opacity: number = undefined
   ): leaflet.Marker {
     const click_icons = {
-      "red": "assets/icons/redclick.png",
-      "yellow": "assets/icons/yellowclick.png",
+      "red": "/assets/icons/redclick.png",
+      "yellow": "/assets/icons/yellowclick.png",
     }
 
     return leaflet.marker(Vector2.toLatLong(coordinate), {

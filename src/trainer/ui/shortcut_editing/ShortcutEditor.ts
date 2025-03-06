@@ -146,12 +146,12 @@ class ShortcutEditActionBar extends ActionBar {
     // TODO: Portal preset, Stair Preset, Ladder Preset
 
     super([
-      new ActionBar.ActionBarButton("assets/icons/cursor_open.png", () => {
+      new ActionBar.ActionBarButton("/assets/icons/cursor_open.png", () => {
         return this.editor.layer.interactionGuard.set(new DrawDoor({
           done_handler: (step) => this.editor.createNew(step)
         }))
       }),
-      new ActionBar.ActionBarButton("assets/icons/cursor_generic.png", () => {
+      new ActionBar.ActionBarButton("/assets/icons/cursor_generic.png", () => {
         return this.editor.layer.interactionGuard.set(new DrawGeneralEntity({
           done_handler: (step) => this.editor.createNew(step)
         }))
@@ -221,7 +221,7 @@ export namespace ShortcutEditor {
       menu.children.push({
         type: "basic",
         text: `Edit ${Transportation.name(shortcut.value())}`,
-        icon: "assets/icons/edit.png",
+        icon: "/assets/icons/edit.png",
         handler: () => {
           editor.editControl.shortcut.set(shortcut)
         }
@@ -230,14 +230,14 @@ export namespace ShortcutEditor {
       menu.children.push({
         type: "basic",
         text: `Delete ${Transportation.name(shortcut.value())}`,
-        icon: "assets/icons/delete.png",
+        icon: "/assets/icons/delete.png",
         handler: () => {shortcut.remove()}
       })
 
       menu.children.push({
         type: "basic",
         text: `Move ${Transportation.name(shortcut.value())}`,
-        icon: "assets/icons/move.png",
+        icon: "/assets/icons/move.png",
         handler: () => {
           editor.layer.startMove(shortcut, origin_tile)
         }
@@ -247,7 +247,7 @@ export namespace ShortcutEditor {
     menu.children.push({
       type: "basic",
       text: `Copy ${Transportation.name(shortcut.value())}`,
-      icon: "assets/icons/copy.png",
+      icon: "/assets/icons/copy.png",
       handler: () => {
         editor.layer.startPlacement(shortcut.value(), origin_tile)
       }
@@ -257,7 +257,7 @@ export namespace ShortcutEditor {
       menu.children.push({
         type: "basic",
         text: `Focus on ${Transportation.name(shortcut.value())}`,
-        icon: "assets/icons/fullscreen.png",
+        icon: "/assets/icons/fullscreen.png",
         handler: () => {editor.layer.view.center(shortcut.value())}
       })
     }

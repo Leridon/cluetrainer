@@ -664,7 +664,7 @@ type PDBDownload = Observable<{
 
 export class PDBManager {
   pdbs = async_lazy<PDBDesc[]>(async () => {
-    return (await fetch("data/sliderpdb/pdbs.json")).json()
+    return (await fetch("/data/sliderpdb/pdbs.json")).json()
   })
 
   private cache: {

@@ -239,10 +239,10 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
       const ui_nav = hbox(
         list,
         spacer(),
-        inlineimg("assets/icons/info_nis.png").css("height", "1em").css("margin-top", "2px").addClass("ctr-clickable")
+        inlineimg("/assets/icons/info_nis.png").css("height", "1em").css("margin-top", "2px").addClass("ctr-clickable")
           .on("click", () => ClueTrainerWiki.openOnPage("scantrees"))
           .tooltip("Learn more about scan trees."),
-        inlineimg("assets/icons/settings.png").addClass("ctr-clickable").css("height", "1em").css("margin-top", "2px").addClass("ctr-clickable")
+        inlineimg("/assets/icons/settings.png").addClass("ctr-clickable").css("height", "1em").css("margin-top", "2px").addClass("ctr-clickable")
           .on("click", async () => {
             await SettingsModal.openOnPage("scans")
           }),

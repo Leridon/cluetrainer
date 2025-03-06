@@ -201,7 +201,7 @@ export class RegionChainEditor extends AbstractEditWidget<Region[]> {
                 e.splice(i, 1)
               }), true)
             }),
-          NislIcon.from("assets/icons/copy.png")
+          NislIcon.from("/assets/icons/copy.png")
             .on("click", () => {
               this.commit(copyUpdate(this.get(), c => {
                 c.push(Region.child(editor.get()))

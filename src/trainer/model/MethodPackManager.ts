@@ -116,13 +116,13 @@ export class MethodPackManager {
       this.local_packs.forEach(pack => pack.is_real_default = undefined)
 
       this.default_packs = [
-        await (await fetch("data/method_packs/scans_zyklop.json")).json(),
-        await (await fetch("data/method_packs/easy_ngis.json")).json(),
-        await (await fetch("data/method_packs/medium_ngis.json")).json(),
-        await (await fetch("data/method_packs/hard_ngis.json")).json(),
-        await (await fetch("data/method_packs/master_ngis.json")).json(),
-        await (await fetch("data/method_packs/elite_compass_ngis.json")).json(),
-        await (await fetch("data/method_packs/tetras_ngis.json")).json(),
+        await (await fetch("/data/method_packs/scans_zyklop.json")).json(),
+        await (await fetch("/data/method_packs/easy_ngis.json")).json(),
+        await (await fetch("/data/method_packs/medium_ngis.json")).json(),
+        await (await fetch("/data/method_packs/hard_ngis.json")).json(),
+        await (await fetch("/data/method_packs/master_ngis.json")).json(),
+        await (await fetch("/data/method_packs/elite_compass_ngis.json")).json(),
+        await (await fetch("/data/method_packs/tetras_ngis.json")).json(),
       ]
 
       this.default_packs.forEach(pack => pack.is_real_default = true)

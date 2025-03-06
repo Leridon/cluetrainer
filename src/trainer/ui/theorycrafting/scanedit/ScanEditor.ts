@@ -165,7 +165,7 @@ export namespace ScanEditLayer {
         if (this.is_complement) {
           props.row(cls("ctr-step-properties-explanation")
             .append(
-              inlineimg("assets/icons/info.png"),
+              inlineimg("/assets/icons/info.png"),
               " This is the complement of a dig spot. Right click to learn more about complement spots.",
             ))
         }

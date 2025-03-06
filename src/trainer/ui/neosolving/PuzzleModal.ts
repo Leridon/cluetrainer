@@ -36,7 +36,7 @@ export class PuzzleModal extends NisModal {
       this.status_row = c(),
       hbox(
         this.button_row = new ButtonRow({align: "center"}).css("flex-grow", 1),
-        inlineimg("assets/icons/settings.png").addClass("ctr-clickable")
+        inlineimg("/assets/icons/settings.png").addClass("ctr-clickable")
           .on("click", async () => {
             const result = await SettingsModal.openOnPage(this.parent.settings_id)
 

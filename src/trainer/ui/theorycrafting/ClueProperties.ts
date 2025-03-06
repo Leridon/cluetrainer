@@ -223,14 +223,14 @@ export namespace ClueProperties {
       men.children.push({
         type: "basic",
         text: "Edit",
-        icon: "assets/icons/edit.png",
+        icon: "/assets/icons/edit.png",
         handler: () => edit_handler(m)
       })
 
       men.children.push({
         type: "basic",
         text: "Edit Metadata",
-        icon: "assets/icons/edit.png",
+        icon: "/assets/icons/edit.png",
         handler: async () => {
 
           const result = await new EditMethodMetaModal(m.clue,
@@ -249,7 +249,7 @@ export namespace ClueProperties {
     men.children.push(
       {
         type: "basic",
-        icon: "assets/icons/copy.png",
+        icon: "/assets/icons/copy.png",
         text: "Edit Copy",
         handler: async () => {
           const new_method = await new NewMethodModal(m.clue, m).do()
@@ -264,7 +264,7 @@ export namespace ClueProperties {
       men.children.push({
         type: "basic",
         text: "Delete",
-        icon: "assets/icons/delete.png",
+        icon: "/assets/icons/delete.png",
         handler: async () => {
           const really = await new ConfirmationModal<boolean>({
             body: "Are you sure you want to delete this method? There is no way to undo it!",

@@ -313,11 +313,11 @@ export namespace MinimapReader {
 
     export const anchors = async_lazy(async () => {
       return {
-        botrun: await NeedleImage.fromURL("alt1anchors/minimap/botrun.png"),
-        botwalk: await NeedleImage.fromURL("alt1anchors/minimap/botwalk.png"),
-        homeport: await NeedleImage.fromURL("alt1anchors/minimap/homeport.png"),
-        toprun: await NeedleImage.fromURL("alt1anchors/minimap/toprun.png"),
-        topwalk: await NeedleImage.fromURL("alt1anchors/minimap/topwalk.png"),
+        botrun: await NeedleImage.fromURL("/alt1anchors/minimap/botrun.png"),
+        botwalk: await NeedleImage.fromURL("/alt1anchors/minimap/botwalk.png"),
+        homeport: await NeedleImage.fromURL("/alt1anchors/minimap/homeport.png"),
+        toprun: await NeedleImage.fromURL("/alt1anchors/minimap/toprun.png"),
+        topwalk: await NeedleImage.fromURL("/alt1anchors/minimap/topwalk.png"),
       }
     })
   }

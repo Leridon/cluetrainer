@@ -24,7 +24,7 @@ export class PathStepProperties extends Properties {
 
     return this.row(cls("ctr-step-properties-explanation")
       .append(
-        inlineimg("assets/icons/info.png"),
+        inlineimg("/assets/icons/info.png"),
         " ",
         text
       )

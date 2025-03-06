@@ -4,15 +4,15 @@ export namespace Constants {
 
   export const icons = {
     types: {
-      "anagram": "assets/icons/activeclue.png",
-      "compass": "assets/icons/arrow.png",
-      "coordinates": "assets/icons/sextant.png",
-      "cryptic": "assets/icons/activeclue.png",
-      "emote": "assets/icons/emotes.png",
-      "map": "assets/icons/map.png",
-      "scan": "assets/icons/scan.png",
-      "simple": "assets/icons/activeclue.png",
-      "skilling": "assets/icons/activeclue.png"
+      "anagram": "/assets/icons/activeclue.png",
+      "compass": "/assets/icons/arrow.png",
+      "coordinates": "/assets/icons/sextant.png",
+      "cryptic": "/assets/icons/activeclue.png",
+      "emote": "/assets/icons/emotes.png",
+      "map": "/assets/icons/map.png",
+      "scan": "/assets/icons/scan.png",
+      "simple": "/assets/icons/activeclue.png",
+      "skilling": "/assets/icons/activeclue.png"
     }
   }
 

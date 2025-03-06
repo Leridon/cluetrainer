@@ -182,17 +182,17 @@ export class ParserManagementLayer extends GameLayer {
   }
 
   async init() {
-    this.prototypes = fetch("rscache/prototypes.json").then(async res => PrototypeIndex.simple(await res.json()))
+    this.prototypes = fetch("/rscache/prototypes.json").then(async res => PrototypeIndex.simple(await res.json()))
 
     this.prototypes.then(p => this.prototype_explorer.setPrototypes(p.data))
 
-    const instances = fetch("rscache/prototype_instances.json")
+    const instances = fetch("/rscache/prototype_instances.json")
       .then(async res => {
         return (await res.json()) as ProcessedCacheTypes.Instance[]
       })
 
     let local_data: LocParsingTableData = await this.local_store.get()
-    let repo_data: LocParsingTableData = await (await fetch("map/parsing_associations.json")).json().catch(() => undefined)
+    let repo_data: LocParsingTableData = await (await fetch("/map/parsing_associations.json")).json().catch(() => undefined)
 
     this.repo_version_number = repo_data?.version ?? -1
 

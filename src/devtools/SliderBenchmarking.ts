@@ -41,8 +41,8 @@ export type SliderDataEntry = {
   theme: string
 }
 
-export const crowdsourcedSliderData = async_lazy(async () => await (await fetch("data/sliders.json")).json())
-export const crowdsourcedSliderData2024 = async_lazy(async () => await (await fetch("data/sliders_2024.json")).json())
+export const crowdsourcedSliderData = async_lazy(async () => await (await fetch("/data/sliders.json")).json())
+export const crowdsourcedSliderData2024 = async_lazy(async () => await (await fetch("/data/sliders_2024.json")).json())
 
 type Statistics = {
   success_chance: number,

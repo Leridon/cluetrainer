@@ -27,22 +27,22 @@ export namespace ClueType {
       icon_url: string,
       name: string
     }> = {
-      easy: {icon_url: "assets/icons/sealedeasy.png", name: "Easy"},
-      medium: {icon_url: "assets/icons/sealedmedium.png", name: "Medium"},
-      hard: {icon_url: "assets/icons/sealedhard.png", name: "Hard"},
-      elite: {icon_url: "assets/icons/sealedelite.png", name: "Elite"},
-      master: {icon_url: "assets/icons/sealedmaster.png", name: "Master"},
-      tetracompass: {icon_url: "assets/icons/tetracompass.png", name: "Tetracompass"},
-      sandy: {icon_url: "assets/icons/sandcastle.png", name: "Sandy"},
-      anagram: {icon_url: "assets/icons/activeclue.png", name: "Anagram"},
-      compass: {icon_url: "assets/icons/arrow.png", name: "Compass"},
-      coordinates: {icon_url: "assets/icons/sextant.png", name: "Coordinate"},
-      cryptic: {icon_url: "assets/icons/activeclue.png", name: "Cryptic"},
-      emote: {icon_url: "assets/icons/emotes.png", name: "Emote"},
-      map: {icon_url: "assets/icons/map.png", name: "Map"},
-      scan: {icon_url: "assets/icons/scan.png", name: "Scan"},
-      simple: {icon_url: "assets/icons/activeclue.png", name: "Simple"},
-      skilling: {icon_url: "assets/icons/skills.webp", name: "Skilling"}
+      easy: {icon_url: "/assets/icons/sealedeasy.png", name: "Easy"},
+      medium: {icon_url: "/assets/icons/sealedmedium.png", name: "Medium"},
+      hard: {icon_url: "/assets/icons/sealedhard.png", name: "Hard"},
+      elite: {icon_url: "/assets/icons/sealedelite.png", name: "Elite"},
+      master: {icon_url: "/assets/icons/sealedmaster.png", name: "Master"},
+      tetracompass: {icon_url: "/assets/icons/tetracompass.png", name: "Tetracompass"},
+      sandy: {icon_url: "/assets/icons/sandcastle.png", name: "Sandy"},
+      anagram: {icon_url: "/assets/icons/activeclue.png", name: "Anagram"},
+      compass: {icon_url: "/assets/icons/arrow.png", name: "Compass"},
+      coordinates: {icon_url: "/assets/icons/sextant.png", name: "Coordinate"},
+      cryptic: {icon_url: "/assets/icons/activeclue.png", name: "Cryptic"},
+      emote: {icon_url: "/assets/icons/emotes.png", name: "Emote"},
+      map: {icon_url: "/assets/icons/map.png", name: "Map"},
+      scan: {icon_url: "/assets/icons/scan.png", name: "Scan"},
+      simple: {icon_url: "/assets/icons/activeclue.png", name: "Simple"},
+      skilling: {icon_url: "/assets/icons/skills.webp", name: "Skilling"}
     }
 
     return lut[x]

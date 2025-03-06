@@ -382,21 +382,21 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     cls("ctr-neosolving-compass-solving-header")
       .append(
-        inlineimg("assets/icons/arrow.png").tooltip("Compass Solver"),
+        inlineimg("/assets/icons/arrow.png").tooltip("Compass Solver"),
         "Compass Solver",
-        /*inlineimg("assets/icons/info_nis.png").addClass("ctr-clickable")
+        /*inlineimg("/assets/icons/info_nis.png").addClass("ctr-clickable")
           .css("height", "1em")
           .css("margin-left", "4px")
           .on("click", async () => {
 
           }),*/
         C.spacer(),
-        inlineimg("assets/icons/reset_nis.png").addClass("ctr-clickable")
+        inlineimg("/assets/icons/reset_nis.png").addClass("ctr-clickable")
           .on("click", async () => {
             this.reset(true)
           })
           .tooltip("Reset compass solver."),
-        inlineimg("assets/icons/settings.png").addClass("ctr-clickable")
+        inlineimg("/assets/icons/settings.png").addClass("ctr-clickable")
           .on("click", async () => {
             const result = await SettingsModal.openOnPage("compass")
 

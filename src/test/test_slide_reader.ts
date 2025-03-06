@@ -18,7 +18,7 @@ export async function test_slide_reader(): Promise<void> {
     }
   }[] = [
     {
-      file: "test_assets/sliders/castle_scrambled.png", expected:
+      file: "/test_assets/sliders/castle_scrambled.png", expected:
         {
           theme: "castle", state:
             [2, 20, 6, 0, 16,
@@ -29,12 +29,12 @@ export async function test_slide_reader(): Promise<void> {
             ]
         }
     },
-    {file: "test_assets/sliders/castle_solved.png", expected: {theme: "castle", state: SliderState.SOLVED}},
-    {file: "test_assets/sliders/tree_solved.png", expected: {theme: "tree", state: SliderState.SOLVED}},
-    {file: "test_assets/sliders/pharaoh_solved.png", expected: {theme: "menaphos_pharaoh", state: SliderState.SOLVED}},
-    {file: "test_assets/sliders/troll_solved.png", expected: {theme: "troll", state: SliderState.SOLVED}},
+    {file: "/test_assets/sliders/castle_solved.png", expected: {theme: "castle", state: SliderState.SOLVED}},
+    {file: "/test_assets/sliders/tree_solved.png", expected: {theme: "tree", state: SliderState.SOLVED}},
+    {file: "/test_assets/sliders/pharaoh_solved.png", expected: {theme: "menaphos_pharaoh", state: SliderState.SOLVED}},
+    {file: "/test_assets/sliders/troll_solved.png", expected: {theme: "troll", state: SliderState.SOLVED}},
     {
-      file: "test_assets/sliders/bridge_swapped.png", expected: {
+      file: "/test_assets/sliders/bridge_swapped.png", expected: {
         theme: "bridge", state:
           [0, 1, 2, 3, 4,
             5, 6, 7, 8, 9,
@@ -44,7 +44,7 @@ export async function test_slide_reader(): Promise<void> {
       }
     },
     {
-      file: "test_assets/sliders/greg_scrambled_low_graphhics.png", expected: {
+      file: "/test_assets/sliders/greg_scrambled_low_graphhics.png", expected: {
         theme: "gregorovic", state:
           [5, 8, 13, 4, 1,
             2, 20, 0, 14, 3,
@@ -54,7 +54,7 @@ export async function test_slide_reader(): Promise<void> {
       }
     },
     {
-      file: "test_assets/sliders/tree_scrambled.png", expected: {
+      file: "/test_assets/sliders/tree_scrambled.png", expected: {
         theme: "tree", state:
           [0, 6, 24, 3, 4,
             5, 13, 8, 17, 18,
@@ -64,7 +64,7 @@ export async function test_slide_reader(): Promise<void> {
       }
     },
     {
-      file: "test_assets/sliders/tree_scrambled2.png", expected: {
+      file: "/test_assets/sliders/tree_scrambled2.png", expected: {
         theme: "tree", state:
           [19, 4, 3, 1, 0,
             2, 14, 7, 8, 13,
@@ -74,7 +74,7 @@ export async function test_slide_reader(): Promise<void> {
       }
     },
     {
-      file: "test_assets/sliders/tree_scrambled3.png", expected: {
+      file: "/test_assets/sliders/tree_scrambled3.png", expected: {
         theme: "tree", state:
           [23, 2, 12, 4, 10,
             0, 3, 24, 1, 5,
@@ -84,7 +84,7 @@ export async function test_slide_reader(): Promise<void> {
       }
     },
     {
-      file: "test_assets/sliders/tree_scrambled4.png", expected: {
+      file: "/test_assets/sliders/tree_scrambled4.png", expected: {
         theme: "tree", state:
           [0, 3, 4, 19, 2,
             24, 18, 16, 6, 11,
@@ -94,10 +94,10 @@ export async function test_slide_reader(): Promise<void> {
       }
     },
     {
-      file: "test_assets/sliders/rax_solved.png", expected: {theme: "araxxor", state: SliderState.SOLVED}
+      file: "/test_assets/sliders/rax_solved.png", expected: {theme: "araxxor", state: SliderState.SOLVED}
     },
     {
-      file: "test_assets/sliders/rax_solved2.png", expected: {theme: "araxxor", state: SliderState.SOLVED}
+      file: "/test_assets/sliders/rax_solved2.png", expected: {theme: "araxxor", state: SliderState.SOLVED}
     }
   ]
 

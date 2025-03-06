@@ -73,7 +73,7 @@ export default class TemplateStringEdit extends AbstractEditWidget<string> {
     } else {
       this.main_row = c("<div class='ctr-template-string-edit-input-row'></div>")
 
-      this.generate_button = SmallImageButton.new("assets/icons/regenerate.png")
+      this.generate_button = SmallImageButton.new("/assets/icons/regenerate.png")
         .css("margin-left", "2px")
         .tooltip("Auto generate")
         .setEnabled(!!this.options.generator)
@@ -109,7 +109,7 @@ export default class TemplateStringEdit extends AbstractEditWidget<string> {
         this.preview_container = c().appendTo(this)
 
       } else {
-        this.edit_button = SmallImageButton.new("assets/icons/edit.png")
+        this.edit_button = SmallImageButton.new("/assets/icons/edit.png")
           .css("margin-left", "2px")
           .tooltip("Edit")
           .onClick(() => {
