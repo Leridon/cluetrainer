@@ -29,6 +29,7 @@ export namespace Changelog {
         .item("Updated outdated collision data for the path editor (for real this time).")
         .item("Tetracompasses now consistently use the correct 1x1 excavation area.")
         .item("Add more detail to the tooltip for teleports when used in a path.")
+        .item("Renamed methods for easy clues so the name indicates the primary method of transportation.")
       ),
     title: "New Tetracompass Methods",
     version: 42
