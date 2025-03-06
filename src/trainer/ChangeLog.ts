@@ -25,9 +25,11 @@ export namespace Changelog {
     render: layout => layout
       .row(new List()
         .item("Updated the tetracompass method pack to utilize the new teleports and so paths land exactly on the target tile.")
+        .item("Add missing location for Philippe Carnillean.")
+        .item("Updated outdated collision data for the path editor (for real this time).")
       ),
     notification: "New methods using the new teleports have arrived",
-    title: "New Methods",
+    title: "New Tetracompass Methods",
     version: 42
   }
 
