@@ -20,6 +20,17 @@ export namespace Changelog {
     render: (_: Layout) => void
   }
 
+  export const v42: LogEntry = {
+    date: new Date(Date.parse("2025-03-06")),
+    render: layout => layout
+      .row(new List()
+        .item("Updated the tetracompass method pack to utilize the new teleports and so paths land exactly on the target tile.")
+      ),
+    notification: "New methods using the new teleports have arrived",
+    title: "New Methods",
+    version: 42
+  }
+
   export const v41: LogEntry = {
     date: new Date(Date.parse("2025-03-04")),
     render: layout => layout
