@@ -4,7 +4,6 @@ import {CapturedImage} from "../../../../lib/alt1/capture";
 import {KnotReader} from "../cluereader/KnotReader";
 import {CelticKnots} from "../../../../lib/cluetheory/CelticKnots";
 import {Vector2} from "../../../../lib/math";
-import {mixColor} from "alt1";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
 import {CapturedModal} from "../cluereader/capture/CapturedModal";
 import {AbstractPuzzleProcess} from "./AbstractPuzzleProcess";
@@ -12,10 +11,11 @@ import {AbstractPuzzleSolving} from "./AbstractPuzzleSolving";
 import {deps} from "../../../dependencies";
 import {Log} from "../../../../lib/util/Log";
 import {util} from "../../../../lib/util/util";
+import {Alt1Color} from "lib/alt1/Alt1Color";
+import {Alt1OverlayDrawCalls} from "../../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
 import PuzzleState = CelticKnots.PuzzleState;
 import log = Log.log;
 import async_init = util.async_init;
-import { Alt1Color } from "lib/alt1/Alt1Color";
 
 const CENTER_TEXT_SIZE = 20
 const MOVE_FONT_SIZE = 24
@@ -93,7 +93,7 @@ class KnotSolvingProcess extends AbstractPuzzleProcess {
 
       const buttons = this.parent.knot.reader.getButtons()
 
-      this.solution_overlay.clear()
+      const geometry = new Alt1OverlayDrawCalls.GeometryBuilder()
 
       this.isSolved = CelticKnots.PuzzleState.isSolved(this.puzzle)
 
@@ -106,7 +106,7 @@ class KnotSolvingProcess extends AbstractPuzzleProcess {
 
             const pos = move.offset < 0 ? button.counterclockwise : button.clockwise
 
-            this.solution_overlay.text(Math.abs(move.offset).toString(),
+            geometry.text(Math.abs(move.offset).toString(),
               Vector2.add(reader.tileOrigin(pos, true), {x: 12, y: 12}), {
                 color: Alt1Color.white,
                 centered: true,
@@ -116,7 +116,7 @@ class KnotSolvingProcess extends AbstractPuzzleProcess {
             )
           })
         } else {
-          this.solution_overlay.text(CelticKnots.PuzzleShape.hash(this.puzzle.shape).toString(),
+          geometry.text(CelticKnots.PuzzleShape.hash(this.puzzle.shape).toString(),
             Vector2.add(reader.ui.body.screenRectangle().origin, CENTRAL_TEXT_OFFSET, Vector2.scale(0.5, reader.ui.body.screenRectangle().size)),
             {
               color: Alt1Color.white,
@@ -127,7 +127,7 @@ class KnotSolvingProcess extends AbstractPuzzleProcess {
 
 
       } else {
-        this.solution_overlay.text("Not enough information",
+        geometry.text("Not enough information",
           Vector2.add(reader.ui.body.screenRectangle().origin, CENTRAL_TEXT_OFFSET, Vector2.scale(0.5, reader.ui.body.screenRectangle().size)),
           {
             color: Alt1Color.white,
@@ -135,7 +135,7 @@ class KnotSolvingProcess extends AbstractPuzzleProcess {
           }
         )
 
-        this.solution_overlay.rect2(
+        geometry.rectangle(
           ScreenRectangle.move(reader.ui.body.screenRectangle(), {x: 4, y: 282}, {x: 121, y: 26}),
           {
             color: Alt1Color.white,
@@ -145,7 +145,7 @@ class KnotSolvingProcess extends AbstractPuzzleProcess {
       }
 
       if (this.isSolved) {
-        this.solution_overlay.text("Solved",
+        geometry.text("Solved",
           Vector2.add(reader.ui.body.screenRectangle().origin, CENTRAL_TEXT_OFFSET, Vector2.scale(0.5, reader.ui.body.screenRectangle().size)),
           {
             color: Alt1Color.green,
@@ -153,7 +153,7 @@ class KnotSolvingProcess extends AbstractPuzzleProcess {
           }
         )
 
-        this.solution_overlay.rect2(
+        geometry.rectangle(
           ScreenRectangle.move(reader.ui.body.screenRectangle(), {x: 372, y: 282}, {x: 121, y: 26}),
           {
             color: Alt1Color.green,
@@ -162,7 +162,7 @@ class KnotSolvingProcess extends AbstractPuzzleProcess {
         )
       }
 
-      this.solution_overlay.render()
+      this.solution_overlay.setGeometry(geometry.buffer())
 
       //await (reader.showDebugOverlay(true))
     } else {

@@ -14,6 +14,8 @@ import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
 import {Log} from "../../../../lib/util/Log";
 import async_init = util.async_init;
 import log = Log.log;
+import {Alt1OverlayDrawCalls} from "../../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
+import * as buffer from "buffer";
 
 class TowersSolvingProcess extends AbstractPuzzleProcess {
   settings = deps().app.settings.settings.solving.puzzles.towers
@@ -39,43 +41,8 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
     })
   }
 
-  private debugOverlay(reader: TowersReader.CapturedTowers) {
-
-    this.solution_overlay.clear()
-
-    const hints = reader.getHints()
-
-    hints.top.forEach((h, i) => {
-      this.solution_overlay.text(
-        h?.toString() ?? "N",
-        reader.tileOrigin({x: i, y: -1}, true),
-      )
-    })
-    hints.bottom.forEach((h, i) => {
-      this.solution_overlay.text(
-        h?.toString() ?? "N",
-        reader.tileOrigin({x: i, y: 5}, true),
-      )
-    })
-    hints.left.forEach((h, i) => {
-      this.solution_overlay.text(
-        h?.toString() ?? "N",
-        reader.tileOrigin({x: -1, y: i}, true),
-      )
-    })
-
-    hints.right.forEach((h, i) => {
-      this.solution_overlay.text(
-        h?.toString() ?? "N",
-        reader.tileOrigin({x: 5, y: i}, true),
-      )
-    })
-
-    this.solution_overlay.render()
-  }
-
   showSolutionOverlay(reader: TowersReader.CapturedTowers, currentState: Towers.PuzzleState, solution: Towers.PuzzleState, hidden_by_context_menu: ScreenRectangle = null) {
-    this.solution_overlay.clear()
+    const geometry = new Alt1OverlayDrawCalls.GeometryBuilder()
 
     const blocked_area = hidden_by_context_menu
       ? ScreenRectangle.extend(hidden_by_context_menu, {x: 7, y: 11})
@@ -121,7 +88,7 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
                 }
               )*/
 
-              this.solution_overlay.rect2(
+              geometry.rectangle(
                 {origin: Vector2.add(origin, {x: -1, y: -1}), size: Vector2.add(TowersReader.TILE_SIZE, {x: 3, y: 3})}, {
                   color: Alt1Color.green,
                   width: 2
@@ -132,7 +99,7 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
         } else {
           if (this.settings.solution_mode == "target" || this.settings.solution_mode == "both") {
             if (!blocked(TR)) {
-              this.solution_overlay.text(
+              geometry.text(
                 should.toString(),
                 TR, {
                   color: Alt1Color.fromHex("#C8C8C8"),
@@ -148,7 +115,7 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
             const pos = tr_taken ? TL : TR
 
             if (!blocked(pos)) {
-              this.solution_overlay.text(
+              geometry.text(
                 "+" + difference.toString(),
                 pos, {
                   color: Alt1Color.fromHex("#C8C8C8"),
@@ -161,7 +128,7 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
           if (this.was_solved_data[y][x] && this.settings.show_overshot) {
             if (!blocked(TR)) {
 
-              this.solution_overlay.rect2(
+              geometry.rectangle(
                 {origin: Vector2.add(origin, {x: -1, y: -1}), size: Vector2.add(TowersReader.TILE_SIZE, {x: 3, y: 3})}, {
                   color: Alt1Color.red,
                   width: 2
@@ -176,8 +143,7 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
     this.isSolved = isSolved
 
     if (isSolved) {
-
-      this.solution_overlay.text(
+      geometry.text(
         "Solved",
         Vector2.add(reader.tileOrigin({x: 2, y: 2}, true), {x: 21, y: 21}), {
           color: Alt1Color.green,
@@ -187,7 +153,7 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
 
       const CHECK_RECTANGLE: ScreenRectangle = {origin: {x: 317, y: 243}, size: {x: 150, y: 25}}
 
-      this.solution_overlay.rect2(
+      geometry.rectangle(
         ScreenRectangle.subRect(reader.modal.body.screenRectangle(), CHECK_RECTANGLE),
         {
           color: Alt1Color.green,
@@ -196,7 +162,7 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
       )
     }
 
-    this.solution_overlay.render()
+    this.solution_overlay.setGeometry(geometry.buffer())
   }
 
   area(): ScreenRectangle {
