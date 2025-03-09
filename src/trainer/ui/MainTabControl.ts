@@ -74,7 +74,7 @@ export default class MainTabControl extends Widget {
     this.addClass("ctr-menubar")
 
     this.append(
-      this.solve_button = new MenuButton("Solve", "assets/icons/ribbon_clue.png")
+      this.solve_button = new MenuButton("Solve", "/assets/icons/ribbon_clue.png")
         .onClick(() => {
           this.switchToTab("solve")
         })
@@ -86,7 +86,7 @@ export default class MainTabControl extends Widget {
             hideOnClick: false
           })
       ,
-      this.map_button = new MenuButton("Map", "assets/icons/ribbon_map.png")
+      this.map_button = new MenuButton("Map", "/assets/icons/ribbon_map.png")
         .onClick(() => {
           this.switchToTab("map")
         })
@@ -97,7 +97,7 @@ export default class MainTabControl extends Widget {
             placement: "right",
             hideOnClick: false
           }),
-      this.create_button = new MenuButton("Methods", "assets/icons/ribbon_notes.webp")
+      this.create_button = new MenuButton("Methods", "/assets/icons/ribbon_notes.webp")
         .onClick(() => {
           this.switchToTab("create")
         })
@@ -110,7 +110,7 @@ export default class MainTabControl extends Widget {
             hideOnClick: false
           })
       ,
-      this.paths_button = new MenuButton("Paths", "assets/icons/ribbon_activitytracker.webp")
+      this.paths_button = new MenuButton("Paths", "/assets/icons/ribbon_activitytracker.webp")
         .onClick(() => {
           this.switchToTab("pathedit")
         })
@@ -122,7 +122,7 @@ export default class MainTabControl extends Widget {
             hideOnClick: false
           })
       ,
-      this.tetracompass_button = new MenuButton("Tetras", "assets/icons/ribbon_tetra.png")
+      this.tetracompass_button = new MenuButton("Tetras", "/assets/icons/ribbon_tetra.png")
         .onClick(() => {
           this.switchToTab("tetracompass")
         })
@@ -137,7 +137,7 @@ export default class MainTabControl extends Widget {
       spacer(),
       this.app.in_alt1 ? undefined :
 
-        new MenuButton("Alt1", "assets/icons/ribbon_alt1.png")
+        new MenuButton("Alt1", "/assets/icons/ribbon_alt1.png")
           .onClick(() => {
             new Alt1Modal().show()
           })
@@ -149,7 +149,7 @@ export default class MainTabControl extends Widget {
               placement: "right",
               hideOnClick: false
             }),
-      new MenuButton("Wiki", "assets/icons/ribbon_osh.png")
+      new MenuButton("Wiki", "/assets/icons/ribbon_osh.png")
         .onClick(() => ClueTrainerWiki.openOnPage()
         )
         .setActive(true)
@@ -160,7 +160,7 @@ export default class MainTabControl extends Widget {
             placement: "right",
             hideOnClick: false
           }),
-      this.settings_button = new MenuButton("Settings", "assets/icons/ribbon_options.webp").onClick(() => {
+      this.settings_button = new MenuButton("Settings", "/assets/icons/ribbon_options.webp").onClick(() => {
           SettingsModal.openOnPage()
         })
         .setActive(true)
@@ -171,15 +171,15 @@ export default class MainTabControl extends Widget {
             placement: "right",
             hideOnClick: false
           }),
-      new MenuButton("About", "assets/icons/ribbon_about.webp")
+      new MenuButton("About", "/assets/icons/ribbon_about.webp")
         .setActive(true)
         .onClick(() => [
           new AboutModal().show()
         ]),
       c().append(
-        c(`<a href="https://github.com/Leridon/cluetrainer" target="_blank"> <img class="ctr-clickable" height="15px" style="padding: 0 2px" src="assets/icons/github-mark-white.png"></a>`),
-        c(`<a href="https://ko-fi.com/I2I4XY829" target="_blank"><img class="ctr-clickable" height="15px" src="assets/icons/kofi.webp"></a>`),
-        //c(`<a href="https://discord.gg/cluechasers" target="_blank"> <img class="ctr-clickable" height="16px" style="padding: 0 2px" src="assets/icons/cluechasers.png"></a>`),
+        c(`<a href="https://github.com/Leridon/cluetrainer" target="_blank"> <img class="ctr-clickable" height="15px" style="padding: 0 2px" src="/assets/icons/github-mark-white.png"></a>`),
+        c(`<a href="https://ko-fi.com/I2I4XY829" target="_blank"><img class="ctr-clickable" height="15px" src="/assets/icons/kofi.webp"></a>`),
+        //c(`<a href="https://discord.gg/cluechasers" target="_blank"> <img class="ctr-clickable" height="16px" style="padding: 0 2px" src="/assets/icons/cluechasers.png"></a>`),
       ),
       c().append(
       )

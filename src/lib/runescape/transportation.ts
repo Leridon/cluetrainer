@@ -165,6 +165,8 @@ export namespace Transportation {
     export class Spot {
       private customization: ActiveTeleportCustomization = null
 
+      private visual_access: TeleportAccess = null
+
       private pota_slot: {
         img: ImageUrl,
         code_prefix: string,
@@ -176,13 +178,15 @@ export namespace Transportation {
                   public readonly spot: TeleportSpot,
                   public readonly access: TeleportAccess | undefined
       ) {
+        this.visual_access = access ?? this.group.access.find(TeleportGroup.TeleportAccess.isAnywhere)
+
         this.refresh()
       }
 
       refresh() {
         this.customization = deps().app.settings.active_teleport_customization.value()
 
-        const pota = this.access && this.access.type == "item" && this.access.can_be_in_pota
+        const pota = this.visual_access && this.visual_access.type == "item" && this.visual_access.can_be_in_pota
           ? this.customization.pota_slots.find((p) => p.jewellry.group_id == this.group.id)
           : null
 
@@ -197,10 +201,9 @@ export namespace Transportation {
         this.props = TeleportProps.combinePrioritized(
           {img: this.pota_slot?.img},
           this.access?.per_spot_props?.[this.spot.id],
-          this.access,
+          this.visual_access,
           this.spot,
           this.group,
-          this.group.access.find(TeleportGroup.TeleportAccess.isAnywhere),
           {
             animation_ticks: 0,
             menu_ticks: 0,

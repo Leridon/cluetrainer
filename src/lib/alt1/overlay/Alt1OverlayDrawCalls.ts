@@ -6,11 +6,10 @@ import lodash from "lodash";
 
 export namespace Alt1OverlayDrawCalls {
   export class Buffer {
-    constructor(public primitives: Primitive[],
-                private alive_time: number = 30000
+    constructor(public primitives: Primitive[]
     ) { }
 
-    public playback(): this {
+    public playback(alive_time: number = 30000): this {
       for (let element of this.primitives) {
         switch (element.type) {
           case "rect":
@@ -20,7 +19,7 @@ export namespace Alt1OverlayDrawCalls {
               element.options.color.for_overlay,
               Math.round(origin.x), Math.round(origin.y),
               Math.round(Rectangle.width(element.rect)), Math.round(Rectangle.height(element.rect)),
-              this.alive_time,
+              alive_time,
               element.options.width ?? 3
             )
 
@@ -31,13 +30,13 @@ export namespace Alt1OverlayDrawCalls {
               element.options.width,
               Math.round(element.from.x), Math.round(element.from.y),
               Math.round(element.to.x), Math.round(element.to.y),
-              this.alive_time ?? 2
+              alive_time
             )
             break;
           case "text":
             alt1.overLayTextEx(element.text, element.options.color.for_overlay, element.options.width ?? 20,
               Math.round(element.position.x), Math.round(element.position.y),
-              this.alive_time, undefined, element.options.centered ?? true, element.options.shadow ?? true
+              alive_time, undefined, element.options.centered ?? true, element.options.shadow ?? true
             )
             break
         }

@@ -25,7 +25,7 @@ export class Alt1Overlay extends Behaviour {
 
   private overlay: Alt1OverlayDrawCalls.Buffer = new Alt1OverlayDrawCalls.Buffer([])
 
-  constructor(private heartbeater: Alt1OverlayManager = Alt1.instance().overlays) {
+  constructor(private oneshot: { alive_time: number } = undefined, private heartbeater: Alt1OverlayManager = Alt1.instance().overlays) {
     super();
 
     this.visible.subscribe(() => this.refreshVisibility())
@@ -66,7 +66,7 @@ export class Alt1Overlay extends Behaviour {
 
     if (this.isVisible()) {
       alt1.overLaySetGroup(this.group_name)
-      this.overlay.playback()
+      this.overlay.playback(this.heartbeater.HEARTBEAT * 1.5)
       alt1.overLaySetGroup("")
     }
 
@@ -92,8 +92,10 @@ export class Alt1Overlay extends Behaviour {
   protected renderWithBuilder(builder: Alt1OverlayDrawCalls.GeometryBuilder) { }
 
   protected begin() {
-    this.heartbeater.onHeartbeat(() => this.refresh())
-      .bindTo(this.lifetime_manager)
+    if (!this.oneshot) {
+      this.heartbeater.onHeartbeat(() => this.refresh())
+        .bindTo(this.lifetime_manager)
+    }
 
     this.heartbeater.bindToPageLifetime(this)
 
@@ -141,6 +143,16 @@ export class Alt1Overlay extends Behaviour {
     parent.withSub(this)
 
     return this
+  }
+
+  static oneOff(geometry: Alt1OverlayDrawCalls.Buffer, time: number): Alt1Overlay {
+    const overlay = new Alt1Overlay({alive_time: time})
+
+    overlay.setGeometry(geometry)
+
+    overlay.start()
+
+    return overlay
   }
 }
 

@@ -2,7 +2,7 @@ import {CelticKnots} from "../../../../lib/cluetheory/CelticKnots";
 import {Rectangle, Vector2} from "../../../../lib/math";
 import {util} from "../../../../lib/util/util";
 import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
-import {ImageDetect, mixColor} from "alt1";
+import {ImageDetect} from "alt1";
 import {ImageFingerprint} from "../../../../lib/util/ImageFingerprint";
 import * as lodash from "lodash";
 import {identity} from "lodash";
@@ -31,7 +31,7 @@ export class KnotReader {
 
 export namespace KnotReader {
   const _instance = async_lazy<KnotReader>(async () => {
-    const atlas = await ImageDetect.imageDataFromUrl("alt1anchors/knot_runes/atlas.png")
+    const atlas = await ImageDetect.imageDataFromUrl("/alt1anchors/knot_runes/atlas.png")
 
     const fingerprints: ImageFingerprint[] = []
 
@@ -162,7 +162,7 @@ export namespace KnotReader {
   export async function getRuneReferences(): Promise<ImageFingerprint[]> {
 
     if (rune_references == undefined) {
-      const atlas = await ImageDetect.imageDataFromUrl("alt1anchors/knot_runes/atlas.png")
+      const atlas = await ImageDetect.imageDataFromUrl("/alt1anchors/knot_runes/atlas.png")
 
       const fingerprints: ImageFingerprint[] = []
 

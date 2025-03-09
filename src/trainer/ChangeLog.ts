@@ -20,6 +20,37 @@ export namespace Changelog {
     render: (_: Layout) => void
   }
 
+  export const v43: LogEntry = {
+    date: new Date(Date.parse("2025-03-09")),
+    render: layout => layout
+      .header("Bugfixes", "left")
+      .row(new List()
+        .item("Fixed a bug that caused solutions to tower puzzles to not appear for Runekit or Alt1 Electron users.")
+        .item("Moved Knot, Tower, and Lockbox overlays to the new overlay tech so they disappear automatically when Clue Trainer closes.")
+        .item("Fixed a bug that caused passage of the abyss overrides to only appear within paths.")
+        .item("Added Memory strand teleport.")
+        .item("Fixed a bug that caused methods for skilling steps to not be editable.")
+      )
+      .header("Method Pack Updates (by Ngis)", "left")
+      .row(new List()
+        .item("Medium Pack", new List()
+          .item("Standardized method names.")
+          .item("Added a method to a coordinate step in the Lumbridge Swamp using the Shattered Worlds teleport.")
+          .item("Added a method for a map clue between Seer's village and Relekka using the Amulet of Nature.")
+          .item("Added a method for a coordinate step west of Tree Gnome Village using the Amulet of Nature.")
+        )
+        .item("Hard Pack", new List()
+          .item("Added a method for the Heckel Funch step using a Grand Seed Pod.")
+        )
+        .item("Master Pack", new List()
+          .item("Standardized method names.")
+        )
+      )
+    ,
+    title: "Bugfixes and Method Updates",
+    version: 43
+  }
+
   export const v42: LogEntry = {
     date: new Date(Date.parse("2025-03-06")),
     render: layout => layout
@@ -104,6 +135,7 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([
+    v43,
     v42,
     v41,
     v40,
@@ -883,9 +915,9 @@ export namespace Changelog {
         )
       )
 
-      // layout.paragraph('If you enjoy Clue Trainer, please consider supporting continuous development of Clue Trainer at <a href="https://ko-fi.com/I2I4XY829" target="_blank"><img class="ctr-clickable" height="12px" src="assets/icons/kofi.webp"> KoFi</a>.')
+      // layout.paragraph('If you enjoy Clue Trainer, please consider supporting continuous development of Clue Trainer at <a href="https://ko-fi.com/I2I4XY829" target="_blank"><img class="ctr-clickable" height="12px" src="/assets/icons/kofi.webp"> KoFi</a>.')
 
-      layout.paragraph('You can also join the <a href="https://discord.gg/cluechasers" target="_blank"><img src="assets/icons/cluechasers.png" height="12px">Clue Chasers discord</a> to leave praise and criticism, report issues, request features, get support or just come by and say hi in the <a href="https://discord.com/channels/332595657363685377/1103737270114209825" target="_blank">#clue-trainer</a> channel.')
+      layout.paragraph('You can also join the <a href="https://discord.gg/cluechasers" target="_blank"><img src="/assets/icons/cluechasers.png" height="12px">Clue Chasers discord</a> to leave praise and criticism, report issues, request features, get support or just come by and say hi in the <a href="https://discord.com/channels/332595657363685377/1103737270114209825" target="_blank">#clue-trainer</a> channel.')
 
       layout.divider()
 

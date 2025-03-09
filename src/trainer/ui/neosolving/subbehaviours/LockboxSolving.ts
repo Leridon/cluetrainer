@@ -15,6 +15,7 @@ import {util} from "../../../../lib/util/util";
 import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
 import log = Log.log;
 import async_init = util.async_init;
+import {Alt1OverlayDrawCalls} from "../../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
 
 class LockboxSolvingProcess extends AbstractPuzzleProcess {
 
@@ -38,7 +39,7 @@ class LockboxSolvingProcess extends AbstractPuzzleProcess {
   }
 
   private overlay(solution: Lockboxes.MoveMap, reader: LockBoxReader.CapturedLockbox, is_desynced: boolean) {
-    this.solution_overlay.clear()
+    const geometry = new Alt1OverlayDrawCalls.GeometryBuilder()
 
     for (let y = 0; y < solution.length; y++) {
       const row = solution[y]
@@ -48,7 +49,7 @@ class LockboxSolvingProcess extends AbstractPuzzleProcess {
 
         if (tile == 0) continue
 
-        this.solution_overlay.text(tile.toString(),
+        geometry.text(tile.toString(),
           Vector2.add(Vector2.scale(0.5, LockBoxReader.TILE_SIZE), reader.tileOrigin({x, y}, true), {x: 3, y: 0}),
           {
             width: 24,
@@ -59,7 +60,7 @@ class LockboxSolvingProcess extends AbstractPuzzleProcess {
     }
 
     if (is_desynced) {
-      this.solution_overlay.text("Detected Client Desync - Overlay paused", reader.tileOrigin({x: 2, y: -2}, true), {
+      geometry.text("Detected Client Desync - Overlay paused", reader.tileOrigin({x: 2, y: -2}, true), {
         width: 16,
         color: Alt1Color.fromHex("#C80000"),
         centered: true,
@@ -67,7 +68,7 @@ class LockboxSolvingProcess extends AbstractPuzzleProcess {
       })
     }
 
-    this.solution_overlay.render()
+    this.solution_overlay.setGeometry(geometry.buffer())
   }
 
   private last_state: {

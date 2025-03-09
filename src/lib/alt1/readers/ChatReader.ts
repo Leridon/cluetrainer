@@ -162,19 +162,19 @@ export namespace ChatReader {
     export const instance = async_lazy<ChatIcons>(async () => {
 
       return [
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badge_broadcast_bronze.data.png"), character: "\u2746"}, //HEAVY CHEVRON SNOWFLAKE
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badge_broadcast_gold.data.png"), character: "\u2746"}, //HEAVY CHEVRON SNOWFLAKE
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badge_broadcast_silver.data.png"), character: "\u2746"}, //HEAVY CHEVRON SNOWFLAKE
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badge_hcimdeath.png"), character: "\u{1F480}"}, //SKULL
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgegim.data.png"), character: "\u3289"}, //CIRCLED IDEOGRAPH TEN
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgehcim.data.png"), character: "\u{1F480}"}, //SKULL
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgeironman.data.png"), character: "\u26AF"}, //UNMARRIED PARTNERSHIP SYMBOL
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgepmod.data.png"), character: "\u2655"}, //WHITE CHESS QUEEN
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgepmodvip.data.png"), character: "\u2655"}, //WHITE CHESS QUEEN
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgergim.data.png"), character: "\u328F"}, //CIRCLED IDEOGRAPH EARTH
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/badgevip.data.png"), character: "\u2730"}, //SHADOWED WHITE STAR
-        {image: await NeedleImage.fromURL("alt1anchors/chat/icons/chat_link.data.png"), character: "\u{1F517}"}, //LINK SYMBOL
-        {image: await NeedleImage.fromURL("alt1anchors/chat/chatbubble.png"), character: "\u{1F5E8}"}, // Left Speech Bubble
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_broadcast_bronze.data.png"), character: "\u2746"}, //HEAVY CHEVRON SNOWFLAKE
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_broadcast_gold.data.png"), character: "\u2746"}, //HEAVY CHEVRON SNOWFLAKE
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_broadcast_silver.data.png"), character: "\u2746"}, //HEAVY CHEVRON SNOWFLAKE
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_hcimdeath.png"), character: "\u{1F480}"}, //SKULL
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badgegim.data.png"), character: "\u3289"}, //CIRCLED IDEOGRAPH TEN
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badgehcim.data.png"), character: "\u{1F480}"}, //SKULL
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badgeironman.data.png"), character: "\u26AF"}, //UNMARRIED PARTNERSHIP SYMBOL
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badgepmod.data.png"), character: "\u2655"}, //WHITE CHESS QUEEN
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badgepmodvip.data.png"), character: "\u2655"}, //WHITE CHESS QUEEN
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badgergim.data.png"), character: "\u328F"}, //CIRCLED IDEOGRAPH EARTH
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badgevip.data.png"), character: "\u2730"}, //SHADOWED WHITE STAR
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/chat_link.data.png"), character: "\u{1F517}"}, //LINK SYMBOL
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/chatbubble.png"), character: "\u{1F5E8}"}, // Left Speech Bubble
       ]
     })
 

@@ -243,7 +243,7 @@ export namespace ShortcutViewLayer {
 
       leaflet.marker(Vector2.toLatLong(to), {
         icon: leaflet.icon({
-          iconUrl: level_offset < 0 ? "assets/icons/down.png" : "assets/icons/up.png",
+          iconUrl: level_offset < 0 ? "/assets/icons/down.png" : "/assets/icons/up.png",
           iconSize: [14, 16],
         }),
         interactive: true

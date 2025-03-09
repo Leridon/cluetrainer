@@ -44,7 +44,7 @@ export default class MapCoordinateEdit extends AbstractEditWidget<TileCoordinate
     }
 
     if (this.interaction_f) {
-      SmallImageButton.new("assets/icons/marker.png").appendTo(this)
+      SmallImageButton.new("/assets/icons/marker.png").appendTo(this)
         .onClick(() =>
           this.interaction_f(this.get()).onCommit((v) => {
             this.commit(v, true)

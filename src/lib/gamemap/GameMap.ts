@@ -21,10 +21,10 @@ import {Constants} from "../../trainer/constants";
 import cls = C.cls;
 import {boxPolygon} from "../../trainer/ui/polygon_helpers";
 
-export const red_marker = "assets/icons/marker_red.png"
-export const blue_marker = "assets/icons/marker_blue.png"
-export const green_marker = "assets/icons/marker_green.png"
-export const yellow_marker = "assets/icons/marker_yellow.png"
+export const red_marker = "/assets/icons/marker_red.png"
+export const blue_marker = "/assets/icons/marker_blue.png"
+export const green_marker = "/assets/icons/marker_green.png"
+export const yellow_marker = "/assets/icons/marker_yellow.png"
 
 export const red_icon = leaflet.icon({
   iconUrl: red_marker,
@@ -54,10 +54,10 @@ export const yellow_icon = leaflet.icon({
 
 export function levelIcon(floor: floor_t, scale: number = 1) {
   const levels = [
-    "assets/icons/marker_red.png",
-    "assets/icons/marker_blue.png",
-    "assets/icons/marker_green.png",
-    "assets/icons/marker_yellow.png",
+    "/assets/icons/marker_red.png",
+    "/assets/icons/marker_blue.png",
+    "/assets/icons/marker_green.png",
+    "/assets/icons/marker_yellow.png",
   ]
 
   // Original size: 46 x 62

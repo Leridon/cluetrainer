@@ -44,7 +44,7 @@ export namespace PathStepHeader {
 
     switch (step.type) {
       case "orientation":
-        icon.append(img("assets/icons/compass.png"))
+        icon.append(img("/assets/icons/compass.png"))
 
         content.append(
           "Face ",
@@ -86,7 +86,7 @@ export namespace PathStepHeader {
 
         break;
       case "run":
-        icon.append(img("assets/icons/run.png"))
+        icon.append(img("/assets/icons/run.png"))
 
         content.append("Run ",)
 
@@ -121,7 +121,7 @@ export namespace PathStepHeader {
         break;
       case "powerburst":
 
-        icon.append(img("assets/icons/accel.png")
+        icon.append(img("/assets/icons/accel.png")
           .tooltip("Powerburst of Acceleration"))
 
         content.append(
@@ -143,7 +143,7 @@ export namespace PathStepHeader {
 
         break;
       case "cheat":
-        icon.append(img("assets/icons/Rotten_potato.png"))
+        icon.append(img("/assets/icons/Rotten_potato.png"))
         content.append("Cheat Step")
         break
 

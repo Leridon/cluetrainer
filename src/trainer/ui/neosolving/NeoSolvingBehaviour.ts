@@ -242,9 +242,9 @@ namespace NeoSolvingLayer {
 
       this.append(
         this.parent.tetracompass_only
-          ? new MainControlButton({icon: "assets/icons/tetracompass.png"})
+          ? new MainControlButton({icon: "/assets/icons/tetracompass.png"})
             .css("cursor", "default")
-          : new MainControlButton({icon: "assets/icons/glass.png"})
+          : new MainControlButton({icon: "/assets/icons/glass.png"})
             .append(
               this.search_bar = new TextField()
                 .css("flex-grow", "1")
@@ -274,16 +274,16 @@ namespace NeoSolvingLayer {
         this.rest = hbox(
           deps().app.in_alt1
             ? undefined
-            : new MainControlButton({icon: "assets/icons/Alt1.png", text: "Solving available in Alt1", centered: true})
+            : new MainControlButton({icon: "/assets/icons/Alt1.png", text: "Solving available in Alt1", centered: true})
               .tooltip("More available in Alt1")
               .onClick(() => new Alt1Modal().show()),
           !deps().app.in_alt1 ? undefined :
-            new MainControlButton({icon: "assets/icons/activeclue.png", text: "Solve", centered: true})
+            new MainControlButton({icon: "/assets/icons/activeclue.png", text: "Solve", centered: true})
               .onClick(() => this.parent.screen_reading.solveManuallyTriggered())
               .tooltip("Read a clue from screen")
               .setEnabled(deps().app.in_alt1),
           !deps().app.in_alt1 ? undefined :
-            new MainControlButton({icon: "assets/icons/lock.png", text: "Auto-Solve", centered: true})
+            new MainControlButton({icon: "/assets/icons/lock.png", text: "Auto-Solve", centered: true})
               .setToggleable(true)
               .tooltip("Continuously read clues from screen")
               .setEnabled(deps().app.in_alt1)
@@ -293,7 +293,7 @@ namespace NeoSolvingLayer {
               })
               .setToggled(this.autosolve_preference.get())
           ,
-          new MainControlButton({icon: "assets/icons/fullscreen.png", centered: true})
+          new MainControlButton({icon: "/assets/icons/fullscreen.png", centered: true})
             .tooltip("Hide the menu bar")
             .setToggleable(true)
             .onToggle(t => {
@@ -303,7 +303,7 @@ namespace NeoSolvingLayer {
               this.parent.app.map.invalidateSize()
             })
             .setToggled(this.fullscreen_preference.get()),
-          new MainControlButton({icon: "assets/icons/settings.png", centered: true})
+          new MainControlButton({icon: "/assets/icons/settings.png", centered: true})
             .tooltip("Open settings")
             .onClick(() => SettingsModal.openOnPage("solving_general"))
         ).css("flex-grow", "1"),
@@ -656,7 +656,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
             if (settings.info_panel.talk_target == "show") {
               w.append(cls("ctr-neosolving-solution-row")
                 .append(
-                  inlineimg("assets/icons/cursor_talk.png"),
+                  inlineimg("/assets/icons/cursor_talk.png"),
                   span("Talk to "),
                   C.npc(sol.npc, true)
                     .tooltip("Click to center")
@@ -680,7 +680,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
           case "search":
             if (sol.key && settings.info_panel.search_key == "show") {
               w.append(cls("ctr-neosolving-solution-row").append(
-                inlineimg("assets/icons/key.png"),
+                inlineimg("/assets/icons/key.png"),
                 " ",
                 span(sol.key.answer).addClass("ctr-clickable").on("click", () => {
                   this.layer.fit(TileArea.toRect(sol.key.area))
@@ -690,7 +690,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
 
             if (settings.info_panel.search_target == "show") {
               w.append(cls("ctr-neosolving-solution-row").append(
-                inlineimg("assets/icons/cursor_search.png"),
+                inlineimg("/assets/icons/cursor_search.png"),
                 " ",
                 span("Search "),
                 C.staticentity(sol.entity, true)
@@ -708,7 +708,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
           case "dig":
             if (settings.info_panel.dig_target == "show") {
               w.append(cls("ctr-neosolving-solution-row").append(
-                inlineimg("assets/icons/cursor_shovel.png"),
+                inlineimg("/assets/icons/cursor_shovel.png"),
                 " ",
                 span("Dig"),
                 sol.description
@@ -726,7 +726,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
       if (clue.type == "emote") {
         if (clue.hidey_hole && settings.info_panel.hidey_hole == "show") {
           w.append(cls("ctr-neosolving-solution-row").append(
-            inlineimg("assets/icons/cursor_search.png"),
+            inlineimg("/assets/icons/cursor_search.png"),
             " ",
             span("Get items from "),
             C.staticentity(clue.hidey_hole.name)
@@ -740,7 +740,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
 
         if (settings.info_panel.emote_items == "show") {
           let row = cls("ctr-neosolving-solution-row").append(
-            inlineimg("assets/icons/cursor_equip.png"),
+            inlineimg("/assets/icons/cursor_equip.png"),
             " ",
             span("Equip "),
           ).appendTo(w)
@@ -758,7 +758,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
         }
         if (settings.info_panel.emotes == "show") {
           let row = cls("ctr-neosolving-solution-row").append(
-            inlineimg("assets/icons/emotes.png"),
+            inlineimg("/assets/icons/emotes.png"),
             " ",
           ).appendTo(w)
 
@@ -776,7 +776,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
 
         if (clue.double_agent && settings.info_panel.double_agent == "show") {
           w.append(cls("ctr-neosolving-solution-row").append(
-            inlineimg("assets/icons/cursor_attack.png"),
+            inlineimg("/assets/icons/cursor_attack.png"),
             space(),
             span("Kill "),
             C.npc("Double Agent")
@@ -820,7 +820,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
               .toggleClass("ctr-clickable", challenge.answers.length > 1)
               .append(
                 hboxl(
-                  inlineimg("assets/icons/activeclue.png"),
+                  inlineimg("/assets/icons/activeclue.png"),
                   vbox(
                     settings.info_panel.challenge == "full"
                       ? c().css("font-style", "italic").text(challenge.question) : undefined,

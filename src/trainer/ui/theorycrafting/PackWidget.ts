@@ -99,14 +99,14 @@ export default class PackWidget extends Widget {
       menu.children.push({
         type: "basic",
         text: "Enable Editing",
-        icon: "assets/icons/copy.png",
+        icon: "/assets/icons/copy.png",
         handler: () => MethodPackManager.instance().create(pack, true)
       })
     } else {
       menu.children.push({
         type: "basic",
         text: "Clone",
-        icon: "assets/icons/copy.png",
+        icon: "/assets/icons/copy.png",
         handler: () => new NewMethodPackModal(pack).do()
       })
     }
@@ -115,7 +115,7 @@ export default class PackWidget extends Widget {
       menu.children.push({
         type: "basic",
         text: "Edit Metainformation",
-        icon: "assets/icons/edit.png",
+        icon: "/assets/icons/edit.png",
         handler: () => {
           new EditMethodPackModal(pack).do()
         }
@@ -126,7 +126,7 @@ export default class PackWidget extends Widget {
       menu.children.push({
         type: "basic",
         text: "Delete",
-        icon: "assets/icons/delete.png",
+        icon: "/assets/icons/delete.png",
         handler: async () => {
           const really = await new ConfirmationModal<boolean>({
             body:

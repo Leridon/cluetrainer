@@ -1,10 +1,9 @@
 import {ScreenRectangle} from "../ScreenRectangle";
 import {Vector2} from "../../math";
 import * as a1lib from "alt1";
-import {capture, ImgRef, ImgRefBind, ImgRefData} from "alt1";
+import {ImgRef, ImgRefBind, ImgRefData} from "alt1";
 import {LegacyOverlayGeometry} from "../LegacyOverlayGeometry";
 import {NeedleImage} from "./NeedleImage";
-import {util} from "../../util/util";
 import * as lodash from "lodash";
 import {Alt1Color} from "../Alt1Color";
 
@@ -67,23 +66,7 @@ export class CapturedImage {
     return this._relativeRectangle
   }
 
-  find(needle: ImageData): CapturedImage[] {
-    const ref = globalThis.alt1?.bindFindSubImg
-      ? this.capture.img_ref
-      : new ImgRefData(this.getData())
-
-    this.ensure_current()
-
-    return ref.findSubimage(needle,
-      this.screen_rectangle.origin.x, this.screen_rectangle.origin.y,
-      this.screen_rectangle.size.x, this.screen_rectangle.size.y
-    ).map(position =>
-      this.getSubSection({origin: position, size: {x: needle.width, y: needle.height}})
-    )
-  }
-
   findNeedle(needle: NeedleImage): CapturedImage[] {
-
     const find = ((): Vector2[] => {
       if (this.capture.img_ref instanceof a1lib.ImgRefBind && alt1.bindFindSubImg) {
 
@@ -102,15 +85,14 @@ export class CapturedImage {
       } else {
         // Fallback:
 
-        return a1lib.ImageDetect.findSubbuffer(this.getData(), needle.underlying,
-          this.screen_rectangle.origin.x, this.screen_rectangle.origin.y,
-          this.screen_rectangle.size.x, this.screen_rectangle.size.y)
+        const found = a1lib.ImageDetect.findSubbuffer(this.getData(), needle.underlying)
+
+        return found.map(p => Vector2.add(this.screen_rectangle.origin, p))
       }
     })
 
     return find().map(pos => {
-
-      return this.getSubSection(ScreenRectangle.relativeTo(this.screen_rectangle, {origin: pos, size: {x: needle.underlying.width, y: needle.underlying.height}}))
+      return this.getScreenSection({origin: pos, size: {x: needle.underlying.width, y: needle.underlying.height}})
     });
   }
 

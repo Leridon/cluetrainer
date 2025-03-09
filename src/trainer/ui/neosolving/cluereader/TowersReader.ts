@@ -1,20 +1,19 @@
-import {CapturedImage} from "../../../../lib/alt1/capture";
+import {CapturedImage, NeedleImage} from "../../../../lib/alt1/capture";
 import {Vector2} from "../../../../lib/math";
 import {CapturedModal} from "./capture/CapturedModal";
 import {Towers} from "../../../../lib/cluetheory/Towers";
 import * as OCR from "alt1/ocr";
 import {util} from "../../../../lib/util/util";
 import {async_lazy, Lazy} from "../../../../lib/Lazy";
-import {ImageDetect} from "alt1";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
 
 export class TowersReader {
-  constructor(private context_menu_anchor: ImageData) {
+  constructor(private context_menu_anchor: NeedleImage) {
 
   }
 
   findContextMenu(image: CapturedImage): ScreenRectangle {
-    const context_menu = image.root().find(this.context_menu_anchor)
+    const context_menu = image.root().findNeedle(this.context_menu_anchor)
 
     if (context_menu.length > 0) {
 
@@ -35,7 +34,7 @@ export namespace TowersReader {
     return _instance.get()
   }
 
-  const context_menu_anchor = new Lazy(() => ImageDetect.imageDataFromUrl("alt1anchors/contextborder.png"))
+  const context_menu_anchor = new Lazy(() => NeedleImage.fromURL("/alt1anchors/contextborder.png"))
 
   import count = util.count;
   const font: OCR.FontDefinition = require("alt1/fonts/aa_10px_mono.js");

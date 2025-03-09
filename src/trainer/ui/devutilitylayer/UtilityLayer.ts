@@ -178,13 +178,13 @@ class GeometryDrawing extends GameLayer {
     bottom_control.body.append(
       vbox(
         new ActionBar([
-          new ActionBar.ActionBarButton("assets/icons/cursor_generic.png", () => {
+          new ActionBar.ActionBarButton("/assets/icons/cursor_generic.png", () => {
             this.startSelectTile()
           }),
-          new ActionBar.ActionBarButton("assets/icons/cursor_use.png", () => {
+          new ActionBar.ActionBarButton("/assets/icons/cursor_use.png", () => {
             this.startSelectArea()
           }),
-          new ActionBar.ActionBarButton("assets/icons/cursor_talk.png", () => {
+          new ActionBar.ActionBarButton("/assets/icons/cursor_talk.png", () => {
 
             this.guard.set(new DrawRegionAction(""))
               .onCommit((a) => {
@@ -193,7 +193,7 @@ class GeometryDrawing extends GameLayer {
                 this.setValue({range: a.area})
               })
           }),
-          new ActionBar.ActionBarButton("assets/icons/cursor_pray.png", () => {
+          new ActionBar.ActionBarButton("/assets/icons/cursor_pray.png", () => {
 
             this.guard.set(new DrawTileAreaInteraction([], true))
               .onCommit((a) => {

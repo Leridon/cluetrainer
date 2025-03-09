@@ -99,7 +99,7 @@ namespace SettingsLayout {
   export function info(explanation: Appendable): Widget {
     if (!explanation) return undefined
 
-    return inlineimg("assets/icons/info_nis.png").css("height", "1em").addTippy(explanation)
+    return inlineimg("/assets/icons/info_nis.png").css("height", "1em").addTippy(explanation)
   }
 }
 
@@ -347,7 +347,7 @@ class TeleportSettingsEdit extends Widget {
     this.layout.row(
       new LightButton(
         hbox("Reset to ",
-          inlineimg("assets/icons/cluechasers.png"),
+          inlineimg("/assets/icons/cluechasers.png"),
           " Clue Chasers recommendations"
         )
       )
@@ -1471,7 +1471,7 @@ class CompassSettingsEdit extends Widget {
 
           sequence.row(
             hbox(selector,
-              new LightButton(NislIcon.from("assets/icons/select.png"))
+              new LightButton(NislIcon.from("/assets/icons/select.png"))
                 .onClick(async () => {
                   const res = await (new class extends FormModal<T> {
                     map: GameMapMiniWidget

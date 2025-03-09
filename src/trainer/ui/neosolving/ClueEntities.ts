@@ -275,7 +275,7 @@ export namespace ClueEntities {
 
       /*const marker = leaflet.marker(Vector2.toLatLong(Rectangle.center(TileArea.toRect(this.clue.area))), {
         icon: leaflet.icon({
-          iconUrl: "assets/icons/emotes.png",
+          iconUrl: "/assets/icons/emotes.png",
           iconSize: [scale * 24, scale * 30],
           iconAnchor: [scale * 12, scale * 15],
           className: floor_group.value.correct_level ? "" : "ctr-entity-wrong-level"

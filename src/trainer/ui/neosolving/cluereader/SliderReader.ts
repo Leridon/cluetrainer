@@ -261,7 +261,7 @@ export namespace SlideReader {
   })
 
   export const _blank_tile_reference: LazyAsync<ImageFingerprint[]> = async_lazy(async () => {
-    const data = await ImageDetect.imageDataFromUrl("alt1anchors/sliders/blanktiles.png")
+    const data = await ImageDetect.imageDataFromUrl("/alt1anchors/sliders/blanktiles.png")
 
     const tile_number = data.width / TILE_SIZE
 

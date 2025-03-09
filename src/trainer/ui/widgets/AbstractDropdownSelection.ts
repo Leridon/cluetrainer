@@ -44,7 +44,7 @@ export abstract class AbstractDropdownSelection<T> extends Widget {
       })
       .append(
         this.construct(this.selection.value()),
-        inlineimg("assets/nis/dropdown.png")
+        inlineimg("/assets/nis/dropdown.png")
           .addClass("nisl-selectdropdown-arrow")
       )
       .appendTo(this.input_container.empty());

@@ -24,11 +24,11 @@ export class PermissionChecker extends NisModal {
 
     props.paragraph("Open Clue Trainer settings by clicking the small wrench on the top left, next to the buttons to minimize or close the window.")
 
-    props.row(img("media/how_to_set_permissions_1.png"))
+    props.row(img("/media/how_to_set_permissions_1.png"))
 
     props.paragraph("Make sure all permissions are checked.")
 
-    props.row(img("media/how_to_set_permissions_2.png"))
+    props.row(img("/media/how_to_set_permissions_2.png"))
 
     props.paragraph("Click 'Check' below to check if permissions have correctly been set.")
   }

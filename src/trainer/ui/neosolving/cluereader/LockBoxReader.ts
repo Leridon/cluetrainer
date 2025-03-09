@@ -43,27 +43,27 @@ export namespace LockBoxReader {
   }[]>(async () => {
     return [
       {
-        value: 0, reference_fingerprint: ImageFingerprint.get(await ImageDetect.imageDataFromUrl("alt1anchors/lockbox_tiles/melee.png"),
+        value: 0, reference_fingerprint: ImageFingerprint.get(await ImageDetect.imageDataFromUrl("/alt1anchors/lockbox_tiles/melee.png"),
           {x: 0, y: 0}, TILE_SIZE, TILE_KERNEL_SIZE, FINGERPRINT_TYPE)
       },
       {
-        value: 1, reference_fingerprint: ImageFingerprint.get(await ImageDetect.imageDataFromUrl("alt1anchors/lockbox_tiles/range.png"),
+        value: 1, reference_fingerprint: ImageFingerprint.get(await ImageDetect.imageDataFromUrl("/alt1anchors/lockbox_tiles/range.png"),
           {x: 0, y: 0}, TILE_SIZE, TILE_KERNEL_SIZE, FINGERPRINT_TYPE)
       },
       {
-        value: 2, reference_fingerprint: ImageFingerprint.get(await ImageDetect.imageDataFromUrl("alt1anchors/lockbox_tiles/mage.png"),
+        value: 2, reference_fingerprint: ImageFingerprint.get(await ImageDetect.imageDataFromUrl("/alt1anchors/lockbox_tiles/mage.png"),
           {x: 0, y: 0}, TILE_SIZE, TILE_KERNEL_SIZE, FINGERPRINT_TYPE)
       },
       {
-        value: 0, reference_fingerprint: ImageFingerprint.get(await ImageDetect.imageDataFromUrl("alt1anchors/lockbox_tiles/melee_active.png"),
+        value: 0, reference_fingerprint: ImageFingerprint.get(await ImageDetect.imageDataFromUrl("/alt1anchors/lockbox_tiles/melee_active.png"),
           {x: 0, y: 0}, TILE_SIZE, TILE_KERNEL_SIZE, FINGERPRINT_TYPE)
       },
       {
-        value: 1, reference_fingerprint: ImageFingerprint.get(await ImageDetect.imageDataFromUrl("alt1anchors/lockbox_tiles/range_active.png"),
+        value: 1, reference_fingerprint: ImageFingerprint.get(await ImageDetect.imageDataFromUrl("/alt1anchors/lockbox_tiles/range_active.png"),
           {x: 0, y: 0}, TILE_SIZE, TILE_KERNEL_SIZE, FINGERPRINT_TYPE)
       },
       {
-        value: 2, reference_fingerprint: ImageFingerprint.get(await ImageDetect.imageDataFromUrl("alt1anchors/lockbox_tiles/mage_active.png"),
+        value: 2, reference_fingerprint: ImageFingerprint.get(await ImageDetect.imageDataFromUrl("/alt1anchors/lockbox_tiles/mage_active.png"),
           {x: 0, y: 0}, TILE_SIZE, TILE_KERNEL_SIZE, FINGERPRINT_TYPE)
       },
     ]

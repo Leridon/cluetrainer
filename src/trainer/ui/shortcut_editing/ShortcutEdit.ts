@@ -78,16 +78,16 @@ export class ShortcutEdit extends Widget {
     let header = hbox(
         span(Transportation.name(this.config.value.value())),
         spacer(),
-        sibut("assets/icons/move.png", () => {
+        sibut("/assets/icons/move.png", () => {
             this.config.interaction_guard.set(new PlaceShortcut(this.config.value.value(), TileRectangle.center(Transportation.bounds(this.config.value.value())), null)
                 .onCommit(n => this.config.value.set(Object.assign(n)))
                 .onStart(() => this.config.associated_preview?.setOpacity(0))
                 .onEnd(() => this.config.associated_preview?.setOpacity(1))
             )
         }).setEnabled(!this.config.ovalue?.value()?.is_builtin),
-        sibut("assets/icons/copy.png", () => this.config.edit_layer.startPlacement(this.config.value.value())).setEnabled(!!this.config.edit_layer),
-        sibut("assets/icons/delete.png", () => this.config.ovalue.remove()).setEnabled(this.config.ovalue && !this.config.ovalue.value().is_builtin),
-        sibut("assets/icons/fullscreen.png", () => this.config.centered_handler(this.config.value.value())).setEnabled(!!this.config.centered_handler),
+        sibut("/assets/icons/copy.png", () => this.config.edit_layer.startPlacement(this.config.value.value())).setEnabled(!!this.config.edit_layer),
+        sibut("/assets/icons/delete.png", () => this.config.ovalue.remove()).setEnabled(this.config.ovalue && !this.config.ovalue.value().is_builtin),
+        sibut("/assets/icons/fullscreen.png", () => this.config.centered_handler(this.config.value.value())).setEnabled(!!this.config.centered_handler),
     )
         .addClass('ctr-shortcut-edit-header')
         .appendTo(this.header)
@@ -176,7 +176,7 @@ export class ShortcutEdit extends Widget {
                 props.row(
                     c("<div style='display: flex'></div>")
                         .append(c(`<div class='nisl-property-header' style="flex-grow: 1">Action #${action_i + 1}: ${action.name}</div>`))
-                        .append(SmallImageButton.new("assets/icons/delete.png")
+                        .append(SmallImageButton.new("/assets/icons/delete.png")
                             .setEnabled(!this.config.single_action)
                             .onClick(() => {
                                 this.config.value.update(v => {

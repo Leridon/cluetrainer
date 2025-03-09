@@ -102,7 +102,7 @@ export default class ShortcutEditSidePanel extends MapSideBar {
         hbox(
           span(`${Vector2.toString(TileCoordinates.chunk(Transportation.position(s.value())))}: ${Transportation.name(s.value())}`),
           spacer(),
-          sibut("assets/icons/edit.png", () => this.editor.editControl.shortcut.set(s)).setEnabled(!s.value().is_builtin)
+          sibut("/assets/icons/edit.png", () => this.editor.editControl.shortcut.set(s)).setEnabled(!s.value().is_builtin)
         ).appendTo(this.result_container)
           .tapRaw(r => r
             .on("click", () => {

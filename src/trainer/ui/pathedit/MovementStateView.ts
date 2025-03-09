@@ -62,7 +62,7 @@ export default class MovementStateView extends Widget {
     if (this.value.acceleration_activation_tick + 200 > this.value.tick) {
       if (this.value.acceleration_activation_tick + 10 > this.value.tick) {
         new BuffCooldownView({
-          icon: "assets/icons/accel.png",
+          icon: "/assets/icons/accel.png",
           on_cooldown: false,
           kind: "buff",
           time_left: this.value.acceleration_activation_tick + 10 - this.value.tick
@@ -70,7 +70,7 @@ export default class MovementStateView extends Widget {
       }
 
       new BuffCooldownView({
-        icon: "assets/icons/accel.png",
+        icon: "/assets/icons/accel.png",
         on_cooldown: true,
         kind: "debuff",
         time_left: this.value.acceleration_activation_tick + 200 - this.value.tick
@@ -81,7 +81,7 @@ export default class MovementStateView extends Widget {
 
     for (let cd of this.value.cooldowns.surge) {
       new BuffCooldownView({
-        icon: "assets/icons/surge.png",
+        icon: "/assets/icons/surge.png",
         on_cooldown: cd > this.value.tick,
         time_left: cd - this.value.tick
       }).appendTo(cooldown_container)
@@ -89,20 +89,20 @@ export default class MovementStateView extends Widget {
 
     for (let cd of this.value.cooldowns.escape) {
       new BuffCooldownView({
-        icon: "assets/icons/escape.png",
+        icon: "/assets/icons/escape.png",
         on_cooldown: cd > this.value.tick,
         time_left: cd - this.value.tick
       }).appendTo(cooldown_container)
     }
 
     new BuffCooldownView({
-      icon: "assets/icons/dive.png",
+      icon: "/assets/icons/dive.png",
       on_cooldown: this.value.cooldowns.dive > this.value.tick,
       time_left: this.value.cooldowns.dive - this.value.tick
     }).appendTo(cooldown_container)
 
     new BuffCooldownView({
-      icon: "assets/icons/barge.png",
+      icon: "/assets/icons/barge.png",
       on_cooldown: this.value.cooldowns.barge > this.value.tick,
       time_left: this.value.cooldowns.barge - this.value.tick
     }).appendTo(cooldown_container)

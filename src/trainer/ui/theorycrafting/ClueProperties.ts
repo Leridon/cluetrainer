@@ -223,14 +223,14 @@ export namespace ClueProperties {
       men.children.push({
         type: "basic",
         text: "Edit",
-        icon: "assets/icons/edit.png",
+        icon: "/assets/icons/edit.png",
         handler: () => edit_handler(m)
       })
 
       men.children.push({
         type: "basic",
         text: "Edit Metadata",
-        icon: "assets/icons/edit.png",
+        icon: "/assets/icons/edit.png",
         handler: async () => {
 
           const result = await new EditMethodMetaModal(m.clue,
@@ -249,7 +249,7 @@ export namespace ClueProperties {
     men.children.push(
       {
         type: "basic",
-        icon: "assets/icons/copy.png",
+        icon: "/assets/icons/copy.png",
         text: "Edit Copy",
         handler: async () => {
           const new_method = await new NewMethodModal(m.clue, m).do()
@@ -264,7 +264,7 @@ export namespace ClueProperties {
       men.children.push({
         type: "basic",
         text: "Delete",
-        icon: "assets/icons/delete.png",
+        icon: "/assets/icons/delete.png",
         handler: async () => {
           const really = await new ConfirmationModal<boolean>({
             body: "Are you sure you want to delete this method? There is no way to undo it!",
@@ -281,6 +281,34 @@ export namespace ClueProperties {
           }
         }
       })
+    }
+
+    if (Pack.isEditableDefault(m.pack)) {
+      men.children.push({
+        type: "basic",
+        text: m.method.is_default_override ? "Unset as Overridden Default" : "Set as Overridden Default",
+        icon: () => new FavouriteIcon().set(m.method.is_default_override),
+        handler: async () => {
+          if (m.method.is_default_override) {
+            m.method.is_default_override = false
+          } else {
+            const all = await MethodPackManager.instance().getForClue(m.method.for, [m.pack.local_id])
+
+            all.forEach(other => {
+              if (!AugmentedMethod.isSame(other, m)) {
+                other.method.is_default_override = undefined
+
+                MethodPackManager.instance().updateMethod(other)
+              }
+            })
+
+            m.method.is_default_override = true
+          }
+
+          MethodPackManager.instance().updateMethod(m)
+        }
+      })
+
     }
 
     return men

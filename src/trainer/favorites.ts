@@ -68,9 +68,16 @@ export class FavoriteIndex {
       // There is no entry at all for this clue, automatically choose one!
       // Default choice is the fastest builtin method, followed by the fastest custom method if no builtin is available
 
-      const candidates = (await this.methods.getForClue(step)).sort((a, b) => a.method.expected_time - b.method.expected_time)
+      const candidates = await this.methods.getForClue(step)
 
-      return candidates.find(c => c.pack.type == "default") ?? candidates[0]
+      const c1 = candidates.find(c => c.pack.type == "default" && c.method.is_default_override)
+      if (c1) return c1
+
+      const c2 = lodash.minBy(candidates.filter(c => c.pack.type == "default"), c => c.method.expected_time)
+
+      if (c2) return c2
+
+      return lodash.minBy(candidates, c => c.method.expected_time)
     }
 
     if (!entry) return undefined

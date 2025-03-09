@@ -11,8 +11,8 @@ export default class NisCollapseButton extends Button {
 
     behaviour.state().subscribe((isCollapsed) => {
       this.container.attr("src", isCollapsed
-        ? "assets/nis/plus.png"
-        : "assets/nis/minus.png"
+        ? "/assets/nis/plus.png"
+        : "/assets/nis/minus.png"
       )
     }, true)
   }

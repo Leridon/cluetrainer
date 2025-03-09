@@ -5,12 +5,12 @@ import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
 import Behaviour from "../../../../lib/ui/Behaviour";
 import {Alt1ScreenCaptureService} from "../../../../lib/alt1/capture/Alt1ScreenCaptureService";
 import {Alt1} from "../../../../lib/alt1/Alt1";
+import {Alt1Overlay} from "../../../../lib/alt1/overlay/Alt1Overlay";
 
 export abstract class AbstractPuzzleProcess extends Behaviour {
   puzzle_closed = ewent<this>()
 
-  solution_overlay = new LegacyOverlayGeometry()
-  debug_overlay = new LegacyOverlayGeometry()
+  solution_overlay = this.withSub(new Alt1Overlay())
 
   protected start_time: number
 
@@ -43,10 +43,6 @@ export abstract class AbstractPuzzleProcess extends Behaviour {
   }
 
   protected end() {
-    this.token.revoke()
-
-    this.solution_overlay?.clear()?.render()
-    this.debug_overlay?.clear()?.render()
   }
 
   abstract area(): ScreenRectangle

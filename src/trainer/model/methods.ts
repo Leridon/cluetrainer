@@ -61,16 +61,15 @@ export namespace SolvingMethods {
         return relevant
       }
     }
-
   }
-
 
   type method_base = Method.Meta & {
     type: method_kind,
     id: string,
     timestamp: number,
     for: ClueSpot.Id,
-    expected_time?: number
+    expected_time?: number,
+    is_default_override?: boolean
   }
 
   export type ScanTreeMethod = method_base & {

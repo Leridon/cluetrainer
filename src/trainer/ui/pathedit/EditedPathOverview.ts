@@ -227,7 +227,7 @@ export namespace EditedPathOverview {
         main_row.append("Drop to move step here")
       } else if (this.index == cursor_state.cursor) {
         main_row.append(
-          C.inlineimg("assets/icons/youarehere.png")
+          C.inlineimg("/assets/icons/youarehere.png")
             .css2({
               "margin-right": "3px",
             }),

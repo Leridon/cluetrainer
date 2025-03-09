@@ -1,6 +1,6 @@
 import {async_lazy, LazyAsync} from "../../../../../lib/Lazy";
 import {ImageDetect} from "alt1";
-import {CapturedImage} from "../../../../../lib/alt1/capture";
+import {CapturedImage, NeedleImage} from "../../../../../lib/alt1/capture";
 import {Vector2} from "../../../../../lib/math";
 import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
 import {util} from "../../../../../lib/util/util";
@@ -87,7 +87,7 @@ export namespace CapturedSliderInterface {
     export const instance = async_lazy(async () => {
       const anchors: {
         isLegacy: boolean,
-        anchor: ImageData
+        anchor: NeedleImage
       }[] = [
         {isLegacy: false, anchor: (await CapturedSliderInterface.anchors.get()).eoc_x},
         {isLegacy: true, anchor: (await CapturedSliderInterface.anchors.get()).legacy_x},
@@ -96,7 +96,7 @@ export namespace CapturedSliderInterface {
       return new class implements Finder {
         find(img: CapturedImage, include_inverted_arrow_checkmark: boolean, reader: SliderReader): CapturedSliderInterface {
           for (const anchor of anchors) {
-            const positions = img.find(anchor.anchor)
+            const positions = img.findNeedle(anchor.anchor)
 
             if (positions.length > 0) {
               const body_rect: ScreenRectangle = {
@@ -133,8 +133,8 @@ export namespace CapturedSliderInterface {
 
   export const anchors = new LazyAsync(async () => {
     return {
-      eoc_x: await ImageDetect.imageDataFromUrl("alt1anchors/slide.png"),
-      legacy_x: await ImageDetect.imageDataFromUrl("alt1anchors/slidelegacy.png"),
+      eoc_x: await NeedleImage.fromURL("/alt1anchors/slide.png"),
+      legacy_x: await NeedleImage.fromURL("/alt1anchors/slidelegacy.png"),
     }
   })
 }

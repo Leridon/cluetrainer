@@ -1,4 +1,4 @@
-import {CapturedImage} from "../../../../../lib/alt1/capture";
+import {CapturedImage, NeedleImage} from "../../../../../lib/alt1/capture";
 import {async_lazy, lazy} from "../../../../../lib/Lazy";
 import {ImageDetect} from "alt1";
 import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
@@ -58,7 +58,7 @@ export namespace CapturedCompass {
        * @param screen The image to search for a compass interface.
        */
       find(screen: CapturedImage): CapturedCompass {
-        const position = screen.find(anchor)[0]
+        const position = screen.findNeedle(anchor)[0]
 
         if (position) {
           const section = screen.getSubSection(
@@ -76,7 +76,7 @@ export namespace CapturedCompass {
     }
   })
 
-  export const anchor = async_lazy(async () => await ImageDetect.imageDataFromUrl("alt1anchors/compassnorth.png"))
+  export const anchor = async_lazy(async () => await NeedleImage.fromURL("/alt1anchors/compassnorth.png"))
   export const origin_offset_from_anchor = {x: -78, y: -20}
   export const UI_SIZE = {x: 172, y: 259}
 
