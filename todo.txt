@@ -8,6 +8,7 @@ Backlog:
     - Clean up implicit scan step instructions
     - Direct links to cluepedia
     - Default to last relevant section when setting a path (Configurable)
+    - [BUG] Possible Race condition when commiting/discarding angles causing wrong zoom
 
 
 - Compasses (v36?):

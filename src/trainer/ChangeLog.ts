@@ -21,8 +21,9 @@ export namespace Changelog {
   }
 
   export const v43: LogEntry = {
-    date: new Date(Date.parse("TBD")),
+    date: new Date(Date.parse("2025-03-09")),
     render: layout => layout
+      .header("Bugfixes", "left")
       .row(new List()
         .item("Fixed a bug that caused solutions to tower puzzles to not appear for Runekit or Alt1 Electron users.")
         .item("Moved Knot, Tower, and Lockbox overlays to the new overlay tech so they disappear automatically when Clue Trainer closes.")
@@ -46,7 +47,7 @@ export namespace Changelog {
         )
       )
     ,
-    title: "Bugfixes and Method updates",
+    title: "Bugfixes and Method Updates",
     version: 43
   }
 
@@ -134,6 +135,7 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([
+    v43,
     v42,
     v41,
     v40,
