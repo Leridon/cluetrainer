@@ -98,7 +98,7 @@ h2 {
 .nissmallimagebutton {
     min-width: 21px;
     min-height: 21px;
-    background: url("assets/icons/imagebuttonbackground.png");
+    background: url("/assets/icons/imagebuttonbackground.png");
 }
 
 .nissmallimagebutton.disabled {
@@ -106,7 +106,7 @@ h2 {
 }
 
 .nissmallimagebutton.active {
-    background: url("assets/icons/imagebuttonbackground.png");
+    background: url("/assets/icons/imagebuttonbackground.png");
     background-position-x: 21px;
 }
 
@@ -446,7 +446,7 @@ video {
 }
 
 .exit-button {
-    background-image: url("assets/icons/exit.png");
+    background-image: url("/assets/icons/exit.png");
     height: 22px;
     width: 22px;
 }
@@ -704,7 +704,7 @@ video {
 }
 
 .ctr-scantreeedit-node.active .ctr-scantreeedit-youarehere {
-    background-image: url("assets/icons/youarehere.png");
+    background-image: url("/assets/icons/youarehere.png");
     background-size: contain;
 }
 
@@ -739,7 +739,7 @@ video {
     width: 12px;
     height: 11px;
     margin: auto 2px;
-    background-image: url("assets/icons/issue-weak-warning.png");
+    background-image: url("/assets/icons/issue-weak-warning.png");
 }
 
 .ctr-step-issue-icon-1 {
@@ -747,7 +747,7 @@ video {
     width: 12px;
     height: 11px;
     margin: auto 2px;
-    background-image: url("assets/icons/issue-warning.png");
+    background-image: url("/assets/icons/issue-warning.png");
 }
 
 .ctr-step-issue-icon-0 {
@@ -755,7 +755,7 @@ video {
     width: 12px;
     height: 12px;
     margin: auto 2px;
-    background-image: url("assets/icons/issue-error.png");
+    background-image: url("/assets/icons/issue-error.png");
 }
 
 .ctr-cooldown-overlay-shadow {
@@ -1591,7 +1591,7 @@ input[type=checkbox] + span {
 }
 
 .nisl-modal-exit {
-    background-image: url("assets/icons/exit.png");
+    background-image: url("/assets/icons/exit.png");
     height: 22px;
     width: 22px;
     cursor: pointer;
@@ -1750,11 +1750,11 @@ input[type=checkbox] + span {
 }
 
 .nisl-checkbox-box.checked > .nisl-checkbox-checkmark {
-    background-image: url("assets/nis/checkmark.png");
+    background-image: url("/assets/nis/checkmark.png");
 }
 
 .nisl-checkbox-box.nisl-checkbox-radio.checked > .nisl-checkbox-checkmark {
-    background-image: url("assets/nis/radiocheck.png");
+    background-image: url("/assets/nis/radiocheck.png");
 }
 
 .nisl-checkbox-box:not(.checked) > .nisl-checkbox-checkmark {
