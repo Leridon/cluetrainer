@@ -4639,6 +4639,18 @@ name: "Entrana",
     access: [
       {id: "vexillum", type: "item", name: {kind: "item", name: "Clan vexillum"}, action_name: "Teleport", img: {url: "clanvex.webp"}}
     ]
+  }, {
+    type: "teleports",
+    id: "memorystrands",
+    name: "Memory strands",
+    animation_ticks: 3,
+    menu_ticks: 0,
+    spots: [
+      {id: "hallofmemories", name: "Hall of Memories entrance", target: {"origin": {"x": 2265, "y": 3551, "level": 0}, "size": {"x": 3, "y": 5}}}
+    ],
+    access: [
+      {id: "memorystrands", type: "item", name: {kind: "item", name: "Memory stands"}, action_name: "Teleport", img: {url: "memory_strand.webp"}}
+    ]
   }
 //TODO: Eagle transport system
 //TODO: Canoes
