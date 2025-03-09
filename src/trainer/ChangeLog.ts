@@ -26,6 +26,7 @@ export namespace Changelog {
       .row(new List()
         .item("Fixed a bug that caused solutions to tower puzzles to not appear for Runekit or Alt1 Electron users.")
         .item("Moved Knot, Tower, and Lockbox overlays to the new overlay tech so they disappear automatically when Clue Trainer closes.")
+        .item("Fixed a bug that caused passage of the abyss overrides to only appear within paths.")
       ),
     title: "Bugfixes",
     version: 43
