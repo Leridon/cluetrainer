@@ -28,6 +28,7 @@ export namespace Changelog {
         .item("Moved Knot, Tower, and Lockbox overlays to the new overlay tech so they disappear automatically when Clue Trainer closes.")
         .item("Fixed a bug that caused passage of the abyss overrides to only appear within paths.")
         .item("Added Memory strand teleport.")
+        .item("Fixed a bug that caused methods for skilling steps to not be editable.")
       )
       .header("Method Pack Updates (by Ngis)", "left")
       .row(new List()

@@ -194,7 +194,7 @@ export namespace Clues {
       if (spot.spot) {
 
         if (spot.clue.type == "compass" && spot.clue.single_tile_target) return [TileArea.fromTiles([spot.spot])]
-        
+
         return [digSpotArea(spot.spot)]
       }
 
@@ -214,6 +214,8 @@ export namespace Clues {
       if (spot.clue.type == "emote") return [spot.clue.area]
 
       if (spot.clue.type == "scan") return [TileArea.fromRect(TileRectangle.from(...spot.clue.spots))]
+
+      if (spot.clue.type == "skilling") return spot.clue.areas
     }
 
     export function toId(spot: ClueSpot): Id {
