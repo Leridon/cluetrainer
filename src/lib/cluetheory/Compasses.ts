@@ -1,14 +1,18 @@
 import {TileCoordinates} from "../runescape/coordinates";
 import {Transform, Vector2} from "../math";
-import {CompassReader} from "../../trainer/ui/neosolving/cluereader/CompassReader";
 import {TileArea} from "../runescape/coordinates/TileArea";
 import {angleDifference, rectangleCrossSection} from "lib/math";
 
 export namespace Compasses {
 
+  export type Angle = {
+    radians: number,
+    epsilon: number
+  }
+
   export type TriangulationPoint = {
     position: TileArea.ActiveTileArea,
-    angle_radians: number,
+    angle: Angle,
     direction: Vector2,
     origin: Vector2,
     modified_origin: Vector2,
@@ -16,25 +20,23 @@ export namespace Compasses {
   }
 
   export namespace TriangulationPoint {
-
-
-    export function construct(position: TileArea.ActiveTileArea, angle: number): TriangulationPoint {
+    export function construct(position: TileArea.ActiveTileArea, angle: Angle): TriangulationPoint {
 
       const size = Vector2.sub(position.size, {x: 0.975, y: 0.975})
 
-      const direction_vector = Vector2.transform(Compasses.ANGLE_REFERENCE_VECTOR, Transform.rotationRadians(angle))
+      const direction_vector = Vector2.transform(Compasses.ANGLE_REFERENCE_VECTOR, Transform.rotationRadians(angle.radians))
 
-      const location_uncertainty = rectangleCrossSection(size, angle) / 2
+      const location_uncertainty = rectangleCrossSection(size, angle.radians) / 2
 
-      const l = location_uncertainty / Math.tan(CompassReader.EPSILON)
+      const l = location_uncertainty / Math.tan(angle.epsilon)
 
-      const center = Vector2.sub(position.center(false), Vector2.scale(0.5 * rectangleCrossSection(size, angle + Math.PI / 2), direction_vector))
+      const center = Vector2.sub(position.center(false), Vector2.scale(0.5 * rectangleCrossSection(size, angle.radians + Math.PI / 2), direction_vector))
 
       const uncertainty_origin = Vector2.sub(center, Vector2.scale(l, direction_vector))
 
       return {
         position: position,
-        angle_radians: angle,
+        angle: angle,
         direction: direction_vector,
         origin: center,
         modified_origin: uncertainty_origin,
@@ -73,10 +75,10 @@ export namespace Compasses {
       )) < 20)
 
       if (Vector2.max_axis(i.position.size) <= 5 && spot_is_close()) {
-        return i.position.getTiles().some(tile => angleDifference(getExpectedAngle(tile, spot), i.angle_radians) <= CompassReader.EPSILON)
+        return i.position.getTiles().some(tile => angleDifference(getExpectedAngle(tile, spot), i.angle.radians) <= i.angle.epsilon)
       }
 
-      if (angleDifference(modified_expected, i.angle_radians) >= CompassReader.EPSILON) return false
+      if (angleDifference(modified_expected, i.angle.radians) >= i.angle.epsilon) return false
 
       const expected = getExpectedAngle(i.origin, spot)
 

@@ -76,7 +76,7 @@ class CompassHandlingLayer extends GameLayer {
     this.lines = information.map(info => {
       const from = info.origin
 
-      const off = Vector2.transform(Vector2.scale(2000, Compasses.ANGLE_REFERENCE_VECTOR), Transform.rotationRadians(info.angle_radians))
+      const off = Vector2.transform(Vector2.scale(2000, Compasses.ANGLE_REFERENCE_VECTOR), Transform.rotationRadians(info.angle.radians))
 
       const to = Vector2.add(from, off)
 
@@ -84,8 +84,8 @@ class CompassHandlingLayer extends GameLayer {
 
       const corner_near_left = Vector2.add(from, Vector2.scale(info.origin_uncertainty, right))
       const corner_near_right = Vector2.add(from, Vector2.scale(-info.origin_uncertainty, right))
-      const corner_far_left = Vector2.add(corner_near_left, Vector2.transform(off, Transform.rotationRadians(CompassReader.EPSILON)))
-      const corner_far_right = Vector2.add(corner_near_right, Vector2.transform(off, Transform.rotationRadians(-CompassReader.EPSILON)))
+      const corner_far_left = Vector2.add(corner_near_left, Vector2.transform(off, Transform.rotationRadians(info.angle.epsilon)))
+      const corner_far_right = Vector2.add(corner_near_right, Vector2.transform(off, Transform.rotationRadians(-info.angle.epsilon)))
 
       return {
         line:
@@ -285,7 +285,7 @@ class CompassEntryWidget extends Widget {
       const angle = this.angle_container = cls("ctr-compass-solving-angle")
         .toggleClass("committed", isCommited)
         .text(isCommited
-          ? `${radiansToDegrees(this.entry.angle).toFixed(1)}°`
+          ? `${radiansToDegrees(this.entry.angle.radians).toFixed(1)}°`
           : (
             this._preview_angle != null ? `${radiansToDegrees(this._preview_angle).toFixed(1)}°` : "???°"
           )
@@ -309,7 +309,7 @@ class CompassEntryWidget extends Widget {
   }
 }
 
-const DEBUG_ANGLE_OVERRIDE: number = null // degreesToRadians(206.87152474371157)
+const DEBUG_ANGLE_OVERRIDE: Compasses.Angle = null // degreesToRadians(206.87152474371157)
 const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = null // TileArea.init({x: 2944, y: 3328, level: 0}, {x: 128, y: 64})
 
 /**
@@ -355,13 +355,13 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
         } else {
           if (was_state && this.settings.auto_commit_on_angle_change && is_state.state == "normal") {
             if (was_state.state == "spinning" ||
-              angleDifference(is_state.angle, was_state.angle) > CompassSolving.ANGLE_CHANGE_COMMIT_THRESHOLD) {
+              angleDifference(is_state.angle.radians, was_state.angle.radians) > CompassSolving.ANGLE_CHANGE_COMMIT_THRESHOLD) {
               this.commit()
             }
           }
 
           if (is_state) {
-            this.entries.forEach(e => e.widget.setPreviewAngle(is_state?.state == "normal" ? is_state.angle : null))
+            this.entries.forEach(e => e.widget.setPreviewAngle(is_state?.state == "normal" ? is_state.angle.radians : null))
           }
         }
       }, h => h.bindTo(this.lifetime_manager))
@@ -487,7 +487,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       entry.widget.render()
       entry.widget.setPreviewAngle(
         state.state == "normal"
-          ? state.angle
+          ? state.angle.radians
           : undefined
       )
 
@@ -506,7 +506,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     if (!entry?.position) return
     if (entry.angle != null) return
 
-    let angle: number
+    let angle: Compasses.Angle
 
     if (entry.is_solution_of_previous_clue) {
       const res = this.reader.getAngle()
@@ -528,12 +528,12 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     if (!this.spots.some(s => Compasses.isPossible([info], s.spot.spot))) {
       if (is_manual) notification("Refusing to lock in impossible angle.", "error").show()
 
-      log().log(`Cowardly refusing to lock in impossible angle ${radiansToDegrees(info.angle_radians)}° from ${info.modified_origin.x} | ${info.modified_origin.y}`, "Compass Solving")
+      log().log(`Cowardly refusing to lock in impossible angle ${radiansToDegrees(info.angle.radians)}° from ${info.modified_origin.x} | ${info.modified_origin.y}`, "Compass Solving")
 
       return
     }
 
-    log().log(`Committing ${radiansToDegrees(info.angle_radians)}° to entry ${this.entries.indexOf(entry)} (${info.modified_origin.x} | ${info.modified_origin.y})`, "Compass Solving")
+    log().log(`Committing ${radiansToDegrees(info.angle.radians)}° to entry ${this.entries.indexOf(entry)} (${info.modified_origin.x} | ${info.modified_origin.y})`, "Compass Solving")
 
     entry.angle = angle
     entry.information = info
@@ -571,11 +571,11 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
               spot.center(),
             )
 
-            const COLINEARITY_THRESHOLD = 5 * CompassReader.EPSILON
+            const COLINEARITY_THRESHOLD = 5 * e.information.angle.epsilon
 
             return Math.min(
-              angleDifference(angle, e.information.angle_radians),
-              angleDifference(normalizeAngle(angle + Math.PI), e.information.angle_radians),
+              angleDifference(angle, e.information.angle.radians),
+              angleDifference(normalizeAngle(angle + Math.PI), e.information.angle.radians),
             ) < COLINEARITY_THRESHOLD
           })
 
@@ -658,7 +658,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
           angleDifference(Compasses.getExpectedAngle(
             info.modified_origin,
             p.spot.spot
-          ), info.angle_radians)
+          ), info.angle.radians)
         )
       )
     )
@@ -721,7 +721,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     const state = this.process.state()
 
     entry.widget = new CompassEntryWidget(entry)
-      .setPreviewAngle((!state || state.state != "normal") ? null : state.angle)
+      .setPreviewAngle((!state || state.state != "normal") ? null : state.angle.radians)
       .appendTo(this.entry_container)
 
 
@@ -769,7 +769,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     entry.widget.render()
 
     const state = this.process.state()
-    entry.widget.setPreviewAngle(state?.state != "normal" ? null : state.angle)
+    entry.widget.setPreviewAngle(state?.state != "normal" ? null : state.angle.radians)
 
     if (hadInfo) {
       if (entry.is_solution_of_previous_clue && is_compass_solution) {
@@ -922,7 +922,7 @@ export namespace CompassSolving {
 
   export type Entry = {
     position: TileArea.ActiveTileArea | TeleportGroup.Spot | null,
-    angle: number | null,
+    angle: Compasses.Angle | null,
     information: Compasses.TriangulationPoint | null,
     preconfigured?: CompassSolving.TriangulationPreset["sequence"][number],
     is_solution_of_previous_clue?: boolean,

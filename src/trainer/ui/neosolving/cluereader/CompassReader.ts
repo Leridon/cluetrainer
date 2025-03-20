@@ -1,7 +1,6 @@
 import {Compasses} from "../../../../lib/cluetheory/Compasses";
-import {mixColor} from "alt1";
 import {angleDifference, circularMean, degreesToRadians, normalizeAngle, radiansToDegrees, Rectangle, Vector2} from "../../../../lib/math";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
 import {CapturedCompass} from "./capture/CapturedCompass";
 import {lazy, Lazy} from "../../../../lib/Lazy";
@@ -17,7 +16,6 @@ import {tilePolygon} from "../../polygon_helpers";
 import {EwentHandler, observe} from "../../../../lib/reactive";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
 import {CapturedImage, CaptureInterval} from "../../../../lib/alt1/capture";
-import {deps} from "../../../dependencies";
 import {util} from "../../../../lib/util/util";
 import LightButton from "../../widgets/LightButton";
 import ButtonRow from "../../../../lib/ui/ButtonRow";
@@ -29,19 +27,24 @@ import {Log} from "../../../../lib/util/Log";
 import Behaviour from "../../../../lib/ui/Behaviour";
 import {Finder} from "../../../../lib/alt1/capture/Finder";
 import {Alt1} from "../../../../lib/alt1/Alt1";
+import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
 import log = Log.log;
-import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
-import {Alt1ScreenCaptureService} from "../../../../lib/alt1/capture/Alt1ScreenCaptureService";
 
-class AngularKeyframeFunction {
+export class AngularKeyframeFunction {
   private constructor(private readonly keyframes: {
                         original?: Vector2,
                         angle: number,
                         value: number
                       }[],
-                      private base_f: (_: number) => number = () => 0) {
+                      private calibration_epsilon_degrees: number,
+                      private base_f: (_: number) => number = () => 0,
+  ) {
     this.keyframes = lodash.sortBy(keyframes, e => e.angle)
+  }
+
+  epsilon(): number {
+    return degreesToRadians(CompassReader.RESOLUTION_INACCURACY_DEGREES + this.calibration_epsilon_degrees)
   }
 
   withBaseline(f: (_: number) => number): this {
@@ -94,6 +97,7 @@ class AngularKeyframeFunction {
   static fromCalibrationSamples(samples: {
                                   position: Vector2, is_angle_degrees: number
                                 }[],
+                                calibration_epsilon: number,
                                 baseline_type: "cosine" | null = null,
   ): AngularKeyframeFunction {
 
@@ -139,7 +143,7 @@ class AngularKeyframeFunction {
     const reduced_keyframes = keyframes.map(f => ({...f, value: f.value - baseline_function(f.angle)}))
 
     return new AngularKeyframeFunction(
-      reduced_keyframes, baseline_function
+      reduced_keyframes, calibration_epsilon, baseline_function
     ).withBaseline(baseline_function)
   }
 }
@@ -376,8 +380,10 @@ export class CompassReader {
     const calibration_mode = (this.disable_calibration || CompassReader.DISABLE_CALIBRATION) ? null
       : (antialiasing_detected ? "msaa" : "off")
 
+    const calibration_table = CompassReader.calibration_tables[calibration_mode]
+
     const final_angle = calibration_mode
-      ? normalizeAngle(angle_after_rectangle_sample + CompassReader.calibration_tables[calibration_mode].sample(angle_after_rectangle_sample))
+      ? normalizeAngle(angle_after_rectangle_sample + calibration_table.sample(angle_after_rectangle_sample))
       : angle_after_rectangle_sample
 
     if (CompassReader.DEBUG_COMPASS_READER) {
@@ -390,8 +396,11 @@ export class CompassReader {
 
     return {
       type: "success",
-      angle: final_angle,
-      antialiasing: antialiasing_detected
+      angle: {
+        radians: final_angle,
+        epsilon: calibration_table.epsilon()
+      },
+      antialiasing: antialiasing_detected,
     }
   })
 
@@ -411,13 +420,10 @@ export namespace CompassReader {
   export const DISABLE_CALIBRATION = false
 
   export const RESOLUTION_INACCURACY_DEGREES = 0.2 // Calculated on a napkin, so might not be completely accurate
-  export const CALIBRATION_INACCURACY_DEGREES = 0.1
-  export const EPSILON = degreesToRadians(RESOLUTION_INACCURACY_DEGREES + CALIBRATION_INACCURACY_DEGREES)
-  export const CIRCLE_SAMPLE_CONCEALED_THRESHOLD = degreesToRadians(3)
 
   export type AngleResult = {
     type: "success",
-    angle: number,
+    angle: Compasses.Angle,
     antialiasing: boolean,
   } | { type: "likely_closed", details: string }
     | { type: "likely_concealed", details: string }
@@ -684,6 +690,7 @@ export namespace CompassReader {
         {"position": {"x": -9, "y": 1}, "is_angle_degrees": 354.17074283320943},
         {"position": {"x": -10, "y": 1}, "is_angle_degrees": 354.74060261085043}
       ],
+      0.1,
       "cosine"
     )
     ,
@@ -945,6 +952,7 @@ export namespace CompassReader {
         {"position": {"x": -9, "y": 1}, "is_angle_degrees": 354.15608220452185},
         {"position": {"x": -10, "y": 1}, "is_angle_degrees": 354.6625599088827}
       ],
+      0.4,
       "cosine"
     )
   }
@@ -1128,7 +1136,7 @@ export namespace CompassReader {
         if (state.state == "spinning") {
           text = "Spinning"
         } else if (state.angle != null) {
-          text = `${radiansToDegrees(state.angle).toFixed(this.disable_calibration ? 3 : 1)}°`
+          text = `${radiansToDegrees(state.angle.radians).toFixed(this.disable_calibration ? 3 : 1)}°`
         }
 
         if (text) {
@@ -1158,7 +1166,7 @@ export namespace CompassReader {
 
   export namespace Service {
     export type State = {
-      angle: number,
+      angle: Compasses.Angle,
       state: "normal" | "solved" | "spinning" | "closed"
     }
   }
@@ -1211,9 +1219,9 @@ export namespace CompassReader {
         const entry = this.samples.find(s => Vector2.eq(s.position, this.layer.offset))
 
         if (entry) {
-          entry.is_angle_degrees = radiansToDegrees(state.angle)
+          entry.is_angle_degrees = radiansToDegrees(state.angle.radians)
         } else {
-          this.samples.push({position: this.layer.offset, is_angle_degrees: radiansToDegrees(state.angle)})
+          this.samples.push({position: this.layer.offset, is_angle_degrees: radiansToDegrees(state.angle.radians)})
 
           lodash.sortBy(this.samples, s => getExpectedAngle(s.position, {x: 0, y: 0}))
         }
@@ -1333,7 +1341,7 @@ export namespace CompassReader {
           ).show()
         }),
         new LightButton("Export CSV").onClick(() => {
-          new ExportStringModal(AngularKeyframeFunction.fromCalibrationSamples(this.samples, "cosine").getCSV()).show()
+          new ExportStringModal(AngularKeyframeFunction.fromCalibrationSamples(this.samples, 0, "cosine").getCSV()).show()
         }),
       ).appendTo(this.body)
 
