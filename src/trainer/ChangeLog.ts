@@ -20,6 +20,20 @@ export namespace Changelog {
     render: (_: Layout) => void
   }
 
+  export const v44: LogEntry = {
+    date: new Date(Date.parse("TBD")),
+    render: layout =>
+      layout.row(new List()
+        .item("Fixed the name of Challenge Mistress Fara.")
+        .item("Fixed the area for the emote step in the garden of the max guild.")
+        .item("Replaced DJR in the fairy ring recommendations for easy clues with CJR.")
+        .item("Adjusted the detection threshold for map clues to cover more configurations.")
+      ),
+    notification: "TBD",
+    title: "TBD",
+    version: 44
+  }
+
   export const v43: LogEntry = {
     date: new Date(Date.parse("2025-03-09")),
     render: layout => layout
