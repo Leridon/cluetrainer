@@ -60,7 +60,6 @@ Transport Backlog:
     Stepping stones in the east and maybe also the shilo gate (for comparison)
     Shantay Pass
     Death Plateau rock wall climb
-    Memory strand teleports to memorial to Guthix. If you've prestiged Engrams can be used to teleport to the entrance
     Max Guild  boss portal teleport options + airut peninsula to it
     port hardcoded to new tool
 
@@ -76,8 +75,9 @@ Issues
     - Invalid LatLng object in various cases
 
 Path Editor:
-    Custom sized square (to help map distances), purely for theorycrafting
-    Some sort of parallel world method of displaying steps (with non static teleports), if implemented, preferably differentiatable between absolute and relative step instructions
+    - Better tooling for routing runs (https://discord.com/channels/@me/1216512712255864853/1352379562826272838)
+    - Custom sized square (to help map distances), purely for theorycrafting
+    - Some sort of parallel world method of displaying steps (with non static teleports), if implemented, preferably differentiatable between absolute and relative step instructions
 
 - Solving Behaviour
     - Path Panel
@@ -132,44 +132,9 @@ Compass solver:
     - [Styling] ControlHeader title and X are not properly aligned
         - Check modal for how to do it
 
-- Content
-    ✓ Fremmenik Isles
-    ✓ Dorgesh-Kaan
-    ✓ Zanaris
-    ✓ Ardougne
-    - Swamp Caves
-    - Falador
-    - Haunted Woods
-    - Brimhaven
-    - Darkmeyer
-    - Slayer Dungeon
-    - Heart of gielinor
-    - Elven lands
-    - Turtle Islands
-    - Keldagrim
-    - Kharazi Jungle
-    - Menaphos
-    - Mos Le' Harmless
-    - Piscatoris
-    - Prif
-    - Taverley Dungeon
-    - Varrock
-    - Deep Wilderness
-    - Wilderness Crater
-
-Content principles:
-    - Less is more for written instructions, let rendered path speak for itself
-    - Prefer easy to identify target tiles
-
-Unscheduled (Post launch, if ever):
+Uncategorized:
 - Verified speedrunning
-- Add some kind of discord integration with Fairy Nuff (Mike, if you stumble upon this: I have some ideas :) )
 - Better algorithm to combine equivalence classes.
+- Improve information gain for equivalence classes by judging the value of that particular information. (https://discord.com/channels/@me/1216512712255864853/1350781923940765727)
 - Better algorithm to construct polygon for equivalence class (with hole support).
-- [Tech] Overlay pathing into the game.
-    - If this works, it is HUGE. Idea: Fix Camera distance and height by zooming out and clicking the compass, then calibrate camera transform using a suitable environment, Falador party room might actually be great.
-    - Player position is input explicitly by placing a marker on the map.
-    - This should be enough to draw polygons into the world as long as the camera height is not modified.
-    - Yaw can be read by the compass on the minimap.
-    - Camera orientation/position: Developer console 'getcamerapos'.
-    Format:  floor,chunkx,chunkz,subx,subz
+
