@@ -28,6 +28,7 @@ export namespace Changelog {
         .item("Fixed the area for the emote step in the garden of the max guild.")
         .item("Replaced DJR in the fairy ring recommendations for easy clues with CJR.")
         .item("Adjusted the detection threshold for map clues to cover more configurations.")
+        .item("Added a method for an easy clue step in Canifis using the Kharyll teleport.")
       ),
     notification: "TBD",
     title: "TBD",
