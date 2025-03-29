@@ -3,7 +3,6 @@ import * as leaflet from "leaflet"
 import {v4 as uuidv4} from 'uuid';
 import * as lodash from "lodash";
 import {levenshteinEditDistance} from "levenshtein-edit-distance";
-import {mixColor, unmixColor} from "alt1";
 import {Vector2} from "../math";
 
 
@@ -299,30 +298,6 @@ export namespace util {
     return (1 - (hue_delta(a[0], b[0]))
       * (1 - (Math.abs(a[1] - b[1]) / 255))
       * (1 - (Math.abs(a[2] - b[2]) / 255)))
-  }
-
-
-  export namespace A1Color {
-    export function fromHex(hex: string): number {
-      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-
-      const r = parseInt(result[1], 16)
-      const g = parseInt(result[2], 16)
-      const b = parseInt(result[3], 16)
-
-      return mixColor(r, g, b)
-    }
-
-    export function toHex(value: number): string {
-      const [r, g, b] = unmixColor(value)
-
-      function componentToHex(c: number) {
-        const hex = c.toString(16);
-        return hex.length == 1 ? "0" + hex : hex;
-      }
-
-      return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-    }
   }
 
   export function rgbSimilarity(a: [number, number, number], b: [number, number, number]): number {
