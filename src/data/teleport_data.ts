@@ -3914,7 +3914,7 @@ name: "Entrana",
     spots: [
       {
         id: "edgeville",
-        target: {"origin": {"x": 3083, "y": 3499, "level": 0}, "size": {"x": 7, "y": 7}, "data": "fz7/////AA=="},
+        target: {"origin":{"x":3083,"y":3499,"level":0},"size":{"x":7,"y":7},"data":"fD7/////AA=="},
         code: "1,1",
         name: "Edgeville",
         menu_ticks: 3,
@@ -3922,7 +3922,7 @@ name: "Entrana",
       },
       {
         id: "herbpatch",
-        target: {"origin": {"x": 3140, "y": 3822, "level": 0}, "size": {"x": 7, "y": 7}, "data": "8/n/////AQ=="},
+        target: {"origin":{"x":3140,"y":3822,"level":0},"size":{"x":7,"y":7},"data":"8fn/////AQ=="},
         code: "1,2",
         name: "Herb patch",
         menu_ticks: 3,
