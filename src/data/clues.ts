@@ -3097,7 +3097,7 @@ export namespace clue_data {
       "text": ["Speak to the Challenge Mistress in Burthorpe."],
       "solution": {
         "type": "talkto",
-        "npc": "Mission Mistress Fara",
+        "npc": "Challenge Mistress Fara",
         "spots": [{"range": {"origin": {"x": 2887, "y": 3529, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "in Burthorpe"}]
       }
     }, {
@@ -4577,7 +4577,7 @@ export namespace clue_data {
       "type": "emote",
       "tier": "master",
       "text": ["Salute in the Max Guild Garden. Beware of double agents! Have no items equipped when you do."],
-      "area": {"origin": {"x": 2268, "y": 3320, "level": 1}, "size": {"x": 17, "y": 16}},
+      "area": {"origin": {"x": 2268, "y": 3318, "level": 1}, "size": {"x": 17, "y": 18}},
       "items": ["Nothing"],
       "emotes": ["Salute"],
       "hidey_hole": null,

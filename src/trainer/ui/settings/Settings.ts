@@ -152,7 +152,7 @@ export namespace Settings {
             "fairy_ring_favourites": [
               "AIQ",
               "DIS",
-              "DJR",
+              "CJR",
               null,
               null,
               null,

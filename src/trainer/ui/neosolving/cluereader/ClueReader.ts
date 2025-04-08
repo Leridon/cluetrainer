@@ -173,7 +173,7 @@ export class ClueReader {
               case "map":
                 const fingerprint = oldlib.computeImageFingerprint(modal.body.getData(), 20, 20, 90, 25, 300, 240);
 
-                const best = findBestMatch(clue_data.map, c => comparetiledata(c.ocr_data, fingerprint), 65000, true)
+                const best = findBestMatch(clue_data.map, c => comparetiledata(c.ocr_data, fingerprint), 70000, true)
 
                 if (CLUEREADERDEBUG) {
                   log().log("Best map match", "ClueReader")
