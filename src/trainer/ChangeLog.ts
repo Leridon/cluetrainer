@@ -32,6 +32,7 @@ export namespace Changelog {
         .item("Replaced DJR in the fairy ring recommendations for easy clues with CJR.")
         .item("Adjusted the detection threshold for map clues to cover more configurations.")
         .item("Added a method for an easy clue step in Canifis using the Kharyll teleport.")
+        .item("Added Leela's favour teleports.")
       ),
     title: "Improved teleport area accuracy",
     version: 44

@@ -876,6 +876,7 @@ const raw_data: Transportation.TeleportGroup[] = [
         id: "imperial",
         target: {"origin": {"x": 3174, "y": 2727, "level": 0}, "size": {"x": 4, "y": 5}},
         img: {url: "imperialdistrict.gif"},
+        icon_position_override: {"x": 3174, "y": 2731, "level": 0},
         name: "Imperial district",
         code: "1",
       },
@@ -897,6 +898,7 @@ const raw_data: Transportation.TeleportGroup[] = [
         id: "worker",
         target: {"origin":{"x":3154,"y":2794,"level":0},"size":{"x":5,"y":5},"data":"UP//AQ=="},
         img: {url: "workerdistrict.gif"},
+        icon_position_override: {"x":3154,"y":2798,"level":0},
         name: "Worker district",
         code: "4",
       },
@@ -910,6 +912,7 @@ const raw_data: Transportation.TeleportGroup[] = [
       {
         id: "shiftingtombs",
         target: {"origin":{"x":2076,"y":6950,"level":0},"size":{"x":5,"y":5},"data":"/3/vAQ=="},
+        icon_position_override: {"x":2078,"y":6954,"level":0},
         img: {url: "shiftingtombs.webp"},
         name: "Menaphos shifting tombs",
         code: "6",
@@ -4650,6 +4653,24 @@ name: "Entrana",
     ],
     access: [
       {id: "memorystrands", type: "item", name: {kind: "item", name: "Memory stands"}, action_name: "Teleport", img: {url: "memory_strand.webp"}}
+    ]
+  }, {
+    type: "teleports",
+    id: "leelasfavour",
+    name: "Leela's favour",
+    animation_ticks: 4,
+    menu_ticks: 1,
+    spots: [
+      {id: "imperial", name: "Imperial District", target: {origin: {"x":3176,"y":2729,"level":0}}, code: "1"},
+      {id: "merchant", name: "Merchant District", target: {origin: {"x":3223,"y":2782,"level":0}}, code: "2"},
+      {id: "port", name: "Port District", target: {origin: {"x":3213,"y":2627,"level":0}}, code: "3"},
+      {id: "worker", name: "Worker District", target: {origin: {"x":3156,"y":2796,"level":0}}, code: "4"},
+      //{id: "soulobelisk", name: "Soul Obelisk", target: null, code: "5"},
+      {id: "shiftingtombs", name: "Shifting Tombs", target: {origin: {"x":2078,"y":6952,"level":0}}, code: "6"},
+      {id: "sophanemslayerdungeon", name: "Sophanem Slayer Dungeon", target: {origin: {"x":3289,"y":2708,"level":0}}, code: "7"},
+    ],
+    access: [
+      {id: "item", type: "item", name: {kind: "item", name: "Leela's favour"}, action_name: "Teleport", img: {url: "Leelas_favour.webp"}}
     ]
   }
 //TODO: Eagle transport system
