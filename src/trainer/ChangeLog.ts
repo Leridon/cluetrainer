@@ -21,17 +21,19 @@ export namespace Changelog {
   }
 
   export const v44: LogEntry = {
-    date: new Date(Date.parse("TBD")),
+    date: new Date(Date.parse("2025-04-08")),
     render: layout =>
       layout.row(new List()
+        .item("Improved the accuracy of more than 50 teleport landing areas. ", new List()
+          .item("Massive thanks to @Ngis, who spent ages teleporting to gather all these fixes.")
+        )
         .item("Fixed the name of Challenge Mistress Fara.")
         .item("Fixed the area for the emote step in the garden of the max guild.")
         .item("Replaced DJR in the fairy ring recommendations for easy clues with CJR.")
         .item("Adjusted the detection threshold for map clues to cover more configurations.")
         .item("Added a method for an easy clue step in Canifis using the Kharyll teleport.")
       ),
-    notification: "TBD",
-    title: "TBD",
+    title: "Improved teleport area accuracy",
     version: 44
   }
 
