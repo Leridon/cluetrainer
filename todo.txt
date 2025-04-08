@@ -9,6 +9,9 @@ Backlog:
     - Direct links to cluepedia
     - Default to last relevant section when setting a path (Configurable)
     - [BUG] Possible Race condition when commiting/discarding angles causing wrong zoom
+    - Add cooldown reset when dive intends to kill a target
+    - [Bug] Tick accuracy for redclicks
+    - Add explanations for runekit (https://discord.com/channels/332595657363685377/1103737270114209825/1358164011056759064)
 
 
 - Compasses (v36?):

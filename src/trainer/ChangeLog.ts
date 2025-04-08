@@ -20,6 +20,22 @@ export namespace Changelog {
     render: (_: Layout) => void
   }
 
+  export const v45: LogEntry = {
+    date: new Date(Date.parse("2025-04-09")),
+    render: layout =>
+      layout.row(new List()
+        .item("Added a new, faster scan route for Menaphos using Leela's favour.")
+        .item("Added a new method for the Hamid hard step using Leela's favour.")
+        .item("Added a new method for the master emote step in front of the Menaphos library using Leela's favour.")
+        .item("Added a new method for the plover bird skilling step using Leela's favour.")
+        .item("Fixed an issue causing the route for the decorated cooking urn master step to not be displayed.")
+        .item("Added error notification when the Clue Reader fails.")
+      ),
+    title: "New Methods",
+    notification: "New Methods have arrived",
+    version: 45
+  }
+
   export const v44: LogEntry = {
     date: new Date(Date.parse("2025-04-08")),
     render: layout =>
@@ -153,6 +169,7 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([
+    v45,
     v44,
     v43,
     v42,
