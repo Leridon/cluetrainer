@@ -132,7 +132,7 @@ class NeoSolvingLayer extends GameLayer {
 
         if (close_enough.length == 0) {
           const closest = findBestMatch(spots, e => Vector2.max_axis(Vector2.sub(e.centerOfTarget(), current_center)), undefined, true)
-          
+
           if (closest.score < 320) bounds.addArea(closest.value.targetArea())
         }
 
@@ -400,13 +400,26 @@ class ClueSolvingReadingBehaviour extends Behaviour {
       return
     }
 
-    const img = await Alt1.instance().capturing.captureOnce({options: {area: null, interval: null}})
+    try {
+      const img = await Alt1.instance().capturing.captureOnce({options: {area: null, interval: null}})
 
-    const found = this.solve(img.value, false)
+      const found = this.solve(img.value, false)
 
-    if (!found) {
-      notification("No clue found on screen.", "error").show()
+      if (!found) {
+        notification("No clue found on screen.", "error").show()
+      }
+    } catch (e) {
+      notification("Error while looking for a clue. See the log (F6) for details.", "error").show()
+
+      if (e instanceof Error) {
+        log().log(e.toString())
+        log().log(e.stack)
+      } else {
+        console.error(e.toString())
+      }
     }
+
+
   }
 }
 

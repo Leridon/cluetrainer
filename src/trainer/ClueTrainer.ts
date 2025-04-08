@@ -317,9 +317,31 @@ export class ClueTrainer extends Behaviour {
     //let query_function = QueryLinks.get_from_params(ScanTrainerCommands.index, new URLSearchParams(window.location.search))
     //if (query_function) query_function(this)
 
+    const logDiagnostics = () => {
+      log().log("Current settings", "General", {type: "object", value: lodash.cloneDeep(this.settings.settings)})
+
+      if (globalThis.alt1) {
+        try {
+          log().log(`Alt 1 version: ${alt1.version}`)
+          log().log(`Active capture mode: ${alt1.captureMethod}`)
+          log().log(`Permissions: Installed ${alt1.permissionInstalled}, GameState ${alt1.permissionGameState}, Pixel ${alt1.permissionPixel}, Overlay ${alt1.permissionOverlay}`)
+        } catch (e) {
+          if (e instanceof Error) {
+            log().log("Error while logging Alt 1 Info")
+            log().log(e.toString())
+            log().log(e.stack)
+          } else {
+            console.error(e.toString())
+          }
+        }
+      }
+    }
+
     document.body.addEventListener("keydown", e => {
       if (e.key == "F6") {
         log().log("Log exported")
+
+        logDiagnostics()
 
         LogViewer.do(log().get())
       }
@@ -331,12 +353,9 @@ export class ClueTrainer extends Behaviour {
 
     log().log(`Clue Trainer v${Changelog.latest_patch.version} started`)
 
-    if (globalThis.alt1) {
-      log().log(`Alt 1 version detected: ${alt1.version}`)
-      log().log(`Active capture mode: ${alt1.captureMethod}`)
-      log().log(`Permissions: Installed ${alt1.permissionInstalled}, GameState ${alt1.permissionGameState}, Pixel ${alt1.permissionPixel}, Overlay ${alt1.permissionOverlay}`)
-      log().log("Settings on startup", "Startup", {type: "object", value: lodash.cloneDeep(this.settings.settings)})
+    logDiagnostics()
 
+    if (Alt1.exists()) {
       PermissionChecker.check()
     }
 
