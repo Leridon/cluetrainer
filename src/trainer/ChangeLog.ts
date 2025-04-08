@@ -153,6 +153,7 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([
+    v44,
     v43,
     v42,
     v41,
