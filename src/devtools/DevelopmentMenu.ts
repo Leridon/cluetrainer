@@ -16,6 +16,7 @@ import {Notification} from "../trainer/ui/NotificationBar";
 import {ClueReader} from "../trainer/ui/neosolving/cluereader/ClueReader";
 import notification = Notification.notification;
 import {CapturedImage} from "../lib/alt1/capture";
+import {CompassCalibrationTool} from "./CompassCalibrationTool";
 
 
 export class DevelopmentModal extends NisModal {
@@ -82,7 +83,7 @@ export class DevelopmentModal extends NisModal {
     layout.header("Compass")
     layout.row(new LightButton("Calibration Tool")
       .onClick(() => {
-        new CompassReader.CalibrationTool().show()
+        new CompassCalibrationTool().show()
       })
     )
 
