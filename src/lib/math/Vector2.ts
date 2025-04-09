@@ -128,6 +128,10 @@ export namespace Vector2 {
     return {x: Math.round(c.x / grid) * grid, y: Math.round(c.y / grid) * grid}
   }
 
+  export function swap(c: Vector2): Vector2 {
+    return {x: c.y, y: c.x}
+  }
+
   /**
    * Transforms a Vector2 by the given transform, interpreting the Vector as a direction.
    */

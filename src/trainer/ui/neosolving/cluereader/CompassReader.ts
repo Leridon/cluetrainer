@@ -1,40 +1,23 @@
 import {Compasses} from "../../../../lib/cluetheory/Compasses";
-import {mixColor} from "alt1";
 import {angleDifference, circularMean, degreesToRadians, normalizeAngle, radiansToDegrees, Rectangle, Vector2} from "../../../../lib/math";
 import * as lodash from "lodash";
 import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
 import {CapturedCompass} from "./capture/CapturedCompass";
 import {lazy, Lazy} from "../../../../lib/Lazy";
-import {NisModal} from "../../../../lib/ui/NisModal";
-import {GameMapMiniWidget, levelIcon} from "../../../../lib/gamemap/GameMap";
-import {GameLayer} from "../../../../lib/gamemap/GameLayer";
-import {clue_data} from "../../../../data/clues";
-import * as leaflet from "leaflet";
-import {MapEntity} from "../../../../lib/gamemap/MapEntity";
-import {TileCoordinates} from "../../../../lib/runescape/coordinates";
-import {GameMapMouseEvent} from "../../../../lib/gamemap/MapEvents";
-import {tilePolygon} from "../../polygon_helpers";
 import {EwentHandler, observe} from "../../../../lib/reactive";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
 import {CapturedImage, CaptureInterval} from "../../../../lib/alt1/capture";
-import {deps} from "../../../dependencies";
 import {util} from "../../../../lib/util/util";
-import LightButton from "../../widgets/LightButton";
-import ButtonRow from "../../../../lib/ui/ButtonRow";
-import ExportStringModal from "../../widgets/modals/ExportStringModal";
-import ImportStringModal from "../../widgets/modals/ImportStringModal";
-import {Alt1MainHotkeyEvent} from "../../../../lib/alt1/Alt1MainHotkeyEvent";
-import Widget from "../../../../lib/ui/Widget";
 import {Log} from "../../../../lib/util/Log";
 import Behaviour from "../../../../lib/ui/Behaviour";
 import {Finder} from "../../../../lib/alt1/capture/Finder";
 import {Alt1} from "../../../../lib/alt1/Alt1";
+import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
 import log = Log.log;
-import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
-import {Alt1ScreenCaptureService} from "../../../../lib/alt1/capture/Alt1ScreenCaptureService";
 
-class AngularKeyframeFunction {
+
+export class AngularKeyframeFunction {
   private constructor(private readonly keyframes: {
                         original?: Vector2,
                         angle: number,
@@ -144,7 +127,7 @@ class AngularKeyframeFunction {
   }
 }
 
-namespace AngularKeyframeFunction {
+export namespace AngularKeyframeFunction {
   export type Sample = {
     position: Vector2, is_angle_degrees: number
   }
@@ -401,10 +384,7 @@ export class CompassReader {
 }
 
 export namespace CompassReader {
-  import greatestCommonDivisor = util.greatestCommonDivisor;
-  import cleanedJSON = util.cleanedJSON;
   import log = Log.log;
-  import getExpectedAngle = Compasses.getExpectedAngle;
   import async_init = util.async_init;
   import AsyncInitialization = util.AsyncInitialization;
   export const DEBUG_COMPASS_READER = false
@@ -685,8 +665,7 @@ export namespace CompassReader {
         {"position": {"x": -10, "y": 1}, "is_angle_degrees": 354.74060261085043}
       ],
       "cosine"
-    )
-    ,
+    ),
     "msaa": AngularKeyframeFunction.fromCalibrationSamples([
         {"position": {"x": -1, "y": 0}, "is_angle_degrees": 358.9062404843492},
         {"position": {"x": -10, "y": -1}, "is_angle_degrees": 3.015824227135354},
@@ -1164,320 +1143,4 @@ export namespace CompassReader {
   }
 
   export type CalibrationMode = keyof typeof calibration_tables
-
-  export class CalibrationTool extends NisModal {
-    samples: AngularKeyframeFunction.Sample[] = []
-    private reader: Service
-    private layer: CalibrationTool.Layer
-
-    handler: Alt1MainHotkeyEvent.Handler
-
-    expected: Widget
-
-    constructor(samples: AngularKeyframeFunction.Sample[] = []) {
-      super({
-        size: "fullscreen",
-        fixed: true,
-        disable_close_button: false
-      });
-
-      this.samples = lodash.cloneDeep(samples)
-
-      this.handler = Alt1.instance().main_hotkey.subscribe(0, (e) => {
-        this.commit()
-      })
-
-      this.hidden.on(() => {
-        this.reader.stop()
-        this.handler.remove()
-      })
-
-      this.reader = new Service(null, true, true, true).start()
-    }
-
-    delete() {
-      const entry_index = this.samples.findIndex(s => Vector2.eq(s.position, this.layer.offset))
-
-      this.samples.splice(entry_index, 1)
-
-      this.layer.updateTileOverlays()
-    }
-
-    commit() {
-      const state = this.reader.state()
-
-      if (state.state == "normal") {
-
-        const entry = this.samples.find(s => Vector2.eq(s.position, this.layer.offset))
-
-        if (entry) {
-          entry.is_angle_degrees = radiansToDegrees(state.angle)
-        } else {
-          this.samples.push({position: this.layer.offset, is_angle_degrees: radiansToDegrees(state.angle)})
-
-          lodash.sortBy(this.samples, s => getExpectedAngle(s.position, {x: 0, y: 0}))
-        }
-
-        this.autoNextSpot()
-      }
-    }
-
-    autoNextSpot() {
-      const test = (offset: Vector2): boolean => {
-        const gcd = greatestCommonDivisor(offset.x, offset.y)
-
-        if (gcd > 1) return false
-
-        const entry = this.samples.find(s => Vector2.eq(s.position, offset))
-
-        if (entry) return false
-
-        this.layer.setOffset(offset)
-
-        return true
-      }
-
-      if (test({x: 1, y: 0})) return
-      if (test({x: 0, y: 1})) return
-      if (test({x: -1, y: 0})) return
-      if (test({x: 0, y: -1})) return
-
-      for (let d = 3; d <= 15; d++) {
-        const iterations = Math.pow(2, d)
-
-        const limit = Math.sqrt(iterations)
-
-        for (let i = 1; i < iterations; i++) {
-          const angle = i * (Math.PI * 2) / iterations
-
-          function farey(limit: number, R: number): Vector2 {
-            if (R > 1) {
-              const res = farey(limit, 1 / R)
-
-              return {
-                x: res.y,
-                y: res.x
-              }
-            }
-
-            let lower: Vector2 = {y: 0, x: 1}
-            let higher: Vector2 = {y: 1, x: 1}
-
-            while (true) {
-              let c = Vector2.add(lower, higher) // interestingly c is already in reduced form
-
-              // if the numbers are too big, return the closest of a and b
-              if (c.x > limit || c.y > limit) {
-                if (R - lower.y / lower.x < higher.y / higher.x - R) return lower
-                else return higher
-              }
-
-              // adjust the interval:
-              if (c.y / c.x < R) lower = c
-              else higher = c
-            }
-          }
-
-          const v = farey(limit, Math.abs(Math.sin(angle)) / Math.abs(Math.cos(angle)))
-
-          if (angle > Math.PI / 2 && angle < 3 * Math.PI / 2) v.x *= -1
-          if (angle > Math.PI) v.y *= -1
-
-          if (test(v)) {
-            console.log(`D: ${d}`)
-            return
-          }
-        }
-      }
-    }
-
-    render() {
-      super.render();
-
-      this.body.css("display", "flex")
-        .css("flex-direction", "column")
-
-      const map = new GameMapMiniWidget()
-        .css2({
-          "width": "100%",
-          "height": "500px"
-        })
-        .appendTo(this.body)
-
-      setTimeout(() => map.map.invalidateSize(), 1000)
-
-      this.expected = c().appendTo(this.body)
-
-      new ButtonRow().buttons(
-          new LightButton("Auto")
-            .onClick(() => this.autoNextSpot()),
-          new LightButton("Commit")
-            .onClick(() => this.commit()),
-          new LightButton("Delete")
-            .onClick(() => this.delete())
-        )
-        .appendTo(this.body)
-
-      new ButtonRow().buttons(
-        new LightButton("Import").onClick(async () => {
-          this.samples = (await new ImportStringModal(input => {
-            return JSON.parse(input)
-          }).do()).imported
-          this.autoNextSpot()
-        }),
-        new LightButton("Export JSON").onClick(() => {
-          new ExportStringModal(
-            "[\n" +
-            lodash.sortBy(this.samples, s => Vector2.angle(ANGLE_REFERENCE_VECTOR, {x: -s.position.x, y: -s.position.y})).map(s => cleanedJSON(s, undefined)).join(",\n")
-            + "\n]"
-          ).show()
-        }),
-        new LightButton("Export CSV").onClick(() => {
-          new ExportStringModal(AngularKeyframeFunction.fromCalibrationSamples(this.samples, "cosine").getCSV()).show()
-        }),
-      ).appendTo(this.body)
-
-      map.map.addGameLayer(this.layer = new CalibrationTool.Layer(this))
-
-      this.autoNextSpot()
-    }
-  }
-
-  export namespace CalibrationTool {
-    import gielinor_compass = clue_data.gielinor_compass;
-    import Sample = AngularKeyframeFunction.Sample;
-
-    export class KnownMarker extends MapEntity {
-      constructor(public spot: TileCoordinates) {
-        super()
-
-        this.setInteractive()
-      }
-
-      private active: boolean = false
-
-      setActive(v: boolean): this {
-        if (v != this.active) {
-          this.active = v
-          this.requestRendering()
-        }
-
-        return this
-      }
-
-      bounds(): Rectangle {
-        return Rectangle.from(this.spot)
-      }
-
-      protected async render_implementation(props: MapEntity.RenderProps): Promise<Element> {
-        const opacity = this.active ? 1 : 0.5
-
-        const scale = (this.active ? 1 : 0.5) * (props.highlight ? 1.5 : 1)
-
-        const marker = leaflet.marker(Vector2.toLatLong(this.spot), {
-          icon: levelIcon(this.spot.level, scale),
-          opacity: opacity,
-          interactive: true,
-          bubblingMouseEvents: true,
-        }).addTo(this)
-
-        return marker.getElement()
-      }
-    }
-
-    export class Layer extends GameLayer {
-      markers: KnownMarker[]
-
-      reference: TileCoordinates
-      offset: Vector2 = {x: -1, y: 1}
-      existing_sample: Sample = null
-
-      constructor(public tool: CalibrationTool) {
-        super()
-
-        this.markers = gielinor_compass.spots.map(spot =>
-          new KnownMarker(spot).addTo(this)
-        )
-
-        this.setReference(gielinor_compass.spots[0])
-      }
-
-      eventClick(event: GameMapMouseEvent) {
-        event.onPost(() => {
-          if (event.active_entity instanceof KnownMarker) {
-            this.setReference(event.active_entity.spot)
-          } else {
-            const off = Vector2.sub(event.tile(), this.reference)
-
-            if (off.x == 0 && off.y == 0) return
-
-            const gcd = greatestCommonDivisor(Math.abs(off.x), Math.abs(off.y))
-
-            this.setOffset(Vector2.scale(1 / gcd, off))
-          }
-        })
-      }
-
-      setOffset(offset: Vector2) {
-        this.offset = offset
-
-        this.existing_sample = this.tool.samples.find(s => Vector2.eq(s.position, offset))
-
-        if (this.existing_sample) {
-          this.tool.expected.text(`Selected: ${offset.x}|${offset.y} Expected: ${radiansToDegrees(normalizeAngle(Math.atan2(-offset.y, -offset.x))).toFixed(3)}°, Sample: ${this.existing_sample.is_angle_degrees.toFixed(3)}°`)
-        } else {
-          this.tool.expected.text(`Selected: ${offset.x}|${offset.y} Expected: ${radiansToDegrees(normalizeAngle(Math.atan2(-offset.y, -offset.x))).toFixed(3)}°`)
-        }
-
-        this.updateTileOverlays()
-      }
-
-      setReference(reference: TileCoordinates) {
-        this.reference = reference
-
-        this.markers.forEach(marker => {
-          marker.setActive(TileCoordinates.equals(marker.spot, reference))
-        })
-
-        this.updateTileOverlays()
-      }
-
-      private overlay: leaflet.FeatureGroup = null
-
-      updateTileOverlays() {
-        if (this.overlay) {
-          this.overlay.remove()
-          this.overlay = null
-        }
-
-        this.overlay = leaflet.featureGroup().addTo(this)
-
-        this.tool.samples.forEach((sample, i) => {
-          const polygon = tilePolygon(Vector2.add(this.reference, sample.position)).setStyle({
-            color: "#06ffea",
-            fillOpacity: 0.4,
-            stroke: false
-          }).addTo(this.overlay)
-        })
-
-        leaflet.polygon(this.tool.samples.map(s => Vector2.toLatLong(Vector2.add(this.reference, s.position))))
-          .setStyle({
-            color: "blue"
-          })
-          .addTo(this.overlay)
-
-        for (let i = 1; i <= 100; i++) {
-          const polygon = tilePolygon(Vector2.add(this.reference, Vector2.scale(i, this.offset))).addTo(this.overlay)
-
-          if (this.existing_sample) {
-            polygon.setStyle({
-              color: "orange"
-            })
-          }
-        }
-
-        this.overlay.addTo(this)
-      }
-    }
-  }
 }
