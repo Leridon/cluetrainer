@@ -1,153 +1,21 @@
 import {Compasses} from "../../../../lib/cluetheory/Compasses";
-import {angleDifference, circularMean, degreesToRadians, normalizeAngle, radiansToDegrees, Rectangle, Vector2} from "../../../../lib/math";
-import * as lodash from "lodash";
+import {angleDifference, degreesToRadians, normalizeAngle, radiansToDegrees, Rectangle, Vector2} from "../../../../lib/math";
+import lodash from "lodash";
 import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
 import {CapturedCompass} from "./capture/CapturedCompass";
 import {lazy, Lazy} from "../../../../lib/Lazy";
-import {NisModal} from "../../../../lib/ui/NisModal";
-import {GameMapMiniWidget, levelIcon} from "../../../../lib/gamemap/GameMap";
-import {GameLayer} from "../../../../lib/gamemap/GameLayer";
-import {clue_data} from "../../../../data/clues";
-import * as leaflet from "leaflet";
-import {MapEntity} from "../../../../lib/gamemap/MapEntity";
-import {TileCoordinates} from "../../../../lib/runescape/coordinates";
-import {GameMapMouseEvent} from "../../../../lib/gamemap/MapEvents";
-import {tilePolygon} from "../../polygon_helpers";
 import {EwentHandler, observe} from "../../../../lib/reactive";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
 import {CapturedImage, CaptureInterval} from "../../../../lib/alt1/capture";
 import {util} from "../../../../lib/util/util";
-import LightButton from "../../widgets/LightButton";
-import ButtonRow from "../../../../lib/ui/ButtonRow";
-import ExportStringModal from "../../widgets/modals/ExportStringModal";
-import ImportStringModal from "../../widgets/modals/ImportStringModal";
-import {Alt1MainHotkeyEvent} from "../../../../lib/alt1/Alt1MainHotkeyEvent";
-import Widget from "../../../../lib/ui/Widget";
 import {Log} from "../../../../lib/util/Log";
 import Behaviour from "../../../../lib/ui/Behaviour";
 import {Finder} from "../../../../lib/alt1/capture/Finder";
 import {Alt1} from "../../../../lib/alt1/Alt1";
 import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
+import {AngularKeyframeFunction, CompassCalibrationFunction} from "./capture/CompassCalibrationFunction";
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
 import log = Log.log;
-
-
-
-export class AngularKeyframeFunction {
-  private constructor(private readonly keyframes: {
-                        original?: Vector2,
-                        angle: number,
-                        value: number
-                      }[],
-                      private base_f: (_: number) => number = () => 0) {
-    this.keyframes = lodash.sortBy(keyframes, e => e.angle)
-  }
-
-  withBaseline(f: (_: number) => number): this {
-    this.base_f = f
-
-    return this
-  }
-
-  getSampleTable(): number[] {
-    const samples: number[] = []
-
-    const FRAMES = 5000
-
-    for (let i = 0; i <= FRAMES; i++) {
-      samples.push(this.sample(i * (2 * Math.PI / FRAMES)))
-    }
-
-    return samples
-  }
-
-  getCSV(): string {
-    const header = "Is,Delta,Base-Delta,Full-Delta,X,Y\n"
-
-    return header + this.keyframes.map((keyframe) => {
-      return [keyframe.angle, keyframe.value, this.base_f(keyframe.angle), keyframe.value + this.base_f(keyframe.angle)]
-        .map(radiansToDegrees).join(",") + `,${keyframe.original?.x},${keyframe.original?.y}`
-    }).join("\n")
-  }
-
-  sample(angle: number): number {
-    if (this.keyframes.length == 0) return 0
-    if (this.keyframes.length == 1) return this.keyframes[0].value
-
-    // TODO: Optimize with binary search instead
-
-    let index_a = lodash.findLastIndex(this.keyframes, e => e.angle < angle)
-    if (index_a < 0) index_a = this.keyframes.length - 1
-
-    const index_b = (index_a + 1) % this.keyframes.length
-
-    const previous = this.keyframes[index_a]
-    const next = this.keyframes[index_b]
-
-    const t = angleDifference(angle, previous.angle) / angleDifference(next.angle, previous.angle)
-
-    // Linearly interpolate between keyframes
-    return (1 - t) * previous.value + t * next.value + this.base_f(angle)
-  }
-
-  static fromCalibrationSamples(samples: {
-                                  position: Vector2, is_angle_degrees: number
-                                }[],
-                                baseline_type: "cosine" | null = null,
-  ): AngularKeyframeFunction {
-
-    const keyframes = samples.filter(s => s.is_angle_degrees != undefined).map(({position, is_angle_degrees}) => {
-      const should_angle = Vector2.angle(ANGLE_REFERENCE_VECTOR, {x: -position.x, y: -position.y})
-      const is_angle = degreesToRadians(is_angle_degrees)
-
-      let dif = should_angle - is_angle
-      if (dif < -Math.PI) dif += 2 * Math.PI
-
-      return {
-        original: position,
-        angle: is_angle,
-        value: dif
-      }
-    })
-
-    const baseline_function = (() => {
-      switch (baseline_type) {
-        case null:
-          return () => 0
-        case "cosine":
-          // This would probably be the place for a fourier transform tbh, but this simplified version should be enough
-
-          const PHASES = 4
-
-          const max = Math.max(...keyframes.map(f => f.value))
-          const min = Math.min(...keyframes.map(f => f.value))
-
-          const offset = (max + min) / 2
-          const amplitude = (max - min) / 2
-
-          const hill_samples = keyframes.filter(k => Math.abs(max - k.value) < amplitude / 10).map(k => k.angle % (2 * Math.PI / PHASES))
-
-          const phase = circularMean(hill_samples)
-
-          //const phase = lodash.maxBy(keyframes, k => k.value).angle
-
-          return (x) => amplitude * Math.cos(PHASES * (x - phase)) + offset
-      }
-    })()
-
-    const reduced_keyframes = keyframes.map(f => ({...f, value: f.value - baseline_function(f.angle)}))
-
-    return new AngularKeyframeFunction(
-      reduced_keyframes, baseline_function
-    ).withBaseline(baseline_function)
-  }
-}
-
-export namespace AngularKeyframeFunction {
-  export type Sample = {
-    position: Vector2, is_angle_degrees: number
-  }
-}
 
 export class CompassReader {
   constructor(public readonly capture: CapturedCompass, private disable_calibration: boolean = false) {
@@ -376,7 +244,7 @@ export class CompassReader {
       : (antialiasing_detected ? "msaa" : "off")
 
     const final_angle = calibration_mode
-      ? normalizeAngle(angle_after_rectangle_sample + CompassReader.calibration_tables[calibration_mode].sample(angle_after_rectangle_sample))
+      ? normalizeAngle(CompassReader.calibration_tables[calibration_mode].apply(angle_after_rectangle_sample).angle)
       : angle_after_rectangle_sample
 
     if (CompassReader.DEBUG_COMPASS_READER) {
@@ -400,10 +268,10 @@ export class CompassReader {
 }
 
 export namespace CompassReader {
-  import greatestCommonDivisor = util.greatestCommonDivisor;
-  import cleanedJSON = util.cleanedJSON;
+
+
   import log = Log.log;
-  import getExpectedAngle = Compasses.getExpectedAngle;
+
   import async_init = util.async_init;
   import AsyncInitialization = util.AsyncInitialization;
   export const DEBUG_COMPASS_READER = false
@@ -424,7 +292,7 @@ export namespace CompassReader {
 
   export const debug_overlay = new LegacyOverlayGeometry()
 
-  export const calibration_tables = {
+  export const calibration_tables: Record<"off" | "msaa", CompassCalibrationFunction> = {
     "off": AngularKeyframeFunction.fromCalibrationSamples([
         {"position": {"x": -1, "y": 0}, "is_angle_degrees": 358.97548361371},
         {"position": {"x": -10, "y": -1}, "is_angle_degrees": 3.0915850765454644},
@@ -984,7 +852,7 @@ export namespace CompassReader {
 
       this.lifetime_manager.bind(
         Alt1.instance().capturing.subscribe({
-          options: time => {
+          options: () => {
             return {
               interval: CaptureInterval.fromApproximateInterval(50),
               area: this.matched_ui ? this.matched_ui.body.screen_rectangle : null
@@ -1161,6 +1029,4 @@ export namespace CompassReader {
       state: "normal" | "solved" | "spinning" | "closed"
     }
   }
-
-  export type CalibrationMode = keyof typeof calibration_tables
 }
