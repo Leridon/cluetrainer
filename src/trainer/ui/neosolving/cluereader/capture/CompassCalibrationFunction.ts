@@ -2,9 +2,10 @@ import {util} from "../../../../../lib/util/util";
 import {angleDifference, circularMean, degreesToRadians, normalizeAngle, radiansToDegrees, Vector2} from "../../../../../lib/math";
 import lodash from "lodash";
 import {Compasses} from "../../../../../lib/cluetheory/Compasses";
+import {CompassReader} from "../CompassReader";
+import {CalibrationTool} from "../../../../../devtools/CompassCalibrationTool";
 import index = util.index;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
-import {CompassReader} from "../CompassReader";
 
 export interface CompassCalibrationFunction {
   apply(read_angle: number): CompassCalibrationFunction.EpsilonAngle
@@ -14,6 +15,15 @@ export namespace CompassCalibrationFunction {
   export type AngleRange = [number, number]
 
   export namespace AngleRange {
+
+    export function contains(range: AngleRange, angle: number): boolean {
+      if (angle >= range[0] && angle <= range[1]) return true
+
+      const complement = angle + 2 * Math.PI
+
+      return complement > range[0] && complement < range[1]
+    }
+
     export function normalize(range: AngleRange): AngleRange {
       if (range.every(a => a > 2 * Math.PI)) {
         range[0] = normalizeAngle(range[0])
@@ -42,6 +52,28 @@ export namespace CompassCalibrationFunction {
         epsilon: angleDifference(range[0], range[1])
       }
     }
+
+    export function fromAngles(angles: number[]): AngleRange {
+      let mean = circularMean(angles)
+
+      if (mean < 0) mean += 2 * Math.PI
+
+      let range: AngleRange = [mean, mean]
+
+      for (let angle of angles) {
+        if (angleDifference(angle, mean) > Math.PI) angle += 2 * Math.PI
+
+        if (angle < 0) debugger
+
+        if (angle < range[0]) range[0] = angle
+        if (angle > range[1]) range[1] = angle
+
+      }
+
+      if (range[0] < 0) debugger
+
+      return range
+    }
   }
 
   export type EpsilonAngle = {
@@ -51,36 +83,43 @@ export namespace CompassCalibrationFunction {
 }
 
 export class FullCompassCalibrationFunction implements CompassCalibrationFunction {
-  constructor(private samples: FullCompassCalibrationFunction.Sample[]) {
+  constructor(private samples: CalibrationTool.CompressedSample[]) {
 
   }
 
   apply(read_angle: number): CompassCalibrationFunction.EpsilonAngle {
 
-    if (read_angle < this.samples[0].is_angle) read_angle += 2 * Math.PI;
+    if (read_angle < this.samples[0][0]) read_angle += 2 * Math.PI;
+
+    const EPS = degreesToRadians(0.1)
 
     const find_lower = (lower: number, higher: number): number => {
       // Invariant: read_angle >= this.samples[lower].is_angle
       // Invariant: read_angle < this.samples[higher + 1].is_angle
-
       if (lower == higher) return lower
 
       const median_i = ~~((lower + higher) / 2)
 
-      if (read_angle < this.samples[median_i].is_angle) return find_lower(lower, median_i - 1)
-      else return find_lower(median_i, higher)
+
+      if (Math.abs(read_angle - this.samples[median_i][0]) < EPS) return median_i
+
+      if (read_angle < this.samples[median_i][0]) return find_lower(lower, median_i - 1)
+      else return find_lower(median_i == lower ? lower + 1 : median_i, higher)
     }
 
-    const sample_i = find_lower(0, this.samples.length - 1)
+    const sample_i = find_lower(0, this.samples.length)
 
     const sample = this.samples[sample_i]
 
-    if (read_angle == sample.is_angle) {
+    console.log(sample)
+    debugger
+
+    if (read_angle == sample[0]) {
       const below = index(this.samples, sample_i - 1)
       const above = index(this.samples, sample_i + 1)
 
       return CompassCalibrationFunction.AngleRange.toEpsilonAngle(
-        [below.should_angle.highest, above.should_angle.lowest]
+        [below[1][1], above[1][0]]
       )
     } else {
       const below = sample
@@ -88,7 +127,7 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
 
       return CompassCalibrationFunction.AngleRange.toEpsilonAngle(
         CompassCalibrationFunction.AngleRange.shrink(
-          [below.should_angle.highest, above.should_angle.lowest],
+          [below[1][1], above[1][0]],
           0.33
         )
       )
@@ -96,14 +135,7 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
   }
 }
 
-export namespace FullCompassCalibrationFunction {
-  export type Sample = {
-    is_angle: number,
-    should_angle: { lowest: number, highest: number }
-  }
-}
-
-export class AngularKeyframeFunction implements CompassCalibrationFunction{
+export class AngularKeyframeFunction implements CompassCalibrationFunction {
   private constructor(private readonly keyframes: {
                         original?: Vector2,
                         angle: number,
