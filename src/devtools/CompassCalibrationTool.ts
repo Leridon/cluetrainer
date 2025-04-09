@@ -2,9 +2,9 @@ import {NisModal} from "../lib/ui/NisModal";
 import {Alt1MainHotkeyEvent} from "../lib/alt1/Alt1MainHotkeyEvent";
 import Widget from "../lib/ui/Widget";
 import {observe} from "../lib/reactive";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {Alt1} from "../lib/alt1/Alt1";
-import {angleDifference, normalizeAngle, radiansToDegrees, Rectangle, Vector2} from "../lib/math";
+import {angleDifference, degreesToRadians, normalizeAngle, radiansToDegrees, Rectangle, Vector2} from "../lib/math";
 import {GameMapMiniWidget, levelIcon} from "../lib/gamemap/GameMap";
 import ButtonRow from "../lib/ui/ButtonRow";
 import LightButton from "../trainer/ui/widgets/LightButton";
@@ -16,7 +16,7 @@ import * as leaflet from "leaflet";
 import {GameLayer} from "../lib/gamemap/GameLayer";
 import {GameMapMouseEvent} from "../lib/gamemap/MapEvents";
 import {tilePolygon} from "../trainer/ui/polygon_helpers";
-import {AngularKeyframeFunction, CompassReader} from "../trainer/ui/neosolving/cluereader/CompassReader";
+import {CompassReader} from "../trainer/ui/neosolving/cluereader/CompassReader";
 import {Compasses} from "../lib/cluetheory/Compasses";
 import {util} from "../lib/util/util";
 import {clue_data} from "../data/clues";
@@ -26,6 +26,7 @@ import NumberSlider from "../lib/ui/controls/NumberSlider";
 import NumberInput from "../lib/ui/controls/NumberInput";
 import {C} from "../lib/ui/constructors";
 import {Notification} from "../trainer/ui/NotificationBar";
+import {AngularKeyframeFunction, CompassCalibrationFunction} from "trainer/ui/neosolving/cluereader/capture/CompassCalibrationFunction";
 import getExpectedAngle = Compasses.getExpectedAngle;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
@@ -220,7 +221,6 @@ export class CompassCalibrationTool extends NisModal {
       const iterations = Math.pow(2, d)
 
 
-
       for (let i = 0; i < iterations; i++) {
         const angle = i * (Math.PI * 2) / iterations
 
@@ -318,6 +318,15 @@ export class CompassCalibrationTool extends NisModal {
       new LightButton("Export CSV").onClick(() => {
         new ExportStringModal(AngularKeyframeFunction.fromCalibrationSamples(this.samples, "cosine").getCSV()).show()
       }),
+      new LightButton("Export 2").onClick(() => {
+        const compressed = CalibrationTool.compress(this.samples)
+
+        new ExportStringModal(
+          "[\n" +
+          compressed.map(s => `[${s[0].toFixed(3)}, [${s[1][0].toFixed(3)},${s[1][1].toFixed(3)}]]`).join(",\n")
+          + "\n]"
+        ).show()
+      }),
     ).appendTo(this.body)
 
     const status_widget = c()
@@ -346,6 +355,45 @@ export class CompassCalibrationTool extends NisModal {
 }
 
 export namespace CalibrationTool {
+  export function shouldAngle(offset: Vector2): number {
+    return getExpectedAngle(offset, {x: 0, y: 0})
+  }
+
+  export type RawSample = {
+    position: Vector2, is_angle_degrees: number
+  }
+
+  export type CompressedSample = [number, CompassCalibrationFunction.AngleRange]
+
+  export function compress(samples: RawSample[]): CompressedSample[] {
+    const sorted_samples = lodash.sortBy(samples, s => s.is_angle_degrees)
+
+    let i = 0;
+
+    const compressed_samples: CompressedSample[] = []
+
+    while (i < sorted_samples.length) {
+      const group_angle = sorted_samples[i].is_angle_degrees
+
+      const group_start_i = i
+
+      i++
+
+      while (i < sorted_samples.length && sorted_samples[i].is_angle_degrees == group_angle) i++
+      // i now points to the next sample that is not part of this group
+
+      const group = sorted_samples.slice(group_start_i, i)
+
+      const should_range = CompassCalibrationFunction.AngleRange.fromAngles(
+        group.map(s => shouldAngle(s.position))
+      )
+
+      compressed_samples.push([degreesToRadians(group_angle), should_range])
+    }
+
+    return compressed_samples
+  }
+
   import gielinor_compass = clue_data.gielinor_compass;
 
   export class KnownMarker extends MapEntity {
