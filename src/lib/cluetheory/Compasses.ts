@@ -48,11 +48,11 @@ export namespace Compasses {
 
   /**
    * Gets the expected compass angle for a given player spot and a target compass spot in radians
-   * @param position
-   * @param spot
+   * @param player_position
+   * @param compass_spot
    */
-  export function getExpectedAngle(position: Vector2, spot: Vector2): number {
-    const offset = Vector2.normalize(Vector2.sub(spot, position))
+  export function getExpectedAngle(player_position: Vector2, compass_spot: Vector2): number {
+    const offset = Vector2.normalize(Vector2.sub(compass_spot, player_position))
 
     const a = ANGLE_REFERENCE_VECTOR
     const b = offset
