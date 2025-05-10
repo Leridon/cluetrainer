@@ -8,10 +8,10 @@ import {ValueInteraction} from "../../../lib/gamemap/interaction/ValueInteractio
 import {Observable, observe} from "../../../lib/reactive";
 import {PathStepEntity} from "../../ui/map/entities/PathStepEntity";
 import {PathGraphics} from "../../ui/path_graphics";
+import {AbilityLens} from "../AbilityLens";
 import observe_combined = Observable.observe_combined;
 import arrow = PathGraphics.arrow;
 import isFarDive = MovementAbilities.isFarDive;
-import {AbilityLens} from "../AbilityLens";
 
 
 export class DrawAbilityInteraction extends ValueInteraction<Path.step_ability> {
@@ -139,9 +139,10 @@ export class DrawAbilityInteraction extends ValueInteraction<Path.step_ability> 
           })
         } else {
           let res = await MovementAbilities.generic(HostedMapData.get(), this.ability, this.start_position.value(), tile)
-          const is_far_dive = this.ability == "dive" && await isFarDive(this.start_position.value(), res.tile)
 
           if (res) {
+            const is_far_dive = this.ability == "dive" && await isFarDive(this.start_position.value(), res.tile)
+
             this.commit({
               type: "ability",
               ability: this.ability,
