@@ -20,6 +20,17 @@ export namespace Changelog {
     render: (_: Layout) => void
   }
 
+  export const v46 : LogEntry = {
+    date: new Date(Date.parse("2025-05-10")),
+    render: layout =>
+      layout.row(new List()
+        .item("Fixed the teleport area of the Traveller's necklace's teleport to the Wizard Tower.")
+      ),
+    title: "TBD",
+    notification: "TBD",
+    version: 46
+  }
+
   export const v45: LogEntry = {
     date: new Date(Date.parse("2025-04-09")),
     render: layout =>

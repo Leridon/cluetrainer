@@ -2291,7 +2291,7 @@ name: "Harmony Island",
     spots: [
       {
         id: "wizardstower",
-        target: {"origin": {"x": 3101, "y": 3178, "level": 0}, "size": {"x": 5, "y": 5}},
+        target: {"origin": {"x": 3101, "y": 3178, "level": 0}, "size": {"x": 5, "y": 5}, "data": "///3AA=="},
         code: "1",
         name: "Wizard's Tower",
       },
