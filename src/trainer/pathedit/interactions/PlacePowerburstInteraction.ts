@@ -1,8 +1,8 @@
-import {Path} from "lib/runescape/pathing";
-import InteractionTopControl from "../../map/InteractionTopControl";
-import {SelectTileInteraction} from "../../../../lib/gamemap/interaction/SelectTileInteraction";
-import {ValueInteraction} from "../../../../lib/gamemap/interaction/ValueInteraction";
-import {PathStepEntity} from "../../map/entities/PathStepEntity";
+import {Path} from "../../../lib/runescape/pathing";
+import InteractionTopControl from "../../ui/map/InteractionTopControl";
+import {SelectTileInteraction} from "../../../lib/gamemap/interaction/SelectTileInteraction";
+import {ValueInteraction} from "../../../lib/gamemap/interaction/ValueInteraction";
+import {PathStepEntity} from "../../ui/map/entities/PathStepEntity";
 
 export default class PlacePowerburstInteraction extends ValueInteraction<Path.step_powerburst> {
 

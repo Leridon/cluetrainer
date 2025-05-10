@@ -1,7 +1,7 @@
-import {SearchSelection} from "../widgets/SearchSelection";
-import {Transportation} from "../../../lib/runescape/transportation";
-import {TransportData} from "../../../data/transports";
-import Dependencies from "../../dependencies";
+import {SearchSelection} from "../ui/widgets/SearchSelection";
+import {Transportation} from "../../lib/runescape/transportation";
+import {TransportData} from "../../data/transports";
+import Dependencies from "../dependencies";
 
 export default class TeleportSelect extends SearchSelection<Transportation.TeleportGroup.Spot> {
   constructor() {

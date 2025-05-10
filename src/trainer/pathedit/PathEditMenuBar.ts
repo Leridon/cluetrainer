@@ -1,13 +1,13 @@
-import LightButton from "../widgets/LightButton";
-import ContextMenu, {MenuEntry} from "../widgets/ContextMenu";
+import LightButton from "../ui/widgets/LightButton";
+import ContextMenu, {MenuEntry} from "../ui/widgets/ContextMenu";
 import {BookmarkStorage} from "./BookmarkStorage";
-import ExportStringModal from "../widgets/modals/ExportStringModal";
-import {Path} from "../../../lib/runescape/pathing";
-import ImportStringModal from "../widgets/modals/ImportStringModal";
+import ExportStringModal from "../ui/widgets/modals/ExportStringModal";
+import {Path} from "../../lib/runescape/pathing";
+import ImportStringModal from "../ui/widgets/modals/ImportStringModal";
 import {PathEditor} from "./PathEditor";
-import {util} from "../../../lib/util/util";
-import Widget from "../../../lib/ui/Widget";
-import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
+import {util} from "../../lib/util/util";
+import Widget from "../../lib/ui/Widget";
+import {TileArea} from "../../lib/runescape/coordinates/TileArea";
 import cleanedJSON = util.cleanedJSON;
 
 export class PathEditMenuBar extends Widget {

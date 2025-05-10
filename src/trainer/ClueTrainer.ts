@@ -30,7 +30,7 @@ import {Changelog} from "./ChangeLog";
 import {DevelopmentModal} from "../devtools/DevelopmentMenu";
 import {LogViewer} from "../devtools/LogViewer";
 import {DataExport} from "./DataExport";
-import {BookmarkStorage} from "./ui/pathedit/BookmarkStorage";
+import {BookmarkStorage} from "./pathedit/BookmarkStorage";
 import {SectionMemory} from "./ui/neosolving/PathControl";
 import {Alt1UpdateNotice} from "./startup_messages/Alt1UpdateNotice";
 import {ClueTrainerAppMigrationNotice} from "./startup_messages/ClueTrainerAppMigrationNotice";

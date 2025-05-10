@@ -10,7 +10,7 @@ import LightButton from "../widgets/LightButton";
 import {util} from "../../../lib/util/util";
 import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
 import {Notification} from "../NotificationBar";
-import {DrawArrowInteraction} from "../pathedit/interactions/DrawArrowInteraction";
+import {DrawArrowInteraction} from "../../pathedit/interactions/DrawArrowInteraction";
 import {Rectangle} from "../../../lib/math";
 import cleanedJSON = util.cleanedJSON;
 import notification = Notification.notification;
