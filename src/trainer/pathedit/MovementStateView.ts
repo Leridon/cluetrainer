@@ -1,6 +1,6 @@
 import Widget from "../../lib/ui/Widget";
 import {Path} from "../../lib/runescape/pathing";
-import {TileCoordinates} from "../../lib/runescape/coordinates/TileCoordinates";
+import {TileCoordinates} from "../../lib/runescape/coordinates";
 import {direction} from "../../lib/runescape/movement";
 import Properties from "../ui/widgets/Properties";
 import movement_state = Path.movement_state;

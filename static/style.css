@@ -2131,6 +2131,7 @@ input[type=checkbox] + span {
 
 .ctr-menurow > * {
     flex-grow: 1;
+    margin: 0;
 }
 
 .ctr-menurow > *:first-child {
