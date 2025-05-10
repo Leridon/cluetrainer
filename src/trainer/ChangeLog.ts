@@ -25,6 +25,7 @@ export namespace Changelog {
     render: layout =>
       layout.row(new List()
         .item("Fixed the teleport area of the Traveller's necklace's teleport to the Wizard Tower.")
+        .item("Fixed a bug that caused the path editor to break when placing a redclick anywhere else than the center of a tile.")
       ),
     title: "TBD",
     notification: "TBD",

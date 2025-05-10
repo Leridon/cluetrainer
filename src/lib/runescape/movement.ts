@@ -176,10 +176,12 @@ export namespace direction {
     // TODO: Clamping probably isnt correct and also weird.
 
     // Clamp vector into bounds
-    let v2 = Rectangle.clampInto(v, {
+    let v2 = Rectangle.clampInto(Vector2.snap(v), {
       topleft: {x: -11, y: 11},
       botright: {x: 11, y: -11},
     })
+
+    if(!Number.isInteger(v2.x) || !Number.isInteger(v2.y)) debugger
 
     return lookup_table[11 - v2.y][v2.x + 11] as direction
   }
