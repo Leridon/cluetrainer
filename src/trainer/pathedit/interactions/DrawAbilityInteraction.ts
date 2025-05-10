@@ -1,4 +1,4 @@
-import {TileCoordinates} from "../../../lib/runescape/coordinates/TileCoordinates";
+import {TileCoordinates} from "../../../lib/runescape/coordinates";
 import * as leaflet from "leaflet";
 import {HostedMapData, MovementAbilities} from "../../../lib/runescape/movement";
 import {Path} from "../../../lib/runescape/pathing";
@@ -7,11 +7,11 @@ import InteractionTopControl from "../../ui/map/InteractionTopControl";
 import {ValueInteraction} from "../../../lib/gamemap/interaction/ValueInteraction";
 import {Observable, observe} from "../../../lib/reactive";
 import {PathStepEntity} from "../../ui/map/entities/PathStepEntity";
-import {AbilityLens} from "../PathEditOverlays";
 import {PathGraphics} from "../../ui/path_graphics";
 import observe_combined = Observable.observe_combined;
 import arrow = PathGraphics.arrow;
 import isFarDive = MovementAbilities.isFarDive;
+import {AbilityLens} from "../AbilityLens";
 
 
 export class DrawAbilityInteraction extends ValueInteraction<Path.step_ability> {

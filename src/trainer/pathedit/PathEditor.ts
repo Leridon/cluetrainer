@@ -32,7 +32,7 @@ import {EditedPathOverview} from "./EditedPathOverview";
 import {PathBuilder} from "./PathBuilder";
 import {StepEditModal} from "./StepEditModal";
 import {BookmarkStorage} from "./BookmarkStorage";
-import {PathEditOverlayControl} from "./PathEditOverlays";
+import {PathEditorToolsControl} from "./PathEditorToolsControl";
 import {C} from "../../lib/ui/constructors";
 import {PathEditMenuBar} from "./PathEditMenuBar";
 import {TeleportAccessEntity} from "../ui/map/entities/TeleportAccessEntity";
@@ -331,7 +331,7 @@ class PathEditorGameLayer extends GameLayer {
 export class PathEditor extends Behaviour {
   private control: EditedPathOverview = null
   private handler_layer: PathEditorGameLayer = null
-  overlay_control: PathEditOverlayControl = null
+  overlay_control: PathEditorToolsControl = null
 
   private you_are_here_marker: leaflet.Layer = null
 
@@ -389,7 +389,7 @@ export class PathEditor extends Behaviour {
       )
     ).addTo(this.handler_layer)
 
-    this.overlay_control = new PathEditOverlayControl(this).addTo(this.handler_layer)
+    this.overlay_control = new PathEditorToolsControl(this).addTo(this.handler_layer)
 
     this.interaction_guard = new InteractionGuard().setDefaultLayer(this.handler_layer)
     this.action_bar = new PathEditActionBar(this, this.interaction_guard).addTo(this.handler_layer)
