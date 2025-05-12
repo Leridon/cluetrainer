@@ -21,7 +21,7 @@ export namespace Changelog {
   }
 
   export const v46: LogEntry = {
-    date: new Date(Date.parse("2025-05-10")),
+    date: new Date(Date.parse("2025-05-12")),
     render: layout =>
       layout
         .header("Path Editor Changes", "left")
@@ -188,6 +188,7 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([
+    v46,
     v45,
     v44,
     v43,
