@@ -23,7 +23,7 @@ export class Checkbox extends AbstractEditWidget<boolean> {
 
     this.new_box = c("<div class='nisl-checkbox-box'>")
       .on("click", () => {
-        this.commit(!this.get(), true)
+        if (this.isEnabled()) this.commit(!this.get(), true)
       })
       .appendTo(this.container)
 
@@ -47,10 +47,13 @@ export class Checkbox extends AbstractEditWidget<boolean> {
   }
 
   setEnabled(v: boolean): this {
-
     this.enabled.set(v)
 
     return this
+  }
+
+  isEnabled(): boolean {
+    return this.enabled.value()
   }
 }
 

@@ -107,11 +107,13 @@ export namespace PathFindingLite {
     }))).flat(), []]
   }
 
-  export async function litePathFinding(target: TileCoordinates[], ability_combinations: movement_ability[][]): Promise<PathGroup[]> {
-    const raw: AbilityPath[] = (await Promise.all(ability_combinations.flatMap(comb => target.map(async t => await litePathFindingImplementation({
-      tile: t,
-      direction: undefined
-    }, comb).then(paths => paths.map(p => ({origin: p?.[0]?.from ?? t, path: p}))))))).flat()
+  export async function litePathFinding(target: PlayerPosition[], ability_combinations: movement_ability[][]): Promise<PathGroup[]> {
+    if (!target) debugger
+
+    const raw: AbilityPath[] = (await Promise.all(ability_combinations.flatMap(comb => target.map(async t => await litePathFindingImplementation(t, comb).then(paths => paths.map(p => ({
+      origin: p?.[0]?.from ?? t.tile,
+      path: p
+    }))))))).flat()
 
     return group(raw)
   }

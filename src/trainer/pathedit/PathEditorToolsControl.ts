@@ -6,7 +6,6 @@ import {StatefulAbilityLens} from "./AbilityLens";
 import Properties from "../ui/widgets/Properties";
 import LightButton from "../ui/widgets/LightButton";
 import {MapEntity} from "../../lib/gamemap/MapEntity";
-import {TileArea} from "../../lib/runescape/coordinates/TileArea";
 import {GameLayer} from "../../lib/gamemap/GameLayer";
 import {Rectangle} from "../../lib/math";
 import {PathFindingLite} from "./PathFindingLite";
@@ -14,54 +13,28 @@ import {tilePolygon} from "../ui/polygon_helpers";
 import {observe} from "../../lib/reactive";
 import {PathStepEntity} from "../ui/map/entities/PathStepEntity";
 import {DrawTileAreaInteraction} from "../ui/devutilitylayer/DrawTileAreaInteraction";
-import activate = TileArea.activate;
 import {GameMapContextMenuEvent, GameMapMouseEvent} from "../../lib/gamemap/MapEvents";
 import {PathGraphics} from "../ui/path_graphics";
 import {C} from "../../lib/ui/constructors";
-import {MovementAbilities} from "../../lib/runescape/movement";
-import movement_ability = MovementAbilities.movement_ability;
+import {MovementAbilities, PlayerPosition} from "../../lib/runescape/movement";
 import Widget from "../../lib/ui/Widget";
+import {FormModal} from "../../lib/ui/controls/FormModal";
+import {BigNisButton} from "../ui/widgets/BigNisButton";
+import movement_ability = MovementAbilities.movement_ability;
 import hboxl = C.hboxl;
-import inlineimg = C.inlineimg;
-import ability_icon = PathGraphics.ability_icon;
+import hgrid = C.hgrid;
 
 class SpiderwebTool {
-  private clear_button: LightButton
   private layer = observe<GameLayer>(null)
 
-  private combination = observe<movement_ability[]>([])
-  private combination_view: Widget
+  private clear_button: LightButton
+  private calculate_button: LightButton
+
 
   constructor(private editor: PathEditor, private layout: Properties) {
     layout.header("Pathfinding Lite", "center", 1)
 
-
-    layout.row(this.combination_view = hboxl())
-
-    this.combination.subscribe(comb => {
-      this.combination_view.empty()
-
-      this.combination_view.append(...comb.map((a, i) => inlineimg(ability_icon(a)).addClass("ctr-clickable").on("click", () => {
-        this.combination.update(v => v.splice(i, 1))
-      })))
-    })
-
-    {
-      const combination: movement_ability[] = []
-
-      combination.push("dive")
-
-      if (editor.options.start_state.assumptions.double_surge) combination.push("surge", "surge")
-      else combination.push("surge")
-
-      if (editor.options.start_state.assumptions.double_escape) combination.push("escape", "escape")
-      else combination.push("escape")
-
-      this.combination.set(combination)
-    }
-
-    layout.header("Calculate", "left", 1)
-
+    /*
     layout.row(new LightButton("Path Target").setEnabled(!!editor.options.target)
       .onClick(() => this.do(editor.options.target))
     )
@@ -72,16 +45,39 @@ class SpiderwebTool {
         }))
 
       })
-    )
-    layout.row(this.clear_button = new LightButton("Clear").setEnabled(false).onClick(() => this.clear()))
+    )*/
 
-    this.layer.subscribe(l => this.clear_button.setEnabled(l != null))
+    layout.row(
+      hgrid(
+        this.clear_button = new LightButton("Clear").setVisible(false).onClick(() => this.clear()),
+        this.calculate_button = new LightButton("Calculate").setVisible(true).onClick(async () => {
+          const settings = await new SpiderwebTool.SettingsModal(editor).do()
+
+          if (!settings) return
+
+          if (settings.area == undefined) {
+            this.editor.interaction_guard.set(new DrawTileAreaInteraction([], ["commit", "reset"])
+              .onCommit(area => {
+                settings.area = area.map(t => ({tile: t, direction: undefined}))
+
+                this.do(settings)
+              }))
+          } else {
+            this.do(settings)
+          }
+        }))
+    )
+
+    this.layer.subscribe(l => {
+      this.clear_button.setVisible(l != null)
+      this.calculate_button.setVisible(l == null)
+    })
   }
 
-  private async do(target: TileArea.ActiveTileArea[]): Promise<void> {
+  private async do(settings: SpiderwebTool.Settings): Promise<void> {
     this.clear()
 
-    const groups = await PathFindingLite.litePathFinding(target.flatMap(a => a.getTiles()), [this.combination.value()])
+    const groups = await PathFindingLite.litePathFinding(settings.area, [settings.abilities])
 
     this.layer.set(new SpiderwebTool.PreviewLayer().addTo(this.editor.game_layer))
 
@@ -99,6 +95,104 @@ namespace SpiderwebTool {
   import ability_icon = PathGraphics.ability_icon;
   import inlineimg = C.inlineimg;
   import hbox = C.hbox;
+  import vbox = C.vbox;
+
+  type area_type = "pathtarget" | "cursorposition" | "custom"
+
+  export type Settings = {
+    abilities: movement_ability[]
+    area: PlayerPosition[] | undefined
+  }
+
+  export class SettingsModal extends FormModal<Settings> {
+    private combination_view: Widget
+    private combination = observe<movement_ability[]>([])
+    private area_type_selection: Checkbox.Group<area_type>
+
+    constructor(private editor: PathEditor) {
+      super();
+
+      this.title.set("Pathfinding Lite Settings")
+
+      {
+        const combination: movement_ability[] = []
+
+        combination.push("dive")
+
+        if (editor.options.start_state.assumptions.double_surge) combination.push("surge", "surge")
+        else combination.push("surge")
+
+        if (editor.options.start_state.assumptions.double_escape) combination.push("escape", "escape")
+        else combination.push("escape")
+
+        this.combination.set(combination)
+      }
+    }
+
+    render() {
+      super.render();
+
+      const layout = new Properties()
+
+      layout.header("Available Abilities")
+
+      layout.named("Current Selection", hboxl(this.combination_view = hboxl(), "(Click to remove)"))
+
+      this.combination.subscribe(comb => {
+        this.combination_view.empty()
+
+        this.combination_view.append(...comb.map((a, i) => inlineimg(ability_icon(a)).addClass("ctr-clickable").on("click", () => {
+          this.combination.update(v => v.splice(i, 1))
+        })))
+      }, true)
+
+      layout.named("Add Ability", hboxl(
+          ...(["dive", "surge", "escape"] as const).map(ability =>
+            inlineimg(ability_icon(ability)).addClass("ctr-clickable").on("click", () => {
+              this.combination.update(v => v.push(ability))
+            }))
+        )
+      )
+
+      layout.header("Area", "center", 1)
+
+      const buttons: {
+        button: Checkbox,
+        value: area_type
+      }[] = []
+
+      buttons.push({button: new Checkbox("Path Target", "radio").setEnabled(!!this.editor.options.target).setValue(true), value: "pathtarget"})
+      buttons.push({button: new Checkbox("Custom", "radio").setValue(false), value: "custom"})
+
+      this.area_type_selection = new Checkbox.Group(buttons).setValue(buttons.find(b => b.button.isEnabled()).value)
+
+      layout.row(vbox(...this.area_type_selection.checkboxes()))
+
+      this.body.append(layout)
+    }
+
+    private confirm_current() {
+
+      this.confirm({
+        abilities: this.combination.value(),
+        area: (() => {
+          switch (this.area_type_selection.get()) {
+            case "pathtarget":
+              return this.editor.options.target.flatMap(t => t.getTiles()).map(t => ({tile: t, direction: undefined}))
+            case "custom":
+              return undefined
+          }
+        })()
+      })
+    }
+
+    getButtons(): BigNisButton[] {
+      return [
+        new BigNisButton("Confirm", "confirm").onClick(() => this.confirm_current()),
+        new BigNisButton("Candel", "cancel").onClick(() => this.cancel()),
+      ]
+    }
+  }
 
   export class PreviewLayer extends GameLayer {
 

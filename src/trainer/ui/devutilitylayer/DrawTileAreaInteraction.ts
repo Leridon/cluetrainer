@@ -51,7 +51,7 @@ export class DrawTileAreaInteraction extends ValueInteraction<TileCoordinates[]>
               ...show_commands.map(command => {
                 switch (command) {
                   case "commit":
-                    return new LightButton("Commit")
+                    return new LightButton("Confirm")
                       .onClick(() => {
                         this.commit(this.tiles)
                       })
