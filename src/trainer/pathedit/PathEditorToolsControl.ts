@@ -22,9 +22,11 @@ import {FormModal} from "../../lib/ui/controls/FormModal";
 import {BigNisButton} from "../ui/widgets/BigNisButton";
 import {Menu} from "../ui/widgets/ContextMenu";
 import * as assert from "assert";
+import {Notification} from "../ui/NotificationBar";
 import movement_ability = MovementAbilities.movement_ability;
 import hboxl = C.hboxl;
 import hgrid = C.hgrid;
+import notification = Notification.notification;
 
 class SpiderwebTool {
   private layer = observe<GameLayer>(null)
@@ -80,6 +82,11 @@ class SpiderwebTool {
     this.clear()
 
     const groups = await PathFindingLite.litePathFinding(settings.area, [settings.abilities])
+
+    if (groups.length == 0) {
+      notification("No paths found", "error").show()
+      return
+    }
 
     this.layer.set(new SpiderwebTool.PreviewLayer(this.editor).addTo(this.editor.game_layer))
 

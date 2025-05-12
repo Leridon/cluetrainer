@@ -4,6 +4,7 @@ import {Vector2} from "../../lib/math";
 import {Path} from "../../lib/runescape/pathing";
 import movement_ability = MovementAbilities.movement_ability;
 import dive_internal = MovementAbilities.dive_internal;
+import {util} from "../../lib/util/util";
 
 
 export function withoutFirst<T>(array: T[], value: T): T[] {
@@ -18,6 +19,7 @@ export function distinct<T>(array: T[]): T[] {
 }
 
 export namespace PathFindingLite {
+  import asyncFilter = util.asyncFilter;
   export type AbilityPath = {
     path: Path.step_ability[],
     origin: TileCoordinates
@@ -115,6 +117,6 @@ export namespace PathFindingLite {
       path: p
     }))))))).flat()
 
-    return group(raw)
+    return asyncFilter(group(raw), g => HostedMapData.get().isAccessible(g.origin))
   }
 }

@@ -1,7 +1,6 @@
 import * as leaflet from "leaflet";
 import {Path} from "../../lib/runescape/pathing";
 import {util} from "../../lib/util/util";
-import {TileRectangle} from "../../lib/runescape/coordinates/TileRectangle";
 import Behaviour from "../../lib/ui/Behaviour";
 import {Transportation} from "../../lib/runescape/transportation";
 import {Vector2} from "../../lib/math";
@@ -13,13 +12,13 @@ import PathEditActionBar from "./PathEditActionBar";
 import InteractionLayer, {InteractionGuard} from "../../lib/gamemap/interaction/InteractionLayer";
 import {TileCoordinates} from "../../lib/runescape/coordinates";
 import * as assert from "assert";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {Menu, MenuEntry} from "../ui/widgets/ContextMenu";
 import PlaceRedClickInteraction from "./interactions/PlaceRedClickInteraction";
 import {SelectTileInteraction} from "../../lib/gamemap/interaction/SelectTileInteraction";
 import InteractionTopControl from "../ui/map/InteractionTopControl";
 import DrawRunInteraction from "./interactions/DrawRunInteraction";
-import {direction, MovementAbilities, PathFinder} from "../../lib/runescape/movement";
+import {direction, HostedMapData, MovementAbilities, PathFinder} from "../../lib/runescape/movement";
 import {PathStepEntity} from "../ui/map/entities/PathStepEntity";
 import TransportLayer from "../ui/map/TransportLayer";
 import {TileArea} from "../../lib/runescape/coordinates/TileArea";
@@ -28,13 +27,9 @@ import {areaPolygon, tilePolygon} from "../ui/polygon_helpers";
 import {TeleportSpotEntity} from "../ui/map/entities/TeleportSpotEntity";
 import {EntityTransportEntity} from "../ui/map/entities/EntityTransportEntity";
 import {GameMapControl} from "../../lib/gamemap/GameMapControl";
-import {EditedPathOverview} from "./EditedPathOverview";
-import {PathBuilder} from "./PathBuilder";
 import {StepEditModal} from "./StepEditModal";
 import {BookmarkStorage} from "./BookmarkStorage";
-import {PathEditorToolsControl} from "./PathEditorToolsControl";
 import {C} from "../../lib/ui/constructors";
-import {PathEditMenuBar} from "./PathEditMenuBar";
 import {TeleportAccessEntity} from "../ui/map/entities/TeleportAccessEntity";
 import {TransportData} from "../../data/transports";
 import {RemoteEntityTransportTarget} from "../ui/map/entities/RemoteEntityTransportTarget";
@@ -44,6 +39,11 @@ import {DrawCosmeticInteraction} from "./interactions/DrawCosmeticInteraction";
 import {DrawTileAreaInteraction} from "../ui/devutilitylayer/DrawTileAreaInteraction";
 import {DrawArrowInteraction} from "./interactions/DrawArrowInteraction";
 import {PathGraphics} from "../ui/path_graphics";
+import {GameMap} from "../../lib/gamemap/GameMap";
+import {EditedPathOverview} from "./EditedPathOverview";
+import {PathEditorToolsControl} from "./PathEditorToolsControl";
+import {PathBuilder} from "./PathBuilder";
+import {PathEditMenuBar} from "./PathEditMenuBar";
 import movement_state = Path.movement_state;
 import index = util.index;
 import activate = TileArea.activate;
@@ -55,8 +55,7 @@ import EntityAction = Transportation.EntityAction;
 import TeleportAccess = Transportation.TeleportGroup.TeleportAccess;
 import notification = Notification.notification;
 import arrow = PathGraphics.arrow;
-import {GameMap} from "../../lib/gamemap/GameMap";
-import areaPane = GameMap.areaPane;
+import findAsync = util.findAsync;
 
 function needRepairing(state: movement_state, shortcut: Path.step_transportation): boolean {
   return state.position.tile
@@ -185,7 +184,6 @@ class PathEditorGameLayer extends GameLayer {
 
                   const current_tile = this.editor.value.cursor_state.value().state?.position?.tile
 
-                  let assumed_start = current_tile
                   const target = TeleportAccess.interactiveArea(access)
 
                   const steps: Path.Step[] = []
@@ -197,8 +195,6 @@ class PathEditorGameLayer extends GameLayer {
                     )
 
                     if (path_to_start && path_to_start.length > 1) {
-
-                      if (assumed_start) assumed_start = index(path_to_start, -1)
 
                       steps.push({
                         type: "run",
@@ -232,37 +228,35 @@ class PathEditorGameLayer extends GameLayer {
               handler: async () => {
                 const current_tile = this.editor.value.cursor_state.value().state?.position?.tile
 
-                let assumed_start = current_tile
+                let assumed_start = null
 
                 const target = interactiveArea(s, a)
 
                 const steps: Path.Step[] = []
 
-                if (current_tile && !activate(target).query(current_tile)) {
-                  const path_to_start = await PathFinder.find(
-                    PathFinder.init_djikstra(current_tile),
-                    target
-                  )
+                if (current_tile) {
+                  if (activate(target).query(current_tile)) assumed_start = current_tile
+                  else {
+                    const path_to_start = await PathFinder.find(
+                      PathFinder.init_djikstra(current_tile),
+                      target
+                    )
 
-                  if (path_to_start && path_to_start.length > 1) {
+                    if (path_to_start && path_to_start.length > 1) {
+                      assumed_start = index(path_to_start, -1)
 
-                    if (assumed_start) assumed_start = index(path_to_start, -1)
+                      steps.push({
+                        type: "run",
+                        waypoints: path_to_start,
+                      })
 
-                    steps.push({
-                      type: "run",
-                      waypoints: path_to_start,
-                    })
-
-                  } else {
-                    notification("No path to transportation found.").show()
+                    } else {
+                      notification("No path to transportation found.", "error").show()
+                    }
                   }
                 }
 
-                assumed_start ??=
-                  current_tile ? TileRectangle.clampInto(current_tile, TileArea.toRect(
-                      target,
-                    ))
-                    : activate(target).center()
+                assumed_start ??= await findAsync(activate(target).getTiles(), t => HostedMapData.get().isAccessible(t))
 
                 let clone = lodash.cloneDeep(s)
                 clone.actions = [lodash.cloneDeep(a)]

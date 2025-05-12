@@ -402,4 +402,13 @@ export namespace util {
     if (milliseconds > 2 * MINUTE) return plural(Math.floor(milliseconds / MINUTE), "minute")
     return plural(Math.floor(milliseconds / SECOND), "second")
   }
+
+  export async function findAsync<T>(arr: T[], asyncCallback: (e: T) => Promise<boolean>): Promise<T> {
+    const promises = arr.map(asyncCallback);
+    const results = await Promise.all(promises);
+    const index = results.findIndex(result => result);
+    return arr[index];
+  }
+
+
 }
