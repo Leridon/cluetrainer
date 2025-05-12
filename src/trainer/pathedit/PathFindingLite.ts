@@ -43,7 +43,7 @@ export namespace PathFindingLite {
         else if (group.paths[0].path.length == path.path.length) group.paths.push(path)
       }
     })
-    
+
     return grouped.filter(g => g.paths[0].path.length > 0)
   }
 
@@ -57,6 +57,7 @@ export namespace PathFindingLite {
     }[] = await (async (): Promise<typeof possible_origins> => {
       return (await Promise.all(distinct(abilities).map(async (ability) => {
         const rest = withoutFirst(abilities, ability)
+          .filter(rest_abil => !(ability == "surge" && rest_abil == "escape" || ability == "escape" && rest_abil == "surge"))
 
         const origins: PlayerPosition[] = await (async (): Promise<typeof origins> => {
           switch (ability) {
@@ -64,6 +65,7 @@ export namespace PathFindingLite {
             case "escape":
             case "dive": {
               const target_directions = target.direction ? [target.direction] : direction.all
+
 
               const distance = ability == "escape" ? 7 : -10
 

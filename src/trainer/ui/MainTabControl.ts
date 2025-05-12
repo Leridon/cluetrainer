@@ -17,6 +17,10 @@ import {HoverTileDisplay} from "./devutilitylayer/UtilityLayer";
 import {ClueTrainerWiki} from "../wiki";
 import spacer = C.spacer;
 import span = C.span;
+import {Path} from "../../lib/runescape/pathing";
+import movement_state = Path.movement_state;
+import {TileRectangle} from "../../lib/runescape/coordinates";
+import tr = TileRectangle.tr;
 
 class MenuButton extends Button {
 
@@ -212,7 +216,10 @@ export default class MainTabControl extends Widget {
         this.app.main_behaviour.set(new TheoryCrafter(this.app))
         break;
       case "pathedit":
-        this.app.main_behaviour.set(new PathEditor(new GameLayer().addTo(this.app.map), this.app.template_resolver, {initial: []}, true))
+        this.app.main_behaviour.set(new PathEditor(new GameLayer().addTo(this.app.map), this.app.template_resolver, {
+          initial: [],
+          start_state: movement_state.start({double_surge: true, double_escape: true, mobile_perk: true})
+        }, true))
         break;
       case "utility":
         this.app.main_behaviour.set(new MapUtilityBehaviour(this.app))

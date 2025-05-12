@@ -350,6 +350,8 @@ export class PathEditor extends Behaviour {
   ) {
     super()
 
+    if (!options.start_state) options.start_state = Path.movement_state.start({})
+
     // Set up handler layer, but don't add it anywhere yet.
     this.handler_layer = new PathEditorGameLayer(this, add_transport_layer)
 
@@ -718,7 +720,8 @@ export namespace PathEditor {
     commit_handler?: (p: Path.raw) => any,
     discard_handler?: () => any,
     target?: TileArea.ActiveTileArea[],
-    start_state?: movement_state
+    start_state?: movement_state,
+    editable_assumptions?: boolean
   }
 
   export async function normalizeFarDive(step: Path.Step): Promise<Path.Step> {
