@@ -121,10 +121,10 @@ namespace SpiderwebTool {
 
         combination.push("dive")
 
-        if (editor.options.start_state.assumptions.double_surge) combination.push("surge", "surge")
+        if (editor.value.assumptions().double_surge) combination.push("surge", "surge")
         else combination.push("surge")
 
-        if (editor.options.start_state.assumptions.double_escape) combination.push("escape", "escape")
+        if (editor.value.assumptions().double_escape) combination.push("escape", "escape")
         else combination.push("escape")
 
         this.combination.set(combination)

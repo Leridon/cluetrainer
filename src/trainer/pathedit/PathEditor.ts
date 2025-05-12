@@ -357,7 +357,7 @@ export class PathEditor extends Behaviour {
 
     this.value = new PathBuilder({
       target: this.options.target,
-      start_state: this.options.start_state,
+      start_state: lodash.cloneDeep(this.options.start_state),
     }, options.initial)
 
     this.handler_layer.add(this.value.preview_layer)

@@ -35,6 +35,16 @@ export class PathBuilder {
     this.commit(initial_value.length, initial_value)
   }
 
+  assumptions(): Path.PathAssumptions {
+    return this.meta.start_state.assumptions
+  }
+
+  setAssumptions(assumptions: Path.PathAssumptions) {
+    this.meta.start_state = movement_state.start(assumptions)
+
+    this.commit(this.cursor, this.path, false)
+  }
+
   async commit(cursor: number | undefined, path: Path | undefined, save_state: boolean = true) {
     await this.commit_lock
 
