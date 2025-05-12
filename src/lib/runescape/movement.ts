@@ -2,7 +2,7 @@ import {TileCoordinates} from "./coordinates";
 import {ChunkedData} from "../util/ChunkedData";
 import * as lodash from "lodash"
 import {Rectangle, Transform, Vector2} from "../math";
-import * as pako from "pako"
+import pako from "pako";
 import {TileArea} from "./coordinates/TileArea";
 
 type TileMovementData = number
@@ -28,11 +28,36 @@ export namespace PlayerPosition {
 
 interface MapData {
   getTile(coordinate: TileCoordinates): Promise<TileMovementData>
+
+  isAccessible(coordinates: TileCoordinates): Promise<boolean>
+
+  canMove(pos: TileCoordinates, d: direction): Promise<boolean>
+}
+
+abstract class AbstractMapData implements MapData {
+  async isAccessible(coordinates: TileCoordinates): Promise<boolean> {
+    for (const dir of direction.all) {
+      if (await this.canMove(
+        TileCoordinates.move(coordinates, direction.toVector(dir)),
+        direction.invert(dir)
+      )) return true
+    }
+
+    return false
+  }
+
+  abstract getTile(coordinate: TileCoordinates): Promise<TileMovementData>
+
+  async canMove(pos: TileCoordinates, d: direction): Promise<boolean> {
+    // Data is preprocessed so for every tile there are 8 bit signalling in which directions the player can move.
+    return TileMovementData.free(await this.getTile(pos), d)
+  }
+
 }
 
 type file = Uint8Array
 
-export class HostedMapData implements MapData {
+export class HostedMapData extends AbstractMapData {
 
   meta = {
     chunks_per_file: 20,
@@ -50,6 +75,7 @@ export class HostedMapData implements MapData {
   }
 
   private constructor() {
+    super()
     // For every floor (0 to 3), create enough slots in the data cache.
     this.chunks = [null, null, null, null].map(() => Array(this.meta.chunks_x * this.meta.chunks_z / (this.meta.chunks_per_file * this.meta.chunks_per_file)))
   }
@@ -68,14 +94,11 @@ export class HostedMapData implements MapData {
     let file_i = file_y * this.meta.chunks_per_file + file_x
 
     if (!this.chunks[floor][file_i]) {
-
       let promise = this.fetch(file_x, file_y, floor)
 
       this.chunks[floor][file_i] = promise
 
-      promise.then((a) => {
-        this.chunks[floor][file_i] = a
-      })
+      promise.then((a) => this.chunks[floor][file_i] = a)
     }
 
     let tile_x = coordinate.x % (this.meta.chunk_size * this.meta.chunks_per_file)
@@ -86,7 +109,7 @@ export class HostedMapData implements MapData {
   }
 }
 
-export class ClearMapData implements MapData {
+export class ClearMapData extends AbstractMapData {
   getTile(coordinate: TileCoordinates): Promise<TileMovementData> {
     return Promise.resolve(255);
   }
@@ -176,10 +199,12 @@ export namespace direction {
     // TODO: Clamping probably isnt correct and also weird.
 
     // Clamp vector into bounds
-    let v2 = Rectangle.clampInto(v, {
+    const v2 = Rectangle.clampInto(Vector2.snap(v), {
       topleft: {x: -11, y: 11},
       botright: {x: 11, y: -11},
     })
+
+    if (!lookup_table[11 - v2.y]) debugger
 
     return lookup_table[11 - v2.y][v2.x + 11] as direction
   }
@@ -605,7 +630,7 @@ export namespace MovementAbilities {
     }
   }
 
-  async function dive_internal(data: MapData, position: TileCoordinates, target: TileCoordinates): Promise<PlayerPosition | null> {
+  export async function dive_internal(data: MapData, position: TileCoordinates, target: TileCoordinates): Promise<PlayerPosition | null> {
     // This function does not respect any max distances and expects the caller to handle that.
 
     if (position.level != target.level) return null
@@ -668,7 +693,7 @@ export namespace MovementAbilities {
 
   export async function dive(position: TileCoordinates, target: TileCoordinates, data: MapData = HostedMapData.get()): Promise<PlayerPosition | null> {
 
-    let delta = Vector2.sub(target, position)
+    const delta = Vector2.sub(target, position)
 
     if (Vector2.max_axis(delta) > 10) {
       let dir = direction.fromVector(delta)

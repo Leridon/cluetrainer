@@ -1,16 +1,16 @@
-import {GameMapControl} from "lib/gamemap/GameMapControl";
+import {GameMapControl} from "../../lib/gamemap/GameMapControl";
 import {PathEditor} from "./PathEditor";
-import {Path} from "lib/runescape/pathing";
-import {MovementAbilities, PlayerPosition} from "lib/runescape/movement";
+import {Path} from "../../lib/runescape/pathing";
+import {MovementAbilities, PlayerPosition} from "../../lib/runescape/movement";
 import {DrawAbilityInteraction} from "./interactions/DrawAbilityInteraction";
-import InteractionLayer, {InteractionGuard} from "lib/gamemap/interaction/InteractionLayer";
+import InteractionLayer, {InteractionGuard} from "../../lib/gamemap/interaction/InteractionLayer";
 import DrawRunInteraction from "./interactions/DrawRunInteraction";
 import PlacePowerburstInteraction from "./interactions/PlacePowerburstInteraction";
-import {ActionBar} from "../map/ActionBar";
-import {Observable, observe} from "lib/reactive";
-import {GameMapKeyboardEvent} from "../../../lib/gamemap/MapEvents";
+import {ActionBar} from "../ui/map/ActionBar";
+import {Observable, observe} from "../../lib/reactive";
+import {GameMapKeyboardEvent} from "../../lib/gamemap/MapEvents";
 import PlaceRedClickInteraction from "./interactions/PlaceRedClickInteraction";
-import ControlWithHeader from "../map/ControlWithHeader";
+import ControlWithHeader from "../ui/map/ControlWithHeader";
 import {DrawCheatInteraction} from "./interactions/DrawCheatInteraction";
 import movement_state = Path.movement_state;
 import ActionBarButton = ActionBar.ActionBarButton;
@@ -18,8 +18,8 @@ import surge_cooldown = Path.movement_state.surge_cooldown;
 import escape_cooldown = Path.movement_state.escape_cooldown;
 import barge_cooldown = Path.movement_state.barge_cooldown;
 import dive_cooldown = Path.movement_state.dive_cooldown;
-import {SelectTileInteraction} from "../../../lib/gamemap/interaction/SelectTileInteraction";
-import {TileMarker} from "../../../lib/gamemap/TileMarker";
+import {SelectTileInteraction} from "../../lib/gamemap/interaction/SelectTileInteraction";
+import {TileMarker} from "../../lib/gamemap/TileMarker";
 import {DrawCosmeticInteraction} from "./interactions/DrawCosmeticInteraction";
 
 export default class PathEditActionBar extends GameMapControl<ControlWithHeader> {

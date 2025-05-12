@@ -1,7 +1,7 @@
 import Widget from "../../lib/ui/Widget";
 import {C} from "../../lib/ui/constructors";
 import {ClueTrainer} from "../ClueTrainer";
-import {PathEditor} from "./pathedit/PathEditor";
+import {PathEditor} from "../pathedit/PathEditor";
 import {GameLayer} from "../../lib/gamemap/GameLayer";
 import TheoryCrafter from "./theorycrafting/TheoryCrafter";
 import Button from "../../lib/ui/controls/Button";
@@ -15,8 +15,11 @@ import {AboutModal} from "../AboutModal";
 import {Alt1Modal} from "../Alt1Modal";
 import {HoverTileDisplay} from "./devutilitylayer/UtilityLayer";
 import {ClueTrainerWiki} from "../wiki";
+import {Path} from "../../lib/runescape/pathing";
+import {TileRectangle} from "../../lib/runescape/coordinates";
 import spacer = C.spacer;
 import span = C.span;
+import movement_state = Path.movement_state;
 
 class MenuButton extends Button {
 
@@ -212,7 +215,11 @@ export default class MainTabControl extends Widget {
         this.app.main_behaviour.set(new TheoryCrafter(this.app))
         break;
       case "pathedit":
-        this.app.main_behaviour.set(new PathEditor(new GameLayer().addTo(this.app.map), this.app.template_resolver, {initial: []}, true))
+        this.app.main_behaviour.set(new PathEditor(new GameLayer().addTo(this.app.map), this.app.template_resolver, {
+          initial: [],
+          start_state: movement_state.start({double_surge: true, double_escape: true, mobile_perk: true}),
+          editable_assumptions: true
+        }, true))
         break;
       case "utility":
         this.app.main_behaviour.set(new MapUtilityBehaviour(this.app))

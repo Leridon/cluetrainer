@@ -6,7 +6,7 @@ import {EquivalenceClass, ScanEquivalenceClasses, ScanEquivalenceClassOptions} f
 import {areaToPolygon} from "../../polygon_helpers";
 import {type ClueTrainer} from "../../../ClueTrainer";
 import {AdaptiveScanRadiusMarker, ScanRegionPolygon} from "../../neosolving/ScanLayer";
-import {PathEditor} from "../../pathedit/PathEditor";
+import {PathEditor} from "../../../pathedit/PathEditor";
 import {OpacityGroup} from "../../../../lib/gamemap/layers/OpacityLayer";
 import {ewent, Observable, observe} from "../../../../lib/reactive";
 import {InteractionGuard} from "../../../../lib/gamemap/interaction/InteractionLayer";

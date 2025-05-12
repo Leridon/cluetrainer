@@ -60,6 +60,8 @@ export namespace SolvingMethods {
 
         return relevant
       }
+
+      export const path: Relevance = ["double_escape", "double_surge", "mobile_perk"]
     }
   }
 

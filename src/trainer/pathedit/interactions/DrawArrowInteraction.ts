@@ -1,9 +1,9 @@
-import {TileCoordinates} from "lib/runescape/coordinates/TileCoordinates";
-import {GameMapKeyboardEvent, GameMapMouseEvent} from "lib/gamemap/MapEvents";
-import InteractionTopControl from "../../map/InteractionTopControl";
-import {ValueInteraction} from "../../../../lib/gamemap/interaction/ValueInteraction";
-import {Observable, observe} from "../../../../lib/reactive";
-import {PathGraphics} from "../../path_graphics";
+import {TileCoordinates} from "../../../lib/runescape/coordinates/TileCoordinates";
+import {GameMapKeyboardEvent, GameMapMouseEvent} from "../../../lib/gamemap/MapEvents";
+import InteractionTopControl from "../../ui/map/InteractionTopControl";
+import {ValueInteraction} from "../../../lib/gamemap/interaction/ValueInteraction";
+import {Observable, observe} from "../../../lib/reactive";
+import {PathGraphics} from "../../ui/path_graphics";
 import arrow = PathGraphics.arrow;
 import observe_combined = Observable.observe_combined;
 

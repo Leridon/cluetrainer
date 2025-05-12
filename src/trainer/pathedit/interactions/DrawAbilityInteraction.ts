@@ -1,14 +1,14 @@
-import {TileCoordinates} from "lib/runescape/coordinates/TileCoordinates";
+import {TileCoordinates} from "../../../lib/runescape/coordinates";
 import * as leaflet from "leaflet";
-import {HostedMapData, MovementAbilities} from "lib/runescape/movement";
-import {Path} from "lib/runescape/pathing";
-import {GameMapKeyboardEvent, GameMapMouseEvent} from "lib/gamemap/MapEvents";
-import InteractionTopControl from "../../map/InteractionTopControl";
-import {ValueInteraction} from "../../../../lib/gamemap/interaction/ValueInteraction";
-import {Observable, observe} from "../../../../lib/reactive";
-import {PathStepEntity} from "../../map/entities/PathStepEntity";
-import {AbilityLens} from "../PathEditOverlays";
-import {PathGraphics} from "../../path_graphics";
+import {HostedMapData, MovementAbilities} from "../../../lib/runescape/movement";
+import {Path} from "../../../lib/runescape/pathing";
+import {GameMapKeyboardEvent, GameMapMouseEvent} from "../../../lib/gamemap/MapEvents";
+import InteractionTopControl from "../../ui/map/InteractionTopControl";
+import {ValueInteraction} from "../../../lib/gamemap/interaction/ValueInteraction";
+import {Observable, observe} from "../../../lib/reactive";
+import {PathStepEntity} from "../../ui/map/entities/PathStepEntity";
+import {PathGraphics} from "../../ui/path_graphics";
+import {AbilityLens} from "../AbilityLens";
 import observe_combined = Observable.observe_combined;
 import arrow = PathGraphics.arrow;
 import isFarDive = MovementAbilities.isFarDive;
@@ -139,9 +139,10 @@ export class DrawAbilityInteraction extends ValueInteraction<Path.step_ability> 
           })
         } else {
           let res = await MovementAbilities.generic(HostedMapData.get(), this.ability, this.start_position.value(), tile)
-          const is_far_dive = this.ability == "dive" && await isFarDive(this.start_position.value(), res.tile)
 
           if (res) {
+            const is_far_dive = this.ability == "dive" && await isFarDive(this.start_position.value(), res.tile)
+
             this.commit({
               type: "ability",
               ability: this.ability,

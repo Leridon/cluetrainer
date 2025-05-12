@@ -1,9 +1,12 @@
-import Widget from "lib/ui/Widget";
-import {Path} from "lib/runescape/pathing";
-import {TileCoordinates} from "lib/runescape/coordinates/TileCoordinates";
-import {direction} from "lib/runescape/movement";
-import Properties from "../widgets/Properties";
+import Widget from "../../lib/ui/Widget";
+import {Path} from "../../lib/runescape/pathing";
+import {TileCoordinates} from "../../lib/runescape/coordinates";
+import {direction} from "../../lib/runescape/movement";
+import Properties from "../ui/widgets/Properties";
+import {AssumptionProperty} from "../ui/theorycrafting/AssumptionProperty";
+import {C} from "../../lib/ui/constructors";
 import movement_state = Path.movement_state;
+import hboxl = C.hboxl;
 
 class BuffCooldownView extends Widget {
   constructor(private value: {
@@ -47,6 +50,8 @@ export default class MovementStateView extends Widget {
     this.empty()
 
     let props = new Properties().appendTo(this)
+
+    props.named("Assumptions", hboxl(...AssumptionProperty.icons(this.value.assumptions)))
 
     props.named("Tick", c().text(this.value.tick))
     if (this.value.position.tile) props.named("Tile", c().text(TileCoordinates.toString(this.value.position.tile)))
