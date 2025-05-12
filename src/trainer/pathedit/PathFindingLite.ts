@@ -18,7 +18,10 @@ export function distinct<T>(array: T[]): T[] {
 }
 
 export namespace PathFindingLite {
-  export type AbilityPath = Path.step_ability[]
+  export type AbilityPath = {
+    path: Path.step_ability[],
+    origin: TileCoordinates
+  }
 
   export type PathGroup = {
     origin: TileCoordinates,
@@ -28,22 +31,20 @@ export namespace PathFindingLite {
   export function group(raw: AbilityPath[]): PathGroup[] {
     const grouped: {
       origin: TileCoordinates,
-      paths: Path.step_ability[][]
+      paths: AbilityPath[]
     }[] = []
 
     raw.forEach(path => {
-      if (path.length == 0) return
+      const group = grouped.find(g => TileCoordinates.eq(g.origin, path.origin))
 
-      const group = grouped.find(g => TileCoordinates.eq(g.origin, path[0].from))
-
-      if (!group) grouped.push({origin: path[0].from, paths: [path]})
+      if (!group) grouped.push({origin: path.origin, paths: [path]})
       else {
-        if (group.paths[0].length > path.length) group.paths = [path]
-        else if (group.paths[0].length == path.length) group.paths.push(path)
+        if (group.paths[0].path.length > path.path.length) group.paths = [path]
+        else if (group.paths[0].path.length == path.path.length) group.paths.push(path)
       }
     })
-
-    return grouped
+    
+    return grouped.filter(g => g.paths[0].path.length > 0)
   }
 
   async function litePathFindingImplementation(target: PlayerPosition, abilities: movement_ability[],): Promise<Path.step_ability[][]> {
@@ -105,7 +106,10 @@ export namespace PathFindingLite {
   }
 
   export async function litePathFinding(target: TileCoordinates[], ability_combinations: movement_ability[][]): Promise<PathGroup[]> {
-    const raw = (await Promise.all(ability_combinations.flatMap(comb => target.map(t => litePathFindingImplementation({tile: t, direction: undefined}, comb))))).flat()
+    const raw: AbilityPath[] = (await Promise.all(ability_combinations.flatMap(comb => target.map(async t => await litePathFindingImplementation({
+      tile: t,
+      direction: undefined
+    }, comb).then(paths => paths.map(p => ({origin: p?.[0]?.from ?? t, path: p}))))))).flat()
 
     return group(raw)
   }

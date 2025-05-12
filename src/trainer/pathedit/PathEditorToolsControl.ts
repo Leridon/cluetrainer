@@ -13,6 +13,8 @@ import {PathFindingLite} from "./PathFindingLite";
 import {tilePolygon} from "../ui/polygon_helpers";
 import {observe} from "../../lib/reactive";
 import {PathStepEntity} from "../ui/map/entities/PathStepEntity";
+import {DrawTileAreaInteraction} from "../ui/devutilitylayer/DrawTileAreaInteraction";
+import activate = TileArea.activate;
 
 class SpiderwebTool {
   private clear_button: LightButton
@@ -32,7 +34,14 @@ class SpiderwebTool {
     layout.row(new LightButton("Path Target").setEnabled(!!editor.options.target)
       .onClick(() => this.do(editor.options.target))
     )
-    layout.row(new LightButton("Custom Target").setEnabled(!!editor.options.target))
+    layout.row(new LightButton("Custom Target")
+      .onClick(() => {
+        this.editor.interaction_guard.set(new DrawTileAreaInteraction([], ["commit", "reset"]).onCommit(area => {
+          this.do([TileArea.activate(TileArea.fromTiles(area))])
+        }))
+
+      })
+    )
     layout.row(this.clear_button = new LightButton("Clear").setEnabled(false).onClick(() => this.clear()))
 
     this.layer.subscribe(l => this.clear_button.setEnabled(l != null))
@@ -76,7 +85,7 @@ namespace SpiderwebTool {
         .addTo(this)
 
       if (props.highlight) {
-        this.data.paths.forEach(p => renderPath(p).addTo(this))
+        this.data.paths.forEach(p => renderPath(p.path).addTo(this))
       }
 
       return poly.getElement()
