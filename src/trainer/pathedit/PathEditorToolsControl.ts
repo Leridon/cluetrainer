@@ -13,13 +13,15 @@ import {tilePolygon} from "../ui/polygon_helpers";
 import {observe} from "../../lib/reactive";
 import {PathStepEntity} from "../ui/map/entities/PathStepEntity";
 import {DrawTileAreaInteraction} from "../ui/devutilitylayer/DrawTileAreaInteraction";
-import {GameMapContextMenuEvent, GameMapMouseEvent} from "../../lib/gamemap/MapEvents";
+import {GameMapContextMenuEvent} from "../../lib/gamemap/MapEvents";
 import {PathGraphics} from "../ui/path_graphics";
 import {C} from "../../lib/ui/constructors";
 import {MovementAbilities, PlayerPosition} from "../../lib/runescape/movement";
 import Widget from "../../lib/ui/Widget";
 import {FormModal} from "../../lib/ui/controls/FormModal";
 import {BigNisButton} from "../ui/widgets/BigNisButton";
+import {Menu} from "../ui/widgets/ContextMenu";
+import * as assert from "assert";
 import movement_ability = MovementAbilities.movement_ability;
 import hboxl = C.hboxl;
 import hgrid = C.hgrid;
@@ -79,7 +81,7 @@ class SpiderwebTool {
 
     const groups = await PathFindingLite.litePathFinding(settings.area, [settings.abilities])
 
-    this.layer.set(new SpiderwebTool.PreviewLayer().addTo(this.editor.game_layer))
+    this.layer.set(new SpiderwebTool.PreviewLayer(this.editor).addTo(this.editor.game_layer))
 
     groups.map(g => new SpiderwebTool.InversePathFindingResultEntity(g)).forEach(e => e.addTo(this.layer.value()))
   }
@@ -196,13 +198,8 @@ namespace SpiderwebTool {
 
   export class PreviewLayer extends GameLayer {
 
-    eventClick(event: GameMapMouseEvent) {
-      event.onPost(e => {
-        if (e.active_entity instanceof InversePathFindingResultEntity) {
-
-        }
-      })
-
+    constructor(private editor: PathEditor) {
+      super();
     }
 
     eventContextMenu(event: GameMapContextMenuEvent) {
@@ -212,18 +209,44 @@ namespace SpiderwebTool {
             {
               type: "basic",
               handler: () => {
-                this.remove()
+                e.active_entity.remove()
               },
               text: "Remove"
             }
           )
+
+          if (e.active_entity.data.paths.length == 1) {
+            e.addForEntity({
+              type: "basic",
+              handler: () => {
+                assert(e.active_entity instanceof InversePathFindingResultEntity)
+
+                this.editor.value.add(...e.active_entity.data.paths[0].path)
+              },
+              text: "Insert at cursor"
+            })
+          } else {
+            e.addForEntity({
+              type: "submenu",
+              children: e.active_entity.data.paths.map((p, i) => {
+                return {
+                  type: "basic" as const,
+                  text: `Path ${i}`,
+                  handler: () => {
+                    this.editor.value.add(...p.path)
+                  },
+                }
+              }),
+              text: "Insert at cursor"
+            })
+          }
         }
       })
     }
   }
 
   export class InversePathFindingResultEntity extends MapEntity {
-    constructor(private data: PathFindingLite.PathGroup) {
+    constructor(public data: PathFindingLite.PathGroup) {
       super()
 
       this.setInteractive(true)
@@ -239,6 +262,14 @@ namespace SpiderwebTool {
 
         return props
       })
+    }
+
+    async contextMenu(event: GameMapContextMenuEvent): Promise<Menu | null> {
+      return {
+        type: "submenu",
+        text: "Calculated Path",
+        children: []
+      }
     }
 
     bounds(): Rectangle {
@@ -286,15 +317,12 @@ export class PathEditorToolsControl extends GameMapControl {
 
     const layout = new Properties().appendTo(control.body)
 
-    layout.header("Ability Lens")
+    layout.header(new Checkbox("Ability Lens").onCommit(v => {
+      this.lens_layer.enabled1.set(v)
 
-    layout.row(this.lens_checkbox = new Checkbox("Show")
-      .onCommit(v => {
-        this.lens_layer.enabled1.set(v)
-
-        this.lens_static_checkbox.setEnabled(v)
-        this.lens_dynamic_checkbox.setEnabled(v)
-      }))
+      this.lens_static_checkbox.setEnabled(v)
+      this.lens_dynamic_checkbox.setEnabled(v)
+    }), "left", 1)
 
     layout.row(this.lens_static_checkbox = new Checkbox("At path position", "radio")
       .css("margin-left", "10px")
