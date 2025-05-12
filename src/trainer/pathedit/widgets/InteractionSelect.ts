@@ -1,4 +1,4 @@
-import {DropdownSelection} from "../widgets/DropdownSelection";
+import {DropdownSelection} from "../../ui/widgets/DropdownSelection";
 import {CursorType} from "../../../lib/runescape/CursorType";
 
 export default class InteractionSelect extends DropdownSelection<CursorType> {

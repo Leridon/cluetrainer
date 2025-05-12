@@ -23,7 +23,7 @@ import {ConfirmationModal} from "../../widgets/modals/ConfirmationModal";
 import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
 import {identity} from "lodash";
 import {Path} from "../../../../lib/runescape/pathing";
-import {IssueWidget} from "../../pathedit/EditedPathOverview";
+import {IssueWidget} from "../../../pathedit/EditedPathOverview";
 import {ScanTreeSolving} from "../../neosolving/subbehaviours/scans/ScanTreeSolving";
 import decision_tree = ScanTree.ScanTreeNode;
 import natural_join = util.natural_join;

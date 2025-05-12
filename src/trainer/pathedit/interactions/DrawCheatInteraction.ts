@@ -1,11 +1,11 @@
-import {TileCoordinates} from "lib/runescape/coordinates/TileCoordinates";
-import {direction} from "lib/runescape/movement";
-import {Path} from "lib/runescape/pathing";
-import {GameMapMouseEvent} from "lib/gamemap/MapEvents";
-import InteractionTopControl from "../../map/InteractionTopControl";
-import {ValueInteraction} from "../../../../lib/gamemap/interaction/ValueInteraction";
-import {PathStepEntity} from "../../map/entities/PathStepEntity";
-import {Vector2} from "../../../../lib/math";
+import {TileCoordinates} from "../../../lib/runescape/coordinates/TileCoordinates";
+import {direction} from "../../../lib/runescape/movement";
+import {Path} from "../../../lib/runescape/pathing";
+import {GameMapMouseEvent} from "../../../lib/gamemap/MapEvents";
+import InteractionTopControl from "../../ui/map/InteractionTopControl";
+import {ValueInteraction} from "../../../lib/gamemap/interaction/ValueInteraction";
+import {PathStepEntity} from "../../ui/map/entities/PathStepEntity";
+import {Vector2} from "../../../lib/math";
 
 export class DrawCheatInteraction extends ValueInteraction<Path.step_cheat> {
   constructor(private start_from: TileCoordinates) {

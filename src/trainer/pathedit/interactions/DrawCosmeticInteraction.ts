@@ -1,8 +1,8 @@
-import {Path} from "../../../../lib/runescape/pathing";
-import {ValueInteraction} from "../../../../lib/gamemap/interaction/ValueInteraction";
-import {PathStepEntity} from "../../map/entities/PathStepEntity";
-import {SelectTileInteraction} from "../../../../lib/gamemap/interaction/SelectTileInteraction";
-import InteractionTopControl from "../../map/InteractionTopControl";
+import {Path} from "../../../lib/runescape/pathing";
+import {ValueInteraction} from "../../../lib/gamemap/interaction/ValueInteraction";
+import {PathStepEntity} from "../../ui/map/entities/PathStepEntity";
+import {SelectTileInteraction} from "../../../lib/gamemap/interaction/SelectTileInteraction";
+import InteractionTopControl from "../../ui/map/InteractionTopControl";
 
 
 export class DrawCosmeticInteraction extends ValueInteraction<Path.step_cosmetic> {

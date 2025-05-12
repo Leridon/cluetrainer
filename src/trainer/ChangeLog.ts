@@ -20,15 +20,22 @@ export namespace Changelog {
     render: (_: Layout) => void
   }
 
-  export const v46 : LogEntry = {
+  export const v46: LogEntry = {
     date: new Date(Date.parse("2025-05-10")),
     render: layout =>
-      layout.row(new List()
-        .item("Fixed the teleport area of the Traveller's necklace's teleport to the Wizard Tower.")
-        .item("Fixed a bug that caused the path editor to break when placing a redclick anywhere else than the center of a tile.")
-      ),
-    title: "TBD",
-    notification: "TBD",
+      layout
+        .header("Path Editor Changes", "left")
+        .row(new List()
+          .item("Added a new tool to the path editor that is able to do limited form of path finding by displaying all ability combinations that land in the target area.")
+          .item("The path editor will now assume double surge and escape, as well as the mobile perk, when accessed via the sidebar menu.")
+          .item("When the path editor was opened via the sidebar menu, there is now an option to edit the underlying assumptions.")
+        )
+        .header("Bugfixes", "left")
+        .row(new List()
+          .item("Fixed the teleport area of the Traveller's necklace's teleport to the Wizard Tower.")
+          .item("Fixed a bug that caused the path editor to break when placing a redclick anywhere else than the center of a tile.")
+        ),
+    title: "Path Editor Changes",
     version: 46
   }
 

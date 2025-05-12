@@ -1,12 +1,12 @@
-import {storage} from "../../../lib/util/storage";
-import {Menu, MenuEntry} from "../widgets/ContextMenu";
+import {storage} from "../../lib/util/storage";
+import {Menu, MenuEntry} from "../ui/widgets/ContextMenu";
 import {PathBuilder} from "./PathBuilder";
-import {ConfirmationModal} from "../widgets/modals/ConfirmationModal";
-import {FormModal} from "../../../lib/ui/controls/FormModal";
-import {BigNisButton} from "../widgets/BigNisButton";
-import Properties from "../widgets/Properties";
-import TextField from "../../../lib/ui/controls/TextField";
-import {Checkbox} from "../../../lib/ui/controls/Checkbox";
+import {ConfirmationModal} from "../ui/widgets/modals/ConfirmationModal";
+import {FormModal} from "../../lib/ui/controls/FormModal";
+import {BigNisButton} from "../ui/widgets/BigNisButton";
+import Properties from "../ui/widgets/Properties";
+import TextField from "../../lib/ui/controls/TextField";
+import {Checkbox} from "../../lib/ui/controls/Checkbox";
 
 export class BookmarkStorage {
   temporary_bookmarks: BookmarkStorage.Bookmark[] = []

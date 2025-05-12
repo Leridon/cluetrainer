@@ -176,12 +176,10 @@ export namespace direction {
     // TODO: Clamping probably isnt correct and also weird.
 
     // Clamp vector into bounds
-    let v2 = Rectangle.clampInto(Vector2.snap(v), {
+    const v2 = Rectangle.clampInto(Vector2.snap(v), {
       topleft: {x: -11, y: 11},
       botright: {x: 11, y: -11},
     })
-
-    if(!Number.isInteger(v2.x) || !Number.isInteger(v2.y)) debugger
 
     return lookup_table[11 - v2.y][v2.x + 11] as direction
   }
@@ -607,7 +605,7 @@ export namespace MovementAbilities {
     }
   }
 
-  async function dive_internal(data: MapData, position: TileCoordinates, target: TileCoordinates): Promise<PlayerPosition | null> {
+  export async function dive_internal(data: MapData, position: TileCoordinates, target: TileCoordinates): Promise<PlayerPosition | null> {
     // This function does not respect any max distances and expects the caller to handle that.
 
     if (position.level != target.level) return null
@@ -670,7 +668,7 @@ export namespace MovementAbilities {
 
   export async function dive(position: TileCoordinates, target: TileCoordinates, data: MapData = HostedMapData.get()): Promise<PlayerPosition | null> {
 
-    let delta = Vector2.sub(target, position)
+    const delta = Vector2.sub(target, position)
 
     if (Vector2.max_axis(delta) > 10) {
       let dir = direction.fromVector(delta)

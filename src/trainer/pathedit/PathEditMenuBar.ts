@@ -1,14 +1,19 @@
-import LightButton from "../widgets/LightButton";
-import ContextMenu, {MenuEntry} from "../widgets/ContextMenu";
+import LightButton from "../ui/widgets/LightButton";
+import ContextMenu, {MenuEntry} from "../ui/widgets/ContextMenu";
 import {BookmarkStorage} from "./BookmarkStorage";
-import ExportStringModal from "../widgets/modals/ExportStringModal";
-import {Path} from "../../../lib/runescape/pathing";
-import ImportStringModal from "../widgets/modals/ImportStringModal";
+import ExportStringModal from "../ui/widgets/modals/ExportStringModal";
+import {Path} from "../../lib/runescape/pathing";
+import ImportStringModal from "../ui/widgets/modals/ImportStringModal";
 import {PathEditor} from "./PathEditor";
-import {util} from "../../../lib/util/util";
-import Widget from "../../../lib/ui/Widget";
-import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
+import {util} from "../../lib/util/util";
+import Widget from "../../lib/ui/Widget";
+import {TileArea} from "../../lib/runescape/coordinates/TileArea";
+import {AssumptionProperty} from "../ui/theorycrafting/AssumptionProperty";
+import {FormModal} from "../../lib/ui/controls/FormModal";
+import {SolvingMethods} from "../model/methods";
+import {BigNisButton} from "../ui/widgets/BigNisButton";
 import cleanedJSON = util.cleanedJSON;
+import ClueAssumptions = SolvingMethods.ClueAssumptions;
 
 export class PathEditMenuBar extends Widget {
   constructor(private editor: PathEditor) {
@@ -85,6 +90,54 @@ export class PathEditMenuBar extends Widget {
                 }
               },
             )
+
+            if (this.editor.options.editable_assumptions) {
+              entries.push({
+                type: "basic",
+                text: "Edit assumptions",
+                handler: async () => {
+                  const self = this
+
+                  const res = await (new class extends FormModal<ClueAssumptions> {
+                    private property: AssumptionProperty
+
+                    constructor() {
+                      super()
+
+                      this.setTitle("Edit assumptions")
+                    }
+
+                    public render() {
+                      super.render()
+
+                      const assumptions = self.editor.options.start_state.assumptions
+
+                      this.body.append(
+                        this.property = new AssumptionProperty()
+                          .setValue(assumptions)
+                          .setRelevantAssumptions(ClueAssumptions.Relevance.path)
+                          .onCommit(a => {
+                              //this.commit(copyUpdate(this.get(), meta => meta.assumptions = a))
+                            }
+                          )
+                      )
+                    }
+
+                    getButtons(): BigNisButton[] {
+                      return [
+                        new BigNisButton("Save", "confirm").onClick(() => this.confirm(this.property.get())),
+                        new BigNisButton("Cancel", "cancel").onClick(() => this.cancel()),
+                      ]
+                    }
+                  }).do()
+
+                  if (!res) return
+
+                  this.editor.value.setAssumptions(res)
+
+                }
+              })
+            }
 
             new ContextMenu({
               type: "submenu",

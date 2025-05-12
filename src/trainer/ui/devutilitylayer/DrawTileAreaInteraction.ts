@@ -10,7 +10,7 @@ import LightButton from "../widgets/LightButton";
 import {util} from "../../../lib/util/util";
 import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
 import {Notification} from "../NotificationBar";
-import {DrawArrowInteraction} from "../pathedit/interactions/DrawArrowInteraction";
+import {DrawArrowInteraction} from "../../pathedit/interactions/DrawArrowInteraction";
 import {Rectangle} from "../../../lib/math";
 import cleanedJSON = util.cleanedJSON;
 import notification = Notification.notification;
@@ -23,7 +23,7 @@ export class DrawTileAreaInteraction extends ValueInteraction<TileCoordinates[]>
 
   tiles: TileCoordinates[] = []
 
-  constructor(start_tiles: TileCoordinates[] = [], private show_commands: boolean = false) {
+  constructor(start_tiles: TileCoordinates[] = [], private show_commands: ("commit" | "copy" | "copytiles" | "reset")[] = []) {
     super({
       preview_render: area => leaflet.featureGroup(
         area.map(tile => tilePolygon(tile)
@@ -46,37 +46,45 @@ export class DrawTileAreaInteraction extends ValueInteraction<TileCoordinates[]>
           .append(c().text(`[Shift + Mouse] add tiles`))
           .append(c().text(`[Alt + Mouse] remove tiles`))
           .append(c().text(`Hold [Ctrl] to draw rectangles`))
-          .append(!this.show_commands ? undefined : new ButtonRow()
+          .append(this.show_commands.length == 0 ? undefined : new ButtonRow()
             .buttons(
-              new LightButton("Commit")
-                .onClick(() => {
-                  this.commit(this.tiles)
-                }),
-              new LightButton("Copy")
-                .onClick(() => {
-                  if (this.tiles.length > 0) {
-                    navigator.clipboard.writeText(cleanedJSON(TileArea.fromTiles(this.tiles)))
-                    notification("Copied").show()
-                  } else {
-                    notification("No tiles", "error")
-                  }
-                }),
-              new LightButton("Copy Array")
-                .onClick(() => {
-                  if (this.tiles.length > 0) {
-                    navigator.clipboard.writeText(cleanedJSON(this.tiles))
-                    notification("Copied").show()
-                  } else {
-                    notification("No tiles", "error")
-                  }
+              ...show_commands.map(command => {
+                switch (command) {
+                  case "commit":
+                    return new LightButton("Confirm")
+                      .onClick(() => {
+                        this.commit(this.tiles)
+                      })
+                  case "copy":
+                    return new LightButton("Copy")
+                      .onClick(() => {
+                        if (this.tiles.length > 0) {
+                          navigator.clipboard.writeText(cleanedJSON(TileArea.fromTiles(this.tiles)))
+                          notification("Copied").show()
+                        } else {
+                          notification("No tiles", "error")
+                        }
+                      })
+                  case "copytiles":
+                    return new LightButton("Copy Array")
+                      .onClick(() => {
+                        if (this.tiles.length > 0) {
+                          navigator.clipboard.writeText(cleanedJSON(this.tiles))
+                          notification("Copied").show()
+                        } else {
+                          notification("No tiles", "error")
+                        }
 
-                }),
-              new LightButton("Reset")
-                .onClick(() => {
-                  this.tiles = []
+                      })
+                  case "reset":
+                    return new LightButton("Reset")
+                      .onClick(() => {
+                        this.tiles = []
 
-                  this.preview(this.tiles)
-                }),
+                        this.preview(this.tiles)
+                      })
+                }
+              })
             )
           )
       )

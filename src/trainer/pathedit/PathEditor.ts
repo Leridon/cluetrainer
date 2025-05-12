@@ -1,49 +1,49 @@
 import * as leaflet from "leaflet";
-import {Path} from "lib/runescape/pathing";
-import {util} from "lib/util/util";
-import {TileRectangle} from "lib/runescape/coordinates/TileRectangle";
-import Behaviour from "lib/ui/Behaviour";
-import {Transportation} from "../../../lib/runescape/transportation";
-import {Vector2} from "lib/math";
-import {TemplateResolver} from "lib/util/TemplateResolver";
-import {GameMapContextMenuEvent, GameMapKeyboardEvent} from "lib/gamemap/MapEvents";
-import {GameLayer} from "lib/gamemap/GameLayer";
+import {Path} from "../../lib/runescape/pathing";
+import {util} from "../../lib/util/util";
+import {TileRectangle} from "../../lib/runescape/coordinates/TileRectangle";
+import Behaviour from "../../lib/ui/Behaviour";
+import {Transportation} from "../../lib/runescape/transportation";
+import {Vector2} from "../../lib/math";
+import {TemplateResolver} from "../../lib/util/TemplateResolver";
+import {GameMapContextMenuEvent, GameMapKeyboardEvent} from "../../lib/gamemap/MapEvents";
+import {GameLayer} from "../../lib/gamemap/GameLayer";
 import {DrawAbilityInteraction} from "./interactions/DrawAbilityInteraction";
 import PathEditActionBar from "./PathEditActionBar";
-import InteractionLayer, {InteractionGuard} from "lib/gamemap/interaction/InteractionLayer";
-import {TileCoordinates} from "../../../lib/runescape/coordinates";
+import InteractionLayer, {InteractionGuard} from "../../lib/gamemap/interaction/InteractionLayer";
+import {TileCoordinates} from "../../lib/runescape/coordinates";
 import * as assert from "assert";
 import * as lodash from "lodash";
-import {Menu, MenuEntry} from "../widgets/ContextMenu";
+import {Menu, MenuEntry} from "../ui/widgets/ContextMenu";
 import PlaceRedClickInteraction from "./interactions/PlaceRedClickInteraction";
-import {SelectTileInteraction} from "../../../lib/gamemap/interaction/SelectTileInteraction";
-import InteractionTopControl from "../map/InteractionTopControl";
+import {SelectTileInteraction} from "../../lib/gamemap/interaction/SelectTileInteraction";
+import InteractionTopControl from "../ui/map/InteractionTopControl";
 import DrawRunInteraction from "./interactions/DrawRunInteraction";
-import {direction, MovementAbilities, PathFinder} from "../../../lib/runescape/movement";
-import {PathStepEntity} from "../map/entities/PathStepEntity";
-import TransportLayer from "../map/TransportLayer";
-import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
-import {CursorType} from "../../../lib/runescape/CursorType";
-import {areaPolygon, tilePolygon} from "../polygon_helpers";
-import {TeleportSpotEntity} from "../map/entities/TeleportSpotEntity";
-import {EntityTransportEntity} from "../map/entities/EntityTransportEntity";
-import {GameMapControl} from "../../../lib/gamemap/GameMapControl";
+import {direction, MovementAbilities, PathFinder} from "../../lib/runescape/movement";
+import {PathStepEntity} from "../ui/map/entities/PathStepEntity";
+import TransportLayer from "../ui/map/TransportLayer";
+import {TileArea} from "../../lib/runescape/coordinates/TileArea";
+import {CursorType} from "../../lib/runescape/CursorType";
+import {areaPolygon, tilePolygon} from "../ui/polygon_helpers";
+import {TeleportSpotEntity} from "../ui/map/entities/TeleportSpotEntity";
+import {EntityTransportEntity} from "../ui/map/entities/EntityTransportEntity";
+import {GameMapControl} from "../../lib/gamemap/GameMapControl";
 import {EditedPathOverview} from "./EditedPathOverview";
 import {PathBuilder} from "./PathBuilder";
 import {StepEditModal} from "./StepEditModal";
 import {BookmarkStorage} from "./BookmarkStorage";
-import {PathEditOverlayControl} from "./PathEditOverlays";
-import {C} from "../../../lib/ui/constructors";
+import {PathEditorToolsControl} from "./PathEditorToolsControl";
+import {C} from "../../lib/ui/constructors";
 import {PathEditMenuBar} from "./PathEditMenuBar";
-import {TeleportAccessEntity} from "../map/entities/TeleportAccessEntity";
-import {TransportData} from "../../../data/transports";
-import {RemoteEntityTransportTarget} from "../map/entities/RemoteEntityTransportTarget";
+import {TeleportAccessEntity} from "../ui/map/entities/TeleportAccessEntity";
+import {TransportData} from "../../data/transports";
+import {RemoteEntityTransportTarget} from "../ui/map/entities/RemoteEntityTransportTarget";
 import {DrawCheatInteraction} from "./interactions/DrawCheatInteraction";
-import {Notification} from "../NotificationBar";
+import {Notification} from "../ui/NotificationBar";
 import {DrawCosmeticInteraction} from "./interactions/DrawCosmeticInteraction";
-import {DrawTileAreaInteraction} from "../devutilitylayer/DrawTileAreaInteraction";
+import {DrawTileAreaInteraction} from "../ui/devutilitylayer/DrawTileAreaInteraction";
 import {DrawArrowInteraction} from "./interactions/DrawArrowInteraction";
-import {PathGraphics} from "../path_graphics";
+import {PathGraphics} from "../ui/path_graphics";
 import movement_state = Path.movement_state;
 import index = util.index;
 import activate = TileArea.activate;
@@ -55,7 +55,7 @@ import EntityAction = Transportation.EntityAction;
 import TeleportAccess = Transportation.TeleportGroup.TeleportAccess;
 import notification = Notification.notification;
 import arrow = PathGraphics.arrow;
-import {GameMap} from "../../../lib/gamemap/GameMap";
+import {GameMap} from "../../lib/gamemap/GameMap";
 import areaPane = GameMap.areaPane;
 
 function needRepairing(state: movement_state, shortcut: Path.step_transportation): boolean {
@@ -331,7 +331,7 @@ class PathEditorGameLayer extends GameLayer {
 export class PathEditor extends Behaviour {
   private control: EditedPathOverview = null
   private handler_layer: PathEditorGameLayer = null
-  overlay_control: PathEditOverlayControl = null
+  overlay_control: PathEditorToolsControl = null
 
   private you_are_here_marker: leaflet.Layer = null
 
@@ -350,12 +350,14 @@ export class PathEditor extends Behaviour {
   ) {
     super()
 
+    if (!options.start_state) options.start_state = Path.movement_state.start({})
+
     // Set up handler layer, but don't add it anywhere yet.
     this.handler_layer = new PathEditorGameLayer(this, add_transport_layer)
 
     this.value = new PathBuilder({
       target: this.options.target,
-      start_state: this.options.start_state,
+      start_state: lodash.cloneDeep(this.options.start_state),
     }, options.initial)
 
     this.handler_layer.add(this.value.preview_layer)
@@ -389,7 +391,7 @@ export class PathEditor extends Behaviour {
       )
     ).addTo(this.handler_layer)
 
-    this.overlay_control = new PathEditOverlayControl(this).addTo(this.handler_layer)
+    this.overlay_control = new PathEditorToolsControl(this).addTo(this.handler_layer)
 
     this.interaction_guard = new InteractionGuard().setDefaultLayer(this.handler_layer)
     this.action_bar = new PathEditActionBar(this, this.interaction_guard).addTo(this.handler_layer)
@@ -718,7 +720,8 @@ export namespace PathEditor {
     commit_handler?: (p: Path.raw) => any,
     discard_handler?: () => any,
     target?: TileArea.ActiveTileArea[],
-    start_state?: movement_state
+    start_state?: movement_state,
+    editable_assumptions?: boolean
   }
 
   export async function normalizeFarDive(step: Path.Step): Promise<Path.Step> {

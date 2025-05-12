@@ -4,7 +4,7 @@ import {Path} from "../../../lib/runescape/pathing";
 import {ScanTree} from "../../../lib/cluetheory/scans/ScanTree";
 import {GenericPathMethodEditor} from "./GenericPathMethodEditor";
 import {Clues} from "../../../lib/runescape/clues";
-import {PathEditor} from "../pathedit/PathEditor";
+import {PathEditor} from "../../pathedit/PathEditor";
 import {NisModal} from "../../../lib/ui/NisModal";
 import {Checkbox} from "../../../lib/ui/controls/Checkbox";
 import {BigNisButton} from "../widgets/BigNisButton";

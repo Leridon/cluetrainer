@@ -1,11 +1,11 @@
-import {UndoRedo} from "../../../lib/UndoRedo";
-import {observe} from "../../../lib/reactive";
-import {Path} from "../../../lib/runescape/pathing";
-import {PathStepEntity} from "../map/entities/PathStepEntity";
-import {GameLayer} from "../../../lib/gamemap/GameLayer";
+import {UndoRedo} from "../../lib/UndoRedo";
+import {observe} from "../../lib/reactive";
+import {Path} from "../../lib/runescape/pathing";
+import {PathStepEntity} from "../ui/map/entities/PathStepEntity";
+import {GameLayer} from "../../lib/gamemap/GameLayer";
 import * as lodash from "lodash";
-import {util} from "../../../lib/util/util";
-import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
+import {util} from "../../lib/util/util";
+import {TileArea} from "../../lib/runescape/coordinates/TileArea";
 import movement_state = Path.movement_state;
 import copyUpdate = util.copyUpdate;
 
@@ -33,6 +33,16 @@ export class PathBuilder {
     this.preview_layer = new GameLayer()
 
     this.commit(initial_value.length, initial_value)
+  }
+
+  assumptions(): Path.PathAssumptions {
+    return this.meta.start_state.assumptions
+  }
+
+  setAssumptions(assumptions: Path.PathAssumptions) {
+    this.meta.start_state = movement_state.start(assumptions)
+
+    this.commit(this.cursor, this.path, false)
   }
 
   async commit(cursor: number | undefined, path: Path | undefined, save_state: boolean = true) {
