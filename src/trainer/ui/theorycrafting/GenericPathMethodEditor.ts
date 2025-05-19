@@ -322,6 +322,7 @@ export class GenericPathMethodEditor extends MethodSubEditor {
 
 export namespace GenericPathMethodEditor {
   import ClueAssumptions = SolvingMethods.ClueAssumptions;
+  import ClueSpot = Clues.ClueSpot;
   export type SequenceSegment = {
     path?: { section: "pre" | "post" | "main", target: TileArea.ActiveTileArea[] } | null,
     name: string,
@@ -397,6 +398,26 @@ export namespace GenericPathMethodEditor {
           target: Clues.ClueSpot.targetArea({clue: clue, spot: spot.spot}).map(activate)
         }
       })
+
+      const sol = ClueSpot.solution(spot)
+
+      if (sol) {
+        switch (sol.type) {
+          case "dig":
+            sequence.push({name: "Dig", ticks: 1})
+            break;
+          case "search":
+            sequence.push({name: "Search", ticks: 1})
+            break;
+          case "talkto":
+            sequence.push({name: "Speak to Target", ticks: 1})
+            break;
+        }
+      }
+
+      if (spot.clue.challenge?.length == 1 && spot.clue.challenge[0].type == "challengescroll") {
+        sequence.push({name: "Complete Challenge Scroll", ticks: 6})
+      }
     }
 
     return sequence

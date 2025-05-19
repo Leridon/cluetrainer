@@ -103,7 +103,7 @@ export namespace MethodNormalization {
               expected_time: (await ScanTree.Augmentation.augment({augment_paths: true, analyze_timing: true, path_assumptions: method.method.assumptions},
                 method.method.tree,
                 method.clue.clue as Clues.Scan
-              )).state.timing_analysis.average + 1
+              )).state.timing_analysis.average + 1 // Add 1 tick for digging
             }
         }
       }
