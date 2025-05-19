@@ -20,6 +20,21 @@ export namespace Changelog {
     render: (_: Layout) => void
   }
 
+  export const v47: LogEntry = {
+    date: new Date(Date.parse("TODO")),
+    render: layout =>
+      layout
+        .paragraph("Ngis has teamed up with Xindrjayzda to bring you a fully revamped set of suggested paths for compass spots. Feedback on this overhaul is very welcome and appreciated, so please let us know your thoughts and suggestions in the usual places.")
+        .row(new List()
+          .item("Overhauled the paths for elite compass spots.")
+          .item("Renamed elite compass methods for consistency.")
+          .item("Timing estimates for methods now account for the time it takes to dig, search a container, talk to a target, and solve a challenge scroll.", new List().item(italic("Dev note: Since it varies a lot between players, tick counts do not account for the time taken to solve puzzles, or fight wizards and double agents.")))
+        ),
+    notification: "Compass Paths have been overhauled",
+    title: "New Compass Paths",
+    version: 47
+  }
+
   export const v46: LogEntry = {
     date: new Date(Date.parse("2025-05-12")),
     render: layout =>
@@ -185,6 +200,7 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([
+    v47,
     v46,
     v45,
     v44,
