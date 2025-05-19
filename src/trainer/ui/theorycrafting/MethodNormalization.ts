@@ -128,7 +128,7 @@ export namespace MethodNormalization {
   }
 
   export class Modal extends NisModal {
-    private settings: Settings = {}
+    private settings: Settings = {recalculate_timings: true}
     private mode: "save" | "savecopy" | "show" = "show"
 
     constructor(private pack: Pack) {
@@ -152,6 +152,7 @@ export namespace MethodNormalization {
 
       layout.header(
         new Checkbox("Recalculate timings")
+          .setValue(true)
           .onCommit(v => this.settings.recalculate_timings = v)
       )
 

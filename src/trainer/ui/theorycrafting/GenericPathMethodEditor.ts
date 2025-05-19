@@ -401,6 +401,8 @@ export namespace GenericPathMethodEditor {
 
       const sol = ClueSpot.solution(spot)
 
+      const has_challenge_scroll = spot.clue.challenge?.length == 1 && spot.clue.challenge[0].type == "challengescroll"
+
       if (sol) {
         switch (sol.type) {
           case "dig":
@@ -410,14 +412,14 @@ export namespace GenericPathMethodEditor {
             sequence.push({name: "Search", ticks: 1})
             break;
           case "talkto":
-            sequence.push({name: "Speak to Target", ticks: 1})
+            if (has_challenge_scroll) sequence.push({name: "Speak to Target", ticks: 1})
+            else sequence.push({name: "Speak to Target", ticks: 2})
+
             break;
         }
       }
 
-      if (spot.clue.challenge?.length == 1 && spot.clue.challenge[0].type == "challengescroll") {
-        sequence.push({name: "Complete Challenge Scroll", ticks: 6})
-      }
+      if (has_challenge_scroll) sequence.push({name: "Hand in Challenge Scroll", ticks: 3})
     }
 
     return sequence
