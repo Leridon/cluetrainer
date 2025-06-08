@@ -103,7 +103,7 @@ export namespace MethodNormalization {
               expected_time: (await ScanTree.Augmentation.augment({augment_paths: true, analyze_timing: true, path_assumptions: method.method.assumptions},
                 method.method.tree,
                 method.clue.clue as Clues.Scan
-              )).state.timing_analysis.average + 1
+              )).state.timing_analysis.average + 1 // Add 1 tick for digging
             }
         }
       }
@@ -128,7 +128,7 @@ export namespace MethodNormalization {
   }
 
   export class Modal extends NisModal {
-    private settings: Settings = {}
+    private settings: Settings = {recalculate_timings: true}
     private mode: "save" | "savecopy" | "show" = "show"
 
     constructor(private pack: Pack) {
@@ -152,6 +152,7 @@ export namespace MethodNormalization {
 
       layout.header(
         new Checkbox("Recalculate timings")
+          .setValue(true)
           .onCommit(v => this.settings.recalculate_timings = v)
       )
 

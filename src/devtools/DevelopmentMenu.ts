@@ -14,8 +14,11 @@ import {deps} from "../trainer/dependencies";
 import {SliderShuffleAnalysis} from "./SliderShuffleAnalysis";
 import {Notification} from "../trainer/ui/NotificationBar";
 import {ClueReader} from "../trainer/ui/neosolving/cluereader/ClueReader";
-import notification = Notification.notification;
 import {CapturedImage} from "../lib/alt1/capture";
+import ExportStringModal from "../trainer/ui/widgets/modals/ExportStringModal";
+import {export_method_csv} from "./MethodCSVExport";
+import {MethodPackManager} from "../trainer/model/MethodPackManager";
+import notification = Notification.notification;
 
 
 export class DevelopmentModal extends NisModal {
@@ -120,6 +123,12 @@ export class DevelopmentModal extends NisModal {
     layout.row(new LightButton("Open Development Utility Layer")
       .onClick(() => {
         deps().app.menu_bar.switchToTab("utility")
+      })
+    )
+
+    layout.row(new LightButton("Export Method Times as CSV")
+      .onClick(async () => {
+        ExportStringModal.do(await export_method_csv(MethodPackManager.instance()), "", "method_times.csv")
       })
     )
 

@@ -221,6 +221,11 @@ export namespace Clues {
     export function toId(spot: ClueSpot): Id {
       return {clue: spot.clue.id, spot: spot.spot}
     }
+
+    export function solution(spot: ClueSpot): Solution {
+      if (spot.spot) return {type: "dig", spot: spot.spot, description: null}
+      return Clues.Step.solution(spot.clue)
+    }
   }
 
   export function digSpotArea(spot: TileCoordinates): TileArea {

@@ -501,7 +501,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
   async commit(entry: CompassSolving.Entry = undefined, is_manual: boolean = false) {
     entry = entry ?? this.entries[this.entry_selection_index]
 
-    if (!entry || !this.entries.some(e => e == entry)) return
+    if (!entry || !this.entries.includes(entry)) return
 
     if (!entry?.position) return
     if (entry.angle != null) return
@@ -542,21 +542,16 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     await this.updatePossibilities(true)
 
-    if (!this.entries.some(e => !e.information) && count(this.spots, e => e.isPossible) > 1) {
-      this.createEntry({
-        position: null,
-        angle: null,
-        information: null,
-        preconfigured: null,
-      })
-    } else {
-      // Advance selection index to next uncommitted entry
-      let index = this.entries.indexOf(entry) + 1
+    const needs_more_info = count(this.spots, e => e.isPossible) > 1
 
-      while (true) {
-        if (index + 1 >= this.entries.length) break;
+    if (needs_more_info) {
+      // Advance selection index to next uncommitted entry, with wrap around
+      const current_index = this.entries.indexOf(entry)
+      let index_of_next_free_entry = (current_index + 1) % this.entries.length
 
-        const entry = this.entries[index]
+      // Abort when wrapping index reached the current index
+      while (index_of_next_free_entry != current_index) {
+        const entry = this.entries[index_of_next_free_entry]
 
         if (!entry.information) {
           if (!entry.position || !this.settings.skip_triangulation_point_if_colinear) break
@@ -583,16 +578,25 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
           if (!colinear_to_any) break
           else {
-            Log.log().log(`Skipping triangulation entry ${index} because it's colinear to ${colinear_index}`, "Compass Solving")
+            Log.log().log(`Skipping triangulation entry ${index_of_next_free_entry} because it's colinear to ${colinear_index}`, "Compass Solving")
           }
         }
 
-        index++
+        index_of_next_free_entry = (index_of_next_free_entry + 1) % this.entries.length // Increment, with wrap around
       }
 
-      Log.log().log(`Advancing selection to ${index} from ${this.entry_selection_index}`, "Compass Solving")
+      if (index_of_next_free_entry == current_index) {
+        this.createEntry({
+          position: null,
+          angle: null,
+          information: null,
+          preconfigured: null,
+        })
+      } else {
+        Log.log().log(`Advancing selection to ${index_of_next_free_entry} from ${this.entry_selection_index}`, "Compass Solving")
 
-      this.setSelection(index)
+        this.setSelection(index_of_next_free_entry)
+      }
     }
   }
 
@@ -701,16 +705,10 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     const needs_more_info = possible.length > 1
 
-    // If the candidates have already been removed to 1, remove all uncommited entries.
-    if (!needs_more_info) {
-      while (true) {
-        const i = this.entries.find(e => !e.information)
-
-        if (!i) break
-
-        this.deleteEntry(i)
-      }
-    }
+    // Update visibility of widgets
+    this.entries.forEach(e => {
+      e.widget.setVisible(!!e.information || needs_more_info)
+    })
 
     await this.layer.updateOverlay()
 
@@ -751,11 +749,18 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
   }
 
   async registerSpot(coords: TileArea.ActiveTileArea | TeleportGroup.Spot, is_compass_solution: boolean): Promise<void> {
-    const i = this.entry_selection_index
+    const entry = this.entries.find((entry, i) => {
+      if (i < this.entry_selection_index) return false
+      if (entry.preconfigured && entry.angle == null) return false
+      if (i != this.entry_selection_index && entry.angle != null) return false
 
-    const entry = this.entries[i]
-
-    if (!entry) return
+      return true
+    }) ?? this.createEntry({
+      position: null,
+      angle: null,
+      information: null,
+      preconfigured: null,
+    })
 
     const hadInfo = entry.information
 
@@ -765,6 +770,8 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     entry.preconfigured = null
 
     if (!is_compass_solution) entry.is_solution_of_previous_clue = undefined
+
+    this.setSelection(this.entries.indexOf(entry))
 
     entry.widget.render()
 
