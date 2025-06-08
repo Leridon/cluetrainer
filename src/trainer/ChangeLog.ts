@@ -28,6 +28,7 @@ export namespace Changelog {
         .row(new List()
           .item("Overhauled the paths for elite compass spots.")
           .item("Renamed elite compass methods for consistency.")
+          .item("Added a new route for a tetracompass spot using a recently added shortcut.")
           .item("Timing estimates for methods now account for the time it takes to dig, search a container, talk to a target, and solve a challenge scroll.", new List().item(italic("Dev note: Since it varies a lot between players, tick counts do not account for the time taken to solve puzzles, or fight wizards and double agents.")))
         ),
     notification: "Compass Paths have been overhauled",
