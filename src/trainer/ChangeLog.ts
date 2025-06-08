@@ -24,15 +24,26 @@ export namespace Changelog {
     date: new Date(Date.parse("TODO")),
     render: layout =>
       layout
+        .header("Updated Paths")
         .paragraph("Ngis has teamed up with Xindrjayzda to bring you a fully revamped set of suggested paths for compass spots. Feedback on this overhaul is very welcome and appreciated, so please let us know your thoughts and suggestions in the usual places.")
         .row(new List()
-          .item("Overhauled the paths for elite compass spots.")
+          .item("Overhauled all paths for elite compass spots.")
           .item("Renamed elite compass methods for consistency.")
           .item("Added a new route for a tetracompass spot using a recently added shortcut.")
+          .item("Added a new route for a medium step in Seers' village using the amulet of nature.")
+        )
+        .header("Changes to the Compass Solver")
+        .row(new List()
+          .item("When manually setting a triangulation spot, entries from the preconfigured triangulation strategy are no longer replaced. Instead, a new entry is added to the bottom if necessary.")
+          .item("When the compass spot has been uniquely determined, remaining triangulation spots are now hidden instead of being deleted. They will reappear when a triangulation line is deleted. This is useful when you need to fix a mistake.")
+        )
+        .header("General")
+        .row(new List()
           .item("Timing estimates for methods now account for the time it takes to dig, search a container, talk to a target, and solve a challenge scroll.", new List().item(italic("Dev note: Since it varies a lot between players, tick counts do not account for the time taken to solve puzzles, or fight wizards and double agents.")))
-        ),
+        )
+    ,
     notification: "Compass Paths have been overhauled",
-    title: "New Compass Paths",
+    title: "New Compass Paths and Behaviour Changes",
     version: 47
   }
 
