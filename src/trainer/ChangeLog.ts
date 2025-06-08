@@ -20,6 +20,18 @@ export namespace Changelog {
     render: (_: Layout) => void
   }
 
+  export const v48: LogEntry = {
+    date: new Date(Date.parse("2025-06-08")),
+    render: layout =>
+      layout
+        .row(new List()
+          .item("Fixed that all builtin methods for elite scans were missing.")
+        )
+    ,
+    title: "Hotfix for Missing Scan Methods",
+    version: 48
+  }
+
   export const v47: LogEntry = {
     date: new Date(Date.parse("2025-06-08")),
     render: layout =>
@@ -212,6 +224,7 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([
+    v48,
     v47,
     v46,
     v45,
