@@ -1,5 +1,5 @@
 import {deflate, inflate} from "pako";
-import {base64ToBytes, bytesToBase64} from "byte-base64";
+import { Base64 } from 'js-base64';
 import {identity} from "lodash";
 import {util} from "./util";
 
@@ -63,7 +63,7 @@ export namespace ExportImport {
       }
 
       if (compress) {
-        p.value = bytesToBase64(deflate(p.value))
+        p.value = Base64.fromUint8Array(deflate(p.value))
         p.compressed = true
       }
 
@@ -89,6 +89,12 @@ export namespace ExportImport {
     )
   }
 
+  class ImportError extends Error {
+    constructor(public reason: string, public user_facing_message: string = undefined) {
+      super(`Import error: ${reason}`);
+    }
+  }
+
   export function imp<T>(type_info: {
                            expected_type: string,
                            expected_version: number,
@@ -96,18 +102,38 @@ export namespace ExportImport {
                          } = null,
   ): (s: string) => T {
 
+
     const from_string = (s: string | object): any => {
-      if (typeof s == "string") return is_json_string(s) ? JSON.parse(s) : JSON.parse(atob(s))
-      else return s
+
+
+      if (typeof s == "string") {
+        if (is_json_string(s)) {
+          try {return JSON.parse(s) } catch (e) {
+            if (e instanceof SyntaxError) throw new ImportError("Invalid JSON input!");
+            else throw new ImportError("Unknown error")
+          }
+        } else {
+          try {
+            return JSON.parse(atob(s))
+          } catch (e) {
+            if (e instanceof SyntaxError) throw new ImportError("Input decoded to invalid JSON!")
+            else if (e instanceof DOMException) throw new ImportError("Invalid input text!")
+            else throw new ImportError("Unknown error")
+          }
+        }
+      } else return s
     }
+
     const extract_envelop = (o) => {
 
       if (o?.payload_type == "envelop") {
-        let envelop = o as envelop
+        const envelop = o as envelop
 
-        if (envelop.hash != null && cyrb53(envelop.value) != o.hash) throw new Error()
+        if (!envelop.value) throw new ImportError("Envelop does not contain value!", "Imported object is malformed.")
 
-        if (envelop.compressed) return JSON.parse(inflate(base64ToBytes(o.value), {to: 'string'}))
+        if (envelop.hash != null && cyrb53(envelop.value) != o.hash) throw new ImportError("Hash of imported value does not match.", "Imported object is malformed.")
+
+        if (envelop.compressed) return JSON.parse(inflate(Base64.toUint8Array(o.value), {to: 'string'}))
         else return JSON.parse(o.value)
       }
 

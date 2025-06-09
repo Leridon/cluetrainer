@@ -1,6 +1,6 @@
 import {TileCoordinates} from "./TileCoordinates";
 import {Rectangle, Vector2} from "../../math";
-import {base64ToBytes, bytesToBase64} from "byte-base64";
+import { Base64 } from 'js-base64';
 import {TileRectangle} from "./TileRectangle";
 import * as lodash from "lodash";
 import {util} from "../../util/util";
@@ -26,7 +26,7 @@ export namespace TileArea {
       this.size = lodash.cloneDeep(parent.size) ?? {x: 1, y: 1}
 
       if (parent.data) {
-        this.data = base64ToBytes(parent.data)
+        this.data = Base64.toUint8Array(parent.data)
       } else {
         this.data = new Uint8Array(Math.ceil(this.size.x * this.size.y / 8)).fill(255)
       }
@@ -58,7 +58,7 @@ export namespace TileArea {
       if (filled) {
         this.parent.data = undefined
       } else {
-        this.parent.data = bytesToBase64(this.data)
+        this.parent.data = Base64.fromUint8Array(this.data)
       }
 
       if (this.size.x == 1 && this.size.y == 1) {
@@ -186,7 +186,7 @@ export namespace TileArea {
       size: size,
       data: filled
         ? undefined
-        : bytesToBase64(new Uint8Array(Math.ceil(size.x * size.y / 8)).fill(0))
+        : Base64.fromUint8Array(new Uint8Array(Math.ceil(size.x * size.y / 8)).fill(0))
     }
   }
 
