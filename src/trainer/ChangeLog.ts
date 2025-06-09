@@ -20,6 +20,22 @@ export namespace Changelog {
     render: (_: Layout) => void
   }
 
+  export const v49: LogEntry = {
+    date: new Date(Date.parse("TBD")),
+    render: layout =>
+      layout
+        .row(new List()
+          .item("For paths will multiple sections, the last section will now be shown by default unless overridden manually.",
+            new List()
+              .item(italic("Dev note: This should be a more reasonable default for most cases. Clue Trainer will still remember your preferred sections if you manually selected them at any point."))
+            )
+        )
+    ,
+    title: "TODO",
+    version: 49
+  }
+
+
   export const v48: LogEntry = {
     date: new Date(Date.parse("2025-06-08")),
     render: layout =>

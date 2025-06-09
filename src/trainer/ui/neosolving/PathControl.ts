@@ -267,14 +267,18 @@ export default class PathControl extends Behaviour {
     let sectioned: Path.SectionedPath = TreeArray.init({name: "root"})
 
     if (method.method.pre_path && method.method.pre_path.length > 0) {
-      TreeArray.add(sectioned,
+      const pre = TreeArray.add(sectioned,
         Path.Section.split_into_sections(method.method.pre_path, "Pre Path")
       )
+
+      pre.value.is_preferred_section = true
     }
 
-    TreeArray.add(sectioned,
+    const main = TreeArray.add(sectioned,
       Path.Section.split_into_sections(method.method.main_path, "Main Path")
     )
+
+    main.value.is_preferred_section = true
 
     if (method.method.post_path && method.method.post_path.length > 0) {
       TreeArray.add(sectioned,
@@ -297,9 +301,29 @@ export default class PathControl extends Behaviour {
     this.scan_node = node
 
     if (method && !active_id) {
+      // No forced section id given, retrieve one from memory
       active_id = await this.section_memory.get(method,
         this.scan_node ? ScanTree.Augmentation.NodeId.hash(ScanTree.Augmentation.NodeId.of(this.scan_node)) : null
       )
+    }
+
+    if (!active_id) {
+      // Still no section id, find a reasonable default
+
+      let fallback_id: number[] = []
+      let tree = sections
+
+      while (tree.type == "inner" && tree.children.some(c => c.type == "inner")) {
+
+        let next_id = tree.children.findIndex(c => c.type == "inner" && c.value.is_preferred_section)
+
+        if (next_id < 0) next_id = tree.children.length - 1
+
+        fallback_id.push(next_id)
+        tree = tree.children[next_id]
+      }
+
+      active_id = fallback_id
     }
 
     const section_id = TreeArray.fixIndex(this.sectioned_path, active_id || [])
