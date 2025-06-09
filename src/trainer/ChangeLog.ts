@@ -28,7 +28,8 @@ export namespace Changelog {
           .item("For paths will multiple sections, the last section will now be shown by default unless overridden manually.",
             new List()
               .item(italic("Dev note: This should be a more reasonable default for most cases. Clue Trainer will still remember your preferred sections if you manually selected them at any point."))
-            )
+          )
+          .item("Fixed a race condition that would sometimes cause inconsistent zooming for compass spots.")
         )
     ,
     title: "TODO",

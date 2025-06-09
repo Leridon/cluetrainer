@@ -329,7 +329,9 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
   entries: CompassSolving.Entry[] = []
   selected_spot = observe<CompassSolving.SpotData>(null)
 
-  constructor(parent: NeoSolvingBehaviour, public clue: Clues.Compass, public reader: CompassReader) {
+  constructor(parent: NeoSolvingBehaviour, public clue: Clues.Compass, public reader: CompassReader,
+              private spot_selection_callback: (_: TileCoordinates) => Promise<any>
+              ) {
     super(parent, "clue")
 
     this.settings = deps().app.settings.settings.solving.compass
@@ -627,8 +629,10 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
    * @param spot The spot to set as active
    * @param set_as_solution If true, the 3 by 3 dig area for this spot is saved as the current clue's solution.
    */
-  setSelectedSpot(spot: CompassSolving.SpotData, set_as_solution: boolean) {
+  async setSelectedSpot(spot: CompassSolving.SpotData, set_as_solution: boolean) {
     this.selected_spot.set(spot)
+
+    await this.spot_selection_callback(spot?.spot?.spot)
 
     if (set_as_solution && set_as_solution) {
       this.registerSolution(this.clue.single_tile_target ? TileArea.fromTiles([spot.spot.spot]) : digSpotArea(spot.spot.spot))
@@ -679,12 +683,11 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     if (possible.length == 1) {
       const old_selection = this.selected_spot.value()
 
-      // Reference comparison is fine because only the instances from the original array in the clue are handled
       if (!possible.some(e => TileCoordinates.equals(old_selection?.spot?.spot, e.spot.spot))) {
-        this.setSelectedSpot(possible[0], false)
+        await this.setSelectedSpot(possible[0], false)
       }
     } else {
-      this.setSelectedSpot(null, false)
+      await this.setSelectedSpot(null, false)
     }
 
     if (possible.length > 0 && possible.length <= 5) {
@@ -698,7 +701,8 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     // Fit camera view to only the remaining possible spots
     if (maybe_fit) {
-      if (!this.parent.active_method && possible.length > 0 && (information.length > 0 || possible.length < 50)) {
+      if (!this.parent.active_method && (information.length > 0 || possible.length < 50)
+        && (possible.length > 1 || (possible.length == 1 && !this.parent.active_method))) {
         this.parent.layer.fit(TileRectangle.from(...possible.map(s => s.spot.spot)), "setting")
       }
     }
