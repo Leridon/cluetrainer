@@ -23,7 +23,8 @@
     "timers-browserify": "^2.0.12",
     "tippy.js": "^6.3.7",
     "uuid": "^11.0.3",
-    "process": "^0.11.10"
+    "process": "^0.11.10",
+    "navigo": "^8.11.1"
   },
   "devDependencies": {
     "@alt1/imagedata-loader": "^1.0.0-alpha.6",

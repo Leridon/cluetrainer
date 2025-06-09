@@ -38,6 +38,8 @@ import {PermissionChecker} from "./startup_messages/PermissionChecker";
 import {SuccessfullInstallationNotice} from "./startup_messages/SuccessfullInstallationNotice";
 import {lazy} from "../lib/Lazy";
 import {Alt1} from "../lib/alt1/Alt1";
+import Navigo from "navigo";
+import {ClueTrainerWiki} from "./wiki";
 import ActiveTeleportCustomization = Transportation.TeleportGroup.ActiveTeleportCustomization;
 import TeleportSettings = Settings.TeleportSettings;
 import inlineimg = C.inlineimg;
@@ -166,6 +168,8 @@ export class SettingsManagement {
 }
 
 export class ClueTrainer extends Behaviour {
+  router: Navigo = new Navigo('/', {hash: false})
+
   crowdsourcing: CrowdSourcing = new CrowdSourcing(this, "https://api.cluetrainer.app")
 
   settings = new SettingsManagement()
@@ -265,7 +269,6 @@ export class ClueTrainer extends Behaviour {
   }
 
   protected async begin() {
-
     this.startup_settings.subscribe(s => this.startup_settings_storage.set(s))
 
     NotificationBar.instance().appendTo(jquery("body"))
@@ -361,6 +364,10 @@ export class ClueTrainer extends Behaviour {
 
     Alt1UpdateNotice.maybeRemind(this)
     ClueTrainerAppMigrationNotice.maybeRemind(this)
+
+    this.router.on("/wiki", () => ClueTrainerWiki.openOnPage())
+
+    this.router.resolve()
   }
 
   protected end() {

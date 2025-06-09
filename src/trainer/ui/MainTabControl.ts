@@ -14,9 +14,8 @@ import {SettingsModal} from "./settings/SettingsEdit";
 import {AboutModal} from "../AboutModal";
 import {Alt1Modal} from "../Alt1Modal";
 import {HoverTileDisplay} from "./devutilitylayer/UtilityLayer";
-import {ClueTrainerWiki} from "../wiki";
 import {Path} from "../../lib/runescape/pathing";
-import {TileRectangle} from "../../lib/runescape/coordinates";
+import {ClueTrainerWiki} from "../wiki";
 import spacer = C.spacer;
 import span = C.span;
 import movement_state = Path.movement_state;
@@ -153,8 +152,7 @@ export default class MainTabControl extends Widget {
               hideOnClick: false
             }),
       new MenuButton("Wiki", "/assets/icons/ribbon_osh.png")
-        .onClick(() => ClueTrainerWiki.openOnPage()
-        )
+        .onClick(() => ClueTrainerWiki.openOnPage())
         .setActive(true)
         .addTippy(
           new Properties().header("Cluepedia")
