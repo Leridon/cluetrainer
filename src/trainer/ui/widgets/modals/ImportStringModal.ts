@@ -1,9 +1,10 @@
 import TextArea from "../../../../lib/ui/controls/TextArea";
 import {BigNisButton} from "../BigNisButton";
-import {deps} from "../../../dependencies";
 import {FormModal} from "../../../../lib/ui/controls/FormModal";
 import {Notification} from "../../NotificationBar";
+import {ExportImport} from "../../../../lib/util/exportString";
 import notification = Notification.notification;
+import ImportError = ExportImport.ImportError;
 
 export default class ImportStringModal<T> extends FormModal<{
   imported: T
@@ -44,7 +45,6 @@ export default class ImportStringModal<T> extends FormModal<{
             let imported = this.parser(this.textarea.get())
 
             if (imported == null) {
-
               notification("Invalid input").setType("error").show()
 
               return
@@ -52,7 +52,11 @@ export default class ImportStringModal<T> extends FormModal<{
 
             this.confirm({imported: imported})
           } catch (e) {
-            alert(`Invalid input: ${e.toString()}`)
+            if (e instanceof ImportError) {
+              notification(e.user_facing_message ?? `Import Error: ${e.reason}`).setType("error").show()
+            } else {
+              notification(`Unknown Import Error`).setType("error").show()
+            }
           }
         })
     ]

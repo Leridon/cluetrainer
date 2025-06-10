@@ -11,7 +11,6 @@ import {ConfirmationModal} from "../widgets/modals/ConfirmationModal";
 import {observe} from "../../../lib/reactive";
 import {MethodWidget} from "./MethodWidget";
 import {Clues} from "../../../lib/runescape/clues";
-import {DropdownSelection} from "../widgets/DropdownSelection";
 import Properties from "../widgets/Properties";
 import btnrow = C.btnrow;
 import imp = ExportImport.imp;
@@ -78,7 +77,11 @@ export default class TheoryCraftingSidebar extends MapSideBar {
       props.row(btnrow(
         new LightButton("Import", "rectangle")
           .onClick(async () => {
-            const imported = await new ImportStringModal<Pack>(imp({expected_type: "method-pack", expected_version: 1})).do()
+            const imported = await new ImportStringModal<Pack>(imp({expected_type: "method-pack", expected_version: 1},
+              (o: Pack) => {
+                return Array.isArray(o["methods"]) && typeof o["original_id"] == "string" && typeof o["timestamp"] == "number"
+              }
+            )).do()
 
             if (imported?.imported) {
 

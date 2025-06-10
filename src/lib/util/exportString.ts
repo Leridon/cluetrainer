@@ -1,5 +1,5 @@
 import {deflate, inflate} from "pako";
-import { Base64 } from 'js-base64';
+import {Base64} from 'js-base64';
 import {identity} from "lodash";
 import {util} from "./util";
 
@@ -29,6 +29,7 @@ function is_json_string(s: string): boolean {
 export namespace ExportImport {
   import compose = util.compose;
   import cleanedJSON = util.cleanedJSON;
+
   type typed_value<T> = {
     payload_type: "typed",
     type: string,
@@ -36,11 +37,19 @@ export namespace ExportImport {
     value: T
   }
 
+  function is_typed_value<T>(v: object): v is typed_value<T> {
+    return v && v["payload_type"] === "typed" && typeof v["type"] === "string" && typeof v["version"] === "number";
+  }
+
   type envelop = {
     payload_type: "envelop",
     hash?: number,
     compressed?: boolean,
     value: string
+  }
+
+  function is_envelop(v: object): v is envelop {
+    return v && v["payload_type"] === "envelop" && typeof v["value"] === "string"
   }
 
   function with_type<T>(type: string, version: number): (value: T) => typed_value<T> {
@@ -89,7 +98,7 @@ export namespace ExportImport {
     )
   }
 
-  class ImportError extends Error {
+  export class ImportError extends Error {
     constructor(public reason: string, public user_facing_message: string = undefined) {
       super(`Import error: ${reason}`);
     }
@@ -98,14 +107,13 @@ export namespace ExportImport {
   export function imp<T>(type_info: {
                            expected_type: string,
                            expected_version: number,
-                           migrations?: ({ from: number, to: number, f: (_: T) => T }[])
+                           migrations?: ({ from: number, to: number, f: (_: T) => T }[]),
                          } = null,
+                         validator_function: (_: any) => boolean = () => true
   ): (s: string) => T {
 
 
     const from_string = (s: string | object): any => {
-
-
       if (typeof s == "string") {
         if (is_json_string(s)) {
           try {return JSON.parse(s) } catch (e) {
@@ -125,28 +133,39 @@ export namespace ExportImport {
     }
 
     const extract_envelop = (o) => {
-
       if (o?.payload_type == "envelop") {
-        const envelop = o as envelop
 
-        if (!envelop.value) throw new ImportError("Envelop does not contain value!", "Imported object is malformed.")
+        if (!is_envelop(o)) throw new ImportError("Malformed hash envelop.", "Imported object is malformed.")
 
-        if (envelop.hash != null && cyrb53(envelop.value) != o.hash) throw new ImportError("Hash of imported value does not match.", "Imported object is malformed.")
+        if (o.hash != null && cyrb53(o.value) != o.hash) throw new ImportError("Hash of imported value does not match.", "Imported object is malformed.")
 
-        if (envelop.compressed) return JSON.parse(inflate(Base64.toUint8Array(o.value), {to: 'string'}))
-        else return JSON.parse(o.value)
+        if(o.compressed && !Base64.isValid(o.value))throw new ImportError("Malformed compressed envelop.", "Imported object is malformed.")
+
+        try {
+          return JSON.parse(
+            o.compressed
+              ? inflate(Base64.toUint8Array(o.value), {to: 'string'})
+              : o.value
+          )
+        } catch (e) {
+          if (e instanceof SyntaxError) throw new ImportError("Value contained in envelop decoded to invalid JSON!", "Imported object is malformed.");
+
+          throw e
+        }
       }
 
       return o
     }
     const extract_typed = (o) => {
       if (o?.payload_type == "typed") {
-        let envelop = o as typed_value<T>
+        if (!is_typed_value<any>(o)) throw new ImportError("Malformed typed value envelop.", "Imported object is malformed.")
 
-        let version = envelop.version
-        let value = envelop.value
+        let version = o.version
+        let value = o.value
 
-        while (type_info?.migrations) {
+        if (type_info && o.type != type_info.expected_type) throw new ImportError(`Type of imported object does not match. Expected ${type_info.expected_type}, but got ${o.type}!`)
+
+        while (type_info?.migrations && version != type_info.expected_version) {
           let migration = type_info.migrations.find((e) => e.from == version)
           if (!migration) break
 
@@ -154,7 +173,7 @@ export namespace ExportImport {
           version = migration.to
         }
 
-        if (type_info && envelop.type != type_info.expected_type || version != type_info.expected_version) throw new Error()
+        if (version != type_info.expected_version) throw new ImportError(`Version of imported object does not match. Expected ${type_info.expected_version}, but got ${version}!`)
 
         return value
       }
@@ -162,17 +181,19 @@ export namespace ExportImport {
       return o
     }
 
+    const validator = o => {
+      if (!validator_function(o)) throw new ImportError("Object validation failed.", "Input is malformed.")
+
+      return o
+    }
+
     return (s: string) => {
-      try {
-        return compose(
-          from_string,
-          extract_envelop,
-          extract_typed
-        )(s)
-      } catch (e) {
-        console.error(e)
-        return null
-      }
+      return compose(
+        from_string,
+        extract_envelop,
+        extract_typed,
+        validator
+      )(s)
     }
   }
 }
