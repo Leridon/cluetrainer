@@ -33,6 +33,7 @@ export namespace Changelog {
           .item("Fixed the location of the Portmaster Kags teleport to Pollnivneach.")
           .item("Fixed the area for the emote clue in the Varrock palace library.")
           .item("Fixed a bug that caused triangulation lines to be added for hidden spots after a solution was already found.")
+          .item("Fixed the area for the emote clue in front of the Menaphos library.")
         )
     ,
     title: "TODO",

@@ -551,8 +551,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     await this.updatePossibilities(true)
 
     if (this.needs_more_info) {
-
-    if (needs_more_info) {
       // Advance selection index to next uncommitted entry, with wrap around
       const current_index = this.entries.indexOf(entry)
       let index_of_next_free_entry = (current_index + 1) % this.entries.length

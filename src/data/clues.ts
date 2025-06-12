@@ -4507,7 +4507,7 @@ export namespace clue_data {
       "type": "emote",
       "tier": "master",
       "text": ["Wave in front of the entrance to the Grand Library of Menaphos. Beware of double agents! Equip an asylum surgeon's ring and the Scabaras mask."],
-      "area": {"origin": {"x": 3173, "y": 2708, "level": 0}, "size": {"x": 4, "y": 4}},
+      "area": {"origin": {"x": 3173, "y": 2708, "level": 0}, "size": {"x": 3, "y": 4}},
       "items": ["Asylum Surgeon's Ring", "Scabaras Mask"],
       "emotes": ["Wave"],
       "double_agent": true,
