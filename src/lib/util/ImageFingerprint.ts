@@ -174,9 +174,9 @@ export namespace ImageFingerprint {
         for (let i = 0; i < data1.data.length; i += 3) {
           // All components are normalized to the interval [0, 1]
           similarity +=
-            (1 - (hue_delta(data1.data[i + OFFSETS.hue], data2.data[i + OFFSETS.hue]))
+            (1 - (hue_delta(data1.data[i + OFFSETS.hue], data2.data[i + OFFSETS.hue])))
             * (1 - (Math.abs(data1.data[i + OFFSETS.sat] - data2.data[i + OFFSETS.sat]) / 255))
-            * (1 - (Math.abs(data1.data[i + OFFSETS.lightness] - data2.data[i + OFFSETS.lightness]) / 255)))
+            * (1 - (Math.abs(data1.data[i + OFFSETS.lightness] - data2.data[i + OFFSETS.lightness]) / 255))
         }
 
         return Math.pow(similarity / (data1.data.length / 3), 3);
