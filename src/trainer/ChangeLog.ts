@@ -34,6 +34,9 @@ export namespace Changelog {
           .item("Fixed the area for the emote clue in the Varrock palace library.")
           .item("Fixed a bug that caused triangulation lines to be added for hidden spots after a solution was already found.")
           .item("Fixed the area for the emote clue in front of the Menaphos library.")
+          .item("Fixed a bug that caused desert environments to still be detected as slider puzzles after the slider was closed. ", new List()
+            .item("Dev note: There was a tiny but very impactful error in the formula used to compare two tiles. Fixing this makes the math more sound and fixes the instances where the wrong results were noticeable, but could also lead to unforeseen consequences for other puzzles. If you encounter any new issues for slider puzzles, lockboxes, or knots, please report them in the usual places. If you do, please include a screenshot of the wrongly recognized puzzle without any Clue Trainer overlay visible.")
+          )
         )
     ,
     title: "TODO",

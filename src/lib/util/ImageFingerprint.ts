@@ -89,7 +89,10 @@ export namespace ImageFingerprint {
   const OFFSETS = {
     hue: 0,
     sat: 1,
-    roughness: 2,
+    lightness: 2,
+    red: 0,
+    green: 1,
+    blue: 2
   }
 
   /**
@@ -122,7 +125,7 @@ export namespace ImageFingerprint {
 
             r[i + OFFSETS.hue] = hue
             r[i + OFFSETS.sat] = sat
-            r[i + OFFSETS.roughness] = lightness // averageColorDifference(buf, x, y, kernel_size.x, kernel_size.y)
+            r[i + OFFSETS.lightness] = lightness // averageColorDifference(buf, x, y, kernel_size.x, kernel_size.y)
           }
         }
         return {type: type, data: r};
@@ -145,7 +148,7 @@ export namespace ImageFingerprint {
 
             res[i + OFFSETS.hue] = r
             res[i + OFFSETS.sat] = g
-            res[i + OFFSETS.roughness] = b
+            res[i + OFFSETS.lightness] = b
           }
         }
         return {type: type, data: res};
@@ -170,9 +173,10 @@ export namespace ImageFingerprint {
 
         for (let i = 0; i < data1.data.length; i += 3) {
           // All components are normalized to the interval [0, 1]
-          similarity += (1 - (hue_delta(data1.data[i + OFFSETS.hue], data2.data[i + OFFSETS.hue]))
+          similarity +=
+            (1 - (hue_delta(data1.data[i + OFFSETS.hue], data2.data[i + OFFSETS.hue])))
             * (1 - (Math.abs(data1.data[i + OFFSETS.sat] - data2.data[i + OFFSETS.sat]) / 255))
-            * (1 - (Math.abs(data1.data[i + OFFSETS.roughness] - data2.data[i + OFFSETS.roughness]) / 255)))
+            * (1 - (Math.abs(data1.data[i + OFFSETS.lightness] - data2.data[i + OFFSETS.lightness]) / 255))
         }
 
         return Math.pow(similarity / (data1.data.length / 3), 3);

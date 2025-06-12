@@ -5,6 +5,7 @@ import {ScuffedTesting} from "./test_framework";
 import SliderState = Sliders.SliderState;
 import SliderPuzzle = Sliders.SliderPuzzle;
 import assert = ScuffedTesting.assert;
+import DETECTION_THRESHOLD_SCORE = SlideReader.DETECTION_THRESHOLD_SCORE;
 
 export async function test_slide_reader(): Promise<void> {
 
@@ -96,9 +97,8 @@ export async function test_slide_reader(): Promise<void> {
     {
       file: "/test_assets/sliders/rax_solved.png", expected: {theme: "araxxor", state: SliderState.SOLVED}
     },
-    {
-      file: "/test_assets/sliders/rax_solved2.png", expected: {theme: "araxxor", state: SliderState.SOLVED}
-    }
+    {file: "/test_assets/sliders/rax_solved2.png", expected: {theme: "araxxor", state: SliderState.SOLVED}},
+    {file: "/test_assets/sliders/desert_negative.png", expected: null},
   ]
 
   let correct = 0
@@ -112,10 +112,17 @@ export async function test_slide_reader(): Promise<void> {
 
     const tiles = SliderPuzzle.getState(res)
 
-
-    if (res.theme == test_case.expected.theme && SliderState.equals(tiles, test_case.expected.state)) {
+    if ((test_case.expected && res.theme == test_case.expected.theme && SliderState.equals(tiles, test_case.expected.state))
+      || !test_case.expected && res.match_score < DETECTION_THRESHOLD_SCORE
+    ) {
       correct++
       //console.log(`SUCCESS ${test_case.file}`)
+    } else if (test_case.expected == null && res.match_score >= DETECTION_THRESHOLD_SCORE) {
+      console.log(`ERROR ${test_case.file}`)
+      console.log(`Expected no puzzle, but found ${res.theme} (${(res.match_score * 100).toFixed(1)}%):`)
+      console.log(tiles)
+      debugger
+
     } else {
       console.log(`ERROR ${test_case.file}`)
       console.log(`Expected ${test_case.expected.theme}:`)
