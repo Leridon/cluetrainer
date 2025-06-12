@@ -7,6 +7,7 @@ import {ScanTree} from "../lib/cluetheory/scans/ScanTree";
 import * as lodash from "lodash"
 import {MovementAbilities} from "../lib/runescape/movement";
 import cleanedJSON = util.cleanedJSON;
+import {Base64} from "js-base64";
 
 async function fix_path(p: Path): Promise<number> {
   if (!p) return
@@ -64,36 +65,7 @@ async function fix_tree(tree: ScanTree.ScanTreeNode) {
 
 export async function makeshift_main(): Promise<void> {
 
-  const packs = [
-    "default:ngiseasy",
-    "default:ngismedium",
-    "default:ngishard",
-    "default:ngiscompass",
-    "default:ngistetra",
-    "default:ngismaster",
-    "default:scanmethods"
-  ]
+  console.log(Base64.toUint8Array("sdfsd[]"))
 
-  for (const pack_id of packs) {
-    const pack = await MethodPackManager.instance().getPack(pack_id)
-
-    let removed = 0
-
-    for (let m of pack.methods) {
-      switch (m.type) {
-        case "general_path": {
-          removed += await fix_path(m.pre_path)
-          removed += await fix_path(m.main_path)
-          removed += await fix_path(m.post_path)
-          break;
-        }
-        case "scantree":
-          removed += await fix_tree(m.tree.root)
-      }
-    }
-
-    await ExportStringModal.do(cleanedJSON(pack), `Removed ${removed} icons`,
-      `${pack.name}.json`
-    )
-  }
+  return
 }

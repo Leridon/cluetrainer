@@ -30,6 +30,7 @@ export namespace Changelog {
               .item(italic("Dev note: This should be a more reasonable default for most cases. Clue Trainer will still remember your preferred sections if you manually selected them at any point."))
           )
           .item("Fixed a race condition that would sometimes cause inconsistent zooming for compass spots.")
+          .item("Fixed the location of the Portmaster Kags teleport to Pollnivneach.")
         )
     ,
     title: "TODO",
