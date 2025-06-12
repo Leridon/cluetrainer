@@ -304,7 +304,7 @@ export class ClueTrainer extends Behaviour {
         const notifyable_update = lodash.findLast(unseen_updates, e => !!e.notification)
 
         notification(notifyable_update?.notification ?? "There has been an update.")
-          .setDuration(30000)
+          .setDuration(null)
           .addButton("View patch notes", (not) => {
             new Changelog.Modal().show()
             not.dismiss()
@@ -361,6 +361,12 @@ export class ClueTrainer extends Behaviour {
 
     Alt1UpdateNotice.maybeRemind(this)
     ClueTrainerAppMigrationNotice.maybeRemind(this)
+
+    if (Changelog.latest_patch.is_beta) {
+      notification("You are on a beta branch. Please remember to switch back to the main branch.")
+        .setDuration(null)
+        .show()
+    }
   }
 
   protected end() {

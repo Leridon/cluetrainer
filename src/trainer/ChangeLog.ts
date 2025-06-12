@@ -6,7 +6,6 @@ import {C} from "../lib/ui/constructors";
 
 export namespace Changelog {
 
-  import hbox = C.hbox;
   import div = C.div;
   import italic = C.italic;
   type Layout = Properties
@@ -17,7 +16,15 @@ export namespace Changelog {
     notification?: string,
     date: Date,
     title: string,
-    render: (_: Layout) => void
+    render: (_: Layout) => void,
+    is_beta?: boolean
+  }
+
+  namespace LogEntry {
+    export function versionString(self: LogEntry): string {
+      if (self.is_beta) return `v${self.version} BETA`
+      else return `v${self.version}`
+    }
   }
 
   export const v49: LogEntry = {
@@ -35,12 +42,12 @@ export namespace Changelog {
           .item("Fixed a bug that caused triangulation lines to be added for hidden spots after a solution was already found.")
           .item("Fixed the area for the emote clue in front of the Menaphos library.")
           .item("Fixed a bug that caused desert environments to still be detected as slider puzzles after the slider was closed. ", new List()
-            .item("Dev note: There was a tiny but very impactful error in the formula used to compare two tiles. Fixing this makes the math more sound and fixes the instances where the wrong results were noticeable, but could also lead to unforeseen consequences for other puzzles. If you encounter any new issues for slider puzzles, lockboxes, or knots, please report them in the usual places. If you do, please include a screenshot of the wrongly recognized puzzle without any Clue Trainer overlay visible.")
+            .item(italic("Dev note: There was a tiny but very impactful error in the formula used to compare two tiles. Fixing this makes the math more sound and fixes the instances where the wrong results were noticeable, but could also lead to unforeseen consequences for other puzzles. If you encounter any new issues for slider puzzles, lockboxes, or knots, please report them in the usual places. If you do, please include a screenshot of the wrongly recognized puzzle without any Clue Trainer overlay visible."))
           )
-        )
-    ,
+        ),
     title: "TODO",
-    version: 49
+    version: 49,
+    is_beta: true
   }
 
 
@@ -248,6 +255,7 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([
+    v49,
     v48,
     v47,
     v46,
@@ -1007,7 +1015,7 @@ export namespace Changelog {
     constructor() {
       super();
 
-      this.setTitle(`Changelog (v${latest_patch.version})`)
+      this.setTitle(`Changelog (${LogEntry.versionString(latest_patch)})`)
     }
 
     render() {
@@ -1025,11 +1033,12 @@ export namespace Changelog {
       )*/
 
       layout.row(
-        hbox(
-          c("<div style='text-align: center; margin-right: 5px'><a href='https://ko-fi.com/I2I4XY829' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi3.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></div>"),
-          div(
-            'If you enjoy Clue Trainer, please consider supporting continuous development at <a href="https://ko-fi.com/I2I4XY829" target="_blank">Ko-fi</a>.'
-          )
+        c("<div style='text-align: center; margin-right: 5px'><a href='https://ko-fi.com/I2I4XY829' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi3.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></div>")
+      )
+
+      layout.row(
+        div(
+          'If you enjoy Clue Trainer, please consider supporting continuous development at <a href="https://ko-fi.com/I2I4XY829" target="_blank">Ko-fi</a>.'
         )
       )
 
