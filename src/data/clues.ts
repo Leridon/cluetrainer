@@ -4097,7 +4097,7 @@ export namespace clue_data {
       "type": "emote",
       "tier": "easy",
       "text": ["Yawn in Varrock Palace library. Equip a holy symbol, leather vambraces and an iron warhammer."],
-      "area": {"origin": {"x": 3207, "y": 3490, "level": 0}, "size": {"x": 11, "y": 8}},
+      "area": {"origin": {"x": 3207, "y": 3490, "level": 0}, "size": {"x": 8, "y": 8}},
       "items": ["Holy symbol", "Leather vamraces", "Iron warhammer"],
       "emotes": ["Yawn"],
       "double_agent": false,

@@ -31,6 +31,7 @@ export namespace Changelog {
           )
           .item("Fixed a race condition that would sometimes cause inconsistent zooming for compass spots.")
           .item("Fixed the location of the Portmaster Kags teleport to Pollnivneach.")
+          .item("Fixed the area for the emote clue in the Varrock palace library.")
         )
     ,
     title: "TODO",
