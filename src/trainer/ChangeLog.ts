@@ -25,13 +25,14 @@ export namespace Changelog {
     render: layout =>
       layout
         .row(new List()
-          .item("For paths will multiple sections, the last section will now be shown by default unless overridden manually.",
+          .item("For paths with multiple sections, the last section will now be shown by default unless overridden manually.",
             new List()
               .item(italic("Dev note: This should be a more reasonable default for most cases. Clue Trainer will still remember your preferred sections if you manually selected them at any point."))
           )
           .item("Fixed a race condition that would sometimes cause inconsistent zooming for compass spots.")
           .item("Fixed the location of the Portmaster Kags teleport to Pollnivneach.")
           .item("Fixed the area for the emote clue in the Varrock palace library.")
+          .item("Fixed a bug that caused triangulation lines to be added for hidden spots after a solution was already found.")
         )
     ,
     title: "TODO",

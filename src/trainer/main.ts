@@ -7,7 +7,6 @@ import {ScanTree} from "../lib/cluetheory/scans/ScanTree";
 import * as lodash from "lodash"
 import {MovementAbilities} from "../lib/runescape/movement";
 import cleanedJSON = util.cleanedJSON;
-import {Base64} from "js-base64";
 
 async function fix_path(p: Path): Promise<number> {
   if (!p) return
@@ -64,8 +63,6 @@ async function fix_tree(tree: ScanTree.ScanTreeNode) {
 }
 
 export async function makeshift_main(): Promise<void> {
-
-  console.log(Base64.toUint8Array("sdfsd[]"))
 
   return
 }

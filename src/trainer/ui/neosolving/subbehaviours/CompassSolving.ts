@@ -310,7 +310,8 @@ class CompassEntryWidget extends Widget {
 }
 
 const DEBUG_ANGLE_OVERRIDE: number = null // degreesToRadians(206.87152474371157)
-const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = null // TileArea.init({x: 2944, y: 3328, level: 0}, {x: 128, y: 64})
+const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = undefined //{origin: {x: 3214, y: 3376, level: 0}}
+const DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE: number = undefined // degreesToRadians(112.6)
 
 /**
  * The {@link NeoSolvingSubBehaviour} for compass clues.
@@ -320,6 +321,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
   settings: CompassSolving.Settings
 
   spots: CompassSolving.SpotData[]
+  needs_more_info: boolean = true
 
   layer: CompassHandlingLayer
   process: CompassReader.Service
@@ -511,10 +513,14 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     let angle: number
 
     if (entry.is_solution_of_previous_clue) {
+      if (DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE != undefined) {
+        angle = DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE
+      } else {
       const res = this.reader.getAngle()
       assert(res.type == "success")
 
       angle = res.angle
+      }
     } else {
       const state = this.process.state()
 
@@ -544,7 +550,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     await this.updatePossibilities(true)
 
-    const needs_more_info = count(this.spots, e => e.isPossible) > 1
+    if (this.needs_more_info) {
 
     if (needs_more_info) {
       // Advance selection index to next uncommitted entry, with wrap around
@@ -555,7 +561,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       while (index_of_next_free_entry != current_index) {
         const entry = this.entries[index_of_next_free_entry]
 
-        if (!entry.information) {
+        if (!entry.information && !entry.is_hidden) {
           if (!entry.position || !this.settings.skip_triangulation_point_if_colinear) break
 
           const spot = CompassSolving.Spot.coords(entry.position)
@@ -707,11 +713,12 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       }
     }
 
-    const needs_more_info = possible.length > 1
+    this.needs_more_info = possible.length > 1
 
     // Update visibility of widgets
     this.entries.forEach(e => {
-      e.widget.setVisible(!!e.information || needs_more_info)
+      e.is_hidden = !(!!e.information || this.needs_more_info)
+      e.widget.setVisible(!e.is_hidden)
     })
 
     await this.layer.updateOverlay()
@@ -719,7 +726,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     this.layer.rendering.unlock()
   }
 
-  private createEntry(entry: CompassSolving.Entry): CompassSolving.Entry {
+  private createEntry(entry: CompassSolving.Entry, dont_update_selection: boolean = false): CompassSolving.Entry {
     const state = this.process.state()
 
     entry.widget = new CompassEntryWidget(entry)
@@ -747,7 +754,9 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     this.entries.push(entry)
 
+    if (!dont_update_selection) {
     this.setSelection(this.entries.length - 1)
+    }
 
     return entry
   }
@@ -835,7 +844,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
           angle: null,
           information: null,
           is_solution_of_previous_clue: true,
-        })
+        }, true)
       })()
     }
 
@@ -864,7 +873,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
           angle: null,
           information: null,
           preconfigured: e,
-        })
+        }, true)
       })
     }
 
@@ -876,6 +885,8 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
         preconfigured: null,
       })
     }
+
+    this.setSelection(0)
 
     if (previous_solution_used) {
       await this.commit(this.entries[0])
@@ -937,6 +948,7 @@ export namespace CompassSolving {
     information: Compasses.TriangulationPoint | null,
     preconfigured?: CompassSolving.TriangulationPreset["sequence"][number],
     is_solution_of_previous_clue?: boolean,
+    is_hidden?: boolean,
     widget?: CompassEntryWidget
   }
 
