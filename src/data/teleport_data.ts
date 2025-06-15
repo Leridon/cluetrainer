@@ -4671,8 +4671,43 @@ name: "Entrana",
     ],
     access: [
       {id: "item", type: "item", name: {kind: "item", name: "Leela's favour"}, action_name: "Teleport", img: {url: "Leelas_favour.webp"}}
-    ]
-  }
+    ],
+  },
+  {
+    type: "teleports",
+    id: "delversanklet",
+    name: "Delver's Anklet",
+    img: {url: "jewellry_amuletofglory.png"},
+    menu_ticks: 2,
+    animation_ticks: 4,
+    spots: [
+      {
+        id: "edgeville",
+        target: {"origin": {"x": 3087, "y": 3496, "level": 0}},
+        code: "1",
+        name: "Polypore Dungeon (Third Level)",
+      },
+      {
+        id: "karamja",
+        target: {"origin": {"x": 2918, "y": 3176, "level": 0}},
+        code: "2",
+        name: "Brimhaven Dungeon",
+      },
+      {
+        id: "draynor",
+        target: {"origin": {"x": 3080, "y": 3250, "level": 0}},
+        code: "3",
+        name: "Fremennik Slayer Dungeon",
+      },
+    ],
+    access: [{
+      id: "anklet",
+      type: "item",
+      name: {name: "Delver's Anklet", kind: "item"},
+      action_name: "Rub",
+      can_be_in_pota: true
+    }]
+  },
 //TODO: Eagle transport system
 //TODO: Canoes
 //TODO: Orthen Teleport network
