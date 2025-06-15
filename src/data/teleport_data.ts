@@ -1762,47 +1762,46 @@ name: "Guthix Memorial",
       }
     ]
   },
-  /*
-    {
-        type: "teleports",
-        id: "piratebook",
-name: "Big book o´piracy",
-img: {url: "bookopiracy.gif"},
-        spots: [
-            {
-                id: "mosleharmless",
-target: {origin: {x: 3684, y: 2958, level: 0}},
-code: "1",
-name: "Mos Le'Harmless",
-                menu_ticks: 1,
-                animation_ticks: 13
-            },
-            {
-                id: "braindeath",
-target: {origin: {x: 2162, y: 5114, level: 0}},
-code: "2",
-name: "Braindeath Island",
-                menu_ticks: 1,
-                animation_ticks: 13
-            },
-            {
-                id: "dragontooth",
-target: { origin: {"x": 3792, "y": 3559, "level": 0} },
-code: "3",
-name: "Dragontooth Isle",
-                menu_ticks: 1,
-                animation_ticks: 13
-            },
-            {
-                id: "harmony",
-target: {origin: {x: 3797, y: 2836, level: 0}},
-code: "3",
-name: "Harmony Island",
-                menu_ticks: 1,
-                animation_ticks: 13
-            },
-        ]
-    },*/
+  {
+    type: "teleports",
+    id: "piratebook",
+    name: "Big Book o´ Piracy",
+    img: {url: "bookopiracy.gif"},
+    menu_ticks: 1,
+    animation_ticks: 13,
+    spots: [
+      {
+        id: "mosleharmless",
+        target: {"origin": {"x": 3684, "y": 2958, "level": 0}},
+        code: "1",
+        name: "Mos Le'Harmless",
+      },
+      {
+        id: "braindeath",
+        target: {"origin": {"x": 2162, "y": 5114, "level": 1}},
+        code: "2",
+        name: "Braindeath Island",
+      },
+      {
+        id: "dragontooth",
+        target: {"origin": {"x": 3792, "y": 3559, "level": 0}},
+        code: "3",
+        name: "Dragontooth Isle",
+      },
+      {
+        id: "harmony",
+        target: {"origin": {"x": 3797, "y": 2836, "level": 0}},
+        code: "3",
+        name: "Harmony Island",
+      },
+    ],
+    access: [{
+      id: "book",
+      type: "item",
+      name: {name: "Big Book o´ Piracy", kind: "item"},
+      action_name: "Teleport",
+    }]
+  },
   {
     type: "teleports",
     id: "amuletofglory",
