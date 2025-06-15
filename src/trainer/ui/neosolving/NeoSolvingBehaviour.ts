@@ -1198,7 +1198,7 @@ export namespace NeoSolving {
         if (!settings) return lodash.cloneDeep(DEFAULT)
 
         if (!["full", "hide", "abridged"].includes(settings.clue_text)) settings.clue_text = DEFAULT.clue_text
-        if (!["show", "hide"].includes(settings.map_image)) settings.map_image = DEFAULT.map_image
+        if (!["show", "hide", "transcript"].includes(settings.map_image)) settings.map_image = DEFAULT.map_image
         if (!["show", "hide"].includes(settings.dig_target)) settings.dig_target = DEFAULT.dig_target
         if (!["show", "hide"].includes(settings.talk_target)) settings.talk_target = DEFAULT.talk_target
         if (!["show", "hide"].includes(settings.search_target)) settings.search_target = DEFAULT.search_target
