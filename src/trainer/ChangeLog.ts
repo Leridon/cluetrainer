@@ -55,6 +55,9 @@ export namespace Changelog {
         .row(new List()
           .item("Updated map collision data to the latest game version.")
           .item("Updated tetracompass methods that used the Games necklace, which isn't part of the recommended solving preset.")
+          .item("Added new scan methods that utilize the new Delver's anklet for Fremennik Slayer Dungeon and Brimhaven Dungeon.", new List()
+            .item(italic("Router's note: These should be considered drafts and are subject to improvements in the future.")))
+          .item("Added a new method for the Ramokee Skinweaver anagram in masters using the Delver's anklet.")
         ),
     title: "TODO",
     version: {version: 50, beta_patch: 1},
