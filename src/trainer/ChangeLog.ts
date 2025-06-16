@@ -52,6 +52,7 @@ export namespace Changelog {
     date: new Date(Date.parse("2025-06-12")),
     render: layout =>
       layout
+        .paragraph("This update brings a variety of bugfixes as well as new teleports from today's game update. Updated methods are being worked on and will arrive later in the week.")
         .row(new List()
           .item("For paths with multiple sections, the last section will now be shown by default unless overridden manually.",
             new List()
@@ -67,9 +68,11 @@ export namespace Changelog {
           )
           .item("Fixed a bug that caused the 'Transcript' setting for treasure maps to be reset on a reload.")
           .item("Added the Delver's Anklet teleports.")
+          .item("Updated the position of the crafting guild teleport.")
         ),
-    title: "TODO",
-    version: {version: 49, beta_patch: 1},
+    notification: "Several bugfixes and new teleports have dropped.",
+    title: "Bugfixes and new teleports",
+    version: {version: 49},
   }
 
 
