@@ -700,7 +700,7 @@ export class PDBManager {
 
       for (let i = 0; i < desc.file_count; i++) {
 
-        const response = await fetch(`data/sliderpdb/${desc.id}/v${desc.version}chunk${lodash.padStart(i.toString(), 2, "0")}`, {})
+        const response = await fetch(`data/sliderpdb/${desc.id}/v${desc.version}chunk${lodash.padStart(i.toString(), 2, "0")}.bin`, {})
 
         if (!response.ok) return null;
 

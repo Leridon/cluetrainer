@@ -24,11 +24,6 @@ jobs:
           npm ci
           npm run build-production
 
-      - name: Deploy development preview
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: dist # The folder the action should deploy.
-
       - name: Deploy cluetrainer.app
         uses: JamesIves/github-pages-deploy-action@v4
         with:

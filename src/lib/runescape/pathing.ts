@@ -842,10 +842,10 @@ export namespace Path {
     }
   }
 
-  export type SectionedPath = TreeArray<Step, { name: string }>
+  export type SectionedPath = TreeArray<Step, { name: string, is_preferred_section?: boolean }>
 
   export namespace Section {
-    export function split_into_sections(path: Path.raw, root_name: string = "root", far_threshold: number = FAR_TRANSPORT_THRESHOLD): TreeArray.InnerNode<Step, { name: string }> {
+    export function split_into_sections(path: Path.raw, root_name: string = "root", far_threshold: number = FAR_TRANSPORT_THRESHOLD): TreeArray.InnerNode<Step, { name: string, is_preferred_section?: boolean }> {
       const section_dividers: number[] = []
 
       const division = (i: number) => {

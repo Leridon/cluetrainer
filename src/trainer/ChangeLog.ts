@@ -6,19 +6,77 @@ import {C} from "../lib/ui/constructors";
 
 export namespace Changelog {
 
-  import hbox = C.hbox;
   import div = C.div;
   import italic = C.italic;
   type Layout = Properties
 
-  type LogEntry = {
+  export type Version = {
     version: number,
+    beta_patch?: number
+  }
+
+  export namespace Version {
+    export function isBeta(self: Version): boolean {
+      return self.beta_patch != undefined
+    }
+
+    export function lift(self: Version | number): Version {
+      if (typeof self == "number") return {version: self}
+      else return self
+    }
+
+    export function isLaterOrEqual(a: Version, than: Version): boolean {
+      return a.version > than.version || (a.version == than.version && (a.beta_patch ?? 0) >= (than.beta_patch ?? 0))
+    }
+
+    export function asString(self: Version): string {
+      if (self.beta_patch != undefined) return `v${self.version} BETA p${self.beta_patch}`
+      else return `v${self.version}`
+    }
+
+    export function asNumber(self: Version) {
+      return self.version + (self.beta_patch ?? 0) / 1000
+    }
+  }
+
+  export type LogEntry = {
+    version: Version,
     silent?: boolean,
     notification?: string,
     date: Date,
     title: string,
-    render: (_: Layout) => void
+    render: (_: Layout) => void,
   }
+
+  export const v49: LogEntry = {
+    date: new Date(Date.parse("2025-06-12")),
+    render: layout =>
+      layout
+        .paragraph("This update brings a variety of bugfixes as well as new teleports from today's game update. Updated methods are being worked on and will arrive later in the week.")
+        .row(new List()
+          .item("For paths with multiple sections, the last section will now be shown by default unless overridden manually.",
+            new List()
+              .item(italic("Dev note: This should be a more reasonable default for most cases. Clue Trainer will still remember your preferred sections if you manually selected them at any point."))
+          )
+          .item("Fixed a race condition that would sometimes cause inconsistent zooming for compass spots.")
+          .item("Fixed the location of the Portmaster Kags teleport to Pollnivneach.")
+          .item("Removed a method for an elite compass spot using the wrong Portmaster Kags teleport.")
+          .item("Fixed the area for the emote clue in the Varrock palace library.")
+          .item("Fixed a bug that caused triangulation lines to be added for hidden spots after a solution was already found.")
+          .item("Fixed the area for the emote clue in front of the Menaphos library.")
+          .item("Fixed a bug that caused desert environments to still be detected as slider puzzles after the slider was closed. ", new List()
+            .item(italic("Dev note: There was a tiny but very impactful error in the formula used to compare two tiles. Fixing this makes the math more sound and fixes the instances where the wrong results were noticeable, but could also lead to unforeseen consequences for other puzzles. If you encounter any new issues for slider puzzles, lockboxes, or knots, please report them in the usual places. If you do, please include a screenshot of the wrongly recognized puzzle without any Clue Trainer overlay visible."))
+          )
+          .item("Fixed a bug that caused the 'Transcript' setting for treasure maps to be reset on a reload.")
+          .item("Fixed that Cloudflare's CDN would not cache the large binary files for the slider puzzle solver, leading to slow load times on occasion.")
+          .item("Added the Delver's Anklet teleports.")
+          .item("Updated the position of the crafting guild teleport.")
+        ),
+    notification: "Several bugfixes and new teleports have dropped.",
+    title: "Bugfixes and new teleports",
+    version: {version: 49},
+  }
+
 
   export const v48: LogEntry = {
     date: new Date(Date.parse("2025-06-08")),
@@ -29,7 +87,7 @@ export namespace Changelog {
         )
     ,
     title: "Hotfix for Missing Scan Methods",
-    version: 48
+    version: {version: 48}
   }
 
   export const v47: LogEntry = {
@@ -56,7 +114,7 @@ export namespace Changelog {
     ,
     notification: "Compass Paths have been overhauled",
     title: "New Compass Paths and Behaviour Changes",
-    version: 47
+    version: {version: 47}
   }
 
   export const v46: LogEntry = {
@@ -72,7 +130,7 @@ export namespace Changelog {
           .item("Fixed the teleport area of the Traveller's necklace's teleport to the Wizard Tower.")
         ),
     title: "Path Editor Changes",
-    version: 46
+    version: {version: 46}
   }
 
   export const v45: LogEntry = {
@@ -88,7 +146,7 @@ export namespace Changelog {
       ),
     title: "New Methods",
     notification: "New Methods have arrived",
-    version: 45
+    version: {version: 45}
   }
 
   export const v44: LogEntry = {
@@ -106,7 +164,7 @@ export namespace Changelog {
         .item("Added Leela's favour teleports.")
       ),
     title: "Improved teleport area accuracy",
-    version: 44
+    version: {version: 44}
   }
 
   export const v43: LogEntry = {
@@ -137,7 +195,7 @@ export namespace Changelog {
       )
     ,
     title: "Bugfixes and Method Updates",
-    version: 43
+    version: {version: 43}
   }
 
   export const v42: LogEntry = {
@@ -152,7 +210,7 @@ export namespace Changelog {
         .item("Renamed methods for easy clues so the name indicates the primary method of transportation.")
       ),
     title: "New Tetracompass Methods",
-    version: 42
+    version: {version: 42}
   }
 
   export const v41: LogEntry = {
@@ -172,7 +230,7 @@ export namespace Changelog {
     ,
     notification: "New methods using the new teleports have arrived",
     title: "New Methods",
-    version: 41
+    version: {version: 41}
   }
 
   export const v40: LogEntry = {
@@ -185,7 +243,7 @@ export namespace Changelog {
       .paragraph("New paths utilizing these new teleports will be added as soon as possible.")
     ,
     title: "New Teleports",
-    version: 40
+    version: {version: 40}
   }
 
   export const v39: LogEntry = {
@@ -197,7 +255,7 @@ export namespace Changelog {
         )
       ),
     title: "Clue Reader Bugfix",
-    version: 39
+    version: {version: 39}
   }
 
   export const v38: LogEntry = {
@@ -208,7 +266,7 @@ export namespace Changelog {
         .item("Zooming in for compasses now includes the closest teleport if that option is enabled.")
       ),
     title: "Bugfixes",
-    version: 38
+    version: {version: 38}
   }
 
   export const v37: LogEntry = {
@@ -220,10 +278,11 @@ export namespace Changelog {
         .item("Moved the info button on the scan status panel so it does not overlap with the text.")
       ),
     title: "Bugfixes",
-    version: 37
+    version: {version: 37}
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([
+    v49,
     v48,
     v47,
     v46,
@@ -237,7 +296,7 @@ export namespace Changelog {
     v38,
     v37,
     {
-      version: 36,
+      version: {version: 36},
       date: new Date(Date.parse("2025-02-18")),
       notification: "Cluepedia and reworked Scan Tree Solving has released!",
       title: "Scan Improvements and Cluepedia",
@@ -300,7 +359,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 35,
+      version: {version: 35},
       date: new Date(Date.parse("2025-02-11")),
       title: "Collision Fixes",
       render: layout => layout
@@ -312,7 +371,7 @@ export namespace Changelog {
         )
     },
     {
-      version: 34,
+      version: {version: 34},
       date: new Date(Date.parse("2025-01-22")),
       title: "Some Teleport Additions",
       render: layout => {
@@ -329,7 +388,7 @@ export namespace Changelog {
       }
     },
     {
-      version: 33,
+      version: {version: 33},
       date: new Date(Date.parse("2025-01-13")),
       title: "Nature Sentinel Key Combinations",
       notification: "Nature's Sentinel keyboard shortcuts have been updated.",
@@ -342,7 +401,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 32,
+      version: {version: 32},
       date: new Date(Date.parse("2025-01-06")),
       title: "Data Fixes and Better Method Management",
       render: layout => {
@@ -365,7 +424,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 31,
+      version: {version: 31},
       date: new Date(Date.parse("2025-01-02")),
       title: "Small Compass Fixes",
       render: layout => {
@@ -378,7 +437,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 30,
+      version: {version: 30},
       date: new Date(Date.parse("2024-12-21")),
       title: "Crash Hotfix",
       silent: true,
@@ -390,7 +449,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 29,
+      version: {version: 29},
       date: new Date(Date.parse("2024-12-21")),
       title: "Further Zoom Fixes and Configuration Options",
       notification: "Check out the new options for zoom behaviour",
@@ -409,7 +468,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 28,
+      version: {version: 28},
       date: new Date(Date.parse("2024-12-16")),
       title: "Decluttering Path Displays and Zoom Fixes",
       notification: "Check out changes to path rendering and zoom behaviour",
@@ -433,7 +492,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 27,
+      version: {version: 27},
       date: new Date(Date.parse("2024-12-14")),
       silent: true,
       title: "Crowdsourcing Data Sanitation",
@@ -444,7 +503,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 26,
+      version: {version: 26},
       date: new Date(Date.parse("2024-12-10")),
       title: "URL Update",
       silent: true,
@@ -458,7 +517,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 25,
+      version: {version: 25},
       date: new Date(Date.parse("2024-12-09")),
       title: "Game Update Fixes",
       render: layout => {
@@ -473,7 +532,7 @@ export namespace Changelog {
           .paragraph("Today's game update changed the shuffle algorithm for slider puzzles, making them significantly faster to solve. Preliminary testing suggests solution lengths in the range between 15 and 40 clicks.")
       }
     }, {
-      version: 24,
+      version: {version: 24},
       date: new Date(Date.parse("2024-12-05")),
       title: "Scan Overlay Updates",
       render: layout => {
@@ -489,7 +548,7 @@ export namespace Changelog {
           .paragraph("Next monday, the update to slider puzzles will release. To quickly evaluate the effects of this change, we need the appropriate crowd-sourced data. Crowdsourcing is powered by users of Clue Trainer that opt in for data collection available in the 'Crowdsourcing' section in the settings.")
       }
     }, {
-      version: 23,
+      version: {version: 23},
       date: new Date(Date.parse("2024-11-26")),
       title: "Seal Slider Fix",
       render: layout => {
@@ -499,7 +558,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 22,
+      version: {version: 22},
       date: new Date(Date.parse("2024-11-25")),
       title: "Fixes for the 'Use solution of previous step' option.",
       render: layout => {
@@ -512,7 +571,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 21,
+      version: {version: 21},
       date: new Date(Date.parse("2024-11-25")),
       silent: true,
       title: "Fixing the Bugfix",
@@ -523,7 +582,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 20,
+      version: {version: 20},
       date: new Date(Date.parse("2024-11-25")),
       title: "Bugfixes",
       render: layout => {
@@ -535,7 +594,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 19,
+      version: {version: 19},
       date: new Date(Date.parse("2024-11-17")),
       silent: true,
       title: "Internal Tooling Fixes",
@@ -548,7 +607,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 18,
+      version: {version: 18},
       date: new Date(Date.parse("2024-11-17")),
       title: "Clue Reader Bugfix",
       render: layout => {
@@ -559,7 +618,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 17,
+      version: {version: 17},
       date: new Date(Date.parse("2024-11-16")),
       title: "Scan Range Minimap Overlay",
       render: layout => {
@@ -573,7 +632,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 16,
+      version: {version: 16},
       date: new Date(Date.parse("2024-10-10")),
       silent: true,
       title: "Compass Overlay Fix",
@@ -584,7 +643,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 15,
+      version: {version: 15},
       date: new Date(Date.parse("2024-10-10")),
       silent: true,
       title: "Solving Bugfix",
@@ -595,7 +654,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 14,
+      version: {version: 14},
       date: new Date(Date.parse("2024-10-08")),
       title: "Large internal change and small visible changes",
       render: layout => {
@@ -611,7 +670,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 13,
+      version: {version: 13},
       date: new Date(Date.parse("2024-10-03")),
       silent: true,
       title: "Lockbox Hotfix",
@@ -622,7 +681,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 12,
+      version: {version: 12},
       date: new Date(Date.parse("2024-10-03")),
       title: "Lockbox Changes",
       render: layout => {
@@ -643,7 +702,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: 11,
+      version: {version: 11},
       date: new Date(Date.parse("2024-09-22")),
       title: "Bugfixes",
       render: layout => {
@@ -655,7 +714,7 @@ export namespace Changelog {
         )
       }
     }, {
-      version: 10,
+      version: {version: 10},
       silent: true,
       date: new Date(Date.parse("2024-09-20")),
       title: "Timing Bugfix",
@@ -667,7 +726,7 @@ export namespace Changelog {
           .paragraph("This is a bit of a speculative fix, because the source of the reported issue is not 100% confirmed.")
       }
     }, {
-      version: 9,
+      version: {version: 9},
       date: new Date(Date.parse("2024-09-18")),
       title: "Bugfixes",
       render: layout => {
@@ -677,7 +736,7 @@ export namespace Changelog {
         )
       }
     }, {
-      version: 8,
+      version: {version: 8},
       date: new Date(Date.parse("2024-09-09")),
       title: "Migration and update notices",
       render: layout => {
@@ -695,7 +754,7 @@ export namespace Changelog {
         )
       }
     }, {
-      version: 7,
+      version: {version: 7},
       date: new Date(Date.parse("2024-08-11")),
       title: "Transport Fixes and Permission Checking",
       render: layout => {
@@ -705,7 +764,7 @@ export namespace Changelog {
         )
       }
     }, {
-      version: 6,
+      version: {version: 6},
       date: new Date(Date.parse("2024-07-14")),
       title: "Celtic Knot Bugfix",
       render: layout => {
@@ -718,7 +777,7 @@ export namespace Changelog {
         layout.paragraph("While solving celtic knots, there's a step called 'unification' of puzzle states. This joins the previously known state of the puzzle with the new state. It continuously updates what the solver knows about the puzzle and is required when there is not enough information initially, and to make updating the overlay continuously possible. There was a rare case where unification actually caused information to be lost, which in turn caused the solver to not find a solution anymore.")
       }
     }, {
-      version: 5,
+      version: {version: 5},
       date: new Date(Date.parse("2024-07-12")),
       title: "Slider Bugfix",
       render: layout => {
@@ -731,7 +790,7 @@ export namespace Changelog {
       }
     },
     {
-      version: 4,
+      version: {version: 4},
       date: new Date(Date.parse("2024-07-11")),
       title: "Better Logging",
       render: layout => {
@@ -746,7 +805,7 @@ export namespace Changelog {
       }
     },
     {
-      version: 3,
+      version: {version: 3},
       date: new Date(Date.parse("2024-07-10")),
       title: "New Method",
       render: layout => {
@@ -756,7 +815,7 @@ export namespace Changelog {
       }
     },
     {
-      version: 2,
+      version: {version: 2},
       date: new Date(Date.parse("2024-07-09")),
       title: "Slider Bugfix",
       render: layout => {
@@ -766,7 +825,7 @@ export namespace Changelog {
       }
     },
     {
-      version: 1,
+      version: {version: 1},
       date: new Date(Date.parse("2024-07-09")),
       notification: "Slider Puzzles now have faster solutions",
       title: "New Solving Algorithm for Slider Puzzles",
@@ -782,7 +841,7 @@ export namespace Changelog {
       }
     },
     {
-      version: 0,
+      version: {version: 0},
       date: new Date(Date.parse("2024-06-28")),
       title: "New Methods by Ngis",
       render: layout => {
@@ -796,7 +855,7 @@ export namespace Changelog {
       }
     },
     {
-      version: -1,
+      version: {version: -1},
       date: new Date(Date.parse("2024-06-25")),
       notification: "Clue Trainer now supports Sandy Clues and Tetracompasses",
       title: "Sandy Clues and Tetracompasses",
@@ -812,7 +871,7 @@ export namespace Changelog {
       }
     },
     {
-      version: -2,
+      version: {version: -2},
       date: new Date(Date.parse("2024-06-18")),
       title: "Slider Bugfix",
       render: layout => {
@@ -822,7 +881,7 @@ export namespace Changelog {
       }
     },
     {
-      version: -3,
+      version: {version: -3},
       date: new Date(Date.parse("2024-06-16")),
       title: "Compass Bugfixes",
       render: layout => {
@@ -843,7 +902,7 @@ export namespace Changelog {
       }
     },
     {
-      version: -4,
+      version: {version: -4},
       date: new Date(Date.parse("2024-06-14")),
       title: "Miscellanious",
       render: layout => {
@@ -855,7 +914,7 @@ export namespace Changelog {
       }
     },
     {
-      version: -5,
+      version: {version: -5},
       date: new Date(Date.parse("2024-06-11")),
       title: "Bugfixes",
       render: layout => {
@@ -866,7 +925,7 @@ export namespace Changelog {
       }
     },
     {
-      version: -6,
+      version: {version: -6},
       date: new Date(Date.parse("2024-06-10")),
       title: "New Compass Reader and Daemonheim Dig Site",
       render: layout => {
@@ -882,7 +941,7 @@ export namespace Changelog {
       }
     },
     {
-      version: -7,
+      version: {version: -7},
       date: new Date(Date.parse("2024-06-06")),
       title: "Compass fixes",
       render: layout => {
@@ -899,7 +958,7 @@ export namespace Changelog {
       }
     },
     {
-      version: -8,
+      version: {version: -8},
       date: new Date(Date.parse("2024-06-05")),
       title: "More compass improvements and a new URL",
       render: layout => {
@@ -928,7 +987,7 @@ export namespace Changelog {
       }
     },
     {
-      version: -9,
+      version: {version: -9},
       date: new Date(Date.parse("2024-06-02")),
       title: "Small compass improvements",
       render: layout => {
@@ -940,7 +999,7 @@ export namespace Changelog {
       }
     },
     {
-      version: -10,
+      version: {version: -10},
       date: new Date(Date.parse("2024-06-01")),
       title: "Improved compass solver and general improvements.",
       render: layout => {
@@ -975,7 +1034,7 @@ export namespace Changelog {
       }
     },
 
-  ], e => -e.version)
+  ], e => -Version.asNumber(e.version))
 
   export const latest_patch = log[0]
 
@@ -983,7 +1042,7 @@ export namespace Changelog {
     constructor() {
       super();
 
-      this.setTitle(`Changelog (v${latest_patch.version})`)
+      this.setTitle(`Changelog (${Version.asString(latest_patch.version)})`)
     }
 
     render() {
@@ -1001,11 +1060,12 @@ export namespace Changelog {
       )*/
 
       layout.row(
-        hbox(
-          c("<div style='text-align: center; margin-right: 5px'><a href='https://ko-fi.com/I2I4XY829' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi3.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></div>"),
-          div(
-            'If you enjoy Clue Trainer, please consider supporting continuous development at <a href="https://ko-fi.com/I2I4XY829" target="_blank">Ko-fi</a>.'
-          )
+        c("<div style='text-align: center; margin-right: 5px'><a href='https://ko-fi.com/I2I4XY829' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi3.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></div>")
+      )
+
+      layout.row(
+        div(
+          'If you enjoy Clue Trainer, please consider supporting continuous development at <a href="https://ko-fi.com/I2I4XY829" target="_blank">Ko-fi</a>.'
         )
       )
 
@@ -1016,7 +1076,7 @@ export namespace Changelog {
       layout.divider()
 
       log.forEach(entry => {
-        layout.header(c().text(`${entry.date.toLocaleDateString("en-gb")} (v${entry.version})  - ${entry.title}`))
+        layout.header(c().text(`${entry.date.toLocaleDateString("en-gb")} (${Version.asString(entry.version)}) - ${entry.title}`))
 
         entry.render(layout)
 

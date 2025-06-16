@@ -895,19 +895,19 @@ export default class NeoSolvingBehaviour extends Behaviour {
     }
 
     if (clue.type == "compass") {
-      const behaviour = new CompassSolving(this, clue, read_result?.type == "compass" ? read_result.reader : undefined)
+      const behaviour = new CompassSolving(this, clue, read_result?.type == "compass" ? read_result.reader : undefined,
+        async spot => {
+          if (spot) {
+            const method = await this.getAutomaticMethod({clue: clue.id, spot: spot})
+
+            this.setMethod(method)
+          } else {
+            this.setMethod(null)
+          }
+        }
+      )
 
       if (!read_result) this.layer.fit(TileRectangle.from(...clue.spots))
-
-      behaviour.selected_spot.subscribe(async spot => {
-        if (spot) {
-          const method = await this.getAutomaticMethod({clue: clue.id, spot: spot.spot.spot})
-
-          this.setMethod(method)
-        } else {
-          this.setMethod(null)
-        }
-      })
 
       this.activateSubBehaviour(behaviour)
     }
@@ -1198,7 +1198,7 @@ export namespace NeoSolving {
         if (!settings) return lodash.cloneDeep(DEFAULT)
 
         if (!["full", "hide", "abridged"].includes(settings.clue_text)) settings.clue_text = DEFAULT.clue_text
-        if (!["show", "hide"].includes(settings.map_image)) settings.map_image = DEFAULT.map_image
+        if (!["show", "hide", "transcript"].includes(settings.map_image)) settings.map_image = DEFAULT.map_image
         if (!["show", "hide"].includes(settings.dig_target)) settings.dig_target = DEFAULT.dig_target
         if (!["show", "hide"].includes(settings.talk_target)) settings.talk_target = DEFAULT.talk_target
         if (!["show", "hide"].includes(settings.search_target)) settings.search_target = DEFAULT.search_target

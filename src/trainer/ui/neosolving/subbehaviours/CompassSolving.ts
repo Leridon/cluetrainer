@@ -310,7 +310,8 @@ class CompassEntryWidget extends Widget {
 }
 
 const DEBUG_ANGLE_OVERRIDE: number = null // degreesToRadians(206.87152474371157)
-const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = null // TileArea.init({x: 2944, y: 3328, level: 0}, {x: 128, y: 64})
+const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = undefined //{origin: {x: 3214, y: 3376, level: 0}}
+const DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE: number = undefined // degreesToRadians(112.6)
 
 /**
  * The {@link NeoSolvingSubBehaviour} for compass clues.
@@ -320,6 +321,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
   settings: CompassSolving.Settings
 
   spots: CompassSolving.SpotData[]
+  needs_more_info: boolean = true
 
   layer: CompassHandlingLayer
   process: CompassReader.Service
@@ -329,7 +331,9 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
   entries: CompassSolving.Entry[] = []
   selected_spot = observe<CompassSolving.SpotData>(null)
 
-  constructor(parent: NeoSolvingBehaviour, public clue: Clues.Compass, public reader: CompassReader) {
+  constructor(parent: NeoSolvingBehaviour, public clue: Clues.Compass, public reader: CompassReader,
+              private spot_selection_callback: (_: TileCoordinates) => Promise<any>
+              ) {
     super(parent, "clue")
 
     this.settings = deps().app.settings.settings.solving.compass
@@ -509,10 +513,14 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     let angle: number
 
     if (entry.is_solution_of_previous_clue) {
+      if (DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE != undefined) {
+        angle = DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE
+      } else {
       const res = this.reader.getAngle()
       assert(res.type == "success")
 
       angle = res.angle
+      }
     } else {
       const state = this.process.state()
 
@@ -542,9 +550,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     await this.updatePossibilities(true)
 
-    const needs_more_info = count(this.spots, e => e.isPossible) > 1
-
-    if (needs_more_info) {
+    if (this.needs_more_info) {
       // Advance selection index to next uncommitted entry, with wrap around
       const current_index = this.entries.indexOf(entry)
       let index_of_next_free_entry = (current_index + 1) % this.entries.length
@@ -553,7 +559,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       while (index_of_next_free_entry != current_index) {
         const entry = this.entries[index_of_next_free_entry]
 
-        if (!entry.information) {
+        if (!entry.information && !entry.is_hidden) {
           if (!entry.position || !this.settings.skip_triangulation_point_if_colinear) break
 
           const spot = CompassSolving.Spot.coords(entry.position)
@@ -627,8 +633,10 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
    * @param spot The spot to set as active
    * @param set_as_solution If true, the 3 by 3 dig area for this spot is saved as the current clue's solution.
    */
-  setSelectedSpot(spot: CompassSolving.SpotData, set_as_solution: boolean) {
+  async setSelectedSpot(spot: CompassSolving.SpotData, set_as_solution: boolean) {
     this.selected_spot.set(spot)
+
+    await this.spot_selection_callback(spot?.spot?.spot)
 
     if (set_as_solution && set_as_solution) {
       this.registerSolution(this.clue.single_tile_target ? TileArea.fromTiles([spot.spot.spot]) : digSpotArea(spot.spot.spot))
@@ -679,12 +687,11 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     if (possible.length == 1) {
       const old_selection = this.selected_spot.value()
 
-      // Reference comparison is fine because only the instances from the original array in the clue are handled
       if (!possible.some(e => TileCoordinates.equals(old_selection?.spot?.spot, e.spot.spot))) {
-        this.setSelectedSpot(possible[0], false)
+        await this.setSelectedSpot(possible[0], false)
       }
     } else {
-      this.setSelectedSpot(null, false)
+      await this.setSelectedSpot(null, false)
     }
 
     if (possible.length > 0 && possible.length <= 5) {
@@ -698,16 +705,18 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     // Fit camera view to only the remaining possible spots
     if (maybe_fit) {
-      if (!this.parent.active_method && possible.length > 0 && (information.length > 0 || possible.length < 50)) {
+      if (!this.parent.active_method && (information.length > 0 || possible.length < 50)
+        && (possible.length > 1 || (possible.length == 1 && !this.parent.active_method))) {
         this.parent.layer.fit(TileRectangle.from(...possible.map(s => s.spot.spot)), "setting")
       }
     }
 
-    const needs_more_info = possible.length > 1
+    this.needs_more_info = possible.length > 1
 
     // Update visibility of widgets
     this.entries.forEach(e => {
-      e.widget.setVisible(!!e.information || needs_more_info)
+      e.is_hidden = !(!!e.information || this.needs_more_info)
+      e.widget.setVisible(!e.is_hidden)
     })
 
     await this.layer.updateOverlay()
@@ -715,7 +724,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     this.layer.rendering.unlock()
   }
 
-  private createEntry(entry: CompassSolving.Entry): CompassSolving.Entry {
+  private createEntry(entry: CompassSolving.Entry, dont_update_selection: boolean = false): CompassSolving.Entry {
     const state = this.process.state()
 
     entry.widget = new CompassEntryWidget(entry)
@@ -743,7 +752,9 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     this.entries.push(entry)
 
+    if (!dont_update_selection) {
     this.setSelection(this.entries.length - 1)
+    }
 
     return entry
   }
@@ -831,7 +842,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
           angle: null,
           information: null,
           is_solution_of_previous_clue: true,
-        })
+        }, true)
       })()
     }
 
@@ -860,7 +871,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
           angle: null,
           information: null,
           preconfigured: e,
-        })
+        }, true)
       })
     }
 
@@ -872,6 +883,8 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
         preconfigured: null,
       })
     }
+
+    this.setSelection(0)
 
     if (previous_solution_used) {
       await this.commit(this.entries[0])
@@ -933,6 +946,7 @@ export namespace CompassSolving {
     information: Compasses.TriangulationPoint | null,
     preconfigured?: CompassSolving.TriangulationPreset["sequence"][number],
     is_solution_of_previous_clue?: boolean,
+    is_hidden?: boolean,
     widget?: CompassEntryWidget
   }
 

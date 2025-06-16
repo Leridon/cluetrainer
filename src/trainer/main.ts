@@ -64,36 +64,5 @@ async function fix_tree(tree: ScanTree.ScanTreeNode) {
 
 export async function makeshift_main(): Promise<void> {
 
-  const packs = [
-    "default:ngiseasy",
-    "default:ngismedium",
-    "default:ngishard",
-    "default:ngiscompass",
-    "default:ngistetra",
-    "default:ngismaster",
-    "default:scanmethods"
-  ]
-
-  for (const pack_id of packs) {
-    const pack = await MethodPackManager.instance().getPack(pack_id)
-
-    let removed = 0
-
-    for (let m of pack.methods) {
-      switch (m.type) {
-        case "general_path": {
-          removed += await fix_path(m.pre_path)
-          removed += await fix_path(m.main_path)
-          removed += await fix_path(m.post_path)
-          break;
-        }
-        case "scantree":
-          removed += await fix_tree(m.tree.root)
-      }
-    }
-
-    await ExportStringModal.do(cleanedJSON(pack), `Removed ${removed} icons`,
-      `${pack.name}.json`
-    )
-  }
+  return
 }

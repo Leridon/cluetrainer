@@ -5,10 +5,10 @@ import {ImageFingerprint} from "../../../../lib/util/ImageFingerprint";
 import {deps} from "../../../dependencies";
 import {Vector2} from "../../../../lib/math";
 import {async_lazy, LazyAsync} from "../../../../lib/Lazy";
-import SliderPuzzle = Sliders.SliderPuzzle;
 import {Log} from "../../../../lib/util/Log";
-import log = Log.log;
 import {util} from "../../../../lib/util/util";
+import SliderPuzzle = Sliders.SliderPuzzle;
+import log = Log.log;
 import findBestMatch = util.findBestMatch;
 
 export class SliderReader {
@@ -69,14 +69,21 @@ export class SliderReader {
         if (matched_tiles[match.tile.position]) continue
         if (tiles_used[match.reference_tile.position]) continue
 
-        if (SlideReader.DEBUG_SLIDE_READER) console.log(`Matching ${match.tile.position} to reference tile #${match.reference_tile.position}`)
+        if (SlideReader.DEBUG_SLIDE_READER) {
+          console.log(`Matching ${match.tile.position} to reference tile #${match.reference_tile.position}, score ${match.score.toFixed(3)}`)
+
+          console.log(match.tile.signature)
+          console.log(match.reference_tile.signature)
+        }
 
         matched_tiles[match.tile.position] = match
         tiles_used[match.reference_tile.position] = true
       }
 
+      if (SlideReader.DEBUG_SLIDE_READER) console.log(`Matched ${theme}, total score ${lodash.sumBy(matched_tiles, t => t.score).toFixed(3)}`)
+
       if (SlideReader.DEBUG_SLIDE_READER) {
-        const debug_for = []
+        const debug_for: number[] = []
 
         for (let ref_tile of debug_for) {
           console.log(`Similarity to reference tile ${ref_tile}`)
@@ -194,14 +201,15 @@ export class SliderReader {
 }
 
 export namespace SlideReader {
+  import SliderPuzzle = Sliders.SliderPuzzle;
+  import Tile = Sliders.Tile;
   const _instance = async_lazy(async () => new SliderReader(await reference_sliders.get(), await _blank_tile_reference.get()))
 
   export async function instance(): Promise<SliderReader> {
     return _instance.get()
   }
 
-  import SliderPuzzle = Sliders.SliderPuzzle;
-  import Tile = Sliders.Tile;
+
   export const DETECTION_THRESHOLD_SCORE = 0.9
 
   export const DEBUG_SLIDE_READER = false

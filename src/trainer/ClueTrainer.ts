@@ -239,7 +239,7 @@ export class ClueTrainer extends Behaviour {
     }
   )
 
-  readonly version: number = Changelog.latest_patch.version
+  readonly version: Changelog.Version = Changelog.latest_patch.version
 
   data_dump: DataExport
 
@@ -251,7 +251,7 @@ export class ClueTrainer extends Behaviour {
 
     this.favourites = new FavoriteIndex(MethodPackManager.instance())
 
-    this.data_dump = new DataExport("cluetrainer", this.version, DataExport.createSpec(
+    this.data_dump = new DataExport("cluetrainer", this.version.version, DataExport.createSpec(
       this.settings.storage,
       MethodPackManager.instance().local_pack_store,
       this.favourites.data,
@@ -296,7 +296,9 @@ export class ClueTrainer extends Behaviour {
     }
 
     if (!is_first_visit && this.startup_settings.value().last_loaded_version != Changelog.latest_patch.version) {
-      const unseen_updates = Changelog.log.filter(e => e.version > this.startup_settings.value().last_loaded_version)
+      const last_loaded_version = Changelog.Version.lift(this.startup_settings.value().last_loaded_version)
+
+      const unseen_updates = Changelog.log.filter(e => !Changelog.Version.isLaterOrEqual(last_loaded_version, e.version))
 
       const notify_at_all = lodash.some(unseen_updates, e => !e.silent)
 
@@ -304,7 +306,7 @@ export class ClueTrainer extends Behaviour {
         const notifyable_update = lodash.findLast(unseen_updates, e => !!e.notification)
 
         notification(notifyable_update?.notification ?? "There has been an update.")
-          .setDuration(30000)
+          .setDuration(null)
           .addButton("View patch notes", (not) => {
             new Changelog.Modal().show()
             not.dismiss()
@@ -351,7 +353,7 @@ export class ClueTrainer extends Behaviour {
       }
     })
 
-    log().log(`Clue Trainer v${Changelog.latest_patch.version} started`)
+    log().log(`Clue Trainer v${Changelog.Version.asString(this.version)} started`)
 
     logDiagnostics()
 
@@ -361,6 +363,12 @@ export class ClueTrainer extends Behaviour {
 
     Alt1UpdateNotice.maybeRemind(this)
     ClueTrainerAppMigrationNotice.maybeRemind(this)
+
+    if (Changelog.latest_patch.version.beta_patch != undefined) {
+      notification(`You are on beta build ${Changelog.Version.asString(this.version)}. Please remember to switch back to the main branch when testing is done.`)
+        .setDuration(null)
+        .show()
+    }
   }
 
   protected end() {
@@ -369,7 +377,7 @@ export class ClueTrainer extends Behaviour {
 
 export namespace ClueTrainer {
   export type Preferences = {
-    last_loaded_version?: number,
+    last_loaded_version?: number | Changelog.Version,
     earliest_next_cluetrainer_dot_app_migration_notice?: number
   }
 
