@@ -49,7 +49,7 @@ export namespace Changelog {
   }
 
   export const v49: LogEntry = {
-    date: new Date(Date.parse("2025-06-12")),
+    date: new Date(Date.parse("2025-06-16")),
     render: layout =>
       layout
         .paragraph("This update brings a variety of bugfixes as well as new teleports from today's game update. Updated methods are being worked on and will arrive later in the week.")
