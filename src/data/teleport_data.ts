@@ -1762,47 +1762,46 @@ name: "Guthix Memorial",
       }
     ]
   },
-  /*
-    {
-        type: "teleports",
-        id: "piratebook",
-name: "Big book o´piracy",
-img: {url: "bookopiracy.gif"},
-        spots: [
-            {
-                id: "mosleharmless",
-target: {origin: {x: 3684, y: 2958, level: 0}},
-code: "1",
-name: "Mos Le'Harmless",
-                menu_ticks: 1,
-                animation_ticks: 13
-            },
-            {
-                id: "braindeath",
-target: {origin: {x: 2162, y: 5114, level: 0}},
-code: "2",
-name: "Braindeath Island",
-                menu_ticks: 1,
-                animation_ticks: 13
-            },
-            {
-                id: "dragontooth",
-target: { origin: {"x": 3792, "y": 3559, "level": 0} },
-code: "3",
-name: "Dragontooth Isle",
-                menu_ticks: 1,
-                animation_ticks: 13
-            },
-            {
-                id: "harmony",
-target: {origin: {x: 3797, y: 2836, level: 0}},
-code: "3",
-name: "Harmony Island",
-                menu_ticks: 1,
-                animation_ticks: 13
-            },
-        ]
-    },*/
+  {
+    type: "teleports",
+    id: "piratebook",
+    name: "Big Book o´ Piracy",
+    img: {url: "bookopiracy.gif"},
+    menu_ticks: 1,
+    animation_ticks: 13,
+    spots: [
+      {
+        id: "mosleharmless",
+        target: {"origin": {"x": 3684, "y": 2958, "level": 0}},
+        code: "1",
+        name: "Mos Le'Harmless",
+      },
+      {
+        id: "braindeath",
+        target: {"origin": {"x": 2162, "y": 5114, "level": 1}},
+        code: "2",
+        name: "Braindeath Island",
+      },
+      {
+        id: "dragontooth",
+        target: {"origin": {"x": 3792, "y": 3559, "level": 0}},
+        code: "3",
+        name: "Dragontooth Isle",
+      },
+      {
+        id: "harmony",
+        target: {"origin": {"x": 3797, "y": 2836, "level": 0}},
+        code: "3",
+        name: "Harmony Island",
+      },
+    ],
+    access: [{
+      id: "book",
+      type: "item",
+      name: {name: "Big Book o´ Piracy", kind: "item"},
+      action_name: "Teleport",
+    }]
+  },
   {
     type: "teleports",
     id: "amuletofglory",
@@ -2244,7 +2243,7 @@ name: "Harmony Island",
       },
       {
         id: "crafting",
-        target: {"origin": {"x": 2933, "y": 3290, "level": 0}},
+        target: {"origin": {"x": 2935, "y": 3294, "level": 0}},
         code: "3",
         name: "Crafting Guild",
       },
@@ -4671,8 +4670,43 @@ name: "Entrana",
     ],
     access: [
       {id: "item", type: "item", name: {kind: "item", name: "Leela's favour"}, action_name: "Teleport", img: {url: "Leelas_favour.webp"}}
-    ]
-  }
+    ],
+  },
+  {
+    type: "teleports",
+    id: "delversanklet",
+    name: "Delver's anklet",
+    img: {url: "delvers_anklet.png"},
+    menu_ticks: 2,
+    animation_ticks: default_teleport_ticks,
+    spots: [
+      {
+        id: "brimhavendungeon",
+        target: {"origin": {"x": 2638, "y": 9593, "level": 2}},
+        code: "1",
+        name: "Brimhaven Dungeon",
+      },
+      {
+        id: "fremennikslayerdungeon",
+        target: {"origin": {"x": 2729, "y": 10021, "level": 0}},
+        code: "2",
+        name: "Fremennik Slayer Dungeon",
+      },
+      {
+        id: "polyporedungeon",
+        target: {"origin": {"x": 4654, "y": 5427, "level": 1}},
+        code: "3",
+        name: "Polypore Dungeon",
+      },
+    ],
+    access: [{
+      id: "anklet",
+      type: "item",
+      name: {name: "Delver's anklet", kind: "item"},
+      action_name: "Rub",
+      can_be_in_pota: true
+    }]
+  },
 //TODO: Eagle transport system
 //TODO: Canoes
 //TODO: Orthen Teleport network
