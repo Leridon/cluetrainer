@@ -53,8 +53,8 @@ export namespace Changelog {
     render: layout =>
       layout
         .row(new List()
-          .item("Updated map collision data to the latest game version."
-          )
+          .item("Updated map collision data to the latest game version.")
+          .item("Updated tetracompass methods that used the Games necklace, which isn't part of the recommended solving preset.")
         ),
     title: "TODO",
     version: {version: 50, beta_patch: 1},
