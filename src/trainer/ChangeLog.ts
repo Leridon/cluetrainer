@@ -68,7 +68,7 @@ export namespace Changelog {
             .item(italic("Dev note: There was a tiny but very impactful error in the formula used to compare two tiles. Fixing this makes the math more sound and fixes the instances where the wrong results were noticeable, but could also lead to unforeseen consequences for other puzzles. If you encounter any new issues for slider puzzles, lockboxes, or knots, please report them in the usual places. If you do, please include a screenshot of the wrongly recognized puzzle without any Clue Trainer overlay visible."))
           )
           .item("Fixed a bug that caused the 'Transcript' setting for treasure maps to be reset on a reload.")
-          .item("Fixed that Cloudflare's CDN would not cache the large binary files for the slider puzzle solver.")
+          .item("Fixed that Cloudflare's CDN would not cache the large binary files for the slider puzzle solver, leading to slow load times on occasion.")
           .item("Added the Delver's Anklet teleports.")
           .item("Updated the position of the crafting guild teleport.")
         ),
