@@ -60,6 +60,7 @@ export namespace Changelog {
           )
           .item("Fixed a race condition that would sometimes cause inconsistent zooming for compass spots.")
           .item("Fixed the location of the Portmaster Kags teleport to Pollnivneach.")
+          .item("Removed a method for an elite compass spot using the wrong Portmaster Kags teleport.")
           .item("Fixed the area for the emote clue in the Varrock palace library.")
           .item("Fixed a bug that caused triangulation lines to be added for hidden spots after a solution was already found.")
           .item("Fixed the area for the emote clue in front of the Menaphos library.")
