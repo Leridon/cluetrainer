@@ -48,6 +48,18 @@ export namespace Changelog {
     render: (_: Layout) => void,
   }
 
+  export const v50: LogEntry = {
+    date: new Date(Date.parse("TODO")),
+    render: layout =>
+      layout
+        .row(new List()
+          .item("Updated map collision data to the latest game version."
+          )
+        ),
+    title: "TODO",
+    version: {version: 50, beta_patch: 1},
+  }
+
   export const v49: LogEntry = {
     date: new Date(Date.parse("2025-06-16")),
     render: layout =>
@@ -282,6 +294,7 @@ export namespace Changelog {
   }
 
   export const log: LogEntry[] = lodash.sortBy<LogEntry>([
+    v50,
     v49,
     v48,
     v47,
