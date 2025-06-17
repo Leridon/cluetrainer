@@ -10,6 +10,29 @@ const ProvidePlugin = webpack.ProvidePlugin;
 
 const development_mode = process.env.NODE_ENV == "development"
 
+type BuildEnvironment = {
+  is_beta_build: boolean,
+  commit_sha: string,
+  build_timestamp: number,
+}
+
+type PassedEnvironment = {
+  cluetrainer_build_environment?: BuildEnvironment
+}
+
+let commitHash = require('child_process')
+  .execSync('git rev-parse --short HEAD')
+  .toString()
+  .trim();
+
+const passed_environment: PassedEnvironment = {
+  cluetrainer_build_environment: {
+    commit_sha: commitHash,
+    build_timestamp: Date.now().valueOf(),
+    is_beta_build: process.env.NODE_ENV == "beta"
+  }
+}
+
 /**
  * @type {import("webpack").Configuration}
  */
@@ -65,9 +88,7 @@ module.exports = {
       process: 'process/browser',
       Buffer: ['buffer', 'Buffer']
     }),
-    new DefinePlugin({
-      'process.env.DEV_MODE': JSON.stringify(development_mode)
-    }),
+    new DefinePlugin(Object.fromEntries(Object.entries(passed_environment).map(([key, value]) => [key, JSON.stringify(value)]))),
   ],
   module: {
     // The rules section tells webpack what to do with different file types when you import them from js/ts

@@ -2,6 +2,7 @@
   "name": "cluetrainer",
   "scripts": {
     "build": "node -r ts-node/register ./node_modules/webpack/bin/webpack.js --node-env development",
+    "build-beta": "node -r ts-node/register ./node_modules/webpack/bin/webpack.js --node-env beta",
     "build-production": "node -r ts-node/register ./node_modules/webpack/bin/webpack.js",
     "watch": "npm run build -- --watch",
     "runlocal": "electron dist/electron.bundle.js"
