@@ -38,6 +38,7 @@ import {PermissionChecker} from "./startup_messages/PermissionChecker";
 import {SuccessfullInstallationNotice} from "./startup_messages/SuccessfullInstallationNotice";
 import {lazy} from "../lib/Lazy";
 import {Alt1} from "../lib/alt1/Alt1";
+import * as process from "process";
 import ActiveTeleportCustomization = Transportation.TeleportGroup.ActiveTeleportCustomization;
 import TeleportSettings = Settings.TeleportSettings;
 import inlineimg = C.inlineimg;
@@ -49,6 +50,10 @@ import staticentity = C.staticentity;
 import entity = C.entity;
 import notification = Notification.notification;
 import log = Log.log;
+
+declare global {
+  var cluetrainer_build_environment: ClueTrainer.BuildEnvironment
+}
 
 export namespace ScanTrainerCommands {
   import Command = QueryLinks.Command;
@@ -171,7 +176,6 @@ export class ClueTrainer extends Behaviour {
   settings = new SettingsManagement()
 
   in_alt1: boolean = !!window.alt1?.permissionInstalled || DEBUG_SIMULATE_INALT1
-  in_dev_mode = !!process.env.DEV_MODE
 
   menu_bar: MainTabControl
   main_content: Widget = null
@@ -258,13 +262,28 @@ export class ClueTrainer extends Behaviour {
       BookmarkStorage.persistance,
       SectionMemory.instance().data
     ))
-
-    if (this.in_dev_mode) {
-      log().log("In development mode")
-    }
   }
 
   protected async begin() {
+
+    const environment = cluetrainer_build_environment
+
+    if (environment) {
+      Changelog.latest_patch.version.build_info = {
+        commit_sha: environment.commit_sha,
+        build_timestamp: new Date(environment.build_timestamp),
+        is_beta_build: environment.is_beta_build ?? false
+      }
+    }
+
+    const build_info: {
+      commit_sha: string,
+      timestamp: number,
+    } = process.env['BUILDINFO'] as any
+
+    if (build_info) {
+
+    }
 
     this.startup_settings.subscribe(s => this.startup_settings_storage.set(s))
 
@@ -353,7 +372,14 @@ export class ClueTrainer extends Behaviour {
       }
     })
 
-    log().log(`Clue Trainer v${Changelog.Version.asString(this.version)} started`)
+    log().log(`Version: ${Changelog.Version.asString(this.version)}`)
+    log().log(`Build: ${this.version.build_info?.commit_sha ?? "Unavailable"}`)
+    if (this.version.build_info?.build_timestamp) {
+      log().log(`Build Timestamp: ${this.version.build_info.build_timestamp.toUTCString()}`)
+    } else {
+      log().log(`Build Timestamp: Unavailable`)
+    }
+    log().log(`Beta: ${this.version.build_info?.is_beta_build ?? false}`)
 
     logDiagnostics()
 
@@ -364,7 +390,7 @@ export class ClueTrainer extends Behaviour {
     Alt1UpdateNotice.maybeRemind(this)
     ClueTrainerAppMigrationNotice.maybeRemind(this)
 
-    if (Changelog.latest_patch.version.beta_patch != undefined) {
+    if (Changelog.latest_patch.version.build_info?.is_beta_build) {
       notification(`You are on beta build ${Changelog.Version.asString(this.version)}. Please remember to switch back to the main branch when testing is done.`)
         .setDuration(null)
         .show()
@@ -376,6 +402,12 @@ export class ClueTrainer extends Behaviour {
 }
 
 export namespace ClueTrainer {
+  export type BuildEnvironment = {
+    is_beta_build: boolean,
+    commit_sha: string,
+    build_timestamp: number,
+  }
+
   export type Preferences = {
     last_loaded_version?: number | Changelog.Version,
     earliest_next_cluetrainer_dot_app_migration_notice?: number

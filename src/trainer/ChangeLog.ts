@@ -1,23 +1,31 @@
 import Properties from "./ui/widgets/Properties";
-import * as lodash from "lodash";
 import {NisModal} from "../lib/ui/NisModal";
 import {List} from "../lib/ui/List";
 import {C} from "../lib/ui/constructors";
+import {util} from "../lib/util/util";
 
 export namespace Changelog {
 
   import div = C.div;
   import italic = C.italic;
+  import Order = util.Order;
   type Layout = Properties
 
   export type Version = {
     version: number,
-    beta_patch?: number
+    release_date?: Date,
+    build_info?: {
+      commit_sha: string,
+      build_timestamp: Date,
+      is_beta_build?: boolean
+    }
   }
 
   export namespace Version {
+    import Order = util.Order;
+
     export function isBeta(self: Version): boolean {
-      return self.beta_patch != undefined
+      return self.build_info != undefined
     }
 
     export function lift(self: Version | number): Version {
@@ -26,16 +34,21 @@ export namespace Changelog {
     }
 
     export function isLaterOrEqual(a: Version, than: Version): boolean {
-      return a.version > than.version || (a.version == than.version && (a.beta_patch ?? 0) >= (than.beta_patch ?? 0))
+      return a.version > than.version || (a.version == than.version && (a.build_info?.build_timestamp?.valueOf() ?? 0) >= (than.build_info?.build_timestamp?.valueOf() ?? 0))
     }
 
     export function asString(self: Version): string {
-      if (self.beta_patch != undefined) return `v${self.version} BETA p${self.beta_patch}`
+      if (self.build_info?.is_beta_build) return `v${self.version}B-${self.build_info.commit_sha}`
       else return `v${self.version}`
     }
 
-    export function asNumber(self: Version) {
-      return self.version + (self.beta_patch ?? 0) / 1000
+    export const natural_order = Order.chain<Version>(
+      Order.comap(Order.natural_order, e => e.version),
+      Order.comap(Order.natural_order, e => e.build_info?.build_timestamp?.valueOf() ?? 0),
+    )
+
+    export function date(self: Version): Date {
+      return self.release_date ?? self.build_info?.build_timestamp ?? new Date("Unknown")
     }
   }
 
@@ -43,13 +56,26 @@ export namespace Changelog {
     version: Version,
     silent?: boolean,
     notification?: string,
-    date: Date,
     title: string,
     render: (_: Layout) => void,
   }
 
+  export const v50: LogEntry = {
+    render: layout =>
+      layout
+        .row(new List()
+          .item("Updated map collision data to the latest game version.")
+          .item("Updated tetracompass methods that used the Games necklace, which isn't part of the recommended solving preset.")
+          .item("Added new scan methods that utilize the new Delver's anklet for Fremennik Slayer Dungeon and Brimhaven Dungeon.", new List()
+            .item(italic("Router's note: These should be considered drafts and are subject to improvements in the future.")))
+          .item("Added a new method for the Ramokee Skinweaver anagram in masters using the Delver's anklet.")
+        ),
+    notification: "New methods are available!",
+    title: "New Methods using Delver's anklet",
+    version: {version: 50, release_date: new Date(Date.parse("2025-06-18"))},
+  }
+
   export const v49: LogEntry = {
-    date: new Date(Date.parse("2025-06-16")),
     render: layout =>
       layout
         .paragraph("This update brings a variety of bugfixes as well as new teleports from today's game update. Updated methods are being worked on and will arrive later in the week.")
@@ -74,12 +100,11 @@ export namespace Changelog {
         ),
     notification: "Several bugfixes and new teleports have dropped.",
     title: "Bugfixes and new teleports",
-    version: {version: 49},
+    version: {version: 49, release_date: new Date(Date.parse("2025-06-16"))},
   }
 
 
   export const v48: LogEntry = {
-    date: new Date(Date.parse("2025-06-08")),
     render: layout =>
       layout
         .row(new List()
@@ -87,11 +112,11 @@ export namespace Changelog {
         )
     ,
     title: "Hotfix for Missing Scan Methods",
-    version: {version: 48}
+    version: {version: 48, release_date: new Date(Date.parse("2025-06-08"))}
   }
 
   export const v47: LogEntry = {
-    date: new Date(Date.parse("2025-06-08")),
+
     render: layout =>
       layout
         .header("Updated Paths")
@@ -114,11 +139,11 @@ export namespace Changelog {
     ,
     notification: "Compass Paths have been overhauled",
     title: "New Compass Paths and Behaviour Changes",
-    version: {version: 47}
+    version: {version: 47, release_date: new Date(Date.parse("2025-06-08"))}
   }
 
   export const v46: LogEntry = {
-    date: new Date(Date.parse("2025-05-12")),
+
     render: layout =>
       layout
         .row(new List()
@@ -130,11 +155,11 @@ export namespace Changelog {
           .item("Fixed the teleport area of the Traveller's necklace's teleport to the Wizard Tower.")
         ),
     title: "Path Editor Changes",
-    version: {version: 46}
+    version: {version: 46, release_date: new Date(Date.parse("2025-05-12"))}
   }
 
   export const v45: LogEntry = {
-    date: new Date(Date.parse("2025-04-09")),
+
     render: layout =>
       layout.row(new List()
         .item("Added a new, faster scan route for Menaphos using Leela's favour.")
@@ -146,11 +171,11 @@ export namespace Changelog {
       ),
     title: "New Methods",
     notification: "New Methods have arrived",
-    version: {version: 45}
+    version: {version: 45, release_date: new Date(Date.parse("2025-04-09"))}
   }
 
   export const v44: LogEntry = {
-    date: new Date(Date.parse("2025-04-08")),
+
     render: layout =>
       layout.row(new List()
         .item("Improved the accuracy of more than 50 teleport landing areas. ", new List()
@@ -164,11 +189,11 @@ export namespace Changelog {
         .item("Added Leela's favour teleports.")
       ),
     title: "Improved teleport area accuracy",
-    version: {version: 44}
+    version: {version: 44, release_date: new Date(Date.parse("2025-04-08"))}
   }
 
   export const v43: LogEntry = {
-    date: new Date(Date.parse("2025-03-09")),
+
     render: layout => layout
       .header("General", "left")
       .row(new List()
@@ -195,11 +220,11 @@ export namespace Changelog {
       )
     ,
     title: "Bugfixes and Method Updates",
-    version: {version: 43}
+    version: {version: 43, release_date: new Date(Date.parse("2025-03-09"))}
   }
 
   export const v42: LogEntry = {
-    date: new Date(Date.parse("2025-03-06")),
+
     render: layout => layout
       .row(new List()
         .item("Updated the tetracompass method pack to utilize the new teleports and so paths land exactly on the target tile.")
@@ -210,11 +235,11 @@ export namespace Changelog {
         .item("Renamed methods for easy clues so the name indicates the primary method of transportation.")
       ),
     title: "New Tetracompass Methods",
-    version: {version: 42}
+    version: {version: 42, release_date: new Date(Date.parse("2025-03-06"))}
   }
 
   export const v41: LogEntry = {
-    date: new Date(Date.parse("2025-03-04")),
+
     render: layout => layout
       .row(new List()
         .item("Added new methods utilizing the new Kharazi teleport for two hard clue steps.")
@@ -230,11 +255,11 @@ export namespace Changelog {
     ,
     notification: "New methods using the new teleports have arrived",
     title: "New Methods",
-    version: {version: 41}
+    version: {version: 41, release_date: new Date(Date.parse("2025-03-04"))}
   }
 
   export const v40: LogEntry = {
-    date: new Date(Date.parse("2025-03-03")),
+
     render: layout => layout
       .row(new List()
         .item("Added the new Anachronia and Lost Grove teleports from the normal spellbook.")
@@ -243,11 +268,11 @@ export namespace Changelog {
       .paragraph("New paths utilizing these new teleports will be added as soon as possible.")
     ,
     title: "New Teleports",
-    version: {version: 40}
+    version: {version: 40, release_date: new Date(Date.parse("2025-03-03"))}
   }
 
   export const v39: LogEntry = {
-    date: new Date(Date.parse("2025-02-20")),
+
     render: layout => layout
       .row(new List()
         .item("Increased the detection threshold for map clues to fix unrecognized steps.", new List()
@@ -255,22 +280,22 @@ export namespace Changelog {
         )
       ),
     title: "Clue Reader Bugfix",
-    version: {version: 39}
+    version: {version: 39, release_date: new Date(Date.parse("2025-02-20"))}
   }
 
   export const v38: LogEntry = {
-    date: new Date(Date.parse("2025-02-19")),
+
     render: layout => layout
       .row(new List()
         .item("Fixed a bug that caused the map to not zoom in on the final compass spot when no method is selected for it.")
         .item("Zooming in for compasses now includes the closest teleport if that option is enabled.")
       ),
     title: "Bugfixes",
-    version: {version: 38}
+    version: {version: 38, release_date: new Date(Date.parse("2025-02-19"))}
   }
 
   export const v37: LogEntry = {
-    date: new Date(Date.parse("2025-02-19")),
+
     render: layout => layout
       .row(new List()
         .item("Fixed a styling bug that caused puzzle modals to be weird and double scrollbars to appear.")
@@ -278,10 +303,11 @@ export namespace Changelog {
         .item("Moved the info button on the scan status panel so it does not overlap with the text.")
       ),
     title: "Bugfixes",
-    version: {version: 37}
+    version: {version: 37, release_date: new Date(Date.parse("2025-02-19"))}
   }
 
-  export const log: LogEntry[] = lodash.sortBy<LogEntry>([
+  export const log: LogEntry[] = [
+    v50,
     v49,
     v48,
     v47,
@@ -296,8 +322,8 @@ export namespace Changelog {
     v38,
     v37,
     {
-      version: {version: 36},
-      date: new Date(Date.parse("2025-02-18")),
+      version: {version: 36, release_date: new Date(Date.parse("2025-02-18"))},
+
       notification: "Cluepedia and reworked Scan Tree Solving has released!",
       title: "Scan Improvements and Cluepedia",
       render: layout => {
@@ -359,8 +385,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 35},
-      date: new Date(Date.parse("2025-02-11")),
+      version: {version: 35, release_date: new Date(Date.parse("2025-02-11"))},
       title: "Collision Fixes",
       render: layout => layout
         .row(new List()
@@ -371,8 +396,7 @@ export namespace Changelog {
         )
     },
     {
-      version: {version: 34},
-      date: new Date(Date.parse("2025-01-22")),
+      version: {version: 34, release_date: new Date(Date.parse("2025-01-22"))},
       title: "Some Teleport Additions",
       render: layout => {
         layout
@@ -388,8 +412,7 @@ export namespace Changelog {
       }
     },
     {
-      version: {version: 33},
-      date: new Date(Date.parse("2025-01-13")),
+      version: {version: 33, release_date: new Date(Date.parse("2025-01-13"))},
       title: "Nature Sentinel Key Combinations",
       notification: "Nature's Sentinel keyboard shortcuts have been updated.",
       render: layout => {
@@ -401,8 +424,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 32},
-      date: new Date(Date.parse("2025-01-06")),
+      version: {version: 32, release_date: new Date(Date.parse("2025-01-06"))},
       title: "Data Fixes and Better Method Management",
       render: layout => {
         layout
@@ -424,8 +446,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 31},
-      date: new Date(Date.parse("2025-01-02")),
+      version: {version: 31, release_date: new Date(Date.parse("2025-01-02"))},
       title: "Small Compass Fixes",
       render: layout => {
         layout
@@ -437,8 +458,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 30},
-      date: new Date(Date.parse("2024-12-21")),
+      version: {version: 30, release_date: new Date(Date.parse("2024-12-21"))},
       title: "Crash Hotfix",
       silent: true,
       render: layout => {
@@ -449,8 +469,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 29},
-      date: new Date(Date.parse("2024-12-21")),
+      version: {version: 29, release_date: new Date(Date.parse("2024-12-21"))},
       title: "Further Zoom Fixes and Configuration Options",
       notification: "Check out the new options for zoom behaviour",
       render: layout => {
@@ -468,8 +487,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 28},
-      date: new Date(Date.parse("2024-12-16")),
+      version: {version: 28, release_date: new Date(Date.parse("2024-12-16"))},
       title: "Decluttering Path Displays and Zoom Fixes",
       notification: "Check out changes to path rendering and zoom behaviour",
       render: layout => {
@@ -492,8 +510,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 27},
-      date: new Date(Date.parse("2024-12-14")),
+      version: {version: 27, release_date: new Date(Date.parse("2024-12-14"))},
       silent: true,
       title: "Crowdsourcing Data Sanitation",
       render: layout => {
@@ -503,8 +520,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 26},
-      date: new Date(Date.parse("2024-12-10")),
+      version: {version: 26, release_date: new Date(Date.parse("2024-12-10"))},
       title: "URL Update",
       silent: true,
       render: layout => {
@@ -517,8 +533,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 25},
-      date: new Date(Date.parse("2024-12-09")),
+      version: {version: 25, release_date: new Date(Date.parse("2024-12-09"))},
       title: "Game Update Fixes",
       render: layout => {
         layout
@@ -532,8 +547,7 @@ export namespace Changelog {
           .paragraph("Today's game update changed the shuffle algorithm for slider puzzles, making them significantly faster to solve. Preliminary testing suggests solution lengths in the range between 15 and 40 clicks.")
       }
     }, {
-      version: {version: 24},
-      date: new Date(Date.parse("2024-12-05")),
+      version: {version: 24, release_date: new Date(Date.parse("2024-12-05"))},
       title: "Scan Overlay Updates",
       render: layout => {
         layout
@@ -548,8 +562,7 @@ export namespace Changelog {
           .paragraph("Next monday, the update to slider puzzles will release. To quickly evaluate the effects of this change, we need the appropriate crowd-sourced data. Crowdsourcing is powered by users of Clue Trainer that opt in for data collection available in the 'Crowdsourcing' section in the settings.")
       }
     }, {
-      version: {version: 23},
-      date: new Date(Date.parse("2024-11-26")),
+      version: {version: 23, release_date: new Date(Date.parse("2024-11-26"))},
       title: "Seal Slider Fix",
       render: layout => {
         layout
@@ -558,8 +571,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 22},
-      date: new Date(Date.parse("2024-11-25")),
+      version: {version: 22, release_date: new Date(Date.parse("2024-11-25"))},
       title: "Fixes for the 'Use solution of previous step' option.",
       render: layout => {
         layout
@@ -571,8 +583,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 21},
-      date: new Date(Date.parse("2024-11-25")),
+      version: {version: 21, release_date: new Date(Date.parse("2024-11-25"))},
       silent: true,
       title: "Fixing the Bugfix",
       render: layout => {
@@ -582,8 +593,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 20},
-      date: new Date(Date.parse("2024-11-25")),
+      version: {version: 20, release_date: new Date(Date.parse("2024-11-25"))},
       title: "Bugfixes",
       render: layout => {
         layout
@@ -594,8 +604,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 19},
-      date: new Date(Date.parse("2024-11-17")),
+      version: {version: 19, release_date: new Date(Date.parse("2024-11-17"))},
       silent: true,
       title: "Internal Tooling Fixes",
       render: layout => {
@@ -607,8 +616,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 18},
-      date: new Date(Date.parse("2024-11-17")),
+      version: {version: 18, release_date: new Date(Date.parse("2024-11-17"))},
       title: "Clue Reader Bugfix",
       render: layout => {
         layout
@@ -618,8 +626,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 17},
-      date: new Date(Date.parse("2024-11-16")),
+      version: {version: 17, release_date: new Date(Date.parse("2024-11-16"))},
       title: "Scan Range Minimap Overlay",
       render: layout => {
         layout
@@ -632,8 +639,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 16},
-      date: new Date(Date.parse("2024-10-10")),
+      version: {version: 16, release_date: new Date(Date.parse("2024-10-10"))},
       silent: true,
       title: "Compass Overlay Fix",
       render: layout => {
@@ -643,8 +649,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 15},
-      date: new Date(Date.parse("2024-10-10")),
+      version: {version: 15, release_date: new Date(Date.parse("2024-10-10"))},
       silent: true,
       title: "Solving Bugfix",
       render: layout => {
@@ -654,8 +659,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 14},
-      date: new Date(Date.parse("2024-10-08")),
+      version: {version: 14, release_date: new Date(Date.parse("2024-10-08"))},
       title: "Large internal change and small visible changes",
       render: layout => {
         layout
@@ -670,8 +674,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 13},
-      date: new Date(Date.parse("2024-10-03")),
+      version: {version: 13, release_date: new Date(Date.parse("2024-10-03"))},
       silent: true,
       title: "Lockbox Hotfix",
       render: layout => {
@@ -681,8 +684,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 12},
-      date: new Date(Date.parse("2024-10-03")),
+      version: {version: 12, release_date: new Date(Date.parse("2024-10-03"))},
       title: "Lockbox Changes",
       render: layout => {
         layout
@@ -702,8 +704,7 @@ export namespace Changelog {
           )
       }
     }, {
-      version: {version: 11},
-      date: new Date(Date.parse("2024-09-22")),
+      version: {version: 11, release_date: new Date(Date.parse("2024-09-22"))},
       title: "Bugfixes",
       render: layout => {
         layout.row(new List()
@@ -714,9 +715,8 @@ export namespace Changelog {
         )
       }
     }, {
-      version: {version: 10},
+      version: {version: 10, release_date: new Date(Date.parse("2024-09-20"))},
       silent: true,
-      date: new Date(Date.parse("2024-09-20")),
       title: "Timing Bugfix",
       render: layout => {
         layout.row(new List()
@@ -726,8 +726,7 @@ export namespace Changelog {
           .paragraph("This is a bit of a speculative fix, because the source of the reported issue is not 100% confirmed.")
       }
     }, {
-      version: {version: 9},
-      date: new Date(Date.parse("2024-09-18")),
+      version: {version: 9, release_date: new Date(Date.parse("2024-09-18"))},
       title: "Bugfixes",
       render: layout => {
         layout.row(new List()
@@ -736,8 +735,7 @@ export namespace Changelog {
         )
       }
     }, {
-      version: {version: 8},
-      date: new Date(Date.parse("2024-09-09")),
+      version: {version: 8, release_date: new Date(Date.parse("2024-09-09"))},
       title: "Migration and update notices",
       render: layout => {
         layout.row(new List()
@@ -754,8 +752,7 @@ export namespace Changelog {
         )
       }
     }, {
-      version: {version: 7},
-      date: new Date(Date.parse("2024-08-11")),
+      version: {version: 7, release_date: new Date(Date.parse("2024-08-11"))},
       title: "Transport Fixes and Permission Checking",
       render: layout => {
         layout.row(new List()
@@ -764,8 +761,7 @@ export namespace Changelog {
         )
       }
     }, {
-      version: {version: 6},
-      date: new Date(Date.parse("2024-07-14")),
+      version: {version: 6, release_date: new Date(Date.parse("2024-07-14"))},
       title: "Celtic Knot Bugfix",
       render: layout => {
         layout.row(new List()
@@ -777,8 +773,7 @@ export namespace Changelog {
         layout.paragraph("While solving celtic knots, there's a step called 'unification' of puzzle states. This joins the previously known state of the puzzle with the new state. It continuously updates what the solver knows about the puzzle and is required when there is not enough information initially, and to make updating the overlay continuously possible. There was a rare case where unification actually caused information to be lost, which in turn caused the solver to not find a solution anymore.")
       }
     }, {
-      version: {version: 5},
-      date: new Date(Date.parse("2024-07-12")),
+      version: {version: 5, release_date: new Date(Date.parse("2024-07-12"))},
       title: "Slider Bugfix",
       render: layout => {
         layout.row(new List()
@@ -790,8 +785,7 @@ export namespace Changelog {
       }
     },
     {
-      version: {version: 4},
-      date: new Date(Date.parse("2024-07-11")),
+      version: {version: 4, release_date: new Date(Date.parse("2024-07-11"))},
       title: "Better Logging",
       render: layout => {
 
@@ -805,8 +799,7 @@ export namespace Changelog {
       }
     },
     {
-      version: {version: 3},
-      date: new Date(Date.parse("2024-07-10")),
+      version: {version: 3, release_date: new Date(Date.parse("2024-07-10"))},
       title: "New Method",
       render: layout => {
         layout.row(new List()
@@ -815,8 +808,7 @@ export namespace Changelog {
       }
     },
     {
-      version: {version: 2},
-      date: new Date(Date.parse("2024-07-09")),
+      version: {version: 2, release_date: new Date(Date.parse("2024-07-09"))},
       title: "Slider Bugfix",
       render: layout => {
         layout.row(new List()
@@ -825,8 +817,7 @@ export namespace Changelog {
       }
     },
     {
-      version: {version: 1},
-      date: new Date(Date.parse("2024-07-09")),
+      version: {version: 1, release_date: new Date(Date.parse("2024-07-09"))},
       notification: "Slider Puzzles now have faster solutions",
       title: "New Solving Algorithm for Slider Puzzles",
       render: layout => {
@@ -841,8 +832,7 @@ export namespace Changelog {
       }
     },
     {
-      version: {version: 0},
-      date: new Date(Date.parse("2024-06-28")),
+      version: {version: 0, release_date: new Date(Date.parse("2024-06-28"))},
       title: "New Methods by Ngis",
       render: layout => {
         layout.row(new List()
@@ -855,8 +845,8 @@ export namespace Changelog {
       }
     },
     {
-      version: {version: -1},
-      date: new Date(Date.parse("2024-06-25")),
+      version: {version: -1, release_date: new Date(Date.parse("2024-06-25"))},
+
       notification: "Clue Trainer now supports Sandy Clues and Tetracompasses",
       title: "Sandy Clues and Tetracompasses",
       render: layout => {
@@ -871,8 +861,7 @@ export namespace Changelog {
       }
     },
     {
-      version: {version: -2},
-      date: new Date(Date.parse("2024-06-18")),
+      version: {version: -2, release_date: new Date(Date.parse("2024-06-18"))},
       title: "Slider Bugfix",
       render: layout => {
         layout.row(new List()
@@ -881,8 +870,8 @@ export namespace Changelog {
       }
     },
     {
-      version: {version: -3},
-      date: new Date(Date.parse("2024-06-16")),
+      version: {version: -3, release_date: new Date(Date.parse("2024-06-16"))},
+
       title: "Compass Bugfixes",
       render: layout => {
         layout.row(new List()
@@ -902,8 +891,7 @@ export namespace Changelog {
       }
     },
     {
-      version: {version: -4},
-      date: new Date(Date.parse("2024-06-14")),
+      version: {version: -4, release_date: new Date(Date.parse("2024-06-14"))},
       title: "Miscellanious",
       render: layout => {
         layout.row(new List()
@@ -914,8 +902,7 @@ export namespace Changelog {
       }
     },
     {
-      version: {version: -5},
-      date: new Date(Date.parse("2024-06-11")),
+      version: {version: -5, release_date: new Date(Date.parse("2024-06-11"))},
       title: "Bugfixes",
       render: layout => {
         layout.row(new List()
@@ -925,8 +912,7 @@ export namespace Changelog {
       }
     },
     {
-      version: {version: -6},
-      date: new Date(Date.parse("2024-06-10")),
+      version: {version: -6, release_date: new Date(Date.parse("2024-06-10"))},
       title: "New Compass Reader and Daemonheim Dig Site",
       render: layout => {
         layout.row(new List()
@@ -941,8 +927,7 @@ export namespace Changelog {
       }
     },
     {
-      version: {version: -7},
-      date: new Date(Date.parse("2024-06-06")),
+      version: {version: -7, release_date: new Date(Date.parse("2024-06-06"))},
       title: "Compass fixes",
       render: layout => {
         layout.row(new List()
@@ -958,8 +943,7 @@ export namespace Changelog {
       }
     },
     {
-      version: {version: -8},
-      date: new Date(Date.parse("2024-06-05")),
+      version: {version: -8, release_date: new Date(Date.parse("2024-06-05"))},
       title: "More compass improvements and a new URL",
       render: layout => {
         layout.paragraph("Clue Trainer has a new URL. You can now access it at <a href='https://cluetrainer.app'>cluetrainer.app</a>. The links in the channel description, guide page, bot command etc. have been updated and any new installations should use that URL. Existing users can switch over if they want to, but should be aware that you will need to restore your settings, as well as local and imported method packs manually. The current URL will continue to work for the time being. When it's time for it to go offline (so I can finally rename the GitHub repository) there will be plenty of notice and a way to carry over your data.")
@@ -987,8 +971,7 @@ export namespace Changelog {
       }
     },
     {
-      version: {version: -9},
-      date: new Date(Date.parse("2024-06-02")),
+      version: {version: -9, release_date: new Date(Date.parse("2024-06-02"))},
       title: "Small compass improvements",
       render: layout => {
         layout.row(new List()
@@ -999,8 +982,7 @@ export namespace Changelog {
       }
     },
     {
-      version: {version: -10},
-      date: new Date(Date.parse("2024-06-01")),
+      version: {version: -10, release_date: new Date(Date.parse("2024-06-01"))},
       title: "Improved compass solver and general improvements.",
       render: layout => {
         layout.header("Compass Solver", "left")
@@ -1034,7 +1016,7 @@ export namespace Changelog {
       }
     },
 
-  ], e => -Version.asNumber(e.version))
+  ].sort(Order.reverse(Order.comap(Version.natural_order, e => e.version)))
 
   export const latest_patch = log[0]
 
@@ -1076,7 +1058,9 @@ export namespace Changelog {
       layout.divider()
 
       log.forEach(entry => {
-        layout.header(c().text(`${entry.date.toLocaleDateString("en-gb")} (${Version.asString(entry.version)}) - ${entry.title}`))
+        const date = Version.date(entry.version)
+
+        layout.header(c().text(`${date.toLocaleDateString("en-gb")} (${Version.asString(entry.version)}) - ${entry.title}`))
 
         entry.render(layout)
 
