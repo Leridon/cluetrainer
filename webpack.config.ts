@@ -25,12 +25,25 @@ let commitHash = require('child_process')
   .toString()
   .trim();
 
+const is_beta = process.env.NODE_ENV == "beta"
+
 const passed_environment: PassedEnvironment = {
   cluetrainer_build_environment: {
     commit_sha: commitHash,
     build_timestamp: Date.now().valueOf(),
-    is_beta_build: process.env.NODE_ENV == "beta"
+    is_beta_build: is_beta
   }
+}
+
+const copy_patterns: any[] = [{
+  from: path.resolve(__dirname, "./static")
+}]
+
+if (is_beta) {
+  copy_patterns.push({
+    from: path.resolve(__dirname, "./static/appconfig.beta.json"),
+    to: path.resolve(__dirname, "./dist/appconfig.json"),
+  })
 }
 
 /**
@@ -80,9 +93,7 @@ module.exports = {
   },
   plugins: [
     new CopyWebpackPlugin({
-      patterns: [{
-        from: path.resolve(__dirname, "./static")
-      }]
+      patterns: copy_patterns
     }),
     new ProvidePlugin({
       process: 'process/browser',

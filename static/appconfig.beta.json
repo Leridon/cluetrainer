@@ -1,0 +1,16 @@
+{
+  "appName": "Clue Trainer (Beta Branch)",
+  "description": "Beta branch for Clue Trainer, hosting experimental or otherwise unstable versions. Not for regular use.",
+  "appUrl": "index.html",
+  "configUrl": "appconfig.json",
+  "iconUrl": "/assets/icons/glass.png",
+  "defaultWidth": 500,
+  "defaultHeight": 380,
+  "minWidth": 250,
+  "minHeight": 180,
+  "maxWidth": 1000,
+  "maxHeight": 1000,
+  "requestHandlers": [],
+  "activators": [],
+  "permissions": "pixel,gamestate,overlay"
+}
