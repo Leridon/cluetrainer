@@ -34,7 +34,7 @@ export namespace Changelog {
     }
 
     export function isLaterOrEqual(a: Version, than: Version): boolean {
-      return a.version > than.version || (a.version == than.version && (a.build_info?.build_timestamp?.valueOf() ?? 0) >= (than.build_info?.build_timestamp?.valueOf() ?? 0))
+      return a.version > than.version || (a.version == than.version && (!a.build_info?.build_timestamp || !than.build_info?.build_timestamp || new Date(a.build_info.build_timestamp).valueOf() >= new Date(than.build_info.build_timestamp).valueOf()))
     }
 
     export function asString(self: Version): string {
