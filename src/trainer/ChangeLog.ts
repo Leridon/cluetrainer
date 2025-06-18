@@ -60,6 +60,16 @@ export namespace Changelog {
     render: (_: Layout) => void,
   }
 
+  export const v51: LogEntry = {
+    render: layout =>
+      layout
+        .row(new List()
+          .item("Modified a few elite compass routes for easier execution.")
+        ),
+    title: "TODO",
+    version: {version: 51, release_date: null},
+  }
+
   export const v50: LogEntry = {
     render: layout =>
       layout
