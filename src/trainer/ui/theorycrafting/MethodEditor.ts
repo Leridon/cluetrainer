@@ -17,6 +17,7 @@ import Dependencies from "../../dependencies";
 import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
 import {Notification} from "../NotificationBar";
 import {MethodProperties} from "../MethodProperties";
+import {ConfirmBeforeUnload} from "../../../lib/util/ConfirmBeforeUnload";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import GenericPathMethod = SolvingMethods.GenericPathMethod;
 import Method = SolvingMethods.Method;
@@ -143,6 +144,8 @@ export default class MethodEditor extends Behaviour {
     if (bounds) {
       this.sub_editor.layer.getMap().fitView(TileArea.toRect(bounds[0]))
     }
+
+    this.lifetime_manager.bind(ConfirmBeforeUnload.instance().register())
   }
 
   protected end() {

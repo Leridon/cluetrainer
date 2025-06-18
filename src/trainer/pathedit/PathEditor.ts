@@ -56,6 +56,7 @@ import TeleportAccess = Transportation.TeleportGroup.TeleportAccess;
 import notification = Notification.notification;
 import arrow = PathGraphics.arrow;
 import findAsync = util.findAsync;
+import {ConfirmBeforeUnload} from "../../lib/util/ConfirmBeforeUnload";
 
 function needRepairing(state: movement_state, shortcut: Path.step_transportation): boolean {
   return state.position.tile
@@ -390,6 +391,7 @@ export class PathEditor extends Behaviour {
     this.interaction_guard = new InteractionGuard().setDefaultLayer(this.handler_layer)
     this.action_bar = new PathEditActionBar(this, this.interaction_guard).addTo(this.handler_layer)
 
+    this.lifetime_manager.bind(ConfirmBeforeUnload.instance().register())
   }
 
   protected begin() {
