@@ -382,6 +382,7 @@ export namespace Changelog {
         builder.version(51, "Unnamed")
           .list(l => l
             .item("Modified a few elite compass routes for easier execution.")
+            .item("Fixed that the update notification would appear every time Clue Trainer is opened.")
           )
 
         builder.add(
