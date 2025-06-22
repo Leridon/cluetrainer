@@ -35,7 +35,7 @@ export namespace Changelog {
     }
 
     export function isLaterOrEqual(a: Version, than: Version): boolean {
-      return a.version > than.version || (a.version == than.version && (!a.build_info?.build_timestamp || !than.build_info?.build_timestamp || new Date(a.build_info.build_timestamp).valueOf() >= new Date(than.build_info.build_timestamp).valueOf()))
+      return a.version > than.version || (a.version == than.version && (!a.build_info.is_beta_build || !a.build_info?.build_timestamp || !than.build_info?.build_timestamp || new Date(a.build_info.build_timestamp).valueOf() >= new Date(than.build_info.build_timestamp).valueOf()))
     }
 
     export function asString(self: Version): string {
@@ -383,6 +383,8 @@ export namespace Changelog {
           .list(l => l
             .item("Modified a few elite compass routes for easier execution.")
             .item("Fixed that the update notification would appear every time Clue Trainer is opened.")
+            .item("Closing the page while in the method or path editor will now prompt for confirmation.")
+            .item("The scan editor can now show additional timing statistics when hovering over the status icons of nodes in the tree view.")
           )
 
         builder.add(

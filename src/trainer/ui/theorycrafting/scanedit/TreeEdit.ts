@@ -25,6 +25,7 @@ import {identity} from "lodash";
 import {Path} from "../../../../lib/runescape/pathing";
 import {IssueWidget} from "../../../pathedit/EditedPathOverview";
 import {ScanTreeSolving} from "../../neosolving/subbehaviours/scans/ScanTreeSolving";
+import MovementStateView from "../../../pathedit/MovementStateView";
 import decision_tree = ScanTree.ScanTreeNode;
 import natural_join = util.natural_join;
 import shorten_integer_list = util.shorten_integer_list;
@@ -34,13 +35,15 @@ import ScanRegion = ScanTree.ScanRegion;
 import span = C.span;
 import spacer = C.spacer;
 import Pulse = Scans.Pulse;
-import Order = util.Order;
 import hbox = C.hbox;
 import vbox = C.vbox;
 import hboxl = C.hboxl;
 import collect_issues = Path.collect_issues;
 import scan_tree_template_resolvers = ScanTreeSolving.scan_tree_template_resolvers;
 import cls = C.cls;
+import space = C.space;
+import Order = util.Order;
+import div = C.div;
 
 export class DrawRegionAction extends ValueInteraction<ScanRegion> {
   constructor(name: string) {
@@ -61,6 +64,12 @@ export class DrawRegionAction extends ValueInteraction<ScanRegion> {
       .setText("Click and Drag the map to draw a scan region rectangle.")
     )
   }
+}
+
+function render_completeness(completeness: ScanTree.Augmentation.completeness_t | ScanTree.Augmentation.correctness_t): Widget {
+  const {char, cls} = ScanTree.Augmentation.Correctness.meta(completeness)
+
+  return c("<span>").css("width", "10px").addClass(cls).text(char)
 }
 
 class TreeNodeEdit extends Widget {
@@ -87,7 +96,6 @@ class TreeNodeEdit extends Widget {
 
     this.self_content = hbox().addClass("ctr-scantreeedit-node")
 
-
     this.child_content = c()
 
     const collapse_bar =
@@ -106,10 +114,6 @@ class TreeNodeEdit extends Widget {
           this.toggleCollapse()
         })
 
-    let spot_text = natural_join(shorten_integer_list(node.remaining_candidates.map((c) => ScanTree.spotNumber(parent.parent.builder.tree, c)),
-      (n) => `<span class="ctr-digspot-inline">${n}</span>`
-    ), "and")
-
     this.header = c()
       .addClass("ctr-scantreeedit-node-header")
       .append(
@@ -117,8 +121,6 @@ class TreeNodeEdit extends Widget {
           .on("click", () => this.parent.requestActivation(this.isActive() ? null : this)),
         this.you_are_here_marker = cls("ctr-scantreeedit-youarehere"),
         spacer(),
-        span(`${node.remaining_candidates.length}`)
-          .addTippy(c(`<span>${spot_text}</span>`)),
         this.completeness_container = hbox(),
         c().setInnerHtml("&#x22EE;")
           .addClass("ctr-path-edit-overview-step-options")
@@ -361,30 +363,50 @@ class TreeNodeEdit extends Widget {
       this.decision_span.text(`${decision_path_text}: `)
     }
 
-    function render_completeness(completeness: ScanTree.Augmentation.completeness_t | ScanTree.Augmentation.correctness_t): Widget {
-      let {char, cls, desc} = ScanTree.Augmentation.Correctness.meta(completeness)
-
-      return c("<span>").css("width", "10px").addClass(cls).text(char).tooltip(desc)
-    }
-
-    const complete = render_completeness(node.completeness).css("margin-left", "5px")
-    const correct = render_completeness(node.correctness).css("margin-left", "5px")
-
     this.completeness_container.empty()
-      .append(complete, correct)
+      .append(
+        hbox(
+          span(`${node.remaining_candidates.length}`),
+          render_completeness(node.completeness).css("margin-left", "5px"),
+          render_completeness(node.correctness).css("margin-left", "5px"),
+        ).addTippy(() => {
+          const spot_text = natural_join(shorten_integer_list(this.node.remaining_candidates.map((c) => ScanTree.spotNumber(this.parent.parent.builder.tree, c)),
+            (n) => `<span class="ctr-digspot-inline">${n}</span>`
+          ), "and")
 
-    if (node.path.issues.length > 0) {
-      correct.addTippy(vbox(...collect_issues(node.path).map(i => new IssueWidget(i))))
-    }
+          const props = new Properties()
+            .named("Spots", spot_text)
+            .named("Completeness", hboxl(render_completeness(this.node.completeness), space(), ScanTree.Augmentation.Correctness.meta(this.node.completeness).desc))
+            .named("Time Left",
+              vbox(
+                div(`${(node.timing_analysis.statistics.average - node.path.post_state.tick).toFixed(2)} ticks (Average)`),
+                div(`${(node.timing_analysis.statistics.min - node.path.post_state.tick).toFixed(2)} ticks (Min)`),
+                div(`${(node.timing_analysis.statistics.max - node.path.post_state.tick).toFixed(2)} ticks (Max)`),
+                div(`${(node.timing_analysis.statistics.median - node.path.post_state.tick).toFixed(2)} ticks (Median)`),
+              ))
+            .named("Correctness", hboxl(render_completeness(this.node.correctness), space(), ScanTree.Augmentation.Correctness.meta(this.node.correctness).desc))
+
+          const issues = collect_issues(node.path)
+
+          if (issues.length > 0) {
+            props.row(vbox(...issues.map(i => new IssueWidget(i))))
+          }
+
+          return props
+        })
+      )
 
     this.children.forEach(c => c.detach())
 
     this.updateInstructionPreview()
 
     this.timing_box.empty().append(
-      span(`T${this.node.path.pre_state.tick}`).addClass('nisl-textlink'),
+      span(`T${this.node.path.pre_state.tick}`).addClass('nisl-textlink')
+        .addTippy(new MovementStateView(this.node.path.pre_state))
+      ,
       span().setInnerHtml("&nbsp;to&nbsp;"),
-      span(`T${this.node.path.post_state.tick}`).addClass('nisl-textlink'),
+      span(`T${this.node.path.post_state.tick}`).addClass('nisl-textlink')
+        .addTippy(new MovementStateView(this.node.path.post_state)),
     )
 
     this.children = this.node.children.map(child => {

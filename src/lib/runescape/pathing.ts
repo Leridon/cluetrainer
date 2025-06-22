@@ -714,7 +714,7 @@ export namespace Path {
   }
 
   export function collect_issues(path: augmented): (issue & { step?: augmented_step, path?: augmented })[] {
-    let accumulator: (issue & { step?: augmented_step, path?: augmented })[] = []
+    const accumulator: (issue & { step?: augmented_step, path?: augmented })[] = []
 
     for (let step of path.steps) {
       for (let issue of step.issues) {
@@ -722,7 +722,7 @@ export namespace Path {
       }
     }
 
-    accumulator = accumulator.concat(path.issues.map(i => {
+    accumulator.push(...path.issues.map(i => {
       return {...i, path: path}
     }))
 
@@ -845,7 +845,10 @@ export namespace Path {
   export type SectionedPath = TreeArray<Step, { name: string, is_preferred_section?: boolean }>
 
   export namespace Section {
-    export function split_into_sections(path: Path.raw, root_name: string = "root", far_threshold: number = FAR_TRANSPORT_THRESHOLD): TreeArray.InnerNode<Step, { name: string, is_preferred_section?: boolean }> {
+    export function split_into_sections(path: Path.raw, root_name: string = "root", far_threshold: number = FAR_TRANSPORT_THRESHOLD): TreeArray.InnerNode<Step, {
+      name: string,
+      is_preferred_section?: boolean
+    }> {
       const section_dividers: number[] = []
 
       const division = (i: number) => {
