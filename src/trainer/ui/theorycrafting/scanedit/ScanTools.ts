@@ -64,7 +64,7 @@ export default class ScanTools extends Widget {
     ).appendTo(this)
 
     this.editor.builder.augmented.subscribe(t => {
-      const avg = span(t.state.timing_analysis.average.toFixed(2) + " ticks")
+      const avg = span(t.state.timing_analysis.statistics.average.toFixed(2) + " ticks")
 
       const any_incomplete = t.state.timing_analysis.spots.some(s => s.timings.some(t => t.incomplete))
 

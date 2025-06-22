@@ -1,6 +1,7 @@
 import {Path} from "lib/runescape/pathing";
 import {Vector2} from "../../math";
 import * as lodash from "lodash";
+import {tap} from "lodash";
 import {Clues} from "../../runescape/clues";
 import {util} from "../../util/util";
 import {ScanTheory} from "./Scans";
@@ -44,6 +45,65 @@ export namespace ScanTree {
     import ends_up = Path.ends_up;
     import activate = TileArea.activate;
 
+    export type Timing = {
+      spots: { spot: TileCoordinates, timings: { ticks: number, incomplete: boolean }[], statistics: Timing.Statistics }[],
+      statistics: Timing.Statistics
+    }
+
+    export namespace Timing {
+
+      export type Statistics = {
+        average: number,
+        median: number,
+        min: number,
+        max: number
+      }
+
+      export namespace Statistics {
+        import median = util.median;
+
+        export function calculate(ticks: number[]): Statistics {
+          ticks.sort()
+
+          return {
+            average: avg(...ticks),
+            min: ticks[0],
+            max: ticks[ticks.length - 1],
+            median:  median(ticks),
+          }
+        }
+      }
+
+      export function from(...ticks: { spot: TileCoordinates, ticks: number, incomplete: boolean }[]): Timing {
+        const combined: Timing = {
+          spots: [],
+          statistics: undefined
+        }
+
+        ticks.forEach(({spot, ticks, incomplete}) => {
+          const entry = combined.spots.find(s => TileCoordinates.eq(s.spot, spot))
+            ?? tap({spot: spot, timings: [], statistics: undefined}, e => combined.spots.push(e))
+
+          entry.timings.push({ticks, incomplete})
+        })
+
+        combined.spots.forEach(e => e.statistics = Timing.Statistics.calculate(e.timings.map(t => t.ticks)))
+
+        combined.statistics = Timing.Statistics.calculate(combined.spots.flatMap(e => e.timings.map(t => t.ticks)))
+
+        return combined
+      }
+
+      export function flat(self: Timing): { spot: TileCoordinates, ticks: number, incomplete: boolean }[] {
+        return self.spots.flatMap(s => s.timings.map(t => ({spot: s.spot, ticks: t.ticks, incomplete: t.incomplete})))
+      }
+
+      export function combine(...a: Timing[]): Timing {
+        return from(...a.flatMap(s => flat(s)))
+
+      }
+    }
+
     export type AugmentedScanTree = {
       raw: ScanTree,
       clue: Clues.Scan,
@@ -52,10 +112,7 @@ export namespace ScanTree {
         paths_augmented: boolean
         completeness_analyzed: boolean
         correctness_analyzed: boolean,
-        timing_analysis: {
-          spots: { spot: TileCoordinates, timings: { ticks: number, incomplete: boolean }[], average: number }[],
-          average: number,
-        },
+        timing_analysis: Timing,
         has_synthetic_triple_nodes: boolean
       }
     }
@@ -77,6 +134,7 @@ export namespace ScanTree {
       }[],
       completeness?: completeness_t,
       correctness?: correctness_t,
+      timing_analysis?: Timing,
     }
 
     /* NodeId identifies a node within a scan tree by a chain of keys. */
@@ -310,30 +368,19 @@ export namespace ScanTree {
     }
 
     export function analyze_timing(tree: AugmentedScanTree): AugmentedScanTree {
-      let timings: { spot: TileCoordinates, timings: { ticks: number, incomplete: boolean }[], average: number }[] = tree.raw.ordered_spots.map(c => ({
-        spot: c,
-        timings: [],
-        average: 0
-      }))
-
-      AugmentedScanTree.traverse(tree.root_node, (node) => {
+      AugmentedScanTree.traversePostOrder(tree.root_node, (node) => {
         if (node.children.length == 0) {
-          let complete = node.completeness == "complete"
-
-          node.remaining_candidates.forEach(c => {
-            let t = timings.find(t => TileCoordinates.eq2(t.spot, c))
-
-            t.timings.push({ticks: node.path.post_state.tick, incomplete: !complete})
-          })
+          node.timing_analysis = Timing.from(
+            ...node.remaining_candidates.map(c =>
+              ({spot: c, ticks: node.path.post_state.tick, incomplete: node.completeness != "complete"})
+            )
+          )
+        } else {
+          node.timing_analysis = Timing.combine(...node.children.map(c => c.value.timing_analysis))
         }
       })
 
-      timings.forEach(t => t.average = avg(...t.timings.map(t => t.ticks)))
-
-      tree.state.timing_analysis = {
-        spots: timings,
-        average: avg(...timings.map(t => t.average))
-      }
+      tree.state.timing_analysis = tree.root_node.timing_analysis
 
       return tree
     }
@@ -452,10 +499,22 @@ export namespace ScanTree {
         return par
       }
 
+      /**
+       * Pre-Order Traversal
+       */
       export function traverse(tree: AugmentedScanTreeNode, f: (_: AugmentedScanTreeNode) => any, include_root: boolean = true): void {
         if (include_root && tree) f(tree)
 
         tree.children.forEach(c => traverse(c.value, f, true))
+      }
+
+      /**
+       * Post-Order Traversal
+       */
+      export function traversePostOrder(tree: AugmentedScanTreeNode, f: (_: AugmentedScanTreeNode) => any, include_root: boolean = true): void {
+        tree.children.forEach(c => traversePostOrder(c.value, f, true))
+
+        if (include_root && tree) f(tree)
       }
     }
   }

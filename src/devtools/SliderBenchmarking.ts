@@ -33,6 +33,7 @@ import hbox = C.hbox;
 import copyUpdate = util.copyUpdate;
 import hboxl = C.hboxl;
 import space = C.space;
+import median = util.median;
 
 export type SliderDataEntry = {
   id: number,
@@ -65,16 +66,7 @@ type SimulationResult = {
   }[]
 }[]
 
-function median(list: number[]): number {
-  if (list.length == 0) return Number.NaN
 
-  const sorted = lodash.sortBy(list, natural_order)
-
-  const mid = ~~(sorted.length / 2)
-
-  if (list.length % 2 == 0) return (sorted[mid - 1] + sorted[mid]) / 2
-  else return sorted[mid]
-}
 
 function variance(list: number[]): number {
   const mean = avg(...list)
@@ -82,7 +74,7 @@ function variance(list: number[]): number {
   return lodash.sum(list.map(element => Math.pow(element - mean, 2))) / list.length
 }
 
-function stddev(list: number[]): number {
+export function stddev(list: number[]): number {
   return Math.sqrt(variance(list))
 }
 

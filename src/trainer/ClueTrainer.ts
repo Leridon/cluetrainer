@@ -38,7 +38,6 @@ import {PermissionChecker} from "./startup_messages/PermissionChecker";
 import {SuccessfullInstallationNotice} from "./startup_messages/SuccessfullInstallationNotice";
 import {lazy} from "../lib/Lazy";
 import {Alt1} from "../lib/alt1/Alt1";
-import * as process from "process";
 import ActiveTeleportCustomization = Transportation.TeleportGroup.ActiveTeleportCustomization;
 import TeleportSettings = Settings.TeleportSettings;
 import inlineimg = C.inlineimg;
@@ -243,7 +242,7 @@ export class ClueTrainer extends Behaviour {
     }
   )
 
-  readonly version: Changelog.Version = Changelog.latest_patch.version
+  readonly version: Changelog.Version = Changelog.log.latest_patch.version
 
   data_dump: DataExport
 
@@ -269,21 +268,13 @@ export class ClueTrainer extends Behaviour {
     const environment = cluetrainer_build_environment
 
     if (environment) {
-      Changelog.latest_patch.version.build_info = {
+      Changelog.log.latest_patch.version.build_info = {
         commit_sha: environment.commit_sha,
         build_timestamp: new Date(environment.build_timestamp),
         is_beta_build: environment.is_beta_build ?? false
       }
     }
 
-    const build_info: {
-      commit_sha: string,
-      timestamp: number,
-    } = process.env['BUILDINFO'] as any
-
-    if (build_info) {
-
-    }
 
     this.startup_settings.subscribe(s => this.startup_settings_storage.set(s))
 
@@ -314,10 +305,10 @@ export class ClueTrainer extends Behaviour {
       new SuccessfullInstallationNotice().show()
     }
 
-    if (!is_first_visit && this.startup_settings.value().last_loaded_version != Changelog.latest_patch.version) {
+    if (!is_first_visit && this.startup_settings.value().last_loaded_version != Changelog.log.latest_patch.version) {
       const last_loaded_version = Changelog.Version.lift(this.startup_settings.value().last_loaded_version)
 
-      const unseen_updates = Changelog.log.filter(e => !Changelog.Version.isLaterOrEqual(last_loaded_version, e.version))
+      const unseen_updates = Changelog.log.entries.filter(e => !Changelog.Version.isLaterOrEqual(last_loaded_version, e.version))
 
       const notify_at_all = lodash.some(unseen_updates, e => !e.silent)
 
@@ -327,16 +318,13 @@ export class ClueTrainer extends Behaviour {
         notification(notifyable_update?.notification ?? "There has been an update.")
           .setDuration(null)
           .addButton("View patch notes", (not) => {
-            new Changelog.Modal().show()
+            Changelog.log.showModal()
             not.dismiss()
           }).show()
       }
     }
 
-    this.startup_settings.update(s => s.last_loaded_version = Changelog.latest_patch.version)
-
-    //let query_function = QueryLinks.get_from_params(ScanTrainerCommands.index, new URLSearchParams(window.location.search))
-    //if (query_function) query_function(this)
+    this.startup_settings.update(s => s.last_loaded_version = Changelog.log.latest_patch.version)
 
     const logDiagnostics = () => {
       log().log("Current settings", "General", {type: "object", value: lodash.cloneDeep(this.settings.settings)})
@@ -390,10 +378,12 @@ export class ClueTrainer extends Behaviour {
     Alt1UpdateNotice.maybeRemind(this)
     ClueTrainerAppMigrationNotice.maybeRemind(this)
 
-    if (Changelog.latest_patch.version.build_info?.is_beta_build) {
+    if (Changelog.log.latest_patch.version.build_info?.is_beta_build) {
       notification(`You are on beta build ${Changelog.Version.asString(this.version)}. Please remember to switch back to the main branch when testing is done.`)
         .setDuration(null)
         .show()
+
+      document.title = "Clue Trainer (Beta Branch)"
     }
   }
 

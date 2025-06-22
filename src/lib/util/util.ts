@@ -1,10 +1,9 @@
 import * as L from "leaflet"
 import * as leaflet from "leaflet"
 import {v4 as uuidv4} from 'uuid';
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {levenshteinEditDistance} from "levenshtein-edit-distance";
 import {Vector2} from "../math";
-
 
 export namespace util {
 
@@ -392,7 +391,7 @@ export namespace util {
   }
 
   export function renderTimespan(milliseconds: number): string {
-    const SECOND =  1000
+    const SECOND = 1000
     const MINUTE = 60 * SECOND
     const HOUR = 60 * MINUTE
     const DAY = 24 * HOUR
@@ -410,5 +409,13 @@ export namespace util {
     return arr[index];
   }
 
+  export function median(list: number[]): number {
+    if (list.length == 0) return Number.NaN
 
+    const sorted = lodash.sortBy(list, Order.natural_order)
+
+    const mid = ~~(sorted.length / 2)
+
+    return sorted[mid]
+  }
 }

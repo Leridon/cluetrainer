@@ -51,7 +51,6 @@ export class ClueReader {
   }>
 
   constructor(public tetracompass_only: boolean) {
-
     this.initialization = async_init(async () => {
       return {
         scan_finder: await CapturedScan.finder.get(),
@@ -63,6 +62,17 @@ export class ClueReader {
         slider_finder: await CapturedSliderInterface.Finder.instance.get(),
         compass_finder: await CapturedCompass.finder.get()
       }
+    })
+
+    this.initialization.wait().catch(error => {
+      log().log("Clue Reader initialization failed.", "Clue Reader")
+
+      if (error instanceof Error) {
+        log().log(error.toString(), "Clue Reader")
+        log().log(error.stack, "Clue Reader")
+      }
+
+      throw error;
     })
   }
 
@@ -183,7 +193,7 @@ export class ClueReader {
                 if (!best?.score) return null
 
                 if (CLUEREADERDEBUG) {
-                log().log(`Found ${best.value.id}, confidence ${best.score}`)
+                  log().log(`Found ${best.value.id}, confidence ${best.score}`)
                 }
 
                 return {

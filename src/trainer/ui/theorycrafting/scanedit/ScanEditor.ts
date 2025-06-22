@@ -186,7 +186,7 @@ export namespace ScanEditLayer {
           const any_incomplete = this.timing_information.timings.some(t => t.incomplete)
 
           if (this.timing_information.timings.length > 1) {
-            const avg = span(this.timing_information.average.toFixed(2) + " ticks")
+            const avg = span(this.timing_information.statistics.average.toFixed(2) + " ticks")
 
             if (any_incomplete) avg.css("color", "yellow").tooltip("Incomplete path")
 
@@ -610,7 +610,7 @@ export default class ScanEditor extends MethodSubEditor {
     })
 
     this.builder.augmented.subscribe(a => {
-      this.value.method.expected_time = a.state.timing_analysis.average + 1 // + 1 Tick because digging isn't included in the path analysis
+      this.value.method.expected_time = a.state.timing_analysis.statistics.average + 1 // + 1 Tick because digging isn't included in the path analysis
     })
   }
 
