@@ -329,7 +329,12 @@ export namespace Changelog {
       return this
     }
 
-    version(number: number, title: string): ChangeLogEntryBuilder {
+    release(number: number, title: string, release_date: Date): ChangeLogEntryBuilder {
+      return this.wip(number, title)
+        .releaseDate(release_date)
+    }
+
+    wip(number: number, title: string): ChangeLogEntryBuilder {
       const entry: LogEntry = {
         version: {version: number},
         title: title,
@@ -374,18 +379,24 @@ export namespace Changelog {
     list(f: (_: List) => void): this {
       return this.render(layout => layout.row(tap(new List(), f)))
     }
+
+    releaseDate(date: Date): this {
+      this.entry.version.release_date = date
+      return this
+    }
   }
 
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-        builder.version(51, "Unnamed")
+        builder.release(51, "Editor Improvements and Bug Fixes", new Date(Date.parse("2025-06-22")))
           .list(l => l
             .item("Modified a few elite compass routes for easier execution.")
             .item("Fixed that the update notification would appear every time Clue Trainer is opened.")
             .item("Closing the page while in the method or path editor will now prompt for confirmation.")
             .item("The scan editor can now show additional timing statistics when hovering over the status icons of nodes in the tree view.")
           )
+
 
         builder.add(
           v50,
