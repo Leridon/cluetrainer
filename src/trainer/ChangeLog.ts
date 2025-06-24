@@ -26,7 +26,7 @@ export namespace Changelog {
     import Order = util.Order;
 
     export function isBeta(self: Version): boolean {
-      return self.build_info != undefined
+      return self?.build_info?.is_beta_build
     }
 
     export function lift(self: Version | number): Version {
@@ -34,8 +34,11 @@ export namespace Changelog {
       else return self
     }
 
-    export function isLaterOrEqual(a: Version, than: Version): boolean {
-      return a.version > than.version || (a.version == than.version && (!a.build_info.is_beta_build || !a.build_info?.build_timestamp || !than.build_info?.build_timestamp || new Date(a.build_info.build_timestamp).valueOf() >= new Date(than.build_info.build_timestamp).valueOf()))
+    export function isNewerThan(a: Version, than: Version): boolean {
+      if (a.version > than.version) return true
+      if (a.version == than.version && a.build_info?.is_beta_build && than.build_info?.is_beta_build) return new Date(a.build_info.build_timestamp).valueOf() > new Date(than.build_info.build_timestamp).valueOf();
+
+      return false
     }
 
     export function asString(self: Version): string {

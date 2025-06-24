@@ -308,7 +308,7 @@ export class ClueTrainer extends Behaviour {
     if (!is_first_visit && this.startup_settings.value().last_loaded_version != Changelog.log.latest_patch.version) {
       const last_loaded_version = Changelog.Version.lift(this.startup_settings.value().last_loaded_version)
 
-      const unseen_updates = Changelog.log.entries.filter(e => !Changelog.Version.isLaterOrEqual(last_loaded_version, e.version))
+      const unseen_updates = Changelog.log.entries.filter(e => Changelog.Version.isNewerThan(e.version, last_loaded_version))
 
       const notify_at_all = lodash.some(unseen_updates, e => !e.silent)
 
