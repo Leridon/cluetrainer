@@ -7,6 +7,7 @@ import {Angles} from "../../../../../lib/math/Angles";
 import index = util.index;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
 import UncertainAngle = Angles.UncertainAngle;
+import angleDifference = Angles.angleDifference;
 
 export interface CompassCalibrationFunction {
   apply(read_angle: number): UncertainAngle
@@ -21,15 +22,15 @@ export namespace CompassCalibrationFunction {
 }
 
 export class FullCompassCalibrationFunction implements CompassCalibrationFunction {
-  constructor(private samples: CalibrationTool.CompressedSample[]) {
+  constructor(private samples: FullCompassCalibrationFunction.CompressedSample[]) {
 
   }
 
-  apply(read_angle: number): UncertainAngle {
+  sample(read_angle: number): FullCompassCalibrationFunction.SamplingResult {
 
     if (read_angle < this.samples[0][0]) read_angle += 2 * Math.PI;
 
-    const EPS = Angles.degreesToRadians(0.1)
+    const EPS = Angles.degreesToRadians(0.01)
 
     const find_lower = (lower: number, higher: number): number => {
       // Invariant: read_angle >= this.samples[lower].is_angle
@@ -38,8 +39,7 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
 
       const median_i = ~~((lower + higher) / 2)
 
-
-      if (Math.abs(read_angle - this.samples[median_i][0]) < EPS) return median_i
+      if (angleDifference(read_angle, this.samples[median_i][0]) < EPS) return median_i
 
       if (read_angle < this.samples[median_i][0]) return find_lower(lower, median_i - 1)
       else return find_lower(median_i == lower ? lower + 1 : median_i, higher)
@@ -49,28 +49,116 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
 
     const sample = this.samples[sample_i]
 
-    if (read_angle == sample[0]) {
+    if (angleDifference(read_angle, sample[0]) < EPS) {
       // Read angle is within this sample
       // We need to include the range before and after this slice as well.
 
       const below = index(this.samples, sample_i - 1)
       const above = index(this.samples, sample_i + 1)
 
-      return UncertainAngle.fromRange(
-        [below[1][1], above[1][0]]
-      )
+      return {
+        result: UncertainAngle.fromRange(
+          [below[1][1], above[1][0]]
+        ),
+        details: {
+          type: "within",
+          before: below,
+          in_sample: sample,
+          after: above
+        }
+      }
     } else {
       // Read angle is betweeen two samples.
       // We only need to consider the angles inbetween.
       const below = sample
       const above = index(this.samples, sample_i + 1)
 
-      return UncertainAngle.fromRange(
-        Angles.AngleRange.shrink(
-          [below[1][1], above[1][0]],
-          0.33
-        )
+      return {
+        result: UncertainAngle.fromRange(
+          Angles.AngleRange.shrink(
+            [below[1][1], above[1][0]],
+            0.33
+          )
+        ),
+        details: {
+          type: "outside",
+          before: below,
+          after: above
+        }
+      }
+    }
+  }
+
+  apply(read_angle: number): Angles.UncertainAngle {
+    return this.sample(read_angle).result;
+  }
+}
+
+export namespace FullCompassCalibrationFunction {
+  /**
+   * A compressed sample is a data point mapping a read-angle to a range of should-angles
+   */
+  export type CompressedSample = [number, Angles.AngleRange]
+
+  export namespace CompressedSample {
+    export function toString(self: CompressedSample) {
+      return `${Angles.radiansToDegrees(self[0]).toFixed(3)} -> [${Angles.radiansToDegrees(self[1][0]).toFixed(3)}, ${Angles.radiansToDegrees(self[1][1]).toFixed(3)}]`
+    }
+  }
+
+  export function compress(samples: CalibrationTool.RawSample[]): CompressedSample[] {
+    const sorted_samples = lodash.sortBy(samples, s => s.is_angle_degrees)
+
+    let i = 0;
+
+    const compressed_samples: CompressedSample[] = []
+
+    while (i < sorted_samples.length) {
+      const group_angle = sorted_samples[i].is_angle_degrees
+
+      const group_start_i = i
+
+      i++
+
+      while (i < sorted_samples.length && sorted_samples[i].is_angle_degrees == group_angle) i++
+      // i now points to the next sample that is not part of this group
+
+      const group = sorted_samples.slice(group_start_i, i)
+
+      const should_range = Angles.AngleRange.fromAngles(
+        ...group.map(s => CalibrationTool.shouldAngle(s.position))
       )
+
+      compressed_samples.push([Angles.degreesToRadians(group_angle), should_range])
+    }
+
+    return compressed_samples
+  }
+
+  export type SamplingResult = {
+    result: UncertainAngle,
+    details: { type: string } & ({
+      type: "within",
+      before: CompressedSample,
+      in_sample: CompressedSample,
+      after: CompressedSample,
+    } | {
+      type: "outside",
+      before: CompressedSample,
+      after: CompressedSample
+    })
+  }
+
+  export namespace SamplingResult {
+    export function toString(self: SamplingResult) {
+      let string = UncertainAngle.toString(self.result, 2)
+
+      switch (self.details.type) {
+        case "within":
+          string += `${CompressedSample.toString(self.details.before)}`
+
+        case "outside":
+      }
     }
   }
 }
@@ -147,9 +235,7 @@ export class AngularKeyframeFunction implements CompassCalibrationFunction {
     return (1 - t) * previous.value + t * next.value + this.base_f(angle)
   }
 
-  static fromCalibrationSamples(samples: {
-                                  position: Vector2, is_angle_degrees: number
-                                }[],
+  static fromCalibrationSamples(samples: CalibrationTool.RawSample[],
                                 baseline_type: "cosine" | null = null,
                                 epsilon: number
   ): AngularKeyframeFunction {
@@ -198,11 +284,5 @@ export class AngularKeyframeFunction implements CompassCalibrationFunction {
     return new AngularKeyframeFunction(
       reduced_keyframes, baseline_function, epsilon
     ).withBaseline(baseline_function)
-  }
-}
-
-export namespace AngularKeyframeFunction {
-  export type Sample = {
-    position: Vector2, is_angle_degrees: number
   }
 }
