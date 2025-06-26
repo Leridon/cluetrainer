@@ -241,10 +241,10 @@ class CompassEntryWidget extends Widget {
       if (angle != null) {
         this.angle_container?.text(UncertainAngle.toAngleString(angle))
 
-        this.angle_container.tooltip(UncertainAngle.toUncertaintyString(angle))
+        this.angle_container?.tooltip(UncertainAngle.toUncertaintyString(angle))
       } else {
         this.angle_container?.text(`???°`)
-        this.angle_container.tooltip(null)
+        this.angle_container?.tooltip(null)
       }
     }
 
@@ -542,12 +542,12 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     if (!this.spots.some(s => Compasses.isPossible([info], s.spot.spot))) {
       if (is_manual) notification("Refusing to lock in impossible angle.", "error").show()
 
-      log().log(`Cowardly refusing to lock in impossible angle ${Angles.radiansToDegrees(info.angle_radians.median)}° from ${info.modified_origin.x} | ${info.modified_origin.y}`, "Compass Solving")
+      log().log(`Cowardly refusing to lock in impossible angle ${UncertainAngle.toString(info.angle_radians, 6)} from ${info.modified_origin.x} | ${info.modified_origin.y}`, "Compass Solving")
 
       return
     }
 
-    log().log(`Committing ${Angles.radiansToDegrees(info.angle_radians.median)}° to entry ${this.entries.indexOf(entry)} (${info.modified_origin.x} | ${info.modified_origin.y})`, "Compass Solving")
+    log().log(`Committing ${UncertainAngle.toString(info.angle_radians)} to entry ${this.entries.indexOf(entry)} (${info.modified_origin.x} | ${info.modified_origin.y})`, "Compass Solving")
 
     entry.information = info
 

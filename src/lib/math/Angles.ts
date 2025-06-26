@@ -120,12 +120,16 @@ export namespace Angles {
       return Math.abs(positive_mod(a.median - b.median + Math.PI, 2 * Math.PI) - Math.PI);
     }
 
-    export function toAngleString(self: UncertainAngle): string {
-      return `${radiansToDegrees(self.median).toFixed(1)}°`
+    export function toAngleString(self: UncertainAngle, precision: number = 1): string {
+      return `${radiansToDegrees(self.median).toFixed(precision)}°`
     }
 
-    export function toUncertaintyString(self: UncertainAngle): string {
-      return `±${radiansToDegrees(self.epsilon).toFixed(2)}°`
+    export function toUncertaintyString(self: UncertainAngle, precision: number = 2): string {
+      return `±${radiansToDegrees(self.epsilon).toFixed(precision)}°`
+    }
+
+    export function toString(self: UncertainAngle, precision: number = 1): string {
+      return toAngleString(self, precision) + "  " + toUncertaintyString(self, precision)
     }
   }
 }
