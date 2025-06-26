@@ -1,84 +1,22 @@
 import {util} from "../../../../../lib/util/util";
-import {angleDifference, circularMean, degreesToRadians, normalizeAngle, radiansToDegrees, Vector2} from "../../../../../lib/math";
+import {Vector2} from "../../../../../lib/math";
 import lodash from "lodash";
 import {Compasses} from "../../../../../lib/cluetheory/Compasses";
-import {CompassReader} from "../CompassReader";
 import {CalibrationTool} from "../../../../../devtools/CompassCalibrationTool";
+import {Angles} from "../../../../../lib/math/Angles";
 import index = util.index;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
+import UncertainAngle = Angles.UncertainAngle;
 
 export interface CompassCalibrationFunction {
-  apply(read_angle: number): CompassCalibrationFunction.EpsilonAngle
+  apply(read_angle: number): UncertainAngle
 }
 
 export namespace CompassCalibrationFunction {
-  export type AngleRange = [number, number]
-
-  export namespace AngleRange {
-
-    export function contains(range: AngleRange, angle: number): boolean {
-      if (angle >= range[0] && angle <= range[1]) return true
-
-      const complement = angle + 2 * Math.PI
-
-      return complement > range[0] && complement < range[1]
+  export const none = new class implements CompassCalibrationFunction {
+    apply(read_angle: number): Angles.UncertainAngle {
+      return UncertainAngle.fromAngle(read_angle);
     }
-
-    export function normalize(range: AngleRange): AngleRange {
-      if (range.every(a => a > 2 * Math.PI)) {
-        range[0] = normalizeAngle(range[0])
-        range[1] = normalizeAngle(range[1])
-      }
-
-      if (range[1] < range[0]) range[1] += 2 * Math.PI
-
-      return range
-    }
-
-    export function shrink(range: AngleRange, factor: number): AngleRange {
-      normalize(range)
-
-      const offset = angleDifference(range[0], range[1]) * factor / 2
-
-      return normalize([
-        range[0] + offset,
-        range[1] + offset
-      ])
-    }
-
-    export function toEpsilonAngle(range: AngleRange): EpsilonAngle {
-      return {
-        angle: normalizeAngle(circularMean(range)),
-        epsilon: angleDifference(range[0], range[1])
-      }
-    }
-
-    export function fromAngles(angles: number[]): AngleRange {
-      let mean = circularMean(angles)
-
-      if (mean < 0) mean += 2 * Math.PI
-
-      let range: AngleRange = [mean, mean]
-
-      for (let angle of angles) {
-        if (angleDifference(angle, mean) > Math.PI) angle += 2 * Math.PI
-
-        if (angle < 0) debugger
-
-        if (angle < range[0]) range[0] = angle
-        if (angle > range[1]) range[1] = angle
-
-      }
-
-      if (range[0] < 0) debugger
-
-      return range
-    }
-  }
-
-  export type EpsilonAngle = {
-    angle: number,
-    epsilon: number
   }
 }
 
@@ -87,11 +25,11 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
 
   }
 
-  apply(read_angle: number): CompassCalibrationFunction.EpsilonAngle {
+  apply(read_angle: number): UncertainAngle {
 
     if (read_angle < this.samples[0][0]) read_angle += 2 * Math.PI;
 
-    const EPS = degreesToRadians(0.1)
+    const EPS = Angles.degreesToRadians(0.1)
 
     const find_lower = (lower: number, higher: number): number => {
       // Invariant: read_angle >= this.samples[lower].is_angle
@@ -111,22 +49,24 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
 
     const sample = this.samples[sample_i]
 
-    console.log(sample)
-    debugger
-
     if (read_angle == sample[0]) {
+      // Read angle is within this sample
+      // We need to include the range before and after this slice as well.
+
       const below = index(this.samples, sample_i - 1)
       const above = index(this.samples, sample_i + 1)
 
-      return CompassCalibrationFunction.AngleRange.toEpsilonAngle(
+      return UncertainAngle.fromRange(
         [below[1][1], above[1][0]]
       )
     } else {
+      // Read angle is betweeen two samples.
+      // We only need to consider the angles inbetween.
       const below = sample
       const above = index(this.samples, sample_i + 1)
 
-      return CompassCalibrationFunction.AngleRange.toEpsilonAngle(
-        CompassCalibrationFunction.AngleRange.shrink(
+      return UncertainAngle.fromRange(
+        Angles.AngleRange.shrink(
           [below[1][1], above[1][0]],
           0.33
         )
@@ -141,15 +81,17 @@ export class AngularKeyframeFunction implements CompassCalibrationFunction {
                         angle: number,
                         value: number
                       }[],
-                      private base_f: (_: number) => number = () => 0) {
+                      private base_f: (_: number) => number = () => 0,
+                      private epsilon: number
+  ) {
     this.keyframes = lodash.sortBy(keyframes, e => e.angle)
   }
 
-  apply(read_angle: number): CompassCalibrationFunction.EpsilonAngle {
-    return {
-      angle: normalizeAngle(read_angle + this.sample(read_angle)),
-      epsilon: CompassReader.EPSILON
-    }
+  apply(read_angle: number): UncertainAngle {
+    return UncertainAngle.fromEpsilonAngle(
+      Angles.normalizeAngle(read_angle + this.sample(read_angle)),
+      this.epsilon
+    )
   }
 
   withBaseline(f: (_: number) => number): this {
@@ -171,11 +113,17 @@ export class AngularKeyframeFunction implements CompassCalibrationFunction {
   }
 
   getCSV(): string {
-    const header = "Is,Delta,Base-Delta,Full-Delta,X,Y\n"
+    const header = "Is,Should,Delta,Base-Delta,Full-Delta,X,Y\n"
 
     return header + this.keyframes.map((keyframe) => {
-      return [keyframe.angle, keyframe.value, this.base_f(keyframe.angle), keyframe.value + this.base_f(keyframe.angle)]
-        .map(radiansToDegrees).join(",") + `,${keyframe.original?.x},${keyframe.original?.y}`
+      const delta = keyframe.value
+      const base_delta = this.base_f(keyframe.angle)
+      const full_delta = delta + base_delta
+
+      const should_value = keyframe.value + full_delta
+
+      return [keyframe.angle, should_value, keyframe.value, base_delta, full_delta]
+        .map(Angles.radiansToDegrees).join(",") + `,${keyframe.original?.x},${keyframe.original?.y}`
     }).join("\n")
   }
 
@@ -193,7 +141,7 @@ export class AngularKeyframeFunction implements CompassCalibrationFunction {
     const previous = this.keyframes[index_a]
     const next = this.keyframes[index_b]
 
-    const t = angleDifference(angle, previous.angle) / angleDifference(next.angle, previous.angle)
+    const t = Angles.angleDifference(angle, previous.angle) / Angles.angleDifference(next.angle, previous.angle)
 
     // Linearly interpolate between keyframes
     return (1 - t) * previous.value + t * next.value + this.base_f(angle)
@@ -203,11 +151,12 @@ export class AngularKeyframeFunction implements CompassCalibrationFunction {
                                   position: Vector2, is_angle_degrees: number
                                 }[],
                                 baseline_type: "cosine" | null = null,
+                                epsilon: number
   ): AngularKeyframeFunction {
 
     const keyframes = samples.filter(s => s.is_angle_degrees != undefined).map(({position, is_angle_degrees}) => {
       const should_angle = Vector2.angle(ANGLE_REFERENCE_VECTOR, {x: -position.x, y: -position.y})
-      const is_angle = degreesToRadians(is_angle_degrees)
+      const is_angle = Angles.degreesToRadians(is_angle_degrees)
 
       let dif = should_angle - is_angle
       if (dif < -Math.PI) dif += 2 * Math.PI
@@ -236,7 +185,7 @@ export class AngularKeyframeFunction implements CompassCalibrationFunction {
 
           const hill_samples = keyframes.filter(k => Math.abs(max - k.value) < amplitude / 10).map(k => k.angle % (2 * Math.PI / PHASES))
 
-          const phase = circularMean(hill_samples)
+          const phase = Angles.circularMean(hill_samples)
 
           //const phase = lodash.maxBy(keyframes, k => k.value).angle
 
@@ -247,7 +196,7 @@ export class AngularKeyframeFunction implements CompassCalibrationFunction {
     const reduced_keyframes = keyframes.map(f => ({...f, value: f.value - baseline_function(f.angle)}))
 
     return new AngularKeyframeFunction(
-      reduced_keyframes, baseline_function
+      reduced_keyframes, baseline_function, epsilon
     ).withBaseline(baseline_function)
   }
 }
