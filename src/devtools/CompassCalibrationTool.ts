@@ -11,7 +11,7 @@ import LightButton from "../trainer/ui/widgets/LightButton";
 import ImportStringModal from "../trainer/ui/widgets/modals/ImportStringModal";
 import ExportStringModal from "../trainer/ui/widgets/modals/ExportStringModal";
 import {MapEntity} from "../lib/gamemap/MapEntity";
-import {TileCoordinates} from "../lib/runescape/coordinates";
+import {TileCoordinates, TileRectangle} from "../lib/runescape/coordinates";
 import * as leaflet from "leaflet";
 import {GameLayer} from "../lib/gamemap/GameLayer";
 import {GameMapMouseEvent} from "../lib/gamemap/MapEvents";
@@ -247,8 +247,9 @@ export class CompassCalibrationTool extends NisModal {
     const props = new Properties()
 
     props.named("Result", Angles.UncertainAngle.toString(result.result, 2))
+    props.named("Sample Type", result.details.type)
 
-    switch(result.details.type) {
+    switch (result.details.type) {
       case "outside":
         props.named("Before", FullCompassCalibrationFunction.CompressedSample.toString(result.details.before))
         props.named("After", FullCompassCalibrationFunction.CompressedSample.toString(result.details.after))
@@ -274,6 +275,13 @@ export class CompassCalibrationTool extends NisModal {
   commit() {
     const state = this.reader.state()
 
+    const current_sample = this.sample_set.function.sample(state.raw_angle)
+
+    if (!Angles.UncertainAngle.contains(current_sample.result, CalibrationTool.shouldAngle(this.selection.value().offset))) {
+      notification("Implausible sample", "error").show()
+      return
+    }
+
     if (state.state == "normal") {
       this.sample_set.add(this.selection.value().offset, state.raw_angle)
 
@@ -288,7 +296,12 @@ export class CompassCalibrationTool extends NisModal {
       auto: auto_selection
     })
 
-    this.layer?.updateTileOverlays()
+    if (this.layer) {
+      this.layer.updateTileOverlays()
+
+      if (auto_selection) this.layer.getMap().fitView(TileRectangle.from(TileCoordinates.move(this.layer.reference, offset)))
+    }
+
   }
 
   autoNextSpot() {
@@ -361,7 +374,6 @@ export class CompassCalibrationTool extends NisModal {
         const v = approximateFractionAsRationaleNumber(settings.max_distance, {y: -Math.sin(angle), x: -Math.cos(angle)})
 
         if (maybeSetOffset(v, {desired_angle: angle, actual_angle: getExpectedAngle(v, {x: 0, y: 0}), angles_this_iteration: iterations})) return
-
       }
 
       if (iterations > this.sample_set.size()) {
@@ -434,7 +446,7 @@ export class CompassCalibrationTool extends NisModal {
       this.autospotsettings = new AutoSpotSettingsEdit(this)
         .setValue({
           start_iteration: 3,
-          max_distance: 1000
+          max_distance: 200
         })
     ).appendTo(this.body)
 
