@@ -1,7 +1,7 @@
 import * as leaflet from "leaflet";
 import {LatLng} from "leaflet";
 import {Transform} from "./Transform";
-import {normalizeAngle} from "./index";
+import {Angles} from "./Angles";
 
 export type Vector2 = { x: number, y: number }
 
@@ -82,7 +82,7 @@ export namespace Vector2 {
    * Gets the angle between two normalized vectors
    */
   export function angle(a: Vector2, b: Vector2): number {
-    return normalizeAngle(Math.atan2(Vector2.det(a, b), Vector2.dot(a, b)))
+    return Angles.normalizeAngle(Math.atan2(Vector2.det(a, b), Vector2.dot(a, b)))
   }
 
   export function eq(a: Vector2, b: Vector2): boolean {

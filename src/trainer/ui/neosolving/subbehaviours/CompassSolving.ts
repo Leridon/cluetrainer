@@ -6,12 +6,11 @@ import {TileCoordinates, TileRectangle} from "../../../../lib/runescape/coordina
 import {GameMapMouseEvent} from "../../../../lib/gamemap/MapEvents";
 import {C} from "../../../../lib/ui/constructors";
 import * as leaflet from "leaflet"
-import {degreesToRadians, normalizeAngle, radiansToDegrees, Rectangle, Transform, Vector2} from "../../../../lib/math";
+import {Rectangle, Transform, Vector2} from "../../../../lib/math";
 import {MapEntity} from "../../../../lib/gamemap/MapEntity";
 import {Compasses} from "../../../../lib/cluetheory/Compasses";
 import {TeleportSpotEntity} from "../../map/entities/TeleportSpotEntity";
-import * as lodash from "lodash";
-import {isArray} from "lodash";
+import lodash, {isArray} from "lodash";
 import {CompassReader} from "../cluereader/CompassReader";
 import {Transportation} from "../../../../lib/runescape/transportation";
 import {TransportData} from "../../../../data/transports";
@@ -30,9 +29,9 @@ import {PathStepEntity} from "../../map/entities/PathStepEntity";
 import {SettingsModal} from "../../settings/SettingsEdit";
 import * as assert from "assert";
 import {Log} from "../../../../lib/util/Log";
-import {angleDifference} from "lib/math";
 import {TextRendering} from "../../TextRendering";
 import {Alt1} from "../../../../lib/alt1/Alt1";
+import {Angles} from "../../../../lib/math/Angles";
 import span = C.span;
 import cls = C.cls;
 import TeleportGroup = Transportation.TeleportGroup;
@@ -48,6 +47,8 @@ import digSpotArea = Clues.digSpotArea;
 import vbox = C.vbox;
 import log = Log.log;
 import render_digspot = TextRendering.render_digspot;
+import UncertainAngle = Angles.UncertainAngle;
+import degreesToRadians = Angles.degreesToRadians;
 
 class CompassHandlingLayer extends GameLayer {
   private lines: {
@@ -76,7 +77,7 @@ class CompassHandlingLayer extends GameLayer {
     this.lines = information.map(info => {
       const from = info.origin
 
-      const off = Vector2.transform(Vector2.scale(2000, Compasses.ANGLE_REFERENCE_VECTOR), Transform.rotationRadians(info.angle_radians))
+      const off = Vector2.transform(Vector2.scale(2000, Compasses.ANGLE_REFERENCE_VECTOR), Transform.rotationRadians(info.angle_radians.median))
 
       const to = Vector2.add(from, off)
 
@@ -84,8 +85,10 @@ class CompassHandlingLayer extends GameLayer {
 
       const corner_near_left = Vector2.add(from, Vector2.scale(info.origin_uncertainty, right))
       const corner_near_right = Vector2.add(from, Vector2.scale(-info.origin_uncertainty, right))
-      const corner_far_left = Vector2.add(corner_near_left, Vector2.transform(off, Transform.rotationRadians(CompassReader.EPSILON)))
-      const corner_far_right = Vector2.add(corner_near_right, Vector2.transform(off, Transform.rotationRadians(-CompassReader.EPSILON)))
+
+
+      const corner_far_left = Vector2.add(corner_near_left, Vector2.transform(off, Transform.rotationRadians(info.angle_radians.epsilon)))
+      const corner_far_right = Vector2.add(corner_near_right, Vector2.transform(off, Transform.rotationRadians(-info.angle_radians.epsilon)))
 
       return {
         line:
@@ -229,16 +232,19 @@ class CompassEntryWidget extends Widget {
     return this
   }
 
-  private _preview_angle: number | null = null
+  private _preview_angle: UncertainAngle | null = null
 
-  setPreviewAngle(angle: number | null): this {
+  setPreviewAngle(angle: UncertainAngle | null): this {
     this._preview_angle = angle
 
-    if (this.entry.angle == null) {
+    if (this.entry.information == null) {
       if (angle != null) {
-        this.angle_container?.text(`${radiansToDegrees(angle).toFixed(1)}°`)
+        this.angle_container?.text(UncertainAngle.toAngleString(angle))
+
+        this.angle_container.tooltip(UncertainAngle.toUncertaintyString(angle))
       } else {
         this.angle_container?.text(`???°`)
+        this.angle_container.tooltip(null)
       }
     }
 
@@ -280,17 +286,19 @@ class CompassEntryWidget extends Widget {
     }
 
     if (this.entry.position) {
-      const isCommited = this.entry.angle != null
+      const isCommited = this.entry.information != null
 
       const angle = this.angle_container = cls("ctr-compass-solving-angle")
         .toggleClass("committed", isCommited)
         .text(isCommited
-          ? `${radiansToDegrees(this.entry.angle).toFixed(1)}°`
-          : (
-            this._preview_angle != null ? `${radiansToDegrees(this._preview_angle).toFixed(1)}°` : "???°"
-          )
+          ? UncertainAngle.toAngleString(this.entry.information.angle_radians)
+          : (this._preview_angle != null ? UncertainAngle.toAngleString(this._preview_angle) : "???°")
         )
         .appendTo(row)
+
+      if (isCommited) {
+        angle.tooltip(UncertainAngle.toUncertaintyString(this.entry.information.angle_radians))
+      }
 
       const angle_button = cls("ctr-neosolving-compass-entry-button")
         .appendTo(row)
@@ -309,9 +317,9 @@ class CompassEntryWidget extends Widget {
   }
 }
 
-const DEBUG_ANGLE_OVERRIDE: number = null // degreesToRadians(206.87152474371157)
+const DEBUG_ANGLE_OVERRIDE: UncertainAngle = null // degreesToRadians(206.87152474371157)
 const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = undefined //{origin: {x: 3214, y: 3376, level: 0}}
-const DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE: number = undefined // degreesToRadians(112.6)
+const DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE: UncertainAngle = undefined // degreesToRadians(112.6)
 
 /**
  * The {@link NeoSolvingSubBehaviour} for compass clues.
@@ -333,7 +341,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
   constructor(parent: NeoSolvingBehaviour, public clue: Clues.Compass, public reader: CompassReader,
               private spot_selection_callback: (_: TileCoordinates) => Promise<any>
-              ) {
+  ) {
     super(parent, "clue")
 
     this.settings = deps().app.settings.settings.solving.compass
@@ -359,7 +367,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
         } else {
           if (was_state && this.settings.auto_commit_on_angle_change && is_state.state == "normal") {
             if (was_state.state == "spinning" ||
-              angleDifference(is_state.angle, was_state.angle) > CompassSolving.ANGLE_CHANGE_COMMIT_THRESHOLD) {
+              UncertainAngle.meanDifference(is_state.angle, was_state.angle) > CompassSolving.ANGLE_CHANGE_COMMIT_THRESHOLD) {
               this.commit()
             }
           }
@@ -451,7 +459,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
         if (count(this.entries, e => !e.information) > 1) this.deleteEntry(entry)
         else this.setSelection(index)
       } else {
-        entry.angle = null
         entry.information = null
         entry.position = null
         entry.preconfigured = null
@@ -470,7 +477,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       if (!this.entries.some(e => !e.information) && count(this.spots, e => e.isPossible) > 1) {
         this.createEntry({
           position: null,
-          angle: null,
           information: null,
           preconfigured: null,
         })
@@ -486,7 +492,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     if (index >= 0) {
       const state = this.process.state()
 
-      entry.angle = null
       entry.information = null
       entry.widget.render()
       entry.widget.setPreviewAngle(
@@ -508,42 +513,42 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     if (!entry || !this.entries.includes(entry)) return
 
     if (!entry?.position) return
-    if (entry.angle != null) return
+    if (entry.information != null) return
 
-    let angle: number
+    const angle: UncertainAngle = ((): UncertainAngle => {
+      if (DEBUG_ANGLE_OVERRIDE != null) return DEBUG_ANGLE_OVERRIDE
 
-    if (entry.is_solution_of_previous_clue) {
-      if (DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE != undefined) {
-        angle = DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE
+      if (entry.is_solution_of_previous_clue) {
+        if (DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE != undefined) {
+          return DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE
+        } else {
+          const res = this.reader.getAngle()
+          assert(res.type == "success")
+
+          return res.angle
+        }
       } else {
-      const res = this.reader.getAngle()
-      assert(res.type == "success")
+        const state = this.process.state()
 
-      angle = res.angle
+        if (state.state != "normal" && DEBUG_ANGLE_OVERRIDE == null) return
+
+        return state.angle
       }
-    } else {
-      const state = this.process.state()
+    })()
 
-      if (state.state != "normal" && DEBUG_ANGLE_OVERRIDE == null) return
-
-      angle = state.angle
-    }
-
-    if (DEBUG_ANGLE_OVERRIDE != null) angle = DEBUG_ANGLE_OVERRIDE
 
     const info = Compasses.TriangulationPoint.construct(CompassSolving.Spot.coords(entry.position), angle)
 
     if (!this.spots.some(s => Compasses.isPossible([info], s.spot.spot))) {
       if (is_manual) notification("Refusing to lock in impossible angle.", "error").show()
 
-      log().log(`Cowardly refusing to lock in impossible angle ${radiansToDegrees(info.angle_radians)}° from ${info.modified_origin.x} | ${info.modified_origin.y}`, "Compass Solving")
+      log().log(`Cowardly refusing to lock in impossible angle ${Angles.radiansToDegrees(info.angle_radians.median)}° from ${info.modified_origin.x} | ${info.modified_origin.y}`, "Compass Solving")
 
       return
     }
 
-    log().log(`Committing ${radiansToDegrees(info.angle_radians)}° to entry ${this.entries.indexOf(entry)} (${info.modified_origin.x} | ${info.modified_origin.y})`, "Compass Solving")
+    log().log(`Committing ${Angles.radiansToDegrees(info.angle_radians.median)}° to entry ${this.entries.indexOf(entry)} (${info.modified_origin.x} | ${info.modified_origin.y})`, "Compass Solving")
 
-    entry.angle = angle
     entry.information = info
 
     entry.widget.render()
@@ -572,11 +577,11 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
               spot.center(),
             )
 
-            const COLINEARITY_THRESHOLD = 5 * CompassReader.EPSILON
+            const COLINEARITY_THRESHOLD = degreesToRadians(1.5)
 
             return Math.min(
-              angleDifference(angle, e.information.angle_radians),
-              angleDifference(normalizeAngle(angle + Math.PI), e.information.angle_radians),
+              Angles.angleDifference(angle, e.information.angle_radians.median),
+              Angles.angleDifference(Angles.normalizeAngle(angle + Math.PI), e.information.angle_radians.median),
             ) < COLINEARITY_THRESHOLD
           })
 
@@ -594,7 +599,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       if (index_of_next_free_entry == current_index) {
         this.createEntry({
           position: null,
-          angle: null,
           information: null,
           preconfigured: null,
         })
@@ -667,10 +671,10 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     // Get a list of possible spots, sorted ascendingly by how far they are away from the angle lines. possible[0] is the closest.
     const possible = lodash.sortBy(this.spots.filter(s => s.isPossible), p =>
       Math.max(...information.map(info =>
-          angleDifference(Compasses.getExpectedAngle(
+          UncertainAngle.meanDifference(UncertainAngle.fromAngle(Compasses.getExpectedAngle(
             info.modified_origin,
             p.spot.spot
-          ), info.angle_radians)
+          )), info.angle_radians)
         )
       )
     )
@@ -753,7 +757,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     this.entries.push(entry)
 
     if (!dont_update_selection) {
-    this.setSelection(this.entries.length - 1)
+      this.setSelection(this.entries.length - 1)
     }
 
     return entry
@@ -762,13 +766,12 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
   async registerSpot(coords: TileArea.ActiveTileArea | TeleportGroup.Spot, is_compass_solution: boolean): Promise<void> {
     const entry = this.entries.find((entry, i) => {
       if (i < this.entry_selection_index) return false
-      if (entry.preconfigured && entry.angle == null) return false
-      if (i != this.entry_selection_index && entry.angle != null) return false
+      if (entry.preconfigured && entry.information == null) return false
+      if (i != this.entry_selection_index && entry.information != null) return false
 
       return true
     }) ?? this.createEntry({
       position: null,
-      angle: null,
       information: null,
       preconfigured: null,
     })
@@ -776,7 +779,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     const hadInfo = entry.information
 
     entry.position = coords
-    entry.angle = null
     entry.information = null
     entry.preconfigured = null
 
@@ -839,7 +841,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
         this.createEntry({
           position: TileArea.activate(assumed_position_from_previous_clue),
-          angle: null,
           information: null,
           is_solution_of_previous_clue: true,
         }, true)
@@ -868,7 +869,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
         this.createEntry({
           position: spot,
-          angle: null,
           information: null,
           preconfigured: e,
         }, true)
@@ -878,7 +878,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     if (this.entries.length == 0) {
       this.createEntry({
         position: null,
-        angle: null,
         information: null,
         preconfigured: null,
       })
@@ -942,7 +941,6 @@ export namespace CompassSolving {
 
   export type Entry = {
     position: TileArea.ActiveTileArea | TeleportGroup.Spot | null,
-    angle: number | null,
     information: Compasses.TriangulationPoint | null,
     preconfigured?: CompassSolving.TriangulationPreset["sequence"][number],
     is_solution_of_previous_clue?: boolean,
@@ -1195,7 +1193,7 @@ export namespace CompassSolving {
     }
   }
 
-  export const ANGLE_CHANGE_COMMIT_THRESHOLD = degreesToRadians(4)
+  export const ANGLE_CHANGE_COMMIT_THRESHOLD = Angles.degreesToRadians(4)
 
   export type Settings = {
     auto_commit_on_angle_change: boolean,

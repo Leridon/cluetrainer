@@ -4,7 +4,7 @@ import Widget from "../lib/ui/Widget";
 import {observe} from "../lib/reactive";
 import lodash from "lodash";
 import {Alt1} from "../lib/alt1/Alt1";
-import {angleDifference, degreesToRadians, normalizeAngle, radiansToDegrees, Rectangle, Vector2} from "../lib/math";
+import {Rectangle, Vector2} from "../lib/math";
 import {GameMapMiniWidget, levelIcon} from "../lib/gamemap/GameMap";
 import ButtonRow from "../lib/ui/ButtonRow";
 import LightButton from "../trainer/ui/widgets/LightButton";
@@ -34,6 +34,7 @@ import cleanedJSON = util.cleanedJSON;
 import italic = C.italic;
 import hgrid = C.hgrid;
 import notification = Notification.notification;
+import {Angles} from "../lib/math/Angles";
 
 type Fraction = Vector2
 
@@ -64,15 +65,15 @@ class SelectionStatusWidget extends Widget {
     layout.header("Status")
 
     if (status.auto) {
-      const delta = angleDifference(status.auto.desired_angle, status.auto.actual_angle)
+      const delta = Angles.angleDifference(status.auto.desired_angle, status.auto.actual_angle)
 
       const x = (2 * Math.PI) / status.auto.angles_this_iteration
 
       const is_far_away = delta > (x / 10)
 
-      const text = `${radiansToDegrees(delta).toFixed(3)}° (${((delta / x) * 100).toFixed(1)}% off)`
+      const text = `${Angles.radiansToDegrees(delta).toFixed(3)}° (${((delta / x) * 100).toFixed(1)}% off)`
 
-      layout.named("Auto", `Want: ${radiansToDegrees(status.auto.desired_angle).toFixed(2)}°, Got: ${radiansToDegrees(status.auto.actual_angle).toFixed(2)}°`)
+      layout.named("Auto", `Want: ${Angles.radiansToDegrees(status.auto.desired_angle).toFixed(2)}°, Got: ${Angles.radiansToDegrees(status.auto.actual_angle).toFixed(2)}°`)
 
       layout.named("Auto Delta", is_far_away ? C.span(text).css("color", "red") : text)
     } else {
@@ -84,7 +85,7 @@ class SelectionStatusWidget extends Widget {
 
     layout
       .named("Selected", Vector2.toString(status.offset))
-      .named("Expected", radiansToDegrees(normalizeAngle(Math.atan2(-status.offset.y, -status.offset.x))).toFixed(3) + "°")
+      .named("Expected", Angles.radiansToDegrees(Angles.normalizeAngle(Math.atan2(-status.offset.y, -status.offset.x))).toFixed(3) + "°")
       .named("Sampled", status.existing_sample ? status.existing_sample.is_angle_degrees.toFixed(3) : italic("None"))
 
     layout.row(
@@ -158,7 +159,7 @@ export class CompassCalibrationTool extends NisModal {
       this.handler.remove()
     })
 
-    this.reader = new CompassReader.Service(null, true, true, true).start()
+    this.reader = new CompassReader.Service(null, true, null, true).start()
   }
 
   delete() {
@@ -179,9 +180,9 @@ export class CompassCalibrationTool extends NisModal {
       const entry = this.samples.find(s => Vector2.eq(s.position, this.selection.value().offset))
 
       if (entry) {
-        entry.is_angle_degrees = radiansToDegrees(state.angle)
+        entry.is_angle_degrees = Angles.radiansToDegrees(state.raw_angle)
       } else {
-        this.samples.push({position: this.selection.value().offset, is_angle_degrees: radiansToDegrees(state.angle)})
+        this.samples.push({position: this.selection.value().offset, is_angle_degrees: Angles.radiansToDegrees(state.raw_angle)})
 
         lodash.sortBy(this.samples, s => getExpectedAngle(s.position, {x: 0, y: 0}))
       }
@@ -304,6 +305,10 @@ export class CompassCalibrationTool extends NisModal {
     new ButtonRow().buttons(
       new LightButton("Import").onClick(async () => {
         this.samples = (await new ImportStringModal(input => {
+
+          const parsed = JSON.parse(input)
+
+
           return JSON.parse(input)
         }).do()).imported
         this.autoNextSpot()
@@ -316,7 +321,7 @@ export class CompassCalibrationTool extends NisModal {
         ).show()
       }),
       new LightButton("Export CSV").onClick(() => {
-        new ExportStringModal(AngularKeyframeFunction.fromCalibrationSamples(this.samples, "cosine").getCSV()).show()
+        new ExportStringModal(AngularKeyframeFunction.fromCalibrationSamples(this.samples, "cosine", 0).getCSV()).show()
       }),
       new LightButton("Export 2").onClick(() => {
         const compressed = CalibrationTool.compress(this.samples)
@@ -363,7 +368,10 @@ export namespace CalibrationTool {
     position: Vector2, is_angle_degrees: number
   }
 
-  export type CompressedSample = [number, CompassCalibrationFunction.AngleRange]
+  /**
+   * A compressed sample is a data point mapping a read-angle to a range of should-angles
+   */
+  export type CompressedSample = [number, Angles.AngleRange]
 
   export function compress(samples: RawSample[]): CompressedSample[] {
     const sorted_samples = lodash.sortBy(samples, s => s.is_angle_degrees)
@@ -384,11 +392,11 @@ export namespace CalibrationTool {
 
       const group = sorted_samples.slice(group_start_i, i)
 
-      const should_range = CompassCalibrationFunction.AngleRange.fromAngles(
-        group.map(s => shouldAngle(s.position))
+      const should_range = Angles.AngleRange.fromAngles(
+        ...group.map(s => shouldAngle(s.position))
       )
 
-      compressed_samples.push([degreesToRadians(group_angle), should_range])
+      compressed_samples.push([Angles.degreesToRadians(group_angle), should_range])
     }
 
     return compressed_samples

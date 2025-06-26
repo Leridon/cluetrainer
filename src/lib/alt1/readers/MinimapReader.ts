@@ -1,15 +1,16 @@
 import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken, NeedleImage} from "../capture";
 import {async_lazy, lazy} from "../../Lazy";
 import {LegacyOverlayGeometry} from "../LegacyOverlayGeometry";
-import {degreesToRadians, normalizeAngle, Vector2} from "../../math";
+import {Vector2} from "../../math";
 import {ScreenRectangle} from "../ScreenRectangle";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {Log} from "../../util/Log";
 import {Finder} from "../capture/Finder";
 import over = LegacyOverlayGeometry.over;
 import log = Log.log;
 import {Alt1ScreenCaptureService} from "../capture/Alt1ScreenCaptureService";
 import {Alt1} from "../Alt1";
+import {Angles} from "../../math/Angles";
 
 export class MinimapReader extends DerivedCaptureService<MinimapReader.Options, MinimapReader.CapturedMinimap> {
 
@@ -173,9 +174,9 @@ export namespace MinimapReader {
         }
       }
 
-      const CALIBRATION = degreesToRadians(1.544740919)
+      const CALIBRATION = Angles.degreesToRadians(1.544740919)
 
-      const average_angle = normalizeAngle(Math.atan2(
+      const average_angle = Angles.normalizeAngle(Math.atan2(
         lodash.sum(angle_samples.map(a => Math.sin(a))),
         lodash.sum(angle_samples.map(a => Math.cos(a))),
       ))
