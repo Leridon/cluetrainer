@@ -27,11 +27,22 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
   }
 
   sample(read_angle: number): FullCompassCalibrationFunction.SamplingResult {
+    if (this.samples.length == 0) {
+      return {
+        result: UncertainAngle.fromEpsilonAngle(Math.PI, Math.PI),
+        details: {
+          type: "outside",
+          before: [Math.PI / 2, [0, Math.PI]],
+          after: [3 * Math.PI / 2, [Math.PI, 2 * Math.PI]],
+        }
+      }
+    }
 
     if (read_angle < this.samples[0][0]) read_angle += 2 * Math.PI;
 
     const EPS = Angles.degreesToRadians(0.01)
 
+    // Binary search for the angle in the sample set
     const find_lower = (lower: number, higher: number): number => {
       // Invariant: read_angle >= this.samples[lower].is_angle
       // Invariant: read_angle < this.samples[higher + 1].is_angle
@@ -75,10 +86,7 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
 
       return {
         result: UncertainAngle.fromRange(
-          Angles.AngleRange.shrink(
-            [below[1][1], above[1][0]],
-            0.33
-          )
+          [below[1][1], above[1][0]],
         ),
         details: {
           type: "outside",
