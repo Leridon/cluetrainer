@@ -12,6 +12,12 @@ export namespace Angles {
     return (degrees / 360) * (2 * Math.PI)
   }
 
+  export const EQUALITY_EPSILON = degreesToRadians(0.001)
+
+  export function isSameRadians(a: number, b: number) {
+    return Math.abs(a - b) < EQUALITY_EPSILON
+  }
+
   export function normalizeAngle(radians: number): number {
     while (radians < 0) radians += 2 * Math.PI
     while (radians > 2 * Math.PI) radians -= 2 * Math.PI
@@ -27,24 +33,27 @@ export namespace Angles {
     return Math.abs(positive_mod(b - a + Math.PI, 2 * Math.PI) - Math.PI);
   }
 
-  export type AngleRange = [number, number]
+  export type AngleRange = {
+    from: number,
+    to: number
+  }
 
   export namespace AngleRange {
     export function contains(range: AngleRange, angle: number): boolean {
-      if (angle >= range[0] && angle <= range[1]) return true
+      if (angle >= range.from && angle <= range.to) return true
 
       const complement = angle + 2 * Math.PI
 
-      return complement > range[0] && complement < range[1]
+      return complement > range.from && complement < range.to
     }
 
     export function normalize(range: AngleRange): AngleRange {
-      if (range.every(a => a > 2 * Math.PI)) {
-        range[0] = normalizeAngle(range[0])
-        range[1] = normalizeAngle(range[1])
+      if ([range.from, range.to].every(a => a > 2 * Math.PI)) {
+        range.from = normalizeAngle(range.from)
+        range.to = normalizeAngle(range.to)
       }
 
-      if (range[1] < range[0]) range[1] += 2 * Math.PI
+      if (range.to < range.from) range.to += 2 * Math.PI
 
       return range
     }
@@ -54,10 +63,17 @@ export namespace Angles {
 
       const offset = angleDifference(range[0], range[1]) * factor / 2
 
-      return normalize([
-        range[0] + offset,
-        range[1] + offset
-      ])
+      return normalize({
+        from: range.from + offset,
+        to: range.to - offset
+      })
+    }
+
+    export function around(angle: number, size: number): AngleRange {
+      return normalize({
+        from: angle - size / 2,
+        to: angle + size / 2,
+      })
     }
 
     export function fromAngles(...angles: number[]): AngleRange {
@@ -65,21 +81,45 @@ export namespace Angles {
 
       if (mean < 0) mean += 2 * Math.PI
 
-      let range: AngleRange = [mean, mean]
+      let range: AngleRange = {
+        from: mean,
+        to: mean
+      }
 
       for (let angle of angles) {
         if (angleDifference(angle, mean) > Math.PI) angle += 2 * Math.PI
 
-        if (angle < 0) debugger
-
-        if (angle < range[0]) range[0] = angle
-        if (angle > range[1]) range[1] = angle
-
+        if (angle < range.from) range.from = angle
+        if (angle > range.to) range.to = angle
       }
 
-      if (range[0] < 0) debugger
-
       return range
+    }
+
+    export function mean(self: AngleRange): number {
+      return normalizeAngle((self.from + self.to) / 2)
+    }
+
+    export function between(a: AngleRange, b: AngleRange): AngleRange {
+      // Special case when a and b are the same infinitely small range
+
+      if (a == b && a.from == a.to) return Angles.AngleRange.normalize({
+        from: a.to + Angles.EQUALITY_EPSILON,
+        to: a.from - Angles.EQUALITY_EPSILON
+      })
+
+      return {
+        from: a.to,
+        to: b.from
+      }
+    }
+
+    export function size(self: AngleRange): number {
+      return normalizeAngle(self.to - self.from)
+    }
+
+    export function overlaps(a: AngleRange, b: AngleRange) {
+      return (a.from <= b.to && a.to >= b.from) || (b.from <= a.to && b.to >= a.from)
     }
   }
 
@@ -96,7 +136,7 @@ export namespace Angles {
       return {
         median: angle,
         epsilon: 0,
-        range: [angle, angle]
+        range: AngleRange.fromAngles(angle)
       }
     }
 
@@ -104,14 +144,14 @@ export namespace Angles {
       return {
         median: angle,
         epsilon: epsilon,
-        range: [angle - epsilon, angle + epsilon]
+        range: {from: angle - epsilon, to: angle + epsilon}
       }
     }
 
     export function fromRange(range: AngleRange): UncertainAngle {
       return {
-        median: normalizeAngle(circularMean(range)),
-        epsilon: angleDifference(range[0], range[1]) / 2,
+        median: AngleRange.mean(range),
+        epsilon: AngleRange.size(range) / 2,
         range: range
       }
     }
@@ -133,7 +173,7 @@ export namespace Angles {
     }
 
     export function contains(self: UncertainAngle, angle: number): boolean {
-      return angleDifference(angle, self.median) < self.epsilon
+      return angleDifference(angle, self.median) < (self.epsilon + EQUALITY_EPSILON)
     }
   }
 }
