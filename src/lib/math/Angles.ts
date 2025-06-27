@@ -33,9 +33,17 @@ export namespace Angles {
     return Math.abs(positive_mod(b - a + Math.PI, 2 * Math.PI) - Math.PI);
   }
 
+  export function angleDifferenceSigned(a: number, b: number): number {
+    return positive_mod(b - a + Math.PI, 2 * Math.PI) - Math.PI;
+  }
+
   export type AngleRange = {
     from: number,
     to: number
+  }
+
+  export function toString(self: number, precision: number = 1): string {
+    return `${radiansToDegrees(self).toFixed(precision)}°`
   }
 
   export namespace AngleRange {
