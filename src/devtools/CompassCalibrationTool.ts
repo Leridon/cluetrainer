@@ -80,7 +80,7 @@ class SelectionStatusWidget extends Widget {
 
       const is_far_away = delta > (range_size / 10)
 
-      const text = `${Angles.radiansToDegrees(delta).toFixed(3)}° (${((delta / range_size) * 100).toFixed(1)}% off)`
+      const text = `${Angles.radiansToDegrees(delta).toFixed(3)}° (${((delta / range_size) * 100).toFixed(2)}% off in ${Angles.toString(Angles.AngleRange.size(status.offset.auto.desired_range), 2)} range)`
 
       layout.named("Auto", `Want: ${Angles.radiansToDegrees(status.offset.auto.desired_angle).toFixed(2)}°, Got: ${Angles.radiansToDegrees(status.offset.auto.actual_angle).toFixed(2)}°`)
 
@@ -190,9 +190,9 @@ class SampleSetBuilder {
 
     this.samples.push(new_sample)
 
-    this.record_event.trigger(new_sample)
-
     this.update()
+
+    this.record_event.trigger(new_sample)
   }
 
   find(offset: Vector2): RawSample {
@@ -373,7 +373,7 @@ function findAutoSpotForAngleRange(range: AngleRange): OffsetSelection {
 
   const offset = approximateFractionAsRationaleNumber(1000,
     {y: -Math.sin(angle), x: -Math.cos(angle)},
-    offset => angleDifference(CalibrationTool.shouldAngle(offset), angle) < (range_size / 100)
+    offset => angleDifference(CalibrationTool.shouldAngle(offset), angle) < (range_size / 20)
   )
 
   return {
@@ -446,9 +446,6 @@ export class CompassCalibrationTool extends NisModal {
       props.row("No angle detected")
     } else {
       const result = this.sample_set.function.sample(reader_state.raw_angle)
-
-      console.log(reader_state.raw_angle)
-      console.log(result)
 
       props.named("Result", Angles.UncertainAngle.toString(result.result, 2))
       props.named("Sample Type", result.details.type)
