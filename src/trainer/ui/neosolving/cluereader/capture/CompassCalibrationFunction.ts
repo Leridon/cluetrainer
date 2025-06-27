@@ -9,6 +9,7 @@ import index = util.index;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
 import UncertainAngle = Angles.UncertainAngle;
 import angleDifference = Angles.angleDifference;
+import normalizeAngle = Angles.normalizeAngle;
 
 export interface CompassCalibrationFunction {
   apply(read_angle: number): UncertainAngle
@@ -39,9 +40,11 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
   }
 
   bad_samples() {
-    return this.samples.filter((s, i) =>
-      Angles.AngleRange.overlaps(s.is_angle, index(this.samples, i + 1).is_angle)
-    )
+    return this.samples.filter((s, i) => {
+      const next = index(this.samples, i + 1)
+
+      return normalizeAngle(s.is_angle.to) > normalizeAngle(next.is_angle.from)
+    })
   }
 
   sample(read_angle: number): FullCompassCalibrationFunction.SamplingResult {
