@@ -215,6 +215,9 @@ function approximateFractionAsRationaleNumber(max_denominator: number,
     let lower: Fraction = {y: 0, x: 1}
     let higher: Fraction = {y: 1, x: 1}
 
+    if (close_enough(lower)) return lower
+    if (close_enough(higher)) return higher
+
     while (true) {
       const mediant = Vector2.add(lower, higher) // interestingly, c is already in reduced form
 
@@ -237,13 +240,10 @@ function approximateFractionAsRationaleNumber(max_denominator: number,
 
   const signs = Vector2.sign(target_fraction)
 
-  if (Math.abs(target_fraction.x) < 0.0001) return {x: 0, y: signs.y}
-  if (Math.abs(target_fraction.y) < 0.0001) return {x: signs.x, y: 0}
-
   const must_be_swapped = Math.abs(target_fraction.y) > Math.abs(target_fraction.x)
 
-  const back: (_: Vector2) => Vector2 = must_be_swapped ? v => Vector2.swap(Vector2.mul(signs, v)) : v => Vector2.mul(signs, v)
-  const forth: (_: Vector2) => Vector2 = must_be_swapped ? v => Vector2.mul(signs, Vector2.swap(v)) : v => Vector2.mul(signs, v)
+  const forth: (_: Vector2) => Vector2 = must_be_swapped ? v => Vector2.swap(Vector2.mul(signs, v)) : v => Vector2.mul(signs, v)
+  const back: (_: Vector2) => Vector2 = must_be_swapped ? v => Vector2.mul(signs, Vector2.swap(v)) : v => Vector2.mul(signs, v)
 
   return back(approximateAsRationaleNumberImplementation(
     forth(target_fraction),
@@ -360,6 +360,7 @@ export class CompassCalibrationTool extends NisModal {
       console.log(current_sample)
       console.log(CalibrationTool.shouldAngle(this.selection.value().offset))
 
+      debugger
 
       notification("Implausible sample", "error").show()
       return
@@ -397,11 +398,9 @@ export class CompassCalibrationTool extends NisModal {
     console.log(angle)
     console.log(range_size)
 
-    if (range_size > Math.PI) debugger
-
     const offset = approximateFractionAsRationaleNumber(1000,
       {y: -Math.sin(angle), x: -Math.cos(angle)},
-      offset => angleDifference(CalibrationTool.shouldAngle(offset), angle) < (range_size / 20)
+      offset => angleDifference(CalibrationTool.shouldAngle(offset), angle) < (range_size / 100)
     )
 
     this.setOffset(offset, {
