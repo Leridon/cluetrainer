@@ -28,15 +28,18 @@ import {C} from "../lib/ui/constructors";
 import {Notification} from "../trainer/ui/NotificationBar";
 import {AngularKeyframeFunction, FullCompassCalibrationFunction} from "trainer/ui/neosolving/cluereader/capture/CompassCalibrationFunction";
 import {Angles} from "../lib/math/Angles";
+import {storage} from "../lib/util/storage";
 import getExpectedAngle = Compasses.getExpectedAngle;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
 import cleanedJSON = util.cleanedJSON;
 import italic = C.italic;
-import hgrid = C.hgrid;
 import notification = Notification.notification;
 import RawSample = CalibrationTool.RawSample;
 import hbox = C.hbox;
+import vbox = C.vbox;
+import AngleRange = Angles.AngleRange;
+import angleDifference = Angles.angleDifference;
 
 type Fraction = Vector2
 
@@ -47,8 +50,8 @@ namespace Fraction {
 }
 
 type AutoSelection = {
-  angles_this_iteration: number,
   desired_angle: number,
+  desired_range: Angles.AngleRange,
   actual_angle: number,
 }
 
@@ -59,29 +62,26 @@ type SelectionStatus = {
 }
 
 class SelectionStatusWidget extends Widget {
-  public current_calibrated_result: Widget
-
   constructor(status: SelectionStatus, private tool: CompassCalibrationTool) {
     super();
 
     const layout = new Properties().appendTo(this)
 
-    layout.header("Status")
+    layout.header("Selection Status")
 
     if (status.auto) {
       const delta = Angles.angleDifference(status.auto.desired_angle, status.auto.actual_angle)
 
-      const x = (2 * Math.PI) / status.auto.angles_this_iteration
+      const range_size = Angles.AngleRange.size(status.auto.desired_range)
 
-      const is_far_away = delta > (x / 10)
+      const is_far_away = delta > (range_size / 10)
 
-      const text = `${Angles.radiansToDegrees(delta).toFixed(3)}° (${((delta / x) * 100).toFixed(1)}% off)`
+      const text = `${Angles.radiansToDegrees(delta).toFixed(3)}° (${((delta / range_size) * 100).toFixed(1)}% off)`
 
       layout.named("Auto", `Want: ${Angles.radiansToDegrees(status.auto.desired_angle).toFixed(2)}°, Got: ${Angles.radiansToDegrees(status.auto.actual_angle).toFixed(2)}°`)
 
       layout.named("Auto Delta", is_far_away ? C.span(text).css("color", "red") : text)
     } else {
-
       layout.named("Auto", "")
 
       layout.named("Auto Delta", "")
@@ -89,9 +89,9 @@ class SelectionStatusWidget extends Widget {
 
     layout
       .named("Selected", Vector2.toString(status.offset))
-      .named("Expected", Angles.radiansToDegrees(Angles.normalizeAngle(Math.atan2(-status.offset.y, -status.offset.x))).toFixed(3) + "°")
+      .named("Should", Angles.radiansToDegrees(CalibrationTool.shouldAngle(status.offset)).toFixed(3) + "°")
       .named("Sampled", status.existing_sample ? status.existing_sample.is_angle_degrees.toFixed(3) : italic("None"))
-      .named("Current", this.current_calibrated_result = c())
+      .row(new LightButton("Auto").onClick(() => this.tool.autoNextSpot()))
 
     layout.row(
       new ButtonRow().buttons(
@@ -195,7 +195,64 @@ class SampleSetBuilder {
   }
 }
 
+/**
+ * Uses the farey sequence to find the rationale number (as a Vector2 where y is the numerator and x is the denominator) closest to the given number,
+ * where the denominator is not bigger than the given limit.
+ *
+ * @param max_denominator The maximum denominator.
+ * @param target_fraction The fraction to approximate
+ * @param close_enough
+ */
+function approximateFractionAsRationaleNumber(max_denominator: number,
+                                              target_fraction: Fraction,
+                                              close_enough: (_: Fraction) => boolean = _ => false): Fraction {
+
+  function approximateAsRationaleNumberImplementation(target_fraction: Fraction,
+                                                      close_enough: (_: Fraction) => boolean
+  ): Fraction {
+    const target_number = Fraction.value(target_fraction)
+
+    let lower: Fraction = {y: 0, x: 1}
+    let higher: Fraction = {y: 1, x: 1}
+
+    while (true) {
+      const mediant = Vector2.add(lower, higher) // interestingly, c is already in reduced form
+
+      if (close_enough(mediant)) return mediant
+
+      const mediant_value = Fraction.value(mediant)
+
+      // Because lower and higher are always (reduced) neighbours in a farey sequence, their mediant will also be reduced.
+
+      // if the denominator is too big, return the closest of lower or higher
+      if (mediant.x > max_denominator) {
+        return lodash.minBy([lower, higher], frac => Math.abs(target_number - Fraction.value(frac)))
+      }
+
+      // adjust the interval:
+      if (mediant_value < target_number) lower = mediant
+      else higher = mediant
+    }
+  }
+
+  const signs = Vector2.sign(target_fraction)
+
+  if (Math.abs(target_fraction.x) < 0.0001) return {x: 0, y: signs.y}
+  if (Math.abs(target_fraction.y) < 0.0001) return {x: signs.x, y: 0}
+
+  const must_be_swapped = Math.abs(target_fraction.y) > Math.abs(target_fraction.x)
+
+  const back: (_: Vector2) => Vector2 = must_be_swapped ? v => Vector2.swap(Vector2.mul(signs, v)) : v => Vector2.mul(signs, v)
+  const forth: (_: Vector2) => Vector2 = must_be_swapped ? v => Vector2.mul(signs, Vector2.swap(v)) : v => Vector2.mul(signs, v)
+
+  return back(approximateAsRationaleNumberImplementation(
+    forth(target_fraction),
+    v => close_enough(back(v))
+  ))
+}
+
 export class CompassCalibrationTool extends NisModal {
+
   public sample_set = new SampleSetBuilder()
     .set(CompassReader.no_aa_samples)
 
@@ -207,6 +264,7 @@ export class CompassCalibrationTool extends NisModal {
   selection = observe<SelectionStatus>(null)
 
   current_calibrated_angle_view: Widget
+  function_status_view: Widget
 
   constructor() {
     super({
@@ -230,6 +288,7 @@ export class CompassCalibrationTool extends NisModal {
 
     this.sample_set.set_changed.on(() => {
       this.updateCurrentCalibratedAngle()
+      this.updateFunctionStatusView()
     })
 
     this.reader.onChange(() => {
@@ -242,26 +301,46 @@ export class CompassCalibrationTool extends NisModal {
   }
 
   private updateCurrentCalibratedAngle() {
-    const result = this.sample_set.function.sample(this.reader.state().raw_angle)
-
     const props = new Properties()
 
-    props.named("Result", Angles.UncertainAngle.toString(result.result, 2))
-    props.named("Sample Type", result.details.type)
+    props.header("Current Read")
 
-    switch (result.details.type) {
-      case "outside":
-        props.named("Before", FullCompassCalibrationFunction.CompressedSample.toString(result.details.before))
-        props.named("After", FullCompassCalibrationFunction.CompressedSample.toString(result.details.after))
-        break;
-      case "within":
-        props.named("Before", FullCompassCalibrationFunction.CompressedSample.toString(result.details.before))
-        props.named("Hit", FullCompassCalibrationFunction.CompressedSample.toString(result.details.in_sample))
-        props.named("After", FullCompassCalibrationFunction.CompressedSample.toString(result.details.after))
-        break;
+    const reader_state = this.reader.state()
+
+    if (reader_state?.state != "normal") {
+      props.row("No angle detected")
+    } else {
+      const result = this.sample_set.function.sample(reader_state.raw_angle)
+
+      props.named("Result", Angles.UncertainAngle.toString(result.result, 2))
+      props.named("Sample Type", result.details.type)
+
+      switch (result.details.type) {
+        case "outside":
+          props.named("Before", FullCompassCalibrationFunction.CompressedSample.toString(result.details.before))
+          props.named("After", FullCompassCalibrationFunction.CompressedSample.toString(result.details.after))
+          break;
+        case "within":
+          props.named("Before", FullCompassCalibrationFunction.CompressedSample.toString(result.details.before))
+          props.named("Hit", FullCompassCalibrationFunction.CompressedSample.toString(result.details.in_sample))
+          props.named("After", FullCompassCalibrationFunction.CompressedSample.toString(result.details.after))
+          break;
+      }
     }
 
     this.current_calibrated_angle_view.empty().append(props)
+  }
+
+  private updateFunctionStatusView() {
+    const props = new Properties()
+
+    props.header("Function Status")
+
+    props.named("Samples", this.sample_set.size().toString())
+    props.named("Unique Angles", this.sample_set.function.samples.length.toString())
+    props.named("Conflicts", this.sample_set.function.bad_samples().length.toString())
+
+    this.function_status_view.empty().append(props)
   }
 
   delete() {
@@ -278,6 +357,10 @@ export class CompassCalibrationTool extends NisModal {
     const current_sample = this.sample_set.function.sample(state.raw_angle)
 
     if (!Angles.UncertainAngle.contains(current_sample.result, CalibrationTool.shouldAngle(this.selection.value().offset))) {
+      console.log(current_sample)
+      console.log(CalibrationTool.shouldAngle(this.selection.value().offset))
+
+
       notification("Implausible sample", "error").show()
       return
     }
@@ -285,7 +368,7 @@ export class CompassCalibrationTool extends NisModal {
     if (state.state == "normal") {
       this.sample_set.add(this.selection.value().offset, state.raw_angle)
 
-      this.autoNextSpot()
+      if (this.selection.value().auto) this.autoNextSpot()
     }
   }
 
@@ -304,7 +387,37 @@ export class CompassCalibrationTool extends NisModal {
 
   }
 
+  private findAutoSpotForAngleRange(range: AngleRange) {
+
+    const angle = Angles.AngleRange.mean(range)
+
+    const range_size = Angles.AngleRange.size(range)
+
+    console.log(range)
+    console.log(angle)
+    console.log(range_size)
+
+    if (range_size > Math.PI) debugger
+
+    const offset = approximateFractionAsRationaleNumber(1000,
+      {y: -Math.sin(angle), x: -Math.cos(angle)},
+      offset => angleDifference(CalibrationTool.shouldAngle(offset), angle) < (range_size / 20)
+    )
+
+    this.setOffset(offset, {
+      desired_angle: angle,
+      desired_range: range,
+      actual_angle: CalibrationTool.shouldAngle(offset),
+    })
+  }
+
+
   autoNextSpot() {
+    console.log("Next auto")
+
+    console.log(this.sample_set.function.uncalibrated_ranges())
+
+
     const maybeSetOffset = (offset: Vector2, auto: AutoSelection): boolean => {
       const gcd = greatestCommonDivisor(offset.x, offset.y)
 
@@ -319,61 +432,27 @@ export class CompassCalibrationTool extends NisModal {
       return true
     }
 
-    const settings = this.autospotsettings.get()
+    this.findAutoSpotForAngleRange(lodash.maxBy(this.sample_set.function.uncalibrated_ranges(), r => Angles.AngleRange.size(r)))
+
+    return;
+
+    const settings: AutoSpotSettings = {
+      start_iteration: 8,
+      max_distance: 200
+    }
 
     for (let d = settings.start_iteration; d <= 15; d++) {
       const iterations = Math.pow(2, d)
 
+      const range = 2 * Math.PI / iterations
+
       for (let i = 0; i < iterations; i++) {
         const angle = i * (Math.PI * 2) / iterations
 
-        /**
-         * Uses the farey sequence to find the rationale number (as a Vector2 where y is the numerator and x is the denominator) closest to the given number,
-         * where the denominator is not bigger than the given limit.
-         *
-         * @param max_denominator The maximum denominator.
-         * @param target_fraction The fraction to approximate
-         * @param epsilon
-         */
-        function approximateFractionAsRationaleNumber(max_denominator: number, target_fraction: Fraction): Fraction {
-
-          function approximateAsRationaleNumberImplementation(target_fraction: Fraction): Fraction {
-            if (target_fraction.y > target_fraction.x) return Vector2.swap(approximateAsRationaleNumberImplementation(Vector2.swap(target_fraction)))
-
-            const target_number = Fraction.value(target_fraction)
-
-            let lower: Fraction = {y: 0, x: 1}
-            let higher: Fraction = {y: 1, x: 1}
-
-            while (true) {
-              const mediant = Vector2.add(lower, higher) // interestingly, c is already in reduced form
-
-              const mediant_value = Fraction.value(mediant)
-
-              // Because lower and higher are always (reduced) neighbours in a farey sequence, their mediant will also be reduced.
-
-              // if the denominator is too big, return the closest of lower or higher
-              if (mediant.x > max_denominator) {
-                if (target_number - Fraction.value(lower) < Fraction.value(higher) - target_number) return lower
-                else return higher
-              }
-
-              // adjust the interval:
-              if (mediant_value < target_number) lower = mediant
-              else higher = mediant
-            }
-          }
-
-          if (target_fraction.x == 0 || target_fraction.y == 0) return {x: Math.sign(target_fraction.x), y: Math.sign(target_fraction.y)}
-
-          const signs = {x: Math.sign(target_fraction.x), y: Math.sign(target_fraction.y)}
-
-          return Vector2.mul(signs, approximateAsRationaleNumberImplementation(Vector2.mul(signs, target_fraction)))
-        }
 
         const v = approximateFractionAsRationaleNumber(settings.max_distance, {y: -Math.sin(angle), x: -Math.cos(angle)})
 
-        if (maybeSetOffset(v, {desired_angle: angle, actual_angle: getExpectedAngle(v, {x: 0, y: 0}), angles_this_iteration: iterations})) return
+        if (maybeSetOffset(v, {desired_angle: angle, actual_angle: CalibrationTool.shouldAngle(v), desired_range: Angles.AngleRange.around(angle, range)})) return
       }
 
       if (iterations > this.sample_set.size()) {
@@ -383,25 +462,24 @@ export class CompassCalibrationTool extends NisModal {
     }
   }
 
-  private autospotsettings: AutoSpotSettingsEdit
-
   render() {
     super.render();
 
     this.title.set("Compass Calibration")
 
     this.body.css("display", "flex")
-      .css("flex-direction", "column")
+
+    const menu_column = vbox().css("max-width", "300px").appendTo(this.body)
+
+    c().css("min-width", "20px").css("max-width", "20px").appendTo(this.body)
 
     const map = new GameMapMiniWidget()
       .css2({
         "width": "100%",
-        "height": "500px"
       })
       .appendTo(this.body)
 
     setTimeout(() => map.map.invalidateSize(), 1000)
-
 
     new ButtonRow().buttons(
       new LightButton("Import").onClick(async () => {
@@ -433,22 +511,27 @@ export class CompassCalibrationTool extends NisModal {
           + "\n]"
         ).show()
       }),
-    ).appendTo(this.body)
+    ).appendTo(menu_column)
 
-    this.current_calibrated_angle_view = hbox()
-      .appendTo(this.body)
+    this.current_calibrated_angle_view = hbox().appendTo(menu_column)
 
-    const status_widget = c()
+    this.current_calibrated_angle_view = hbox().appendTo(menu_column)
+    const status_widget = c().appendTo(menu_column)
+    this.function_status_view = hbox().appendTo(menu_column)
 
-    hgrid(
+    this.updateFunctionStatusView()
+    this.updateCurrentCalibratedAngle()
+
+    /*hgrid(
       status_widget,
+
       c().css("min-width", "20px").css("max-width", "20px"),
       this.autospotsettings = new AutoSpotSettingsEdit(this)
         .setValue({
           start_iteration: 3,
           max_distance: 200
         })
-    ).appendTo(this.body)
+    ).appendTo(this.body)*/
 
     this.selection.subscribe(v => {
       status_widget.empty()
@@ -515,6 +598,8 @@ export namespace CalibrationTool {
     markers: KnownMarker[]
     reference: TileCoordinates
 
+    private reference_memory = new storage.Variable<TileCoordinates>("preferences/calibrationtool/reference", () => gielinor_compass.spots[0])
+
     constructor(public tool: CompassCalibrationTool) {
       super()
 
@@ -522,7 +607,7 @@ export namespace CalibrationTool {
         new KnownMarker(spot).addTo(this)
       )
 
-      this.setReference(gielinor_compass.spots[0])
+      this.setReference(this.reference_memory.get())
     }
 
     eventClick(event: GameMapMouseEvent) {
@@ -543,6 +628,8 @@ export namespace CalibrationTool {
 
     setReference(reference: TileCoordinates) {
       this.reference = reference
+
+      this.reference_memory.set(reference)
 
       this.markers.forEach(marker => {
         marker.setActive(TileCoordinates.equals(marker.spot, reference))
