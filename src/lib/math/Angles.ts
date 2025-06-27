@@ -39,6 +39,10 @@ export namespace Angles {
   }
 
   export namespace AngleRange {
+    export function construct(from: number, to: number): AngleRange {
+      return normalize({from, to})
+    }
+
     export function contains(range: AngleRange, angle: number): boolean {
       if (angle >= range.from && angle <= range.to) return true
 
@@ -93,7 +97,7 @@ export namespace Angles {
         if (angle > range.to) range.to = angle
       }
 
-      return range
+      return normalize(range)
     }
 
     export function mean(self: AngleRange): number {
@@ -102,16 +106,9 @@ export namespace Angles {
 
     export function between(a: AngleRange, b: AngleRange): AngleRange {
       // Special case when a and b are the same infinitely small range
+      if (a == b && a.from == a.to) return construct(a.to + EQUALITY_EPSILON, a.from - EQUALITY_EPSILON)
 
-      if (a == b && a.from == a.to) return Angles.AngleRange.normalize({
-        from: a.to + Angles.EQUALITY_EPSILON,
-        to: a.from - Angles.EQUALITY_EPSILON
-      })
-
-      return {
-        from: a.to,
-        to: b.from
-      }
+      return construct(a.to, b.from)
     }
 
     export function size(self: AngleRange): number {
