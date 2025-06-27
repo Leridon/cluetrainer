@@ -69,18 +69,18 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
     // Binary search for the angle in the sample set
     const find_lower = (lower: number, higher: number): number => {
       // Invariant: read_angle >= this.samples[lower].is_angle
-      // Invariant: read_angle < this.samples[higher + 1].is_angle
+      // Invariant: read_angle < this.samples[higher + 1].is_angle (if higher + 1 exists)
       if (lower == higher) return lower
 
-      const median_i = ~~((lower + higher) / 2)
+      const median_i = Math.ceil((lower + higher) / 2)
 
-      if (angleDifference(read_angle, this.samples[median_i].read_angle) < Angles.EQUALITY_EPSILON) return median_i
+      if (Angles.isSameRadians(read_angle, this.samples[median_i].read_angle)) return median_i
 
-      if (read_angle < this.samples[median_i].read_angle) return find_lower(lower, median_i - 1)
-      else return find_lower(median_i == lower ? lower + 1 : median_i, higher)
+      if (read_angle >= this.samples[median_i].read_angle) return find_lower(median_i, higher)
+      else return find_lower(lower, median_i - 1)
     }
 
-    const sample_i = find_lower(0, this.samples.length)
+    const sample_i = find_lower(0, this.samples.length - 1)
 
     const sample = index(this.samples, sample_i)
 
