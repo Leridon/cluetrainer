@@ -55,9 +55,13 @@ type AutoSelection = {
   actual_angle: number,
 }
 
-type SelectionStatus = {
-  auto: AutoSelection,
+type OffsetSelection = {
+  auto?: AutoSelection,
   offset: Vector2,
+}
+
+type SelectionStatus = {
+  offset: OffsetSelection,
   existing_sample: CalibrationTool.RawSample
 }
 
@@ -69,16 +73,16 @@ class SelectionStatusWidget extends Widget {
 
     layout.header("Selection Status")
 
-    if (status.auto) {
-      const delta = Angles.angleDifference(status.auto.desired_angle, status.auto.actual_angle)
+    if (status.offset.auto) {
+      const delta = Angles.angleDifference(status.offset.auto.desired_angle, status.offset.auto.actual_angle)
 
-      const range_size = Angles.AngleRange.size(status.auto.desired_range)
+      const range_size = Angles.AngleRange.size(status.offset.auto.desired_range)
 
       const is_far_away = delta > (range_size / 10)
 
       const text = `${Angles.radiansToDegrees(delta).toFixed(3)}° (${((delta / range_size) * 100).toFixed(1)}% off)`
 
-      layout.named("Auto", `Want: ${Angles.radiansToDegrees(status.auto.desired_angle).toFixed(2)}°, Got: ${Angles.radiansToDegrees(status.auto.actual_angle).toFixed(2)}°`)
+      layout.named("Auto", `Want: ${Angles.radiansToDegrees(status.offset.auto.desired_angle).toFixed(2)}°, Got: ${Angles.radiansToDegrees(status.offset.auto.actual_angle).toFixed(2)}°`)
 
       layout.named("Auto Delta", is_far_away ? C.span(text).css("color", "red") : text)
     } else {
@@ -88,14 +92,13 @@ class SelectionStatusWidget extends Widget {
     }
 
     layout
-      .named("Selected", Vector2.toString(status.offset))
-      .named("Should", Angles.radiansToDegrees(CalibrationTool.shouldAngle(status.offset)).toFixed(3) + "°")
-      .named("Sampled", status.existing_sample ? status.existing_sample.is_angle_degrees.toFixed(3) : italic("None"))
-      .row(new LightButton("Auto").onClick(() => this.tool.autoNextSpot()))
+      .named("Selected", Vector2.toString(status.offset.offset))
+      .named("Should", Angles.radiansToDegrees(CalibrationTool.shouldAngle(status.offset.offset)).toFixed(3) + "°")
+      .named("Sampled", status.existing_sample ? Angles.radiansToDegrees(status.existing_sample.is_angle).toFixed(3) : italic("None"))
 
     layout.row(
       new ButtonRow().buttons(
-        new LightButton("Commit")
+        new LightButton("Commit (Alt+1)")
           .onClick(() => this.tool.commit()),
         new LightButton("Delete")
           .setEnabled(!!status.existing_sample)
@@ -111,6 +114,7 @@ type AutoSpotSettings = {
 }
 
 class AutoSpotSettingsEdit extends AbstractEditWidget<AutoSpotSettings> {
+
   constructor(private tool: CompassCalibrationTool) {
     super();
   }
@@ -136,6 +140,8 @@ class AutoSpotSettingsEdit extends AbstractEditWidget<AutoSpotSettings> {
 }
 
 class SampleSetBuilder {
+  public record_event = ewent<CalibrationTool.RawSample>()
+
   private samples: CalibrationTool.RawSample[] = []
 
   public function: FullCompassCalibrationFunction
@@ -160,24 +166,31 @@ class SampleSetBuilder {
     return this
   }
 
-  delete(position: Vector2): void {
-    const entry_index = this.samples.findIndex(s => Vector2.eq(s.position, position))
+  delete(...positions: Vector2[]): void {
 
-    if (entry_index >= 0) {
-      this.samples.splice(entry_index, 1)
+    const old_length = this.samples.length
 
-      this.update()
+    for (const position of positions) {
+      const entry_index = this.samples.findIndex(s => Vector2.eq(s.position, position))
+
+      if (entry_index >= 0) {
+        this.samples.splice(entry_index, 1)
+      }
     }
+
+    if (this.samples.length != old_length) this.update()
   }
 
-  add(offset: Vector2, is_angle_radians: number) {
-    const entry = this.samples.find(s => Vector2.eq(s.position, offset))
+  record(offset: Vector2, is_angle_radians: number) {
+    const index_of_existing_sample = this.samples.findIndex(s => Vector2.eq(s.position, offset))
 
-    if (entry) {
-      entry.is_angle_degrees = Angles.radiansToDegrees(is_angle_radians)
-    } else {
-      this.samples.push({position: offset, is_angle_degrees: Angles.radiansToDegrees(is_angle_radians)})
-    }
+    if (index_of_existing_sample >= 0) this.samples.splice(index_of_existing_sample, 1)
+
+    const new_sample: RawSample = {position: offset, is_angle: is_angle_radians}
+
+    this.samples.push(new_sample)
+
+    this.record_event.trigger(new_sample)
 
     this.update()
   }
@@ -251,10 +264,131 @@ function approximateFractionAsRationaleNumber(max_denominator: number,
   ))
 }
 
-export class CompassCalibrationTool extends NisModal {
+type QueueFillerfunction = {
+  name: string,
+  function: () => OffsetSelection[]
+}
 
-  public sample_set = new SampleSetBuilder()
-    .set(CompassReader.no_aa_samples)
+class CalibrationQueue {
+  private queue: OffsetSelection[] = []
+  public filler: QueueFillerfunction
+
+  changed = ewent<this>()
+
+  constructor(private parent: CompassCalibrationTool) {
+    this.parent.sample_set.record_event.on(sample => {
+      const removed = this.remove(sample.position)
+
+      const activated = this.dequeue()
+
+      if (removed && !activated) {
+        this.fill(this.filler)
+      }
+    })
+  }
+
+  dequeue(): boolean {
+    if (this.queue.length > 0) {
+      this.parent.setOffset(this.queue[0])
+      return true
+    }
+
+    return false
+  }
+
+  remove(offset: Vector2): boolean {
+    const i = this.queue.findIndex(e => Vector2.eq(offset, e.offset))
+
+    if (i >= 0) {
+      this.queue.splice(i, 1)
+
+      this.changed.trigger(this)
+
+      return true
+    }
+
+    return false
+  }
+
+  size(): number {
+    return this.queue.length
+  }
+
+  clear() {
+    if (this.queue.length > 0) {
+      this.queue = []
+
+      this.changed.trigger(this)
+    }
+
+    this.filler = null
+  }
+
+  fill(f: QueueFillerfunction) {
+    this.clear()
+
+    const queue = f.function()
+
+    if (queue.length > 0) {
+      this.queue = queue
+
+      this.filler = f
+
+      this.dequeue()
+
+      this.changed.trigger(this)
+    }
+  }
+}
+
+class CalibrationQueueView extends Widget {
+  props: Properties
+
+  constructor(private queue: CalibrationQueue) {
+    super();
+
+    this.init(this.props = new Properties())
+
+    queue.changed.on(() => this.render())
+
+    this.render()
+  }
+
+  private render() {
+    this.props.empty()
+
+    this.props.header("Offset Queue")
+
+    this.props.named("Size", this.queue.size().toString())
+    this.props.named("Type", this.queue.filler ? this.queue.filler.name : "")
+  }
+}
+
+
+function findAutoSpotForAngleRange(range: AngleRange): OffsetSelection {
+
+  const angle = Angles.AngleRange.mean(range)
+
+  const range_size = Angles.AngleRange.size(range)
+
+  const offset = approximateFractionAsRationaleNumber(1000,
+    {y: -Math.sin(angle), x: -Math.cos(angle)},
+    offset => angleDifference(CalibrationTool.shouldAngle(offset), angle) < (range_size / 100)
+  )
+
+  return {
+    offset: offset,
+    auto: {
+      desired_angle: angle,
+      desired_range: range,
+      actual_angle: CalibrationTool.shouldAngle(offset),
+    }
+  }
+}
+
+export class CompassCalibrationTool extends NisModal {
+  public sample_set = new SampleSetBuilder().set(lodash.cloneDeep(CompassReader.no_aa_samples))
+  private spot_queue = new CalibrationQueue(this)
 
   private reader: CompassReader.Service
   private layer: CalibrationTool.Layer
@@ -265,6 +399,7 @@ export class CompassCalibrationTool extends NisModal {
 
   current_calibrated_angle_view: Widget
   function_status_view: Widget
+  calibration_queue_view: CalibrationQueueView
 
   constructor() {
     super({
@@ -273,7 +408,7 @@ export class CompassCalibrationTool extends NisModal {
       disable_close_button: false
     });
 
-    this.setOffset({x: -1, y: 0}, null)
+    this.setOffset({offset: {x: -1, y: 0}})
 
     this.handler = Alt1.instance().main_hotkey.subscribe(0, (e) => {
       this.commit()
@@ -312,12 +447,16 @@ export class CompassCalibrationTool extends NisModal {
     } else {
       const result = this.sample_set.function.sample(reader_state.raw_angle)
 
+      console.log(reader_state.raw_angle)
+      console.log(result)
+
       props.named("Result", Angles.UncertainAngle.toString(result.result, 2))
       props.named("Sample Type", result.details.type)
 
       switch (result.details.type) {
         case "outside":
           props.named("Before", FullCompassCalibrationFunction.CompressedSample.toString(result.details.before))
+          props.named("Hit", "-")
           props.named("After", FullCompassCalibrationFunction.CompressedSample.toString(result.details.after))
           break;
         case "within":
@@ -336,15 +475,29 @@ export class CompassCalibrationTool extends NisModal {
 
     props.header("Function Status")
 
+    const uncalibrated = this.sample_set.function.uncalibrated_ranges()
+
+    Angles.AngleRange.size(uncalibrated[0])
+
+    const bad_samples = this.sample_set.function.bad_samples()
+
     props.named("Samples", this.sample_set.size().toString())
     props.named("Unique Angles", this.sample_set.function.samples.length.toString())
-    props.named("Conflicts", this.sample_set.function.bad_samples().length.toString())
+    props.named("Implausibilities", bad_samples.length.toString())
+    props.row(new LightButton("Delete Implausible Samples").onClick(() => {
+      this.sample_set.delete(...bad_samples.flatMap(s => s.raw_samples).map(s => s.position))
+    }))
+
+    props.named("Largest Gap", Angles.toString(Angles.AngleRange.size(uncalibrated[0])))
+    props.row(new LightButton("Queue Largest Gaps").onClick(() => this.fillQueueWithBiggestUncalibratedRange()))
+
+    this.sample_set.function.uncalibrated_ranges()
 
     this.function_status_view.empty().append(props)
   }
 
   delete() {
-    this.sample_set.delete(this.selection.value().offset)
+    this.sample_set.delete(this.selection.value().offset.offset)
 
     this.selection.update(s => s.existing_sample = null)
 
@@ -356,82 +509,54 @@ export class CompassCalibrationTool extends NisModal {
 
     const current_sample = this.sample_set.function.sample(state.raw_angle)
 
-    if (!Angles.UncertainAngle.contains(current_sample.result, CalibrationTool.shouldAngle(this.selection.value().offset))) {
-      console.log(current_sample)
-      console.log(CalibrationTool.shouldAngle(this.selection.value().offset))
-
-      debugger
-
+    if (!Angles.UncertainAngle.contains(current_sample.result, CalibrationTool.shouldAngle(this.selection.value().offset.offset))) {
       notification("Implausible sample", "error").show()
       return
     }
 
     if (state.state == "normal") {
-      this.sample_set.add(this.selection.value().offset, state.raw_angle)
-
-      if (this.selection.value().auto) this.autoNextSpot()
+      this.sample_set.record(this.selection.value().offset.offset, state.raw_angle)
     }
   }
 
-  setOffset(offset: Vector2, auto_selection: AutoSelection) {
+  setOffset(offset: OffsetSelection) {
     this.selection.set({
-      existing_sample: this.sample_set.find(offset),
+      existing_sample: this.sample_set.find(offset.offset),
       offset: offset,
-      auto: auto_selection
     })
 
     if (this.layer) {
       this.layer.updateTileOverlays()
 
-      if (auto_selection) this.layer.getMap().fitView(TileRectangle.from(TileCoordinates.move(this.layer.reference, offset)))
+      if (offset.auto) this.layer.getMap().fitView(TileRectangle.from(TileCoordinates.move(this.layer.reference, offset.offset)))
     }
 
   }
 
-  private findAutoSpotForAngleRange(range: AngleRange) {
-
-    const angle = Angles.AngleRange.mean(range)
-
-    const range_size = Angles.AngleRange.size(range)
-
-    console.log(range)
-    console.log(angle)
-    console.log(range_size)
-
-    const offset = approximateFractionAsRationaleNumber(1000,
-      {y: -Math.sin(angle), x: -Math.cos(angle)},
-      offset => angleDifference(CalibrationTool.shouldAngle(offset), angle) < (range_size / 100)
+  fillQueueWithBiggestUncalibratedRange() {
+    this.spot_queue.fill(
+      {
+        name: "Largest Gap",
+        function: () => [findAutoSpotForAngleRange(this.sample_set.function.uncalibrated_ranges()[0])]
+      }
     )
-
-    this.setOffset(offset, {
-      desired_angle: angle,
-      desired_range: range,
-      actual_angle: CalibrationTool.shouldAngle(offset),
-    })
+    return;
   }
 
-
   autoNextSpot() {
-    console.log("Next auto")
-
-    console.log(this.sample_set.function.uncalibrated_ranges())
-
-
-    const maybeSetOffset = (offset: Vector2, auto: AutoSelection): boolean => {
-      const gcd = greatestCommonDivisor(offset.x, offset.y)
+    const maybeSetOffset = (offset: OffsetSelection): boolean => {
+      const gcd = greatestCommonDivisor(offset.offset.x, offset.offset.y)
 
       if (gcd > 1) return false
 
-      const entry = this.sample_set.find(offset)
+      const entry = this.sample_set.find(offset.offset)
 
       if (entry) return false
 
-      this.setOffset(offset, auto)
+      this.setOffset(offset)
 
       return true
     }
-
-    this.findAutoSpotForAngleRange(lodash.maxBy(this.sample_set.function.uncalibrated_ranges(), r => Angles.AngleRange.size(r)))
 
     return;
 
@@ -451,7 +576,7 @@ export class CompassCalibrationTool extends NisModal {
 
         const v = approximateFractionAsRationaleNumber(settings.max_distance, {y: -Math.sin(angle), x: -Math.cos(angle)})
 
-        if (maybeSetOffset(v, {desired_angle: angle, actual_angle: CalibrationTool.shouldAngle(v), desired_range: Angles.AngleRange.around(angle, range)})) return
+        if (maybeSetOffset({offset: v, auto: {desired_angle: angle, actual_angle: CalibrationTool.shouldAngle(v), desired_range: Angles.AngleRange.around(angle, range)}})) return
       }
 
       if (iterations > this.sample_set.size()) {
@@ -468,7 +593,7 @@ export class CompassCalibrationTool extends NisModal {
 
     this.body.css("display", "flex")
 
-    const menu_column = vbox().css("max-width", "300px").appendTo(this.body)
+    const menu_column = vbox().css("min-width", "300px").appendTo(this.body)
 
     c().css("min-width", "20px").css("max-width", "20px").appendTo(this.body)
 
@@ -483,32 +608,17 @@ export class CompassCalibrationTool extends NisModal {
     new ButtonRow().buttons(
       new LightButton("Import").onClick(async () => {
         this.sample_set.set((await new ImportStringModal(input => {
-
-          const parsed = JSON.parse(input)
-
-
           return JSON.parse(input)
         }).do()).imported)
-        this.autoNextSpot()
+        this.fillQueueWithBiggestUncalibratedRange()
       }),
       new LightButton("Export JSON").onClick(() => {
         new ExportStringModal(
-          "[\n" +
-          lodash.sortBy(this.sample_set.get(), s => Vector2.angle(ANGLE_REFERENCE_VECTOR, {x: -s.position.x, y: -s.position.y})).map(s => cleanedJSON(s, undefined)).join(",\n")
-          + "\n]"
+          CalibrationTool.cleanExport(this.sample_set.get())
         ).show()
       }),
       new LightButton("Export CSV").onClick(() => {
         new ExportStringModal(AngularKeyframeFunction.fromCalibrationSamples(this.sample_set.get(), "cosine", 0).getCSV()).show()
-      }),
-      new LightButton("Export 2").onClick(() => {
-        const compressed = FullCompassCalibrationFunction.compress(this.sample_set.get())
-
-        new ExportStringModal(
-          "[\n" +
-          compressed.map(s => `[${s[0].toFixed(3)}, [${s[1][0].toFixed(3)},${s[1][1].toFixed(3)}]]`).join(",\n")
-          + "\n]"
-        ).show()
       }),
     ).appendTo(menu_column)
 
@@ -517,20 +627,10 @@ export class CompassCalibrationTool extends NisModal {
     this.current_calibrated_angle_view = hbox().appendTo(menu_column)
     const status_widget = c().appendTo(menu_column)
     this.function_status_view = hbox().appendTo(menu_column)
+    this.calibration_queue_view = new CalibrationQueueView(this.spot_queue).appendTo(menu_column)
 
     this.updateFunctionStatusView()
     this.updateCurrentCalibratedAngle()
-
-    /*hgrid(
-      status_widget,
-
-      c().css("min-width", "20px").css("max-width", "20px"),
-      this.autospotsettings = new AutoSpotSettingsEdit(this)
-        .setValue({
-          start_iteration: 3,
-          max_distance: 200
-        })
-    ).appendTo(this.body)*/
 
     this.selection.subscribe(v => {
       status_widget.empty()
@@ -540,17 +640,23 @@ export class CompassCalibrationTool extends NisModal {
 
     map.map.addGameLayer(this.layer = new CalibrationTool.Layer(this))
 
-    this.autoNextSpot()
+    this.fillQueueWithBiggestUncalibratedRange()
   }
 }
 
 export namespace CalibrationTool {
+  export function cleanExport(samples: RawSample[]): string {
+    return "[\n" +
+      lodash.sortBy(samples, s => Vector2.angle(ANGLE_REFERENCE_VECTOR, {x: -s.position.x, y: -s.position.y})).map(s => cleanedJSON(s, undefined)).join(",\n")
+      + "\n]"
+  }
+
   export function shouldAngle(offset: Vector2): number {
     return getExpectedAngle(offset, {x: 0, y: 0})
   }
 
   export type RawSample = {
-    position: Vector2, is_angle_degrees: number
+    position: Vector2, is_angle: number
   }
 
   import gielinor_compass = clue_data.gielinor_compass;
@@ -620,7 +726,7 @@ export namespace CalibrationTool {
 
           const gcd = greatestCommonDivisor(Math.abs(off.x), Math.abs(off.y))
 
-          this.tool.setOffset(Vector2.scale(1 / gcd, off), null)
+          this.tool.setOffset({offset: Vector2.scale(1 / gcd, off)})
         }
       })
     }
@@ -659,14 +765,8 @@ export namespace CalibrationTool {
         }).addTo(this.overlay)
       })
 
-      /*leaflet.polygon(this.tool.samples.map(s => Vector2.toLatLong(Vector2.add(this.reference, s.position))))
-        .setStyle({
-          color: "blue"
-        })
-        .addTo(this.overlay)*/
-
       for (let i = 1; i <= 100; i++) {
-        const polygon = tilePolygon(Vector2.add(this.reference, Vector2.scale(i, selection.offset))).addTo(this.overlay)
+        const polygon = tilePolygon(Vector2.add(this.reference, Vector2.scale(i, selection.offset.offset))).addTo(this.overlay)
 
         if (selection.existing_sample) {
           polygon.setStyle({

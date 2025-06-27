@@ -9,7 +9,7 @@ import index = util.index;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
 import UncertainAngle = Angles.UncertainAngle;
 import angleDifference = Angles.angleDifference;
-import normalizeAngle = Angles.normalizeAngle;
+import Order = util.Order;
 
 export interface CompassCalibrationFunction {
   apply(read_angle: number): UncertainAngle
@@ -32,18 +32,23 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
     if (this.samples.length == 0) return [Angles.AngleRange.around(0, 2 * Math.PI)]
     else return this.samples.map((sample, i) =>
       Angles.AngleRange.between(sample.is_angle, index(this.samples, i + 1).is_angle)
-    )
+    ).sort(Order.reverse(Order.comap(Order.natural_order, r => Angles.AngleRange.size(r))))
   })
 
   uncalibrated_ranges(): Angles.AngleRange[] {
     return this._inbetweens.get()
   }
 
-  bad_samples() {
-    return this.samples.filter((s, i) => {
+  bad_samples(): FullCompassCalibrationFunction.CompressedSample[] {
+    return this.samples.flatMap((s, i) => {
       const next = index(this.samples, i + 1)
 
-      return normalizeAngle(s.is_angle.to) > normalizeAngle(next.is_angle.from)
+      const diff = Angles.angleDifferenceSigned(s.is_angle.to, next.is_angle.from)
+
+      const is_bad = diff < 0 && Math.abs(diff) < Math.PI
+
+      if (is_bad) return [s, next]
+      else return []
     })
   }
 
@@ -141,25 +146,25 @@ export namespace FullCompassCalibrationFunction {
 
   export namespace CompressedSample {
     export function toString(self: CompressedSample) {
-      return `${Angles.radiansToDegrees(self.read_angle).toFixed(3)} -> [${Angles.radiansToDegrees(self.is_angle.from).toFixed(3)}, ${Angles.radiansToDegrees(self.is_angle.to).toFixed(3)}]`
+      return `${Angles.toString(self.read_angle, 3)} -> [${Angles.toString(self.is_angle.from, 3)}, ${Angles.toString(self.is_angle.to, 3)}]`
     }
   }
 
   export function compress(samples: CalibrationTool.RawSample[]): CompressedSample[] {
-    const sorted_samples = lodash.sortBy(samples, s => s.is_angle_degrees)
+    const sorted_samples = lodash.sortBy(samples, s => s.is_angle)
 
     let i = 0;
 
     const compressed_samples: CompressedSample[] = []
 
     while (i < sorted_samples.length) {
-      const group_angle = sorted_samples[i].is_angle_degrees
+      const group_angle = sorted_samples[i].is_angle
 
       const group_start_i = i
 
       i++
 
-      while (i < sorted_samples.length && Angles.isSameRadians(sorted_samples[i].is_angle_degrees, group_angle)) i++
+      while (i < sorted_samples.length && Angles.isSameRadians(sorted_samples[i].is_angle, group_angle)) i++
       // i now points to the next sample that is not part of this group
 
       const group = sorted_samples.slice(group_start_i, i)
@@ -169,7 +174,7 @@ export namespace FullCompassCalibrationFunction {
       )
 
       compressed_samples.push({
-        read_angle: Angles.degreesToRadians(group_angle),
+        read_angle: group_angle,
         is_angle: should_range,
         raw_samples: group
       })
@@ -283,9 +288,8 @@ export class AngularKeyframeFunction implements CompassCalibrationFunction {
                                 epsilon: number
   ): AngularKeyframeFunction {
 
-    const keyframes = samples.filter(s => s.is_angle_degrees != undefined).map(({position, is_angle_degrees}) => {
+    const keyframes = samples.filter(s => s.is_angle != undefined).map(({position, is_angle}) => {
       const should_angle = Vector2.angle(ANGLE_REFERENCE_VECTOR, {x: -position.x, y: -position.y})
-      const is_angle = Angles.degreesToRadians(is_angle_degrees)
 
       let dif = should_angle - is_angle
       if (dif < -Math.PI) dif += 2 * Math.PI
