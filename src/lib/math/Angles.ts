@@ -51,6 +51,17 @@ export namespace Angles {
       return normalize({from, to})
     }
 
+    export function split(self: AngleRange, sections: number): AngleRange[] {
+      const section_size = AngleRange.size(self) / sections
+
+      return new Array(sections).fill(null).map((_, i) => {
+        return {
+          from: self.from + i * section_size,
+          to: self.from + (i + 1) * section_size,
+        }
+      })
+    }
+
     export function contains(range: AngleRange, angle: number): boolean {
       if (angle >= range.from && angle <= range.to) return true
 

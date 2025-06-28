@@ -84,11 +84,18 @@ class SelectionStatusWidget extends Widget {
 
       const text = `${Angles.radiansToDegrees(delta).toFixed(3)}° (${((delta / range_size) * 100).toFixed(2)}% off in ${Angles.toString(Angles.AngleRange.size(status.offset.auto.desired_range), 2)} range)`
 
-      layout.named("Auto", `Want: ${Angles.radiansToDegrees(status.offset.auto.desired_angle).toFixed(2)}°, Got: ${Angles.radiansToDegrees(status.offset.auto.actual_angle).toFixed(2)}°`)
+      layout.named("Auto", `Target: ${Angles.radiansToDegrees(status.offset.auto.desired_angle).toFixed(2)}°, Got: ${Angles.radiansToDegrees(status.offset.auto.actual_angle).toFixed(3)}°`)
 
       layout.named("Auto Delta", is_far_away ? C.span(text).css("color", "red") : text)
     } else {
-      layout.named("Auto", "")
+      if (this.tool.spot_queue.size() > 0) {
+        layout.named("Auto", new LightButton("Resume")
+          .onClick(() => this.tool.spot_queue.dequeue())
+        )
+      } else {
+        layout.named("Auto", "")
+      }
+
 
       layout.named("Auto Delta", "")
     }
@@ -159,8 +166,9 @@ class SampleSetBuilder {
   public function: FullCompassCalibrationFunction
 
   set_changed = ewent<CalibrationTool.RawSample[]>()
+  set_loaded = ewent<this>()
 
-  constructor() {
+  constructor(private tool: CompassCalibrationTool) {
     this.update()
 
     this.memory.get().then(value => {
@@ -168,7 +176,11 @@ class SampleSetBuilder {
         this.state = value
         this.update()
       }
+
+      this.set_loaded.trigger(this)
     })
+
+    this.set_loaded.trigger(this)
   }
 
   date(): Date {
@@ -189,16 +201,18 @@ class SampleSetBuilder {
     this.set_changed.trigger(this.state.samples)
   }
 
-  async set(sample: CalibrationTool.RawSample[]): Promise<void> {
+  async set(sample: CalibrationTool.RawSample[]): Promise<boolean> {
     const really = await ConfirmationModal.simple("Load Calibration Function", "Are you sure? This will irreversibly delete your collected samples.", "Cancel", "Confirm").do()
 
-    if (!really) return
+    if (!really) return false
 
     this.state.samples = sample
 
     this.changed()
 
-    return
+    this.set_loaded.trigger(this)
+
+    return true
   }
 
   delete(...positions: Vector2[]): void {
@@ -305,12 +319,12 @@ type QueueFillerfunction = {
 }
 
 class CalibrationQueue {
-  private queue: OffsetSelection[] = []
+  public queue: OffsetSelection[] = []
   public filler: QueueFillerfunction
 
   changed = ewent<this>()
 
-  constructor(private parent: CompassCalibrationTool) {
+  constructor(public readonly parent: CompassCalibrationTool) {
     this.parent.sample_set.record_event.on(sample => {
       const removed = this.remove(sample.position)
 
@@ -365,7 +379,7 @@ class CalibrationQueue {
     const queue = f.function()
 
     if (queue.length > 0) {
-      this.queue = queue
+      this.queue = lodash.sortBy(queue, s => CalibrationTool.shouldAngle(s.offset))
 
       this.filler = f
 
@@ -422,8 +436,8 @@ function findAutoSpotForAngleRange(range: AngleRange): OffsetSelection {
 }
 
 export class CompassCalibrationTool extends NisModal {
-  public sample_set = new SampleSetBuilder()
-  private spot_queue = new CalibrationQueue(this)
+  public sample_set = new SampleSetBuilder(this)
+  public spot_queue = new CalibrationQueue(this)
 
   private reader: CompassReader.Service
   private layer: CalibrationTool.Layer
@@ -461,13 +475,17 @@ export class CompassCalibrationTool extends NisModal {
       this.updateFunctionStatusView()
     })
 
+    this.sample_set.set_loaded.on(() => {
+      if (this.spot_queue.filler) {
+        this.spot_queue.fill(this.spot_queue.filler)
+      } else {
+        this.spot_queue.clear()
+      }
+    })
+
     this.reader.onChange(() => {
       this.updateCurrentCalibratedAngle()
     })
-
-    this.sample_set.set_changed.on(() => {
-      this.layer.updateTileOverlays()
-    }).bindTo(this.lifetime_manager)
   }
 
   private updateCurrentCalibratedAngle() {
@@ -533,12 +551,15 @@ export class CompassCalibrationTool extends NisModal {
     this.sample_set.delete(this.selection.value().offset.offset)
 
     this.selection.update(s => s.existing_sample = null)
-
-    this.layer.updateTileOverlays()
   }
 
   commit() {
     const state = this.reader.state()
+
+    if (!state) {
+      notification("No angle  detected", "error").show()
+      return
+    }
 
     const current_sample = this.sample_set.function.sample(state.raw_angle)
 
@@ -559,9 +580,9 @@ export class CompassCalibrationTool extends NisModal {
     })
 
     if (this.layer) {
-      this.layer.updateTileOverlays()
-
-      if (offset.auto) this.layer.getMap().fitView(TileRectangle.from(TileCoordinates.move(this.layer.reference, offset.offset)))
+      if (offset.auto) this.layer.getMap().fitView(TileRectangle.from(TileCoordinates.move(this.layer.reference.value(), offset.offset)), {
+        maxZoom: this.layer.getMap().getZoom()
+      })
     }
 
   }
@@ -570,7 +591,27 @@ export class CompassCalibrationTool extends NisModal {
     this.spot_queue.fill(
       {
         name: "Largest Gap",
-        function: () => [findAutoSpotForAngleRange(this.sample_set.function.uncalibrated_ranges()[0])]
+        function: () => {
+          const candidates = this.sample_set.function.uncalibrated_ranges()
+
+          const largest_range = Angles.AngleRange.size(candidates[0])
+
+          const index_of_first_range_not_considered = candidates.findIndex((candidate, index) =>
+            !(Angles.AngleRange.size(candidate) >= 0.8 * largest_range)
+          )
+
+          const taken_ranges = (index_of_first_range_not_considered >= 0
+            ? candidates.slice(0, index_of_first_range_not_considered)
+            : candidates).flatMap(range => {
+            const size = Angles.AngleRange.size(range)
+
+            const sections = Math.max(1, Math.round(size / (Math.PI / 4)))
+
+            return Angles.AngleRange.split(range, sections)
+          })
+
+          return taken_ranges.map(range => findAutoSpotForAngleRange(range))
+        }
       }
     )
     return;
@@ -651,10 +692,15 @@ export class CompassCalibrationTool extends NisModal {
 
     new ButtonRow().buttons(
       new LightButton("Import JSON").onClick(async () => {
-        this.sample_set.set((await new ImportStringModal(input => {
+        const imp = (await new ImportStringModal(input => {
           return JSON.parse(input)
-        }).do()).imported)
-        this.fillQueueWithBiggestUncalibratedRange()
+        }).do()).imported
+
+        if (imp) {
+          this.sample_set.set(imp).then(did_set => {
+            if (did_set) this.fillQueueWithBiggestUncalibratedRange()
+          })
+        }
       }),
       new LightButton("Load NO AA").onClick(() => {
         this.sample_set.set(lodash.cloneDeep(CompassReader.no_aa_samples))
@@ -685,7 +731,7 @@ export class CompassCalibrationTool extends NisModal {
 
     map.map.addGameLayer(this.layer = new CalibrationTool.Layer(this))
 
-    this.fillQueueWithBiggestUncalibratedRange()
+    this.layer.centerOnReference()
   }
 }
 
@@ -746,7 +792,7 @@ export namespace CalibrationTool {
 
   export class Layer extends GameLayer {
     markers: KnownMarker[]
-    reference: TileCoordinates
+    reference = observe<TileCoordinates>(null)
 
     private reference_memory = new storage.Variable<TileCoordinates>("preferences/calibrationtool/reference", () => gielinor_compass.spots[0])
 
@@ -757,15 +803,51 @@ export namespace CalibrationTool {
         new KnownMarker(spot).addTo(this)
       )
 
-      this.setReference(this.reference_memory.get())
+      this.tool.sample_set.set_changed.on(() => {
+        this.updateSampleSetOverlay()
+      })
+
+      this.tool.spot_queue.changed.on(() => {
+        this.updateQueueView()
+      })
+      this.reference.subscribe(reference => {
+        this.reference_memory.set(reference)
+
+        this.centerOnReference()
+
+        this.markers.forEach(marker => {
+          marker.setActive(TileCoordinates.equals(marker.spot, reference))
+        })
+
+        this.updateSelectionOverlay()
+        this.updateSampleSetOverlay()
+        this.updateQueueView()
+      })
+
+      this.tool.selection.subscribe(() => {
+        this.updateSelectionOverlay()
+        this.updateQueueView()
+      })
+
+      this.reference.set(this.reference_memory.get())
+    }
+
+    centerOnReference() {
+      const map = this.getMap()
+
+      if (map) {
+        map.fitView(TileRectangle.from(this.reference.value()), {
+          maxZoom: 4
+        })
+      }
     }
 
     eventClick(event: GameMapMouseEvent) {
       event.onPost(() => {
         if (event.active_entity instanceof KnownMarker) {
-          this.setReference(event.active_entity.spot)
+          this.reference.set(event.active_entity.spot)
         } else {
-          const off = Vector2.sub(event.tile(), this.reference)
+          const off = Vector2.sub(event.tile(), this.reference.value())
 
           if (off.x == 0 && off.y == 0) return
 
@@ -776,42 +858,41 @@ export namespace CalibrationTool {
       })
     }
 
-    setReference(reference: TileCoordinates) {
-      this.reference = reference
+    private sample_set_overlay: leaflet.FeatureGroup = null
 
-      this.reference_memory.set(reference)
+    private updateSampleSetOverlay() {
+      if (this.sample_set_overlay) {
+        this.sample_set_overlay.remove()
+        this.sample_set_overlay = null
+      }
 
-      this.markers.forEach(marker => {
-        marker.setActive(TileCoordinates.equals(marker.spot, reference))
+      this.sample_set_overlay = leaflet.featureGroup().addTo(this)
+
+      this.tool.sample_set.get().forEach((sample, i) => {
+        const polygon = tilePolygon(Vector2.add(this.reference.value(), sample.position)).setStyle({
+          color: "#06ffea",
+          fillOpacity: 0.4,
+          stroke: false
+        }).addTo(this.sample_set_overlay)
       })
-
-      this.updateTileOverlays()
     }
 
-    private overlay: leaflet.FeatureGroup = null
+    private selection_overlay: leaflet.FeatureGroup = null
 
-    updateTileOverlays() {
-      if (this.overlay) {
-        this.overlay.remove()
-        this.overlay = null
+    updateSelectionOverlay() {
+      if (this.selection_overlay) {
+        this.selection_overlay.remove()
+        this.selection_overlay = null
       }
 
       const selection = this.tool.selection.value()
 
       if (!selection || !this.reference) return
 
-      this.overlay = leaflet.featureGroup().addTo(this)
-
-      this.tool.sample_set.get().forEach((sample, i) => {
-        const polygon = tilePolygon(Vector2.add(this.reference, sample.position)).setStyle({
-          color: "#06ffea",
-          fillOpacity: 0.4,
-          stroke: false
-        }).addTo(this.overlay)
-      })
+      this.selection_overlay = leaflet.featureGroup().addTo(this)
 
       for (let i = 1; i <= 100; i++) {
-        const polygon = tilePolygon(Vector2.add(this.reference, Vector2.scale(i, selection.offset.offset))).addTo(this.overlay)
+        const polygon = tilePolygon(Vector2.add(this.reference.value(), Vector2.scale(i, selection.offset.offset))).addTo(this.selection_overlay)
 
         if (selection.existing_sample) {
           polygon.setStyle({
@@ -819,8 +900,30 @@ export namespace CalibrationTool {
           })
         }
       }
+    }
 
-      this.overlay.addTo(this)
+    private queue_view: leaflet.FeatureGroup = null
+
+    updateQueueView() {
+      if (this.queue_view) {
+        this.queue_view.remove()
+        this.queue_view = null
+      }
+
+      if (this.tool.spot_queue.size() == 0) return
+
+      this.queue_view = leaflet.featureGroup().addTo(this)
+
+      const selection = this.tool.selection.value()
+
+      this.tool.spot_queue.parent.spot_queue.queue.forEach(sel => {
+          if (!Vector2.eq(selection.offset.offset, sel.offset)) {
+            tilePolygon(TileCoordinates.move(this.reference.value(), sel.offset))
+              .setStyle({color: "#ffff00"})
+              .addTo(this.queue_view)
+          }
+        }
+      )
     }
   }
 }

@@ -29,7 +29,7 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
   }
 
   private _inbetweens = lazy(() => {
-    if (this.samples.length == 0) return [Angles.AngleRange.around(0, 2 * Math.PI)]
+    if (this.samples.length == 0) return [Angles.AngleRange.around(Math.PI / 8, 2 * Math.PI)]
     else return this.samples.map((sample, i) =>
       Angles.AngleRange.between(sample.is_angle, index(this.samples, i + 1).is_angle)
     ).sort(Order.reverse(Order.comap(Order.natural_order, r => Angles.AngleRange.size(r))))
