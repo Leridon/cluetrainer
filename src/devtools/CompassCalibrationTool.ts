@@ -29,6 +29,8 @@ import {Notification} from "../trainer/ui/NotificationBar";
 import {AngularKeyframeFunction, FullCompassCalibrationFunction} from "trainer/ui/neosolving/cluereader/capture/CompassCalibrationFunction";
 import {Angles} from "../lib/math/Angles";
 import {storage} from "../lib/util/storage";
+import KeyValueStore from "../lib/util/KeyValueStore";
+import {ConfirmationModal} from "../trainer/ui/widgets/modals/ConfirmationModal";
 import getExpectedAngle = Compasses.getExpectedAngle;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
@@ -139,72 +141,105 @@ class AutoSpotSettingsEdit extends AbstractEditWidget<AutoSpotSettings> {
   }
 }
 
+type SampleSetState = {
+  samples: CalibrationTool.RawSample[],
+  timestamp: number
+}
+
 class SampleSetBuilder {
   public record_event = ewent<CalibrationTool.RawSample>()
 
-  private samples: CalibrationTool.RawSample[] = []
+  private state: SampleSetState = {
+    samples: [],
+    timestamp: Date.now(),
+  }
+
+  private memory = KeyValueStore.instance().variable<SampleSetState>("preferences/calibrationtool/state")
 
   public function: FullCompassCalibrationFunction
 
   set_changed = ewent<CalibrationTool.RawSample[]>()
 
   constructor() {
+    this.update()
 
+    this.memory.get().then(value => {
+      if (value) {
+        this.state = value
+        this.update()
+      }
+    })
+  }
+
+  date(): Date {
+    return new Date(this.state.timestamp)
+  }
+
+  private changed() {
+    this.state.timestamp = Date.now()
+
+    this.memory.set(this.state)
+
+    this.update()
   }
 
   private update() {
-    this.function = new FullCompassCalibrationFunction(FullCompassCalibrationFunction.compress(this.samples))
+    this.function = new FullCompassCalibrationFunction(FullCompassCalibrationFunction.compress(this.state.samples))
 
-    this.set_changed.trigger(this.samples)
+    this.set_changed.trigger(this.state.samples)
   }
 
-  set(sample: CalibrationTool.RawSample[]): this {
-    this.samples = sample
+  async set(sample: CalibrationTool.RawSample[]): Promise<void> {
+    const really = await ConfirmationModal.simple("Load Calibration Function", "Are you sure? This will irreversibly delete your collected samples.", "Cancel", "Confirm").do()
 
-    this.update()
+    if (!really) return
 
-    return this
+    this.state.samples = sample
+
+    this.changed()
+
+    return
   }
 
   delete(...positions: Vector2[]): void {
 
-    const old_length = this.samples.length
+    const old_length = this.state.samples.length
 
     for (const position of positions) {
-      const entry_index = this.samples.findIndex(s => Vector2.eq(s.position, position))
+      const entry_index = this.state.samples.findIndex(s => Vector2.eq(s.position, position))
 
       if (entry_index >= 0) {
-        this.samples.splice(entry_index, 1)
+        this.state.samples.splice(entry_index, 1)
       }
     }
 
-    if (this.samples.length != old_length) this.update()
+    if (this.state.samples.length != old_length) this.changed()
   }
 
   record(offset: Vector2, is_angle_radians: number) {
-    const index_of_existing_sample = this.samples.findIndex(s => Vector2.eq(s.position, offset))
+    const index_of_existing_sample = this.state.samples.findIndex(s => Vector2.eq(s.position, offset))
 
-    if (index_of_existing_sample >= 0) this.samples.splice(index_of_existing_sample, 1)
+    if (index_of_existing_sample >= 0) this.state.samples.splice(index_of_existing_sample, 1)
 
     const new_sample: RawSample = {position: offset, is_angle: is_angle_radians}
 
-    this.samples.push(new_sample)
+    this.state.samples.push(new_sample)
 
-    this.update()
+    this.changed()
 
     this.record_event.trigger(new_sample)
   }
 
   find(offset: Vector2): RawSample {
-    return this.samples.find(s => Vector2.eq(s.position, offset))
+    return this.state.samples.find(s => Vector2.eq(s.position, offset))
   }
 
   size(): number {
-    return this.samples.length
+    return this.state.samples.length
   }
 
   get(): RawSample[] {
-    return this.samples
+    return this.state.samples
   }
 }
 
@@ -387,7 +422,7 @@ function findAutoSpotForAngleRange(range: AngleRange): OffsetSelection {
 }
 
 export class CompassCalibrationTool extends NisModal {
-  public sample_set = new SampleSetBuilder().set(lodash.cloneDeep(CompassReader.no_aa_samples))
+  public sample_set = new SampleSetBuilder()
   private spot_queue = new CalibrationQueue(this)
 
   private reader: CompassReader.Service
@@ -478,6 +513,7 @@ export class CompassCalibrationTool extends NisModal {
 
     const bad_samples = this.sample_set.function.bad_samples()
 
+    props.named("Last Change", this.sample_set.date().toLocaleString())
     props.named("Samples", this.sample_set.size().toString())
     props.named("Unique Angles", this.sample_set.function.samples.length.toString())
     props.named("Implausibilities", bad_samples.length.toString())
@@ -603,12 +639,6 @@ export class CompassCalibrationTool extends NisModal {
     setTimeout(() => map.map.invalidateSize(), 1000)
 
     new ButtonRow().buttons(
-      new LightButton("Import").onClick(async () => {
-        this.sample_set.set((await new ImportStringModal(input => {
-          return JSON.parse(input)
-        }).do()).imported)
-        this.fillQueueWithBiggestUncalibratedRange()
-      }),
       new LightButton("Export JSON").onClick(() => {
         new ExportStringModal(
           CalibrationTool.cleanExport(this.sample_set.get())
@@ -616,6 +646,24 @@ export class CompassCalibrationTool extends NisModal {
       }),
       new LightButton("Export CSV").onClick(() => {
         new ExportStringModal(AngularKeyframeFunction.fromCalibrationSamples(this.sample_set.get(), "cosine", 0).getCSV()).show()
+      }),
+    ).appendTo(menu_column)
+
+    new ButtonRow().buttons(
+      new LightButton("Import JSON").onClick(async () => {
+        this.sample_set.set((await new ImportStringModal(input => {
+          return JSON.parse(input)
+        }).do()).imported)
+        this.fillQueueWithBiggestUncalibratedRange()
+      }),
+      new LightButton("Load NO AA").onClick(() => {
+        this.sample_set.set(lodash.cloneDeep(CompassReader.no_aa_samples))
+      }),
+      new LightButton("Load MSAA").onClick(() => {
+        this.sample_set.set(lodash.cloneDeep(CompassReader.msaa_samples))
+      }),
+      new LightButton("Reset").onClick(() => {
+        this.sample_set.set([])
       }),
     ).appendTo(menu_column)
 
