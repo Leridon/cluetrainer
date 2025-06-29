@@ -20,10 +20,7 @@ import {CompassReader} from "../trainer/ui/neosolving/cluereader/CompassReader";
 import {Compasses} from "../lib/cluetheory/Compasses";
 import {util} from "../lib/util/util";
 import {clue_data} from "../data/clues";
-import AbstractEditWidget from "../trainer/ui/widgets/AbstractEditWidget";
 import Properties from "../trainer/ui/widgets/Properties";
-import NumberSlider from "../lib/ui/controls/NumberSlider";
-import NumberInput from "../lib/ui/controls/NumberInput";
 import {C} from "../lib/ui/constructors";
 import {Notification} from "../trainer/ui/NotificationBar";
 import {AngularKeyframeFunction, FullCompassCalibrationFunction} from "trainer/ui/neosolving/cluereader/capture/CompassCalibrationFunction";
@@ -42,6 +39,7 @@ import hbox = C.hbox;
 import vbox = C.vbox;
 import AngleRange = Angles.AngleRange;
 import angleDifference = Angles.angleDifference;
+import avg = util.avg;
 
 type Fraction = Vector2
 
@@ -114,37 +112,6 @@ class SelectionStatusWidget extends Widget {
           .onClick(() => this.tool.delete())
       )
     )
-  }
-}
-
-type AutoSpotSettings = {
-  start_iteration: number,
-  max_distance: number
-}
-
-class AutoSpotSettingsEdit extends AbstractEditWidget<AutoSpotSettings> {
-
-  constructor(private tool: CompassCalibrationTool) {
-    super();
-  }
-
-  protected render() {
-    this.empty()
-
-    new Properties().appendTo(this)
-      .header("Auto Selection")
-      .named("Samples", new NumberSlider(3, 14, 1)
-        .setValue(this.get().start_iteration)
-        .withPreviewFunction(i => Math.pow(2, i).toString())
-        .onCommit(v => this.commit({...this.get(), start_iteration: v}))
-      )
-      .named("Max Distance", new NumberInput(10, 3000)
-        .setValue(this.get().max_distance)
-        .onCommit(v => this.commit({...this.get(), max_distance: v}))
-      )
-      .row(
-        new LightButton("Auto")
-          .onClick(() => this.tool.autoNextSpot()),)
   }
 }
 
@@ -379,7 +346,27 @@ class CalibrationQueue {
     const queue = f.function()
 
     if (queue.length > 0) {
-      this.queue = lodash.sortBy(queue, s => CalibrationTool.shouldAngle(s.offset))
+      const sorted_by_should_angle = lodash.sortBy(queue, s => CalibrationTool.shouldAngle(s.offset))
+
+      let position = sorted_by_should_angle[0].offset
+      let salesmen_result: OffsetSelection[] = []
+
+      while (sorted_by_should_angle.length > 0) {
+        const greedy_best =
+          lodash.minBy(sorted_by_should_angle.map((s, i) => ({s, i})),
+            ({s, i}) => {
+              return Vector2.max_axis(Vector2.sub(position, s.offset)) + i * 3
+            })
+
+        sorted_by_should_angle.splice(greedy_best.i, 1)
+
+        position = greedy_best.s.offset
+
+        salesmen_result.push(greedy_best.s)
+      }
+
+      this.queue = salesmen_result
+
 
       this.filler = f
 
@@ -471,7 +458,7 @@ export class CompassCalibrationTool extends NisModal {
     this.reader = new CompassReader.Service(null, true, null, true).start()
 
     this.sample_set.set_changed.on(() => {
-      this.updateCurrentCalibratedAngle()
+      this.updateCurrentPlausibility()
       this.updateFunctionStatusView()
     })
 
@@ -484,14 +471,14 @@ export class CompassCalibrationTool extends NisModal {
     })
 
     this.reader.onChange(() => {
-      this.updateCurrentCalibratedAngle()
+      this.updateCurrentPlausibility()
     })
   }
 
-  private updateCurrentCalibratedAngle() {
+  private updateCurrentPlausibility() {
     const props = new Properties()
 
-    props.header("Current Read")
+    props.header("Current Read Plausibility")
 
     const reader_state = this.reader.state()
 
@@ -500,8 +487,9 @@ export class CompassCalibrationTool extends NisModal {
     } else {
       const result = this.sample_set.function.sample(reader_state.raw_angle)
 
-      props.named("Result", Angles.UncertainAngle.toString(result.result, 2))
-      props.named("Sample Type", result.details.type)
+      props.named("Raw Read", Angles.toString(reader_state.raw_angle, 3))
+      props.named("Calibrated", Angles.AngleRange.toString(result.result.range, 3) + " (" + Angles.UncertainAngle.toString(result.result, 3) + ")")
+      props.named("Sample", result.details.type)
 
       switch (result.details.type) {
         case "outside":
@@ -515,6 +503,19 @@ export class CompassCalibrationTool extends NisModal {
           props.named("After", FullCompassCalibrationFunction.CompressedSample.toString(result.details.after))
           break;
       }
+
+      const current_sample = this.sample_set.function.sample(reader_state.raw_angle)
+
+      const isPlausible = Angles.UncertainAngle.contains(current_sample.result, CalibrationTool.shouldAngle(this.selection.value().offset.offset))
+
+      props.named("Plausible", isPlausible ? "Yes" : "No")
+
+      props.row(new LightButton("Force Commit Implausible Sample")
+        .setEnabled(!isPlausible)
+        .onClick(() => {
+          this.commit(true)
+        })
+      )
     }
 
     this.current_calibrated_angle_view.empty().append(props)
@@ -529,17 +530,29 @@ export class CompassCalibrationTool extends NisModal {
 
     Angles.AngleRange.size(uncalibrated[0])
 
+    const minEpsilons = this.sample_set.function.minEpsilons()
+
     const bad_samples = this.sample_set.function.bad_samples()
 
     props.named("Last Change", this.sample_set.date().toLocaleString())
     props.named("Samples", this.sample_set.size().toString())
     props.named("Unique Angles", this.sample_set.function.samples.length.toString())
+    props.named("Average Epsilon", Angles.toString(this.sample_set.function.averageEpsilon(), 3))
+    props.named("Min Epsilon (Min)", `${Angles.toString(Math.min(...minEpsilons), 3)}`)
+    props.named("Min Epsilon (Avg)", `${Angles.toString(avg(...minEpsilons), 3)}`)
+    props.named("Min Epsilon (Max)", `${Angles.toString(Math.max(...minEpsilons), 3)}`)
     props.named("Implausibilities", bad_samples.length.toString())
-    props.row(new LightButton("Delete Implausible Samples").onClick(() => {
-      this.sample_set.delete(...bad_samples.flatMap(s => s.raw_samples).map(s => s.position))
-    }))
 
-    props.named("Largest Gap", Angles.toString(Angles.AngleRange.size(uncalibrated[0])))
+    if (bad_samples.length > 0) {
+      props.row(new LightButton("Delete Implausible Samples")
+        .setEnabled(bad_samples.length > 0)
+        .onClick(() => {
+          this.sample_set.delete(...bad_samples.flatMap(s => s.raw_samples).map(s => s.position))
+        }))
+    }
+
+
+    props.named("Largest Gap", Angles.toString(Angles.AngleRange.size(uncalibrated[0]), 3))
     props.row(new LightButton("Queue Largest Gaps").onClick(() => this.fillQueueWithBiggestUncalibratedRange()))
 
     this.sample_set.function.uncalibrated_ranges()
@@ -553,7 +566,7 @@ export class CompassCalibrationTool extends NisModal {
     this.selection.update(s => s.existing_sample = null)
   }
 
-  commit() {
+  commit(skip_plausibility_check: boolean = false) {
     const state = this.reader.state()
 
     if (!state) {
@@ -561,11 +574,15 @@ export class CompassCalibrationTool extends NisModal {
       return
     }
 
-    const current_sample = this.sample_set.function.sample(state.raw_angle)
+    if (!skip_plausibility_check) {
+      const current_sample = this.sample_set.function.sample(state.raw_angle)
 
-    if (!Angles.UncertainAngle.contains(current_sample.result, CalibrationTool.shouldAngle(this.selection.value().offset.offset))) {
-      notification("Implausible sample", "error").show()
-      return
+      const is_plausible = Angles.UncertainAngle.contains(current_sample.result, CalibrationTool.shouldAngle(this.selection.value().offset.offset))
+
+      if (!is_plausible) {
+        notification("Implausible sample", "error").show()
+        return
+      }
     }
 
     if (state.state == "normal") {
@@ -581,10 +598,10 @@ export class CompassCalibrationTool extends NisModal {
 
     if (this.layer) {
       if (offset.auto) this.layer.getMap().fitView(TileRectangle.from(TileCoordinates.move(this.layer.reference.value(), offset.offset)), {
-        maxZoom: this.layer.getMap().getZoom()
+        maxZoom: this.layer.getMap().getZoom(),
+        animate: true
       })
     }
-
   }
 
   fillQueueWithBiggestUncalibratedRange() {
@@ -615,49 +632,6 @@ export class CompassCalibrationTool extends NisModal {
       }
     )
     return;
-  }
-
-  autoNextSpot() {
-    const maybeSetOffset = (offset: OffsetSelection): boolean => {
-      const gcd = greatestCommonDivisor(offset.offset.x, offset.offset.y)
-
-      if (gcd > 1) return false
-
-      const entry = this.sample_set.find(offset.offset)
-
-      if (entry) return false
-
-      this.setOffset(offset)
-
-      return true
-    }
-
-    return;
-
-    const settings: AutoSpotSettings = {
-      start_iteration: 8,
-      max_distance: 200
-    }
-
-    for (let d = settings.start_iteration; d <= 15; d++) {
-      const iterations = Math.pow(2, d)
-
-      const range = 2 * Math.PI / iterations
-
-      for (let i = 0; i < iterations; i++) {
-        const angle = i * (Math.PI * 2) / iterations
-
-
-        const v = approximateFractionAsRationaleNumber(settings.max_distance, {y: -Math.sin(angle), x: -Math.cos(angle)})
-
-        if (maybeSetOffset({offset: v, auto: {desired_angle: angle, actual_angle: CalibrationTool.shouldAngle(v), desired_range: Angles.AngleRange.around(angle, range)}})) return
-      }
-
-      if (iterations > this.sample_set.size()) {
-        notification("No valid next sample found. Increase max distance").show()
-        break
-      }
-    }
   }
 
   render() {
@@ -713,21 +687,18 @@ export class CompassCalibrationTool extends NisModal {
       }),
     ).appendTo(menu_column)
 
-    this.current_calibrated_angle_view = hbox().appendTo(menu_column)
-
-    this.current_calibrated_angle_view = hbox().appendTo(menu_column)
     const status_widget = c().appendTo(menu_column)
     this.function_status_view = hbox().appendTo(menu_column)
+    this.current_calibrated_angle_view = hbox().appendTo(menu_column)
     this.calibration_queue_view = new CalibrationQueueView(this.spot_queue).appendTo(menu_column)
 
     this.updateFunctionStatusView()
-    this.updateCurrentCalibratedAngle()
 
     this.selection.subscribe(v => {
-      status_widget.empty()
+      new SelectionStatusWidget(v, this).appendTo(status_widget.empty())
 
-      new SelectionStatusWidget(v, this).appendTo(status_widget)
-    })
+      this.updateCurrentPlausibility()
+    }, true)
 
     map.map.addGameLayer(this.layer = new CalibrationTool.Layer(this))
 
@@ -871,7 +842,7 @@ export namespace CalibrationTool {
       this.tool.sample_set.get().forEach((sample, i) => {
         const polygon = tilePolygon(Vector2.add(this.reference.value(), sample.position)).setStyle({
           color: "#06ffea",
-          fillOpacity: 0.4,
+          fillOpacity: 0.2,
           stroke: false
         }).addTo(this.sample_set_overlay)
       })
@@ -916,7 +887,9 @@ export namespace CalibrationTool {
 
       const selection = this.tool.selection.value()
 
-      this.tool.spot_queue.parent.spot_queue.queue.forEach(sel => {
+      const queue = this.tool.spot_queue.parent.spot_queue.queue
+
+      queue.forEach(sel => {
           if (!Vector2.eq(selection.offset.offset, sel.offset)) {
             tilePolygon(TileCoordinates.move(this.reference.value(), sel.offset))
               .setStyle({color: "#ffff00"})
@@ -924,6 +897,12 @@ export namespace CalibrationTool {
           }
         }
       )
+
+      leaflet.polyline(
+          queue.slice(0, Math.min(queue.length, 10)).map(s => Vector2.toLatLong(Vector2.add(this.reference.value(), s.offset)))
+        )
+        .setStyle({color: "#ffff00", weight: 3})
+        .addTo(this.queue_view)
     }
   }
 }

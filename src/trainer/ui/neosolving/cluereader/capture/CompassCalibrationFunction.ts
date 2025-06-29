@@ -39,6 +39,29 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
     return this._inbetweens.get()
   }
 
+  minEpsilons(): number[] {
+    return this.samples.map((sample, i) =>
+      Angles.AngleRange.size(sample.is_angle) / 2
+    )
+  }
+
+  averageEpsilon(): number {
+    let average_epsilon = 0
+
+    this.samples.forEach((sample, i) => {
+      const below = index(this.samples, i - 1)
+      const above = index(this.samples, i + 1)
+
+      average_epsilon += Angles.AngleRange.size(sample.is_angle) / (2 * Math.PI) * FullCompassCalibrationFunction.SamplingResult.fromHit(below, sample, above).result.epsilon
+
+      const gap_above = FullCompassCalibrationFunction.SamplingResult.fromBetween(sample, above)
+
+      average_epsilon += Angles.AngleRange.size(gap_above.result.range) / (2 * Math.PI) * gap_above.result.epsilon
+    })
+
+    return average_epsilon
+  }
+
   bad_samples(): FullCompassCalibrationFunction.CompressedSample[] {
     return this.samples.flatMap((s, i) => {
       const next = index(this.samples, i + 1)
@@ -99,33 +122,14 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
       const below = index(this.samples, sample_i - 1)
       const above = index(this.samples, sample_i + 1)
 
-      return {
-        result: UncertainAngle.fromRange(
-          Angles.AngleRange.between(below.is_angle, above.is_angle)
-        ),
-        details: {
-          type: "within",
-          before: below,
-          in_sample: sample,
-          after: above
-        }
-      }
+      return FullCompassCalibrationFunction.SamplingResult.fromHit(below, sample, above)
     } else {
       // Read angle is between two samples.
       // We only need to consider the angles inbetween.
       const below = sample
       const above = index(this.samples, sample_i + 1)
 
-      return {
-        result: UncertainAngle.fromRange(
-          Angles.AngleRange.between(below.is_angle, above.is_angle)
-        ),
-        details: {
-          type: "outside",
-          before: below,
-          after: above
-        }
-      }
+      return FullCompassCalibrationFunction.SamplingResult.fromBetween(below, above)
     }
   }
 
@@ -198,6 +202,31 @@ export namespace FullCompassCalibrationFunction {
   }
 
   export namespace SamplingResult {
+    export function fromBetween(below: CompressedSample, above: CompressedSample): SamplingResult {
+      return {
+        result: UncertainAngle.fromRange(
+          Angles.AngleRange.between(below.is_angle, above.is_angle)
+        ),
+        details: {
+          type: "outside",
+          before: below,
+          after: above
+        }
+      }
+    }
+
+    export function fromHit(below: CompressedSample, hit: CompressedSample, above: CompressedSample): SamplingResult {
+      return {
+        result: UncertainAngle.fromRange(Angles.AngleRange.between(below.is_angle, above.is_angle)),
+        details: {
+          type: "within",
+          before: below,
+          in_sample: hit,
+          after: above
+        }
+      }
+    }
+
     export function toString(self: SamplingResult) {
       let string = UncertainAngle.toString(self.result, 2)
 

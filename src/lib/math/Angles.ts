@@ -137,6 +137,10 @@ export namespace Angles {
     export function overlaps(a: AngleRange, b: AngleRange) {
       return (a.from <= b.to && a.to >= b.from) || (b.from <= a.to && b.to >= a.from)
     }
+
+    export function toString(self: AngleRange, precision: number = 1) {
+      return `${Angles.toString(self.from, precision)} - ${Angles.toString(self.to, precision)}`
+    }
   }
 
   export type UncertainAngle = {
