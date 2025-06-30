@@ -5116,7 +5116,7 @@ export namespace clue_data {
       "challenge": [{"type": "slider"}],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin":{"x":2868,"y":9876,"level":0},"size":{"x":3,"y":2}}, "description": "in the Dwarven Tunnel under the White Wolf Mountain"}],
+        "spots": [{"range": {"origin": {"x": 2868, "y": 9876, "level": 0}, "size": {"x": 3, "y": 2}}, "description": "in the Dwarven Tunnel under the White Wolf Mountain"}],
         "npc": "Captain Ninto"
       },
       "anagram": ["An Paint Tonic"]
@@ -5141,7 +5141,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Gnome Coach",
-        "spots": [{"range": {"origin":{"x":2405,"y":3497,"level":0},"size":{"x":3,"y":3}}, "description": "north-east of the gnomeball field"}]
+        "spots": [{"range": {"origin": {"x": 2405, "y": 3497, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "north-east of the gnomeball field"}]
       },
       "anagram": ["C On Game Hoc"]
     }, {
@@ -6555,7 +6555,7 @@ export namespace clue_data {
       "id": 371,
       "type": "scan",
       "tier": "master",
-      "text": ["This scroll will work in the the Heart of Gielinor. Orb scan range: 49 paces."],
+      "text": ["This scroll will work in the Heart of Gielinor. Orb scan range: 49 paces."],
       "spots": [{"x": 3119, "y": 6905, "level": 1}, {"x": 3124, "y": 6905, "level": 1}, {"x": 3148, "y": 6913, "level": 1}, {"x": 3131, "y": 6921, "level": 1}, {
         "x": 3131,
         "y": 6932,
@@ -6579,7 +6579,36 @@ export namespace clue_data {
       }, {"x": 3274, "y": 7045, "level": 1}],
       "range": 49,
       "scantext": "Heart of Gielinor"
-    }]
+    }, {
+      "id": 485,
+      "type": "scan",
+      "tier": "master",
+      "text": ["This scroll will work in the Lost Grove. Orb scan range: 16 paces."],
+      "spots": [
+        {"x": 1374, "y": 5550, "level": 0},
+        {"x": 1390, "y": 5616, "level": 0},
+        {"x": 1431, "y": 5596, "level": 0},
+        {"x": 1421, "y": 5627, "level": 0},
+        {"x": 1423, "y": 5656, "level": 0},
+        {"x": 1417, "y": 5684, "level": 0},
+        {"x": 1375, "y": 5731, "level": 0},
+        {"x": 1328, "y": 5694, "level": 0},
+        {"x": 1375, "y": 5687, "level": 0},
+        {"x": 1326, "y": 5664, "level": 0},
+        {"x": 1307, "y": 5622, "level": 0},
+        {"x": 1333, "y": 5608, "level": 0},
+        {"x": 1352, "y": 5625, "level": 0},
+        {"x": 1373, "y": 5634, "level": 0},
+        {"x": 1402, "y": 5695, "level": 0},
+        {"x": 1344, "y": 5652, "level": 0},
+        {"x": 1370, "y": 5670, "level": 0}
+      ],
+      "range": 11,
+      "scantext": "The Lost Grove"
+    },
+
+
+  ]
 
   export const skilling: Clues.Skilling[] = [
     {
