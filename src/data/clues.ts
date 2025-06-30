@@ -5116,7 +5116,7 @@ export namespace clue_data {
       "challenge": [{"type": "slider"}],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 2860, "y": 9873, "level": 0}, "size": {"x": 18, "y": 11}}, "description": "in the Dwarven Tunnel under the White Wolf Mountain"}],
+        "spots": [{"range": {"origin":{"x":2868,"y":9876,"level":0},"size":{"x":3,"y":2}}, "description": "in the Dwarven Tunnel under the White Wolf Mountain"}],
         "npc": "Captain Ninto"
       },
       "anagram": ["An Paint Tonic"]

@@ -394,6 +394,7 @@ export namespace Changelog {
         builder.release(52, "New Clue Spots", new Date(Date.parse("2025-06-30")))
           .list(l => l
             .item("Updated the position of the gnome coach.")
+            .item("Updated the position of Captain Ninto.")
           )
 
 
