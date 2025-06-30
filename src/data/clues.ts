@@ -4679,7 +4679,7 @@ export namespace clue_data {
       "id": 485,
       "type": "scan",
       "tier": "master",
-      "text": ["This scroll will work in the Lost Grove. Orb scan range: 16 paces."],
+      "text": ["This scroll will work in the Lost Grove. Orb scan range: 14 paces."],
       "spots": [
         {"x": 1374, "y": 5550, "level": 0},
         {"x": 1390, "y": 5616, "level": 0},
@@ -4699,7 +4699,7 @@ export namespace clue_data {
         {"x": 1344, "y": 5652, "level": 0},
         {"x": 1370, "y": 5670, "level": 0}
       ],
-      "range": 11,
+      "range": 14,
       "scantext": "The Lost Grove"
     },
 
