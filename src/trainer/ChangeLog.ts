@@ -395,6 +395,7 @@ export namespace Changelog {
         builder.release(53, "Hot Fix: Lost Grove Scan Range", new Date(Date.parse("2025-06-30")))
           .list(l => l
             .item("Fixed the scan range for the Lost Grove scan.")
+            .item("Added the Solak boss portal destination to the teleport dataset.")
           )
 
         builder.release(52, "New Clue Spots", new Date(Date.parse("2025-06-30")))

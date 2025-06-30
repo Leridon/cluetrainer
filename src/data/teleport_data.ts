@@ -4550,6 +4550,7 @@ name: "Entrana",
       {id: "helwyr", name: "Helwyr", img: {url: "Helwyr_(boss_portal)_texture.webp", width: 40}, target: {"origin": {"x": 3270, "y": 6905, "level": 1}}},
       {id: "twinfuries", name: "The Twin Furies", img: {url: "Twin_Furies_(boss_portal)_texture.png", width: 40}, target: {"origin": {"x": 3128, "y": 7047, "level": 1}}},
       {id: "vindicta", name: "Vindicta & Gorvek", img: {url: "Vindicta_and_Gorvek_(boss_portal)_texture.png", width: 40,}, target: {"origin": {"x": 3119, "y": 6903, "level": 1}}},
+      {id: "solak", name: "Solak", img: {url: "Solak_(boss_portal)_texture.webp", width: 40,}, target: {"origin": {"x": 1373, "y": 5640, "level": 0}}},
 
       {
         id: "ed1",
