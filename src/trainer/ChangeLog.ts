@@ -391,6 +391,12 @@ export namespace Changelog {
 
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
+
+        builder.release(53, "Hot Fix: Lost Grove Scan Range", new Date(Date.parse("2025-06-30")))
+          .list(l => l
+            .item("Fixed the scan range for the Lost Grove scan.")
+          )
+
         builder.release(52, "New Clue Spots", new Date(Date.parse("2025-06-30")))
           .render(p => p.paragraph("This update adds support for the new and changed clue spots. Updated methods are being worked on and will be added as soon as possible."))
           .list(l => l
@@ -403,6 +409,7 @@ export namespace Changelog {
             .item("Updated elite compass spots.")
             .item("Recalculated expected method times to account for today's updates.")
           )
+          .notification("Support for new clue spots has been added!")
 
 
         builder.release(51, "Editor Improvements and Bug Fixes", new Date(Date.parse("2025-06-22")))
