@@ -28,6 +28,7 @@ import {Angles} from "../lib/math/Angles";
 import {storage} from "../lib/util/storage";
 import KeyValueStore from "../lib/util/KeyValueStore";
 import {ConfirmationModal} from "../trainer/ui/widgets/modals/ConfirmationModal";
+import {HostedMapData} from "../lib/runescape/movement";
 import getExpectedAngle = Compasses.getExpectedAngle;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
@@ -40,6 +41,7 @@ import vbox = C.vbox;
 import AngleRange = Angles.AngleRange;
 import angleDifference = Angles.angleDifference;
 import avg = util.avg;
+import gielinor_compass = clue_data.gielinor_compass;
 
 type Fraction = Vector2
 
@@ -58,6 +60,13 @@ type AutoSelection = {
 type OffsetSelection = {
   auto?: AutoSelection,
   offset: Vector2,
+  highlighted_offset?: Vector2
+}
+
+namespace OffsetSelection {
+  export function activeOffset(self: OffsetSelection): Vector2 {
+    return self.highlighted_offset ?? self.offset
+  }
 }
 
 type SelectionStatus = {
@@ -301,6 +310,10 @@ class CalibrationQueue {
         this.fill(this.filler)
       }
     })
+
+    this.parent.reference.subscribe(ref => {
+      this.sortQueue(ref)
+    })
   }
 
   dequeue(): boolean {
@@ -340,22 +353,48 @@ class CalibrationQueue {
     this.filler = null
   }
 
-  fill(f: QueueFillerfunction) {
-    this.clear()
+  private async sortQueue(reference: TileCoordinates, start_offset: Vector2 = undefined) {
+    const rect: TileRectangle = {"topleft": {"x": 1950, "y": 4152}, "botright": {"x": 3898, "y": 2594}, "level": 0}
 
-    const queue = f.function()
+    const backlog: OffsetSelection[] = []
 
-    if (queue.length > 0) {
-      const sorted_by_should_angle = lodash.sortBy(queue, s => CalibrationTool.shouldAngle(s.offset))
+    async function findAccessibleOffset(sel: OffsetSelection, i: number = 1): Promise<number> {
+      const off = Vector2.scale(i, sel.offset)
 
-      let position = sorted_by_should_angle[0].offset
-      let salesmen_result: OffsetSelection[] = []
+      const pos = TileCoordinates.move(reference, off)
+
+      if (!TileRectangle.contains(rect, pos)) return 0
+
+      if (await HostedMapData.get().isAccessible(pos)) return i
+      else return findAccessibleOffset(sel, i + 1)
+    }
+
+    for (let offsetSelection of this.queue) {
+      const index = await findAccessibleOffset(offsetSelection)
+
+      if (index == 0) {
+        backlog.push(offsetSelection)
+
+        this.queue.splice(this.queue.indexOf(offsetSelection), 1)
+      } else {
+        offsetSelection.highlighted_offset = Vector2.scale(index, offsetSelection.offset)
+      }
+    }
+
+    const sorted_by_should_angle = lodash.sortBy(this.queue, s => CalibrationTool.shouldAngle(s.offset))
+
+
+    let salesmen_result: OffsetSelection[] = []
+
+    if (sorted_by_should_angle.length > 0) {
+
+      let position = start_offset ?? OffsetSelection.activeOffset(sorted_by_should_angle[0])
 
       while (sorted_by_should_angle.length > 0) {
         const greedy_best =
           lodash.minBy(sorted_by_should_angle.map((s, i) => ({s, i})),
             ({s, i}) => {
-              return Vector2.max_axis(Vector2.sub(position, s.offset)) + i * 3
+              return Vector2.max_axis(Vector2.sub(position, OffsetSelection.activeOffset(s))) + i * 3
             })
 
         sorted_by_should_angle.splice(greedy_best.i, 1)
@@ -364,9 +403,20 @@ class CalibrationQueue {
 
         salesmen_result.push(greedy_best.s)
       }
+    }
 
-      this.queue = salesmen_result
+    this.queue = salesmen_result
 
+    this.queue.push(...lodash.sortBy(backlog, s => CalibrationTool.shouldAngle(s.offset)))
+  }
+
+  async fill(f: QueueFillerfunction) {
+    this.clear()
+
+    this.queue = f.function()
+
+    if (this.queue.length > 0) {
+      await this.sortQueue(this.parent.reference.value())
 
       this.filler = f
 
@@ -423,15 +473,19 @@ function findAutoSpotForAngleRange(range: AngleRange): OffsetSelection {
 }
 
 export class CompassCalibrationTool extends NisModal {
+  private reference_memory = new storage.Variable<TileCoordinates>("preferences/calibrationtool/reference", () => gielinor_compass.spots[0])
+
+  selection = observe<SelectionStatus>(null)
+  reference = observe<TileCoordinates>(this.reference_memory.get())
+
   public sample_set = new SampleSetBuilder(this)
   public spot_queue = new CalibrationQueue(this)
 
   private reader: CompassReader.Service
-  private layer: CalibrationTool.Layer
+  public layer: CalibrationTool.Layer
 
   handler: Alt1MainHotkeyEvent.Handler
 
-  selection = observe<SelectionStatus>(null)
 
   current_calibrated_angle_view: Widget
   function_status_view: Widget
@@ -472,6 +526,10 @@ export class CompassCalibrationTool extends NisModal {
 
     this.reader.onChange(() => {
       this.updateCurrentPlausibility()
+    })
+
+    this.reference.subscribe(ref => {
+      this.reference.set(ref)
     })
   }
 
@@ -597,7 +655,7 @@ export class CompassCalibrationTool extends NisModal {
     })
 
     if (this.layer) {
-      if (offset.auto) this.layer.getMap().fitView(TileRectangle.from(TileCoordinates.move(this.layer.reference.value(), offset.offset)), {
+      if (offset.auto) this.layer.getMap().fitView(TileRectangle.from(TileCoordinates.move(this.reference.value(), offset.offset)), {
         maxZoom: this.layer.getMap().getZoom(),
         animate: true
       })
@@ -763,9 +821,6 @@ export namespace CalibrationTool {
 
   export class Layer extends GameLayer {
     markers: KnownMarker[]
-    reference = observe<TileCoordinates>(null)
-
-    private reference_memory = new storage.Variable<TileCoordinates>("preferences/calibrationtool/reference", () => gielinor_compass.spots[0])
 
     constructor(public tool: CompassCalibrationTool) {
       super()
@@ -781,9 +836,8 @@ export namespace CalibrationTool {
       this.tool.spot_queue.changed.on(() => {
         this.updateQueueView()
       })
-      this.reference.subscribe(reference => {
-        this.reference_memory.set(reference)
 
+      this.tool.reference.subscribe(reference => {
         this.centerOnReference()
 
         this.markers.forEach(marker => {
@@ -793,21 +847,20 @@ export namespace CalibrationTool {
         this.updateSelectionOverlay()
         this.updateSampleSetOverlay()
         this.updateQueueView()
-      })
+      }, true)
 
       this.tool.selection.subscribe(() => {
         this.updateSelectionOverlay()
         this.updateQueueView()
       })
 
-      this.reference.set(this.reference_memory.get())
     }
 
     centerOnReference() {
       const map = this.getMap()
 
       if (map) {
-        map.fitView(TileRectangle.from(this.reference.value()), {
+        map.fitView(TileRectangle.from(this.tool.reference.value()), {
           maxZoom: 4
         })
       }
@@ -816,9 +869,9 @@ export namespace CalibrationTool {
     eventClick(event: GameMapMouseEvent) {
       event.onPost(() => {
         if (event.active_entity instanceof KnownMarker) {
-          this.reference.set(event.active_entity.spot)
+          this.tool.reference.set(event.active_entity.spot)
         } else {
-          const off = Vector2.sub(event.tile(), this.reference.value())
+          const off = Vector2.sub(event.tile(), this.tool.reference.value())
 
           if (off.x == 0 && off.y == 0) return
 
@@ -840,7 +893,7 @@ export namespace CalibrationTool {
       this.sample_set_overlay = leaflet.featureGroup().addTo(this)
 
       this.tool.sample_set.get().forEach((sample, i) => {
-        const polygon = tilePolygon(Vector2.add(this.reference.value(), sample.position)).setStyle({
+        const polygon = tilePolygon(Vector2.add(this.tool.reference.value(), sample.position)).setStyle({
           color: "#06ffea",
           fillOpacity: 0.2,
           stroke: false
@@ -858,12 +911,12 @@ export namespace CalibrationTool {
 
       const selection = this.tool.selection.value()
 
-      if (!selection || !this.reference) return
+      if (!selection || !this.tool.reference.value()) return
 
       this.selection_overlay = leaflet.featureGroup().addTo(this)
 
       for (let i = 1; i <= 100; i++) {
-        const polygon = tilePolygon(Vector2.add(this.reference.value(), Vector2.scale(i, selection.offset.offset))).addTo(this.selection_overlay)
+        const polygon = tilePolygon(Vector2.add(this.tool.reference.value(), Vector2.scale(i, selection.offset.offset))).addTo(this.selection_overlay)
 
         if (selection.existing_sample) {
           polygon.setStyle({
@@ -891,7 +944,7 @@ export namespace CalibrationTool {
 
       queue.forEach(sel => {
           if (!Vector2.eq(selection.offset.offset, sel.offset)) {
-            tilePolygon(TileCoordinates.move(this.reference.value(), sel.offset))
+            tilePolygon(TileCoordinates.move(this.tool.reference.value(), OffsetSelection.activeOffset(sel)))
               .setStyle({color: "#ffff00"})
               .addTo(this.queue_view)
           }
@@ -899,7 +952,7 @@ export namespace CalibrationTool {
       )
 
       leaflet.polyline(
-          queue.slice(0, Math.min(queue.length, 10)).map(s => Vector2.toLatLong(Vector2.add(this.reference.value(), s.offset)))
+          queue.slice(0, Math.min(queue.length, 10)).map(s => Vector2.toLatLong(Vector2.add(this.tool.reference.value(), OffsetSelection.activeOffset(s))))
         )
         .setStyle({color: "#ffff00", weight: 3})
         .addTo(this.queue_view)
