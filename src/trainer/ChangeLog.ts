@@ -392,7 +392,7 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
         builder.release(52, "New Clue Spots", new Date(Date.parse("2025-06-30")))
-          .render(p => p.paragraph("This is just a quick update to update new and changed clue spots and travel interfaces. Updated methods will be released as soon as possible."))
+          .render(p => p.paragraph("This update adds support for the new and changed clue spots. Updated methods are being worked on and will be added as soon as possible."))
           .list(l => l
             .item("Updated the position of the gnome coach.")
             .item("Updated the position of Captain Ninto.")
