@@ -26,7 +26,7 @@ export namespace Changelog {
     import Order = util.Order;
 
     export function isBeta(self: Version): boolean {
-      return self.build_info != undefined
+      return self?.build_info?.is_beta_build
     }
 
     export function lift(self: Version | number): Version {
@@ -34,8 +34,11 @@ export namespace Changelog {
       else return self
     }
 
-    export function isLaterOrEqual(a: Version, than: Version): boolean {
-      return a.version > than.version || (a.version == than.version && (!a.build_info.is_beta_build || !a.build_info?.build_timestamp || !than.build_info?.build_timestamp || new Date(a.build_info.build_timestamp).valueOf() >= new Date(than.build_info.build_timestamp).valueOf()))
+    export function isNewerThan(a: Version, than: Version): boolean {
+      if (a.version > than.version) return true
+      if (a.version == than.version && a.build_info?.is_beta_build && than.build_info?.is_beta_build) return new Date(a.build_info.build_timestamp).valueOf() > new Date(than.build_info.build_timestamp).valueOf();
+
+      return false
     }
 
     export function asString(self: Version): string {
@@ -388,6 +391,19 @@ export namespace Changelog {
 
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
+        builder.release(52, "New Clue Spots", new Date(Date.parse("2025-06-30")))
+          .render(p => p.paragraph("This update adds support for the new and changed clue spots. Updated methods are being worked on and will be added as soon as possible."))
+          .list(l => l
+            .item("Updated the position of the gnome coach.")
+            .item("Updated the position of Captain Ninto.")
+            .item("Updated hotkeys for the Portmaster Kags travel interface.")
+            .item("Updated hotkeys and location names for the Dragon Trinket teleport interface.")
+            .item("Updated hotkeys and location names for the Metallic Dragon Trinket teleport interface.")
+            .item("Added the new Lost Grove Scan.")
+            .item("Updated elite compass spots.")
+            .item("Recalculated expected method times to account for today's updates.")
+          )
+
 
         builder.release(51, "Editor Improvements and Bug Fixes", new Date(Date.parse("2025-06-22")))
           .list(l => l

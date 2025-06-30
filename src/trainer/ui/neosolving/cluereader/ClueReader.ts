@@ -329,19 +329,9 @@ export class ClueReader {
           if (CLUEREADERDEBUG)
             notification(`Scan ${scan_text}`).show()
 
-          let bestscore = 0;
-          let best: ScanStep | null = null;
+          const best = findBestMatch(clue_data.scan, scan => stringSimilarity(scan_text, scan.scantext))
 
-          for (let clue of clue_data.scan) {
-            let score = stringSimilarity(scan_text, clue.scantext);
-
-            if (score > bestscore) {
-              best = clue;
-              bestscore = score;
-            }
-          }
-
-          return {type: "scan", step: best, scan_interface: scan}
+          return {type: "scan", step: best.value, scan_interface: scan}
         }
       }
     }
