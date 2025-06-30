@@ -110,7 +110,8 @@ class SelectionStatusWidget extends Widget {
     layout
       .named("Selected", Vector2.toString(status.offset.offset))
       .named("Should", Angles.radiansToDegrees(CalibrationTool.shouldAngle(status.offset.offset)).toFixed(3) + "°")
-      .named("Sampled", status.existing_sample ? Angles.radiansToDegrees(status.existing_sample.is_angle).toFixed(3) : italic("None"))
+      .named("Sampled", status.existing_sample ? Angles.toString(status.existing_sample.is_angle) : italic("None"))
+      .named("Pixel Count", status.existing_sample?.black_pixel_count ? status.existing_sample?.black_pixel_count.toString() : italic("-"))
 
     layout.row(
       new ButtonRow().buttons(
@@ -206,12 +207,12 @@ class SampleSetBuilder {
     if (this.state.samples.length != old_length) this.changed()
   }
 
-  record(offset: Vector2, is_angle_radians: number) {
+  record(offset: Vector2, state: CompassReader.Service.State) {
     const index_of_existing_sample = this.state.samples.findIndex(s => Vector2.eq(s.position, offset))
 
     if (index_of_existing_sample >= 0) this.state.samples.splice(index_of_existing_sample, 1)
 
-    const new_sample: RawSample = {position: offset, is_angle: is_angle_radians}
+    const new_sample: RawSample = {position: offset, is_angle: state.raw_angle, black_pixel_count: state.black_pixel_count}
 
     this.state.samples.push(new_sample)
 
@@ -311,8 +312,10 @@ class CalibrationQueue {
       }
     })
 
-    this.parent.reference.subscribe(ref => {
-      this.sortQueue(ref)
+    this.parent.reference.subscribe(async ref => {
+      await this.sortQueue(ref)
+
+      this.changed.trigger(this)
     })
   }
 
@@ -381,8 +384,9 @@ class CalibrationQueue {
       }
     }
 
-    const sorted_by_should_angle = lodash.sortBy(this.queue, s => CalibrationTool.shouldAngle(s.offset))
+    console.log(`Backlogged ${backlog.length}`)
 
+    const sorted_by_should_angle = lodash.sortBy(this.queue, s => CalibrationTool.shouldAngle(s.offset))
 
     let salesmen_result: OffsetSelection[] = []
 
@@ -529,7 +533,7 @@ export class CompassCalibrationTool extends NisModal {
     })
 
     this.reference.subscribe(ref => {
-      this.reference.set(ref)
+      this.reference_memory.set(ref)
     })
   }
 
@@ -644,7 +648,7 @@ export class CompassCalibrationTool extends NisModal {
     }
 
     if (state.state == "normal") {
-      this.sample_set.record(this.selection.value().offset.offset, state.raw_angle)
+      this.sample_set.record(this.selection.value().offset.offset, state)
     }
   }
 
@@ -655,7 +659,7 @@ export class CompassCalibrationTool extends NisModal {
     })
 
     if (this.layer) {
-      if (offset.auto) this.layer.getMap().fitView(TileRectangle.from(TileCoordinates.move(this.reference.value(), offset.offset)), {
+      if (offset.auto) this.layer.getMap().fitView(TileRectangle.from(TileCoordinates.move(this.reference.value(), OffsetSelection.activeOffset(offset))), {
         maxZoom: this.layer.getMap().getZoom(),
         animate: true
       })
@@ -776,7 +780,7 @@ export namespace CalibrationTool {
   }
 
   export type RawSample = {
-    position: Vector2, is_angle: number
+    position: Vector2, is_angle: number, black_pixel_count?: number
   }
 
   import gielinor_compass = clue_data.gielinor_compass;

@@ -77,7 +77,7 @@ export class CompassReader {
       const red = getRed(coords.x, coords.y)
 
       return red >= 70 && red <= 110
-    })) return {type: "likely_solved"}
+    })) return {type: "likely_solved", pixel_count: undefined}
 
     const rectangle_samples: Vector2[] = []
 
@@ -98,13 +98,13 @@ export class CompassReader {
     }
 
     if (antialiasing_detected) {
-      if (rectangle_samples.length < 400) return {type: "likely_closed", details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample. [MSAA]`}
-      if (rectangle_samples.length < 1700) return {type: "likely_concealed", details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample. [MSAA]`}
-      if (rectangle_samples.length > 2250) return {type: "likely_concealed", details: `Too many pixels (${rectangle_samples.length}) sampled for the rectangle sample. [MSAA]`}
+      if (rectangle_samples.length < 400) return {type: "likely_closed", pixel_count: rectangle_samples.length, details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample. [MSAA]`}
+      if (rectangle_samples.length < 1700) return {type: "likely_concealed", pixel_count: rectangle_samples.length, details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample. [MSAA]`}
+      if (rectangle_samples.length > 2250) return {type: "likely_concealed", pixel_count: rectangle_samples.length, details: `Too many pixels (${rectangle_samples.length}) sampled for the rectangle sample. [MSAA]`}
     } else {
-      if (rectangle_samples.length < 400) return {type: "likely_closed", details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample.`}
-      if (rectangle_samples.length < 1900) return {type: "likely_concealed", details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample.`}
-      if (rectangle_samples.length > 2300) return {type: "likely_concealed", details: `Too many pixels (${rectangle_samples.length}) sampled for the rectangle sample.`}
+      if (rectangle_samples.length < 400) return {type: "likely_closed", pixel_count: rectangle_samples.length, details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample.`}
+      if (rectangle_samples.length < 1900) return {type: "likely_concealed", pixel_count: rectangle_samples.length, details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample.`}
+      if (rectangle_samples.length > 2300) return {type: "likely_concealed", pixel_count: rectangle_samples.length, details: `Too many pixels (${rectangle_samples.length}) sampled for the rectangle sample.`}
     }
 
     const center_of_mass: Vector2 = {
@@ -161,6 +161,7 @@ export class CompassReader {
 
     return {
       type: "success",
+      pixel_count: rectangle_samples.length,
       angle: final_angle,
       raw_angle: angle_after_rectangle_sample,
       antialiasing: antialiasing_detected
@@ -180,14 +181,14 @@ export namespace CompassReader {
   export const DEBUG_COMPASS_READER = false
   export const DISABLE_CALIBRATION = false
 
-  export type AngleResult = {
+  export type AngleResult = {type: string, pixel_count: number} & ({
     type: "success",
     angle: UncertainAngle,
     raw_angle: number,
     antialiasing: boolean,
   } | { type: "likely_closed", details: string }
     | { type: "likely_concealed", details: string }
-    | { type: "likely_solved" }
+    | { type: "likely_solved" })
 
   export const debug_overlay = new LegacyOverlayGeometry()
 
@@ -228,6 +229,7 @@ export namespace CompassReader {
     {"is_angle":0.049135816813804994,"position":{"x":-11,"y":-1}},
     {"is_angle":0.049135816813804994,"position":{"x":-120,"y":-11}},
     {"is_angle":0.0541824280562851,"position":{"x":-10,"y":-1}},
+    {"position":{"x":-37,"y":-4},"is_angle":0.06120021607192396},
     {"is_angle":0.06778726432724853,"position":{"x":-60,"y":-7}},
     {"is_angle":0.07110280723909063,"position":{"x":-90,"y":-11}},
     {"is_angle":0.07501593240701028,"position":{"x":-8,"y":-1}},
@@ -285,32 +287,52 @@ export namespace CompassReader {
     {"is_angle":0.191141304471228,"position":{"x":-18,"y":-5}},
     {"is_angle":0.1972012863913033,"position":{"x":-7,"y":-2}},
     {"is_angle":0.2066891184590453,"position":{"x":-10,"y":-3}},
+    {"position":{"x":-19,"y":-6},"is_angle":0.22302027321613363},
+    {"position":{"x":-37,"y":-12},"is_angle":0.22996089763202637},
     {"is_angle":0.2363527041076005,"position":{"x":-3,"y":-1}},
+    {"position":{"x":-26,"y":-9},"is_angle":0.24576901090056094},
     {"is_angle":0.2556846123124762,"position":{"x":-14,"y":-5}},
     {"is_angle":0.2623238879182127,"position":{"x":-11,"y":-4}},
+    {"position":{"x":-8,"y":-3},"is_angle":0.27277044883670054},
     {"is_angle":0.2799272562666111,"position":{"x":-13,"y":-5}},
     {"is_angle":0.29142184789304887,"position":{"x":-5,"y":-2}},
     {"is_angle":0.3050500243552198,"position":{"x":-12,"y":-5}},
+    {"position":{"x":-44,"y":-19},"is_angle":0.3184860819939851},
     {"is_angle":0.32767081957557914,"position":{"x":-9,"y":-4}},
     {"is_angle":0.3365236242389718,"position":{"x":-11,"y":-5}},
     {"is_angle":0.34773554996099043,"position":{"x":-15,"y":-7}},
+    {"position":{"x":-29,"y":-14},"is_angle":0.36278308965951656},
     {"is_angle":0.3763181628005282,"position":{"x":-2,"y":-1}},
+    {"position":{"x":-29,"y":-15},"is_angle":0.39328370349233605},
     {"is_angle":0.40203678186750436,"position":{"x":-15,"y":-8}},
     {"is_angle":0.4112886783098925,"position":{"x":-11,"y":-6}},
     {"is_angle":0.4250651024125138,"position":{"x":-16,"y":-9}},
+    {"position":{"x":-31,"y":-18},"is_angle":0.4376549546708149},
     {"is_angle":0.45338004013415684,"position":{"x":-5,"y":-3}},
+    {"position":{"x":-21,"y":-13},"is_angle":0.4677082835818453},
     {"is_angle":0.4834032595559921,"position":{"x":-11,"y":-7}},
+    {"position":{"x":-20,"y":-13},"is_angle":0.4930306508463907},
     {"is_angle":0.5037790629601169,"position":{"x":-3,"y":-2}},
+    {"position":{"x":-19,"y":-13},"is_angle":0.5211145813840162},
     {"is_angle":0.5324886822812633,"position":{"x":-10,"y":-7}},
+    {"position":{"x":-39,"y":-28},"is_angle":0.5435596848308438},
     {"is_angle":0.554181074218857,"position":{"x":-15,"y":-11}},
     {"is_angle":0.5704786437105447,"position":{"x":-4,"y":-3}},
+    {"position":{"x":-17,"y":-13},"is_angle":0.5797918419061893},
     {"is_angle":0.5908316379379732,"position":{"x":-9,"y":-7}},
+    {"position":{"x":-49,"y":-39},"is_angle":0.6023121543060563},
     {"is_angle":0.6201911589294585,"position":{"x":-11,"y":-9}},
     {"is_angle":0.6309909163691,"position":{"x":-6,"y":-5}},
+    {"position":{"x":-20,"y":-17},"is_angle":0.6463062349343984},
     {"is_angle":0.6596433939031285,"position":{"x":-15,"y":-13}},
+    {"position":{"x":-9,"y":-8},"is_angle":0.6749792092981168},
     {"is_angle":0.6906559476524211,"position":{"x":-11,"y":-10}},
     {"is_angle":0.7154602733107464,"position":{"x":-16,"y":-15}},
+    {"position":{"x":-29,"y":-28},"is_angle":0.7358165075231693},
+    {"position":{"x":-53,"y":-52},"is_angle":0.7460756406592829},
     {"is_angle":0.7613056437191439,"position":{"y":-1,"x":-1}},
+    {"position":{"x":-52,"y":-53},"is_angle":0.7722656595619228},
+    {"position":{"x":-28,"y":-29},"is_angle":0.7844621706597427},
     {"is_angle":0.8093125653504399,"position":{"x":-15,"y":-16}},
     {"is_angle":0.8290157723892609,"position":{"x":-10,"y":-11}},
     {"is_angle":0.8290157723892609,"position":{"x":-109,"y":-120}},
@@ -318,9 +340,6 @@ export namespace CompassReader {
     {"is_angle":0.8360836490836693,"position":{"x":-65,"y":-72}},
     {"is_angle":0.8360836490836693,"position":{"x":-9,"y":-10}},
     {"is_angle":0.8407504016179639,"position":{"x":-323,"y":-360}},
-    {"is_angle":0.8434172958964172,"position":{"x":-161,"y":-180}},
-    {"is_angle":0.8434172958964172,"position":{"x":-107,"y":-120}},
-    {"is_angle":0.8423659931454143,"position":{"x":-8,"y":-9}},
     {"is_angle":0.8495762168607099,"position":{"x":-319,"y":-360}},
     {"is_angle":0.850311448980111,"position":{"x":-317,"y":-360}},
     {"is_angle":0.8609126936423985,"position":{"x":-13,"y":-15}},
@@ -428,8 +447,6 @@ export namespace CompassReader {
     {"is_angle":1.1326171452850358,"position":{"x":-37,"y":-72}},
     {"is_angle":1.1356418538011073,"position":{"x":-23,"y":-45}},
     {"is_angle":1.1356418538011073,"position":{"x":-61,"y":-120}},
-    {"is_angle":1.1395316406825675,"position":{"x":-91,"y":-180}},
-    {"is_angle":1.1389876231962175,"position":{"x":-181,"y":-360}},
     {"is_angle":1.14139686206836,"position":{"x":-1,"y":-2}},
     {"is_angle":1.1458344193981562,"position":{"x":-89,"y":-180}},
     {"is_angle":1.151946224519395,"position":{"x":-59,"y":-120}},
@@ -480,22 +497,35 @@ export namespace CompassReader {
     {"is_angle":1.2684770412963675,"position":{"x":-31,"y":-90}},
     {"is_angle":1.271302803725886,"position":{"x":-41,"y":-120}},
     {"is_angle":1.2801392661182247,"position":{"x":-1,"y":-3}},
+    {"position":{"x":-12,"y":-37},"is_angle":1.2884868398420601},
+    {"position":{"x":-6,"y":-19},"is_angle":1.2969584881102407},
     {"is_angle":1.3088610650094514,"position":{"x":-3,"y":-10}},
     {"is_angle":1.3203507617319166,"position":{"x":-2,"y":-7}},
     {"is_angle":1.3339472594276074,"position":{"x":-3,"y":-11}},
     {"is_angle":1.3419032624489853,"position":{"x":-31,"y":-120}},
     {"is_angle":1.3524213760583823,"position":{"x":-1,"y":-4}},
+    {"position":{"x":-5,"y":-21},"is_angle":1.3633235111935544},
     {"is_angle":1.3698039307456003,"position":{"x":-41,"y":-180}},
     {"is_angle":1.3739079244844206,"position":{"x":-9,"y":-40}},
     {"is_angle":1.3767970384665582,"position":{"x":-2,"y":-9}},
+    {"position":{"x":-4,"y":-19},"is_angle":1.385993602769604},
     {"is_angle":1.3935162189968953,"position":{"x":-1,"y":-5}},
+    {"position":{"x":-4,"y":-21},"is_angle":1.4037489761586897},
+    {"position":{"x":-2,"y":-11},"is_angle":1.4106372927593362},
     {"is_angle":1.423167203576703,"position":{"x":-1,"y":-6}},
+    {"position":{"x":-2,"y":-13},"is_angle":1.4330213655149087},
     {"is_angle":1.4434602646675634,"position":{"x":-1,"y":-7}},
+    {"position":{"x":-2,"y":-15},"is_angle":1.449748361826381},
     {"is_angle":1.4598612277116998,"position":{"x":-1,"y":-8}},
+    {"position":{"x":-5,"y":-44},"is_angle":1.4654490128608173},
     {"is_angle":1.478622403750558,"position":{"x":-1,"y":-10}},
     {"is_angle":1.4833895849472354,"position":{"x":-1,"y":-11}},
+    {"position":{"x":-3,"y":-37},"is_angle":1.4912430282815758},
     {"is_angle":1.4978023852608178,"position":{"x":-1,"y":-14}},
     {"is_angle":1.507354498855019,"position":{"x":-1,"y":-16}},
+    {"position":{"x":-1,"y":-19},"is_angle":1.5120593117473606},
+    {"position":{"x":-1,"y":-24},"is_angle":1.5201072220268261},
+    {"position":{"x":-1,"y":-32},"is_angle":1.5295170121913857},
     {"is_angle":1.53814814553406,"position":{"x":-7,"y":-360}},
     {"is_angle":1.53814814553406,"position":{"x":-1,"y":-60}},
     {"is_angle":1.541289325312317,"position":{"x":-1,"y":-72}},
@@ -623,6 +653,7 @@ export namespace CompassReader {
     {"is_angle":1.8165653376954578,"position":{"x":41,"y":-120}},
     {"is_angle":1.8295429908540803,"position":{"x":5,"y":-14}},
     {"is_angle":1.83759320013286,"position":{"x":4,"y":-11}},
+    {"position":{"x":3,"y":-8},"is_angle":1.843566775631597,"black_pixel_count":2222},
     {"is_angle":1.8539507455899842,"position":{"x":5,"y":-13}},
     {"is_angle":1.857536465161883,"position":{"x":7,"y":-18}},
     {"is_angle":1.8590340291454075,"position":{"x":47,"y":-120}},
@@ -659,25 +690,44 @@ export namespace CompassReader {
     {"is_angle":1.9302670709984937,"position":{"x":19,"y":-40}},
     {"is_angle":1.933579416454413,"position":{"x":43,"y":-90}},
     {"is_angle":1.933579416454413,"position":{"x":173,"y":-360}},
+    {"position":{"x":23,"y":-47},"is_angle":1.941962823665168,"black_pixel_count":2226},
     {"is_angle":1.9471144895954258,"position":{"x":1,"y":-2}},
+    {"position":{"x":15,"y":-29},"is_angle":1.9663963016438355},
     {"is_angle":1.9753084156228822,"position":{"x":8,"y":-15}},
     {"is_angle":1.9844321127472808,"position":{"x":6,"y":-11}},
     {"is_angle":1.9958614292074104,"position":{"x":9,"y":-16}},
+    {"position":{"x":18,"y":-31},"is_angle":2.012866721510436},
     {"is_angle":2.0270111348059885,"position":{"x":3,"y":-5}},
+    {"position":{"x":13,"y":-21},"is_angle":2.0435329906778747},
     {"is_angle":2.0541995863508884,"position":{"x":7,"y":-11}},
+    {"position":{"x":13,"y":-20},"is_angle":2.0659684443110553},
     {"is_angle":2.079430622866072,"position":{"x":2,"y":-3}},
+    {"position":{"x":13,"y":-19},"is_angle":2.0937394168271917},
     {"is_angle":2.105469653970983,"position":{"x":7,"y":-10}},
+    {"position":{"x":28,"y":-39},"is_angle":2.1168193577660768},
     {"is_angle":2.129072600161114,"position":{"x":11,"y":-15}},
     {"is_angle":2.1412749705054415,"position":{"x":3,"y":-4}},
+    {"position":{"x":141,"y":-187},"is_angle":2.145201425475071,"black_pixel_count":2228},
+    {"position":{"x":13,"y":-17},"is_angle":2.153030749935461,"black_pixel_count":2233},
     {"is_angle":2.1616279647328698,"position":{"x":7,"y":-9}},
+    {"position":{"x":39,"y":-49},"is_angle":2.17791563520989},
     {"is_angle":2.194792878267968,"position":{"x":9,"y":-11}},
     {"is_angle":2.206904070636015,"position":{"x":5,"y":-6}},
+    {"position":{"x":38,"y":-45},"is_angle":2.2171025617292948,"black_pixel_count":2227},
+    {"position":{"x":17,"y":-20},"is_angle":2.21815315128228,"black_pixel_count":2228},
+    {"position":{"x":77,"y":-90},"is_angle":2.2209654604745395,"black_pixel_count":2226},
     {"is_angle":2.231876163757139,"position":{"x":13,"y":-15}},
+    {"position":{"x":8,"y":-9},"is_angle":2.2483673565735183},
     {"is_angle":2.2645563609150132,"position":{"x":10,"y":-11}},
     {"is_angle":2.286256600105642,"position":{"x":15,"y":-16}},
+    {"position":{"x":28,"y":-29},"is_angle":2.3096900969764897},
+    {"position":{"x":52,"y":-53},"is_angle":2.32015999838153,"black_pixel_count":2226},
     {"is_angle":2.3321019705140404,"position":{"x":1,"y":-1}},
+    {"position":{"x":53,"y":-52},"is_angle":2.3450135879103735,"black_pixel_count":2216},
+    {"position":{"x":29,"y":-28},"is_angle":2.3584662635141456},
     {"is_angle":2.3801088921453357,"position":{"x":16,"y":-15}},
     {"is_angle":2.403257658468531,"position":{"x":11,"y":-10}},
+    {"position":{"x":9,"y":-8},"is_angle":2.420372543655606},
     {"is_angle":2.4367966052566676,"position":{"x":15,"y":-13}},
     {"is_angle":2.4461623697994055,"position":{"x":72,"y":-61}},
     {"is_angle":2.449231711125832,"position":{"x":45,"y":-38}},
@@ -716,6 +766,7 @@ export namespace CompassReader {
     {"is_angle":2.520166140249273,"position":{"x":45,"y":-34}},
     {"is_angle":2.5216902276195783,"position":{"x":4,"y":-3}},
     {"is_angle":2.5379698697676485,"position":{"x":15,"y":-11}},
+    {"position":{"x":39,"y":-28},"is_angle":2.547945026498751},
     {"is_angle":2.562815755926799,"position":{"x":10,"y":-7}},
     {"is_angle":2.5687426311426806,"position":{"x":120,"y":-83}},
     {"is_angle":2.5710332982753425,"position":{"x":45,"y":-31}},
@@ -774,8 +825,6 @@ export namespace CompassReader {
     {"is_angle":2.703413472079932,"position":{"x":60,"y":-31}},
     {"is_angle":2.7064381805960034,"position":{"x":72,"y":-37}},
     {"is_angle":2.7064381805960034,"position":{"x":45,"y":-23}},
-    {"is_angle":2.7103279674774634,"position":{"x":120,"y":-61}},
-    {"is_angle":2.709783949991115,"position":{"x":180,"y":-91}},
     {"is_angle":2.7121931888632567,"position":{"x":360,"y":-181}},
     {"is_angle":2.7121931888632567,"position":{"x":2,"y":-1}},
     {"is_angle":2.716630746193052,"position":{"x":360,"y":-179}},
@@ -881,6 +930,7 @@ export namespace CompassReader {
     {"is_angle":2.983719980499974,"position":{"x":72,"y":-13}},
     {"is_angle":2.9873494910303435,"position":{"x":45,"y":-8}},
     {"is_angle":2.99682421235186,"position":{"x":6,"y":-1}},
+    {"position":{"x":19,"y":-3},"is_angle":3.003817692309805,"black_pixel_count":2225},
     {"is_angle":3.01425659146246,"position":{"x":360,"y":-53}},
     {"is_angle":3.01425659146246,"position":{"x":90,"y":-13}},
     {"is_angle":3.0169180573218664,"position":{"x":7,"y":-1}},
@@ -1142,9 +1192,6 @@ export namespace CompassReader {
     {"is_angle":3.5528813318996857,"position":{"x":24,"y":13}},
     {"is_angle":3.555228439542176,"position":{"x":90,"y":49}},
     {"is_angle":3.555228439542176,"position":{"x":11,"y":6}},
-    {"is_angle":3.5638131311749874,"position":{"x":360,"y":199}},
-    {"is_angle":3.5638131311749874,"position":{"x":9,"y":5}},
-    {"is_angle":3.5634432373900093,"position":{"x":120,"y":67}},
     {"is_angle":3.5666577560023063,"position":{"x":180,"y":101}},
     {"is_angle":3.5666577560023063,"position":{"x":16,"y":9}},
     {"is_angle":3.5717794891344736,"position":{"x":360,"y":203}},
@@ -1338,8 +1385,6 @@ export namespace CompassReader {
     {"is_angle":3.9776763026734625,"position":{"x":65,"y":72}},
     {"is_angle":3.982343055207757,"position":{"x":9,"y":10}},
     {"is_angle":3.982343055207757,"position":{"x":323,"y":360}},
-    {"is_angle":3.985009949486211,"position":{"x":161,"y":180}},
-    {"is_angle":3.983958646735207,"position":{"x":107,"y":120}},
     {"is_angle":3.991168870450502,"position":{"x":8,"y":9}},
     {"is_angle":3.991168870450502,"position":{"x":319,"y":360}},
     {"is_angle":3.9919041025699045,"position":{"x":53,"y":60}},
@@ -1477,6 +1522,7 @@ export namespace CompassReader {
     {"is_angle":4.265593081942048,"position":{"x":47,"y":90}},
     {"is_angle":4.271353923656769,"position":{"x":187,"y":360}},
     {"is_angle":4.282989515658152,"position":{"x":1,"y":2}},
+    {"position":{"x":15,"y":31},"is_angle":4.296514424398044},
     {"is_angle":4.308464287972422,"position":{"x":169,"y":360}},
     {"is_angle":4.311744690429756,"position":{"x":7,"y":15}},
     {"is_angle":4.311744690429756,"position":{"x":167,"y":360}},
@@ -1624,6 +1670,7 @@ export namespace CompassReader {
     {"is_angle":4.645901268977525,"position":{"x":1,"y":15}},
     {"is_angle":4.649227088985029,"position":{"x":23,"y":360}},
     {"is_angle":4.649227088985029,"position":{"x":1,"y":16}},
+    {"position":{"x":1,"y":20},"is_angle":4.656868273593718},
     {"is_angle":4.66547658030955,"position":{"x":7,"y":180}},
     {"is_angle":4.674370840405207,"position":{"x":1,"y":36}},
     {"is_angle":4.677601714230379,"position":{"x":1,"y":40}},
@@ -1638,6 +1685,7 @@ export namespace CompassReader {
     {"is_angle":4.705184393754077,"position":{"x":-1,"y":72}},
     {"is_angle":4.705184393754077,"position":{"x":-1,"y":60}},
     {"is_angle":4.708421013053563,"position":{"x":-7,"y":360}},
+    {"position":{"x":-1,"y":35},"is_angle":4.714632977400117,"black_pixel_count":2222},
     {"is_angle":4.71920872500101,"position":{"x":-13,"y":360}},
     {"is_angle":4.7216846321739,"position":{"x":-7,"y":180}},
     {"is_angle":4.731854789904091,"position":{"x":-1,"y":20}},
@@ -1749,16 +1797,21 @@ export namespace CompassReader {
     {"is_angle":4.971135644443874,"position":{"x":-13,"y":36}},
     {"is_angle":4.974712868302903,"position":{"x":-4,"y":11}},
     {"is_angle":4.974712868302903,"position":{"x":-131,"y":360}},
+    {"position":{"x":-3,"y":8},"is_angle":4.985159429221389,"black_pixel_count":2222},
     {"is_angle":4.992316236651301,"position":{"x":-5,"y":13}},
     {"is_angle":5.003810828277738,"position":{"x":-2,"y":5}},
     {"is_angle":5.020058285056043,"position":{"x":-5,"y":12}},
+    {"position":{"x":-19,"y":44},"is_angle":5.030875062378675},
     {"is_angle":5.044578433991094,"position":{"x":-4,"y":9}},
     {"is_angle":5.048912604623661,"position":{"x":-5,"y":11}},
     {"is_angle":5.060124530345681,"position":{"x":-7,"y":15}},
+    {"position":{"x":-14,"y":29},"is_angle":5.078572596480582},
     {"is_angle":5.088707143185218,"position":{"x":-1,"y":2}},
+    {"position":{"x":-15,"y":29},"is_angle":5.105672683877025},
     {"is_angle":5.1144257622521945,"position":{"x":-8,"y":15}},
     {"is_angle":5.126024766337073,"position":{"x":-6,"y":11}},
     {"is_angle":5.137454082797204,"position":{"x":-9,"y":16}},
+    {"position":{"x":-18,"y":31},"is_angle":5.15445937510023},
     {"is_angle":5.168603788395782,"position":{"x":-3,"y":5}},
     {"is_angle":5.174624712176471,"position":{"x":-73,"y":120}},
     {"is_angle":5.174624712176471,"position":{"x":-11,"y":18}},
@@ -1786,15 +1839,24 @@ export namespace CompassReader {
     {"is_angle":5.235332070416984,"position":{"x":-247,"y":360}},
     {"is_angle":5.235332070416984,"position":{"x":-31,"y":45}},
     {"is_angle":5.244877662665955,"position":{"x":-7,"y":10}},
+    {"position":{"x":-28,"y":39},"is_angle":5.258412011355869},
     {"is_angle":5.270665253750906,"position":{"x":-11,"y":15}},
     {"is_angle":5.282867624095234,"position":{"x":-3,"y":4}},
+    {"position":{"x":-13,"y":17},"is_angle":5.294623403525255,"black_pixel_count":2233},
     {"is_angle":5.303220618322664,"position":{"x":-7,"y":9}},
+    {"position":{"x":-39,"y":49},"is_angle":5.3195082887996845},
     {"is_angle":5.332580139314147,"position":{"x":-9,"y":11}},
     {"is_angle":5.343379896753788,"position":{"x":-5,"y":6}},
+    {"position":{"x":-17,"y":20},"is_angle":5.358695215319088,"black_pixel_count":2227},
     {"is_angle":5.3734688173469305,"position":{"x":-13,"y":15}},
+    {"position":{"x":-8,"y":9},"is_angle":5.387368189682807},
     {"is_angle":5.4061490145048055,"position":{"x":-10,"y":11}},
     {"is_angle":5.427849253695435,"position":{"x":-15,"y":16}},
+    {"position":{"x":-28,"y":29},"is_angle":5.448205487907859},
+    {"position":{"x":-52,"y":53},"is_angle":5.458464621043972,"black_pixel_count":2223},
     {"is_angle":5.473694624103833,"position":{"x":-1,"y":1}},
+    {"position":{"x":-53,"y":52},"is_angle":5.486606241500167,"black_pixel_count":2216},
+    {"position":{"x":-29,"y":28},"is_angle":5.500058917103939},
     {"is_angle":5.521701545735128,"position":{"x":-16,"y":15}},
     {"is_angle":5.541404752773951,"position":{"x":-11,"y":10}},
     {"is_angle":5.5547549735301045,"position":{"x":-120,"y":107}},
@@ -1822,6 +1884,7 @@ export namespace CompassReader {
     {"is_angle":5.637811841265882,"position":{"x":-360,"y":283}},
     {"is_angle":5.643605515580019,"position":{"x":-9,"y":7}},
     {"is_angle":5.643605515580019,"position":{"x":-40,"y":31}},
+    {"position":{"x":-21,"y":16},"is_angle":5.65574578356688,"black_pixel_count":2219},
     {"is_angle":5.663282881209373,"position":{"x":-4,"y":3}},
     {"is_angle":5.6775305799761,"position":{"x":-15,"y":11}},
     {"is_angle":5.68205263716849,"position":{"x":-180,"y":131}},
@@ -1870,10 +1933,12 @@ export namespace CompassReader {
     {"is_angle":5.823619383429449,"position":{"x":-180,"y":97}},
     {"is_angle":5.8291618026793515,"position":{"x":-360,"y":193}},
     {"is_angle":5.8291618026793515,"position":{"x":-15,"y":8}},
+    {"position":{"x":-27,"y":14},"is_angle":5.842150250451666},
     {"is_angle":5.851376603580907,"position":{"x":-360,"y":181}},
     {"is_angle":5.85378584245305,"position":{"x":-2,"y":1}},
     {"is_angle":5.858223399782846,"position":{"x":-360,"y":179}},
     {"is_angle":5.858223399782846,"position":{"x":-180,"y":89}},
+    {"position":{"x":-25,"y":12},"is_angle":5.872905477089702},
     {"is_angle":5.879260614767319,"position":{"x":-15,"y":7}},
     {"is_angle":5.891160907978975,"position":{"x":-11,"y":5}},
     {"is_angle":5.891762787353623,"position":{"x":-360,"y":163}},
@@ -1881,6 +1946,7 @@ export namespace CompassReader {
     {"is_angle":5.895008098927281,"position":{"x":-360,"y":161}},
     {"is_angle":5.8981341266816,"position":{"x":-9,"y":4}},
     {"is_angle":5.901207591026106,"position":{"x":-120,"y":53}},
+    {"position":{"x":-7,"y":3},"is_angle":5.910301261987144},
     {"is_angle":5.918526068532106,"position":{"x":-12,"y":5}},
     {"is_angle":5.93304700088735,"position":{"x":-5,"y":2}},
     {"is_angle":5.944911911798005,"position":{"x":-13,"y":5}},
@@ -2328,7 +2394,7 @@ export namespace CompassReader {
     }
 
     private closed() {
-      this.committed_state.set({angle: null, raw_angle: null, state: "closed"})
+      this.committed_state.set({angle: null, raw_angle: null, black_pixel_count: null, state: "closed"})
 
       if (this.refind_after_close) this.matched_ui = null
     }
@@ -2421,7 +2487,7 @@ export namespace CompassReader {
             color: Alt1Color.green,
           })
 
-        this.committed_state.set({angle: null, raw_angle: null, state: "solved"})
+        this.committed_state.set({angle: null, raw_angle: null, black_pixel_count: null, state: "solved"})
       } else if (state.type == "success") {
         if (state_active_time > 0.1) {
           this.last_stationary_tick = tick
@@ -2434,6 +2500,7 @@ export namespace CompassReader {
             this.committed_state.set({
               angle: state.angle,
               raw_angle: state.raw_angle,
+              black_pixel_count: state.pixel_count,
               state: "normal",
             })
           }
@@ -2441,6 +2508,7 @@ export namespace CompassReader {
           this.committed_state.set({
             angle: null,
             raw_angle: null,
+            black_pixel_count: null,
             state: "spinning"
           })
         }
@@ -2488,6 +2556,7 @@ export namespace CompassReader {
     export type State = {
       raw_angle: number,
       angle: Angles.UncertainAngle,
+      black_pixel_count: number,
       state: "normal" | "solved" | "spinning" | "closed"
     }
   }
