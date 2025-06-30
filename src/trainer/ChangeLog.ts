@@ -391,6 +391,11 @@ export namespace Changelog {
 
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
+        builder.release(52, "New Clue Spots", new Date(Date.parse("2025-06-30")))
+          .list(l => l
+            .item("Updated the position of the gnome coach.")
+          )
+
 
         builder.release(51, "Editor Improvements and Bug Fixes", new Date(Date.parse("2025-06-22")))
           .list(l => l

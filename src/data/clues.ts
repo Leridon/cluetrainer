@@ -5141,7 +5141,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Gnome Coach",
-        "spots": [{"range": {"origin": {"x": 2381, "y": 3479, "level": 0}, "size": {"x": 29, "y": 19}}, "description": "roaming around the gnomeball field"}]
+        "spots": [{"range": {"origin":{"x":2405,"y":3497,"level":0},"size":{"x":3,"y":3}}, "description": "north-east of the gnomeball field"}]
       },
       "anagram": ["C On Game Hoc"]
     }, {
