@@ -400,6 +400,7 @@ export namespace Changelog {
             .item("Updated hotkeys and location names for the Dragon Trinket teleport interface.")
             .item("Updated hotkeys and location names for the Metallic Dragon Trinket teleport interface.")
             .item("Added the new Lost Grove Scan.")
+            .item("Updated elite compass spots.")
           )
 
 
