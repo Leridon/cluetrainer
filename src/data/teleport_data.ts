@@ -1010,7 +1010,7 @@ const raw_data: Transportation.TeleportGroup[] = [
     id: "fairyring",
     name: "Fairy Ring", // assume favorite for menu times
     img: {url: "fairyring.png"},
-    animation_ticks: 7,
+    animation_ticks: 5,
     spots: [
       {
         id: "AIP",
