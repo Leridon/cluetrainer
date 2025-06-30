@@ -4601,12 +4601,12 @@ name: "Entrana",
     animation_ticks: 1,
     img: {url: "portmasterkags.webp", height: 32},
     spots: [
-      {id: "sunkenpyramid", name: "Sunken Pyramid", target: {"origin": {"x": 3032, "y": 2672, "level": 0}}, code: "1", menu_ticks: 1},
-      {id: "crondispyramid", name: "Crondis' Pyramid", target: {"origin": {"x": 3273, "y": 2644, "level": 0}}, code: "2", menu_ticks: 1},
-      {id: "jaldraocht", name: "Jaldraocht", target: {"origin": {"x": 3254, "y": 2882, "level": 0}}, code: "3", menu_ticks: 1},
-      {id: "nardah", name: "Nardah", target: {"origin": {"x": 3373, "y": 2931, "level": 0}}, code: "4,1", menu_ticks: 2},
-      {id: "pollnivneach", name: "Pollnivneach", target: {"origin": {"x": 3377, "y": 2962, "level": 0}}, code: "4,2", menu_ticks: 2},
-      {id: "dominiontower", name: "Dominion Tower", target: {"origin": {"x": 3373, "y": 3080, "level": 0}}, code: "4,3", menu_ticks: 2},
+      {id: "sunkenpyramid", name: "Sunken Pyramid", target: {"origin": {"x": 3032, "y": 2672, "level": 0}}, code: "2", menu_ticks: 1},
+      {id: "crondispyramid", name: "Crondis' Pyramid", target: {"origin": {"x": 3273, "y": 2644, "level": 0}}, code: "3", menu_ticks: 1},
+      {id: "jaldraocht", name: "Jaldraocht", target: {"origin": {"x": 3254, "y": 2882, "level": 0}}, code: "4", menu_ticks: 1},
+      {id: "nardah", name: "Nardah", target: {"origin": {"x": 3373, "y": 2931, "level": 0}}, code: "5", menu_ticks: 2},
+      {id: "pollnivneach", name: "Pollnivneach", target: {"origin": {"x": 3377, "y": 2962, "level": 0}}, code: "6", menu_ticks: 2},
+      {id: "dominiontower", name: "Dominion Tower", target: {"origin": {"x": 3373, "y": 3080, "level": 0}}, code: "7", menu_ticks: 2},
     ],
     access: [
       {

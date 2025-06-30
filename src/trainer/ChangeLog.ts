@@ -395,6 +395,7 @@ export namespace Changelog {
           .list(l => l
             .item("Updated the position of the gnome coach.")
             .item("Updated the position of Captain Ninto.")
+            .item("Updated hotkeys for the Portmaster Kags travel interface.")
           )
 
 
