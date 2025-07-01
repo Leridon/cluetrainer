@@ -997,6 +997,11 @@ video {
     grid-row: auto;
 }
 
+.nisl-property-content > .ctr-lightbutton {
+    margin: 0;
+    font-size: 0.9em;
+}
+
 .nisl-property-content > * {
     width: 100%;
 }
