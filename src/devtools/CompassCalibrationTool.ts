@@ -29,6 +29,8 @@ import {storage} from "../lib/util/storage";
 import KeyValueStore from "../lib/util/KeyValueStore";
 import {ConfirmationModal} from "../trainer/ui/widgets/modals/ConfirmationModal";
 import {HostedMapData} from "../lib/runescape/movement";
+import {GameMapControl} from "../lib/gamemap/GameMapControl";
+import TransportLayer from "../trainer/ui/map/TransportLayer";
 import getExpectedAngle = Compasses.getExpectedAngle;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
@@ -48,6 +50,12 @@ type Fraction = Vector2
 namespace Fraction {
   export function value(rationale: Vector2): number {
     return rationale.y / rationale.x
+  }
+
+  export function reduce(self: Fraction): Fraction {
+    const gcd = greatestCommonDivisor(Math.abs(self.x), Math.abs(self.y))
+
+    return Vector2.scale(1 / gcd, self)
   }
 }
 
@@ -82,6 +90,8 @@ class SelectionStatusWidget extends Widget {
 
     layout.header("Selection Status")
 
+    layout.named("Offset", `${Vector2.toString(status.offset.offset)}, (${Angles.toString(CalibrationTool.shouldAngle(status.offset.offset), 3)})`)
+
     if (status.offset.auto) {
       const delta = Angles.angleDifference(status.offset.auto.desired_angle, status.offset.auto.actual_angle)
 
@@ -89,11 +99,9 @@ class SelectionStatusWidget extends Widget {
 
       const is_far_away = delta > (range_size / 10)
 
-      const text = `${Angles.radiansToDegrees(delta).toFixed(3)}° (${((delta / range_size) * 100).toFixed(2)}% off in ${Angles.toString(Angles.AngleRange.size(status.offset.auto.desired_range), 2)} range)`
+      const text = `Δ=${Angles.radiansToDegrees(delta).toFixed(3)}° (${((delta / range_size) * 100).toFixed(2)}% of ${Angles.toString(Angles.AngleRange.size(status.offset.auto.desired_range), 2)} range)`
 
-      layout.named("Auto", `Target: ${Angles.radiansToDegrees(status.offset.auto.desired_angle).toFixed(2)}°, Got: ${Angles.radiansToDegrees(status.offset.auto.actual_angle).toFixed(3)}°`)
-
-      layout.named("Auto Delta", is_far_away ? C.span(text).css("color", "red") : text)
+      layout.named("Auto", is_far_away ? C.span(text).css("color", "red") : text)
     } else {
       if (this.tool.spot_queue.size() > 0) {
         layout.named("Auto", new LightButton("Resume")
@@ -102,16 +110,17 @@ class SelectionStatusWidget extends Widget {
       } else {
         layout.named("Auto", "")
       }
-
-
-      layout.named("Auto Delta", "")
     }
 
-    layout
-      .named("Selected", Vector2.toString(status.offset.offset))
-      .named("Should", Angles.radiansToDegrees(CalibrationTool.shouldAngle(status.offset.offset)).toFixed(3) + "°")
-      .named("Sampled", status.existing_sample ? Angles.toString(status.existing_sample.is_angle) : italic("None"))
-      .named("Fingerprint", status.existing_sample ? CompassReader.ReadFingerprint.toString(status.existing_sample.fingerprint) : "-")
+    layout.header("Existing Sample", "left", 1)
+
+    if (status.existing_sample) {
+      layout
+        .named("Sampled", Angles.toString(status.existing_sample.is_angle))
+        .named("Fingerprint", CompassReader.ReadFingerprint.toString(status.existing_sample.fingerprint))
+    } else {
+      layout.row(italic("None"))
+    }
 
     layout.row(
       new ButtonRow().buttons(
@@ -207,6 +216,10 @@ class SampleSetBuilder {
     if (this.state.samples.length != old_length) this.changed()
   }
 
+  private sort() {
+    this.state.samples = lodash.sortBy(this.state.samples, s => CalibrationTool.shouldAngle(s.position))
+  }
+
   record(offset: Vector2, state: CompassReader.Service.State.Normal) {
     const index_of_existing_sample = this.state.samples.findIndex(s => Vector2.eq(s.position, offset))
 
@@ -216,13 +229,33 @@ class SampleSetBuilder {
 
     this.state.samples.push(new_sample)
 
+    this.sort()
+
     this.changed()
 
     this.record_event.trigger(new_sample)
   }
 
   find(offset: Vector2): RawSample {
-    return this.state.samples.find(s => Vector2.eq(s.position, offset))
+    if (!offset) return null
+
+    const should = CalibrationTool.shouldAngle(offset)
+
+    let low = 0;
+    let high = this.state.samples.length
+
+    while (true) {
+      if (low == high) return null
+
+      const median = ~~((low + high) / 2)
+
+      const median_should = CalibrationTool.shouldAngle(this.state.samples[median].position)
+
+      if (should == median_should) return this.state.samples[median]
+      else if (should > median_should) low = median + 1
+      else high = median
+    }
+    //return this.state.samples.find(s => Vector2.eq(s.position, offset))
   }
 
   size(): number {
@@ -377,14 +410,12 @@ class CalibrationQueue {
 
       if (index == 0) {
         backlog.push(offsetSelection)
-
-        this.queue.splice(this.queue.indexOf(offsetSelection), 1)
       } else {
         offsetSelection.highlighted_offset = Vector2.scale(index, offsetSelection.offset)
       }
     }
 
-    console.log(`Backlogged ${backlog.length}`)
+    backlog.forEach(offsetSelection => this.queue.splice(this.queue.indexOf(offsetSelection), 1))
 
     const sorted_by_should_angle = lodash.sortBy(this.queue, s => CalibrationTool.shouldAngle(s.offset))
 
@@ -403,7 +434,7 @@ class CalibrationQueue {
 
         sorted_by_should_angle.splice(greedy_best.i, 1)
 
-        position = greedy_best.s.offset
+        position = OffsetSelection.activeOffset(greedy_best.s)
 
         salesmen_result.push(greedy_best.s)
       }
@@ -492,6 +523,7 @@ export class CompassCalibrationTool extends NisModal {
 
   current_calibrated_angle_view: Widget
   function_status_view: Widget
+  hovered_tile_reverse_sample_view: Widget
   selection_status_view: Widget
   calibration_queue_view: CalibrationQueueView
 
@@ -556,6 +588,7 @@ export class CompassCalibrationTool extends NisModal {
       const result = this.sample_set.function.sample(reader_state.result.raw_angle)
 
       props.named("Raw Read", Angles.toString(reader_state.result.raw_angle, 3))
+      props.named("Fingerprint", CompassReader.ReadFingerprint.toString(reader_state.result.fingerprint))
       props.named("Calibrated", Angles.AngleRange.toString(result.result.range, 3) + " (" + Angles.UncertainAngle.toString(result.result, 3) + ")")
       props.named("Sample", result.details.type)
 
@@ -606,9 +639,7 @@ export class CompassCalibrationTool extends NisModal {
     props.named("Samples", this.sample_set.size().toString())
     props.named("Unique Angles", this.sample_set.function.samples.length.toString())
     props.named("Average Epsilon", Angles.toString(this.sample_set.function.averageEpsilon(), 3))
-    props.named("Min Epsilon (Min)", `${Angles.toString(Math.min(...minEpsilons), 3)}`)
-    props.named("Min Epsilon (Avg)", `${Angles.toString(avg(...minEpsilons), 3)}`)
-    props.named("Min Epsilon (Max)", `${Angles.toString(Math.max(...minEpsilons), 3)}`)
+    props.named("Min Epsilon (Min)", `${Angles.toString(Math.min(...minEpsilons), 3)} - ${Angles.toString(Math.max(...minEpsilons), 3)} (${Angles.toString(avg(...minEpsilons), 3)} avg.)`)
     props.named("Implausibilities", bad_samples.length.toString())
 
     if (bad_samples.length > 0) {
@@ -759,10 +790,12 @@ export class CompassCalibrationTool extends NisModal {
     this.function_status_view = hbox().appendTo(menu_column)
     this.current_calibrated_angle_view = hbox().appendTo(menu_column)
     this.calibration_queue_view = new CalibrationQueueView(this.spot_queue).appendTo(menu_column)
+    this.hovered_tile_reverse_sample_view = hbox().appendTo(menu_column)
 
     this.updateFunctionStatusView()
     this.updateSelectionView()
     this.updateCurrentPlausibility()
+    this.updateHoveredTileView(null)
 
     map.map.addGameLayer(this.layer = new CalibrationTool.Layer(this))
 
@@ -773,6 +806,30 @@ export class CompassCalibrationTool extends NisModal {
     if (!this.selection_status_view) return
 
     new SelectionStatusWidget(this.selection.value(), this).appendTo(this.selection_status_view.empty())
+  }
+
+  updateHoveredTileView(tile: TileCoordinates) {
+    const offset = tile ? Fraction.reduce(Vector2.sub(tile, this.reference.value())) : null
+
+    const existing_sample = offset ? this.sample_set.find(offset) : null
+
+    const layout = new Properties()
+
+    layout.header("Hovered Tile")
+
+    layout.named("Offset", offset ? `${Vector2.toString(offset)}, (${Angles.toString(CalibrationTool.shouldAngle(offset), 3)})` : "-")
+
+    layout.header("Existing Sample", "left", 1)
+
+    if (existing_sample) {
+      layout
+        .named("Sampled", Angles.toString(existing_sample.is_angle))
+        .named("Fingerprint", CompassReader.ReadFingerprint.toString(existing_sample.fingerprint))
+    } else {
+      layout.row(italic("None"))
+    }
+
+    this.hovered_tile_reverse_sample_view?.empty().append(layout)
   }
 }
 
@@ -836,6 +893,9 @@ export namespace CalibrationTool {
 
     constructor(public tool: CompassCalibrationTool) {
       super()
+
+      this.add(new HoverTileDisplay(tool))
+      this.add(new TransportLayer(true, {teleport_policy: "target_only", transport_policy: "none"}))
 
       this.markers = gielinor_compass.spots.map(spot =>
         new KnownMarker(spot).addTo(this)
@@ -968,6 +1028,24 @@ export namespace CalibrationTool {
         )
         .setStyle({color: "#ffff00", weight: 3})
         .addTo(this.queue_view)
+    }
+  }
+
+  export class HoverTileDisplay extends GameMapControl {
+
+    constructor(private tool: CompassCalibrationTool) {
+      super({
+        type: "gapless",
+        position: "top-left"
+      }, c().css("padding", "2px"));
+    }
+
+    eventHover(event: GameMapMouseEvent) {
+      event.onPre(() => {
+        this.content.text(`${TileCoordinates.toString(event.tile())}: ${Vector2.toString(Vector2.sub(event.tile(), this.tool.reference.value()))}`)
+        this.tool.updateHoveredTileView(event.tile())
+      })
+
     }
   }
 }
