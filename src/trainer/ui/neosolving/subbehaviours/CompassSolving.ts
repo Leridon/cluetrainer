@@ -367,13 +367,13 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
         } else {
           if (was_state && this.settings.auto_commit_on_angle_change && is_state.state == "normal") {
             if (was_state.state == "spinning" ||
-              UncertainAngle.meanDifference(is_state.angle, was_state.angle) > CompassSolving.ANGLE_CHANGE_COMMIT_THRESHOLD) {
+              was_state.state == "normal" && UncertainAngle.meanDifference(is_state.result.angle, was_state.result.angle) > CompassSolving.ANGLE_CHANGE_COMMIT_THRESHOLD) {
               this.commit()
             }
           }
 
           if (is_state) {
-            this.entries.forEach(e => e.widget.setPreviewAngle(is_state?.state == "normal" ? is_state.angle : null))
+            this.entries.forEach(e => e.widget.setPreviewAngle(is_state?.state == "normal" ? is_state.result.angle : null))
           }
         }
       }, h => h.bindTo(this.lifetime_manager))
@@ -496,7 +496,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       entry.widget.render()
       entry.widget.setPreviewAngle(
         state.state == "normal"
-          ? state.angle
+          ? state.result.angle
           : undefined
       )
 
@@ -530,9 +530,9 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       } else {
         const state = this.process.state()
 
-        if (state.state != "normal" && DEBUG_ANGLE_OVERRIDE == null) return
+        if (state.state != "normal") return
 
-        return state.angle
+        return state.result.angle
       }
     })()
 
@@ -732,7 +732,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     const state = this.process.state()
 
     entry.widget = new CompassEntryWidget(entry)
-      .setPreviewAngle((!state || state.state != "normal") ? null : state.angle)
+      .setPreviewAngle((!state || state.state != "normal") ? null : state.result.angle)
       .appendTo(this.entry_container)
 
 
@@ -789,7 +789,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     entry.widget.render()
 
     const state = this.process.state()
-    entry.widget.setPreviewAngle(state?.state != "normal" ? null : state.angle)
+    entry.widget.setPreviewAngle(state?.state != "normal" ? null : state.result.angle)
 
     if (hadInfo) {
       if (entry.is_solution_of_previous_clue && is_compass_solution) {

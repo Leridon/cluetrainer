@@ -195,5 +195,9 @@ export namespace Angles {
     export function contains(self: UncertainAngle, angle: number): boolean {
       return angleDifference(angle, self.median) < (self.epsilon + EQUALITY_EPSILON)
     }
+
+    export function equals(a: UncertainAngle, b: UncertainAngle): boolean {
+      return Angles.isSameRadians(a.median, b.median) && Angles.isSameRadians(a.epsilon, b.epsilon)
+    }
   }
 }

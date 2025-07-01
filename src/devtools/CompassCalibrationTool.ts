@@ -111,7 +111,7 @@ class SelectionStatusWidget extends Widget {
       .named("Selected", Vector2.toString(status.offset.offset))
       .named("Should", Angles.radiansToDegrees(CalibrationTool.shouldAngle(status.offset.offset)).toFixed(3) + "°")
       .named("Sampled", status.existing_sample ? Angles.toString(status.existing_sample.is_angle) : italic("None"))
-      .named("Pixel Count", status.existing_sample?.black_pixel_count ? status.existing_sample?.black_pixel_count.toString() : italic("-"))
+      .named("Fingerprint", status.existing_sample ? CompassReader.ReadFingerprint.toString(status.existing_sample.fingerprint) : "-")
 
     layout.row(
       new ButtonRow().buttons(
@@ -207,12 +207,12 @@ class SampleSetBuilder {
     if (this.state.samples.length != old_length) this.changed()
   }
 
-  record(offset: Vector2, state: CompassReader.Service.State) {
+  record(offset: Vector2, state: CompassReader.Service.State.Normal) {
     const index_of_existing_sample = this.state.samples.findIndex(s => Vector2.eq(s.position, offset))
 
     if (index_of_existing_sample >= 0) this.state.samples.splice(index_of_existing_sample, 1)
 
-    const new_sample: RawSample = {position: offset, is_angle: state.raw_angle, black_pixel_count: state.black_pixel_count}
+    const new_sample: RawSample = {position: offset, is_angle: state.result.raw_angle, fingerprint: state.result.fingerprint}
 
     this.state.samples.push(new_sample)
 
@@ -490,9 +490,9 @@ export class CompassCalibrationTool extends NisModal {
 
   handler: Alt1MainHotkeyEvent.Handler
 
-
   current_calibrated_angle_view: Widget
   function_status_view: Widget
+  selection_status_view: Widget
   calibration_queue_view: CalibrationQueueView
 
   constructor() {
@@ -518,6 +518,7 @@ export class CompassCalibrationTool extends NisModal {
     this.sample_set.set_changed.on(() => {
       this.updateCurrentPlausibility()
       this.updateFunctionStatusView()
+      this.setOffset(this.selection.value().offset)
     })
 
     this.sample_set.set_loaded.on(() => {
@@ -535,6 +536,11 @@ export class CompassCalibrationTool extends NisModal {
     this.reference.subscribe(ref => {
       this.reference_memory.set(ref)
     })
+
+    this.selection.subscribe(v => {
+      this.updateSelectionView()
+      this.updateCurrentPlausibility()
+    })
   }
 
   private updateCurrentPlausibility() {
@@ -547,9 +553,9 @@ export class CompassCalibrationTool extends NisModal {
     if (reader_state?.state != "normal") {
       props.row("No angle detected")
     } else {
-      const result = this.sample_set.function.sample(reader_state.raw_angle)
+      const result = this.sample_set.function.sample(reader_state.result.raw_angle)
 
-      props.named("Raw Read", Angles.toString(reader_state.raw_angle, 3))
+      props.named("Raw Read", Angles.toString(reader_state.result.raw_angle, 3))
       props.named("Calibrated", Angles.AngleRange.toString(result.result.range, 3) + " (" + Angles.UncertainAngle.toString(result.result, 3) + ")")
       props.named("Sample", result.details.type)
 
@@ -566,7 +572,7 @@ export class CompassCalibrationTool extends NisModal {
           break;
       }
 
-      const current_sample = this.sample_set.function.sample(reader_state.raw_angle)
+      const current_sample = this.sample_set.function.sample(reader_state.result.raw_angle)
 
       const isPlausible = Angles.UncertainAngle.contains(current_sample.result, CalibrationTool.shouldAngle(this.selection.value().offset.offset))
 
@@ -631,13 +637,13 @@ export class CompassCalibrationTool extends NisModal {
   commit(skip_plausibility_check: boolean = false) {
     const state = this.reader.state()
 
-    if (!state) {
+    if (!state || state.state != "normal") {
       notification("No angle  detected", "error").show()
       return
     }
 
     if (!skip_plausibility_check) {
-      const current_sample = this.sample_set.function.sample(state.raw_angle)
+      const current_sample = this.sample_set.function.sample(state.result.raw_angle)
 
       const is_plausible = Angles.UncertainAngle.contains(current_sample.result, CalibrationTool.shouldAngle(this.selection.value().offset.offset))
 
@@ -749,22 +755,24 @@ export class CompassCalibrationTool extends NisModal {
       }),
     ).appendTo(menu_column)
 
-    const status_widget = c().appendTo(menu_column)
+    this.selection_status_view = c().appendTo(menu_column)
     this.function_status_view = hbox().appendTo(menu_column)
     this.current_calibrated_angle_view = hbox().appendTo(menu_column)
     this.calibration_queue_view = new CalibrationQueueView(this.spot_queue).appendTo(menu_column)
 
     this.updateFunctionStatusView()
-
-    this.selection.subscribe(v => {
-      new SelectionStatusWidget(v, this).appendTo(status_widget.empty())
-
-      this.updateCurrentPlausibility()
-    }, true)
+    this.updateSelectionView()
+    this.updateCurrentPlausibility()
 
     map.map.addGameLayer(this.layer = new CalibrationTool.Layer(this))
 
     this.layer.centerOnReference()
+  }
+
+  updateSelectionView() {
+    if (!this.selection_status_view) return
+
+    new SelectionStatusWidget(this.selection.value(), this).appendTo(this.selection_status_view.empty())
   }
 }
 
@@ -780,7 +788,7 @@ export namespace CalibrationTool {
   }
 
   export type RawSample = {
-    position: Vector2, is_angle: number, black_pixel_count?: number
+    position: Vector2, is_angle: number, fingerprint?: CompassReader.ReadFingerprint
   }
 
   import gielinor_compass = clue_data.gielinor_compass;
