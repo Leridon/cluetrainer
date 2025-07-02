@@ -1,15 +1,13 @@
 import {TileCoordinates, TileRectangle} from "../../../../lib/runescape/coordinates";
-import {time} from "../../../../lib/gamemap/GameLayer";
 import {LocUtil} from "./util/LocUtil";
 import {Rectangle, Transform, Vector2} from "../../../../lib/math";
 import {TileTransform} from "../../../../lib/runescape/coordinates/TileTransform";
-import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
-import {CursorType} from "../../../../lib/runescape/CursorType";
-import * as lodash from "lodash";
 import {util} from "../../../../lib/util/util";
 
 export namespace CacheTypes {
 
+  import profileAsync = util.profileAsync;
+  import profile = util.profile;
   export type objects = {
     models?: ({
       type: number,
@@ -426,9 +424,9 @@ export namespace CacheTypes {
     }
 
     static async fromURL(url: string): Promise<LocDataFile> {
-      const data = await time("Fetching data", async () => await (await fetch(url)).json())
+      const data = await profileAsync(async () => await (await fetch(url)).json(), "Fetching data")
 
-      return await time("Preparing data", () => new LocDataFile(data))
+      return profile(() => new LocDataFile(data), "Preparing data")
     }
 
 
