@@ -7,7 +7,7 @@ import {TileArea} from "./coordinates/TileArea";
 
 type TileMovementData = number
 
-namespace TileMovementData {
+export namespace TileMovementData {
   export function free(tile: TileMovementData, d: direction): boolean {
     const t = [1, 2, 4, 8, 16, 32, 64, 128]
 
@@ -69,7 +69,7 @@ export class HostedMapData extends AbstractMapData {
   chunks: (file | Promise<file>)[][]
 
   private async fetch(file_x: number, file_z: number, floor: number): Promise<Uint8Array> {
-    let a = await fetch(`map/collision/collision-${file_x}-${file_z}-${floor}.bin`)
+    const a = await fetch(`map/collision/collision-${file_x}-${file_z}-${floor}.bin`)
 
     return new Uint8Array(pako.inflate(await a.arrayBuffer()))
   }
@@ -87,25 +87,23 @@ export class HostedMapData extends AbstractMapData {
   }
 
   async getTile(coordinate: TileCoordinates): Promise<TileMovementData> {
-    let floor = coordinate.level || 0
+    const file_x = ~~(coordinate.x / (this.meta.chunk_size * this.meta.chunks_per_file))
+    const file_y = ~~(coordinate.y / (this.meta.chunk_size * this.meta.chunks_per_file))
+    const file_i = file_y * this.meta.chunks_per_file + file_x
 
-    let file_x = Math.floor(coordinate.x / (this.meta.chunk_size * this.meta.chunks_per_file))
-    let file_y = Math.floor(coordinate.y / (this.meta.chunk_size * this.meta.chunks_per_file))
-    let file_i = file_y * this.meta.chunks_per_file + file_x
+    if (!this.chunks[coordinate.level][file_i]) {
+      let promise = this.fetch(file_x, file_y, coordinate.level)
 
-    if (!this.chunks[floor][file_i]) {
-      let promise = this.fetch(file_x, file_y, floor)
+      this.chunks[coordinate.level][file_i] = promise
 
-      this.chunks[floor][file_i] = promise
-
-      promise.then((a) => this.chunks[floor][file_i] = a)
+      promise.then((a) => this.chunks[coordinate.level][file_i] = a)
     }
 
-    let tile_x = coordinate.x % (this.meta.chunk_size * this.meta.chunks_per_file)
-    let tile_y = coordinate.y % (this.meta.chunk_size * this.meta.chunks_per_file)
-    let tile_i = tile_y * (this.meta.chunk_size * this.meta.chunks_per_file) + tile_x
+    const tile_x = coordinate.x % (this.meta.chunk_size * this.meta.chunks_per_file)
+    const tile_y = coordinate.y % (this.meta.chunk_size * this.meta.chunks_per_file)
+    const tile_i = tile_y * (this.meta.chunk_size * this.meta.chunks_per_file) + tile_x
 
-    return (await this.chunks[floor][file_i])[tile_i]
+    return (await this.chunks[coordinate.level][file_i])[tile_i]
   }
 }
 
@@ -293,11 +291,6 @@ export function move(pos: TileCoordinates, off: Vector2) {
   }
 }
 
-export async function canMove(data: MapData, pos: TileCoordinates, d: direction): Promise<boolean> {
-  // Data is preprocessed so for every tile there are 8 bit signalling in which directions the player can move.
-  return TileMovementData.free(await data.getTile(pos), d)
-}
-
 export namespace PathFinder {
   export type state = {
     data: MapData,
@@ -351,10 +344,10 @@ export namespace PathFinder {
     }
 
     while (state.queue.length < step_limit && state.next < state.queue.length) {
-      let e = state.queue[state.next++]
+      const e = state.queue[state.next++]
 
       for (let i of movement_direction_priority) {
-        if (await canMove(state.data, e.coords, i)) push(move(e.coords, direction.toVector(i)), e)
+        if (await state.data.canMove(e.coords, i)) push(move(e.coords, direction.toVector(i)), e)
       }
 
       if (target(e.coords)) {
@@ -392,9 +385,9 @@ export namespace PathFinder {
     // Check if the target tile can be reached from any of its direct neighbours
     // If not, do not even search for a path.
     if (TileArea.isSingleTile(target)) {
-      let target_i = ChunkedData.split(target.origin)
+      const target_i = ChunkedData.split(target.origin)
 
-      let reachable_at_all = direction.cardinals.some((d) => canMove(state.data, move(target.origin, direction.toVector(d)), direction.invert(d)))
+      const reachable_at_all = state.data.isAccessible(target.origin)
 
       if (!reachable_at_all) {
         state.tiles.set(target_i, {parent: null, unreachable: true})
@@ -403,7 +396,7 @@ export namespace PathFinder {
       }
     }
 
-    let target_area = TileArea.activate(target)
+    const target_area = TileArea.activate(target)
 
     // Check for existing routes to any tile inside the area
     {
@@ -549,7 +542,7 @@ export namespace MovementAbilities {
 
       if (direction.isCardinal(actor.movement)) {
 
-        if (movement_in_range.y && movement_in_range.x && await canMove(HostedMapData.get(), actor.position, actor.movement)) {
+        if (movement_in_range.y && movement_in_range.x && await HostedMapData.get().canMove(actor.position, actor.movement)) {
           await handle({
             position: TileCoordinates.move(actor.position, direction.toVector(actor.movement)),
             movement: actor.movement
@@ -558,14 +551,14 @@ export namespace MovementAbilities {
       } else {
         let [north_south, east_west] = direction.split(actor.movement)
 
-        if (movement_in_range.x && movement_in_range.y && await canMove(HostedMapData.get(), actor.position, actor.movement)) {
+        if (movement_in_range.x && movement_in_range.y && await HostedMapData.get().canMove( actor.position, actor.movement)) {
           await handle({
             position: TileCoordinates.move(actor.position, direction.toVector(actor.movement)),
             movement: actor.movement
           })
 
           // Create vertical mirror actor
-          if (await canMove(HostedMapData.get(), actor.position, north_south)) {
+          if (await HostedMapData.get().canMove(actor.position, north_south)) {
             await handle({
               position: TileCoordinates.move(actor.position, direction.toVector(north_south)),
               movement: north_south
@@ -573,27 +566,27 @@ export namespace MovementAbilities {
           }
 
           // Create horizontal mirror actor
-          if (await canMove(HostedMapData.get(), actor.position, east_west)) {
+          if (await HostedMapData.get().canMove(actor.position, east_west)) {
             await handle({
               position: TileCoordinates.move(actor.position, direction.toVector(east_west)),
               movement: east_west
             })
           }
-        } else if (movement_in_range.x && await canMove(HostedMapData.get(), actor.position, east_west)) {
+        } else if (movement_in_range.x && await HostedMapData.get().canMove(actor.position, east_west)) {
           await handle({
             position: TileCoordinates.move(actor.position, direction.toVector(east_west)),
             movement: actor.movement
           })
 
           // Create vertical mirror actor
-          if (await canMove(HostedMapData.get(), actor.position, north_south)) {
+          if (await HostedMapData.get().canMove(actor.position, north_south)) {
             await handle({
               position: TileCoordinates.move(actor.position, direction.toVector(north_south)),
               movement: north_south
             })
           }
 
-        } else if (movement_in_range.y && await canMove(HostedMapData.get(), actor.position, north_south)) {
+        } else if (movement_in_range.y && await HostedMapData.get().canMove(actor.position, north_south)) {
           await handle({
             position: TileCoordinates.move(actor.position, direction.toVector(north_south)),
             movement: actor.movement
@@ -660,9 +653,9 @@ export namespace MovementAbilities {
       let next: TileCoordinates = null
 
       for (let choice of choices) {
-        let candidate = move(position, choice.delta)
+        const candidate = move(position, choice.delta)
 
-        if (Rectangle.containsTile(bound, candidate) && (await canMove(data, position, choice.dir))) {
+        if (Rectangle.containsTile(bound, candidate) && (await data.canMove(position, choice.dir))) {
           next = candidate
           break
         }
