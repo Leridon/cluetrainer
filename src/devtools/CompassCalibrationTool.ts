@@ -13,7 +13,7 @@ import ExportStringModal from "../trainer/ui/widgets/modals/ExportStringModal";
 import {MapEntity} from "../lib/gamemap/MapEntity";
 import {TileCoordinates, TileRectangle} from "../lib/runescape/coordinates";
 import * as leaflet from "leaflet";
-import {GameLayer, time, timeSync} from "../lib/gamemap/GameLayer";
+import {GameLayer, time} from "../lib/gamemap/GameLayer";
 import {GameMapMouseEvent} from "../lib/gamemap/MapEvents";
 import {tilePolygon} from "../trainer/ui/polygon_helpers";
 import {CompassReader} from "../trainer/ui/neosolving/cluereader/CompassReader";
@@ -28,9 +28,11 @@ import {Angles} from "../lib/math/Angles";
 import {storage} from "../lib/util/storage";
 import KeyValueStore from "../lib/util/KeyValueStore";
 import {ConfirmationModal} from "../trainer/ui/widgets/modals/ConfirmationModal";
-import {HostedMapData, PathFinder} from "../lib/runescape/movement";
+import {direction, HostedMapData, PathFinder, TileMovementData} from "../lib/runescape/movement";
 import {GameMapControl} from "../lib/gamemap/GameMapControl";
 import TransportLayer from "../trainer/ui/map/TransportLayer";
+import {TileArea} from "../lib/runescape/coordinates/TileArea";
+import {ChunkedData} from "../lib/util/ChunkedData";
 import getExpectedAngle = Compasses.getExpectedAngle;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
@@ -46,7 +48,6 @@ import avg = util.avg;
 import gielinor_compass = clue_data.gielinor_compass;
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
-import {TileArea} from "../lib/runescape/coordinates/TileArea";
 
 type Fraction = Vector2
 
@@ -274,7 +275,7 @@ async function indexOfMinBy<T>(data: T[], f: (_: T) => Promise<number>) {
   let index = -1
   let min_Value = Number.MAX_VALUE
 
-  for (let i = data.length - 1; i >= 0; i--) {
+  for (let i = 0; i < data.length; i++) {
     const v = data[i]
     const x = await f(v)
 
@@ -283,6 +284,7 @@ async function indexOfMinBy<T>(data: T[], f: (_: T) => Promise<number>) {
       min_Value = x
     }
   }
+
   return index
 }
 
@@ -292,19 +294,31 @@ class TravellingSalesmanProblem<T> {
   distance_map: number[][]
 
   constructor(private spots: T[], private distance: TravellingSalesmanProblem.StatefulDistanceFunction<T>) {
-    this.distance_map = spots.map(a => spots.map(b => 0))
+    this.distance_map = spots.map(a => spots.map(b => undefined))
 
-    this._init = async_init(async () => {
+    this.distance_map.forEach((row, i) => row[i] = 0)
+
+    this._init = async_init(async () => await time("Computing distances", async () => {
       for (let i = 0; i < this.distance_map.length; i++) {
         for (let j = i + 1; j < this.distance_map.length; j++) {
-          const d = await time(`${i} - ${j}`, () => distance.distance(spots[i], spots[j]))
+          const d = await distance.distance(spots[i], spots[j])
 
           this.distance_map[i][j] = d
           this.distance_map[j][i] = d
         }
       }
-    })
+    }))
+  }
 
+  private async getDistance(a: number, b: number): Promise<number> {
+    if (this.distance_map[a][b] == undefined) {
+      const d = await time(`${a} - ${b}`, () => this.distance.distance(this.spots[a], this.spots[b]))
+
+      this.distance_map[a][b] = d
+      this.distance_map[b][a] = d
+    }
+
+    return this.distance_map[a][b]
   }
 
   private async _greedy(start_position: T): Promise<number[]> {
@@ -323,7 +337,11 @@ class TravellingSalesmanProblem<T> {
     let position = availability[best_start]
 
     while (availability.length > 0) {
-      const greedy_best_i = await indexOfMinBy(availability, async i => this.distance_map[position][i])
+      let greedy_best_i = await indexOfMinBy(availability, async i => {
+        return this.getDistance(position, i)
+      })
+
+      if (greedy_best_i < 0) greedy_best_i = 0
 
       path.push(position = availability[greedy_best_i])
 
@@ -334,11 +352,13 @@ class TravellingSalesmanProblem<T> {
   }
 
   async greedy(start_position: T): Promise<T[]> {
-    return (await this._greedy(start_position)).map(i => this.spots[i])
+    return await time(`Salesman ${this.spots.length}`, async () => (await this._greedy(start_position)).map(i => this.spots[i]))
   }
 }
 
 namespace TravellingSalesmanProblem {
+
+
   export abstract class StatefulDistanceFunction<T> {
     abstract distance(a: T, b: T): number | Promise<number>
 
@@ -373,6 +393,104 @@ namespace TravellingSalesmanProblem {
       const path = await PathFinder.find(state.state, TileArea.init(b))
 
       return path ? PathFinder.pathLength(path) : Number.MAX_VALUE
+    }
+
+  }
+
+  export class AStarDistanceFunction extends StatefulDistanceFunction<TileCoordinates> {
+    constructor(private map_date: HostedMapData, private max_distance: number) {super();}
+
+    async distance(a: TileCoordinates, b: TileCoordinates): Promise<number> {
+      type Node = {
+        position: ChunkedData.coordinates,
+        distance: number,
+        estimated_total: number
+      }
+
+      class Queue {
+        private row_index = 0
+        private element_index = 0
+        public size = 0
+
+        private readonly data: Node[][]
+
+        constructor(public max: number) {
+          this.data = new Array(max + 1).fill(null).map(() => [])
+        }
+
+        push(node: Node) {
+          if (node.estimated_total <= this.max) {
+            this.data[node.estimated_total].push(node)
+            this.size++
+          }
+        }
+
+        pop(): Node {
+          while (this.element_index >= this.data[this.row_index].length && this.row_index < this.max) {
+            this.row_index++
+            this.element_index = 0
+          }
+
+          if (this.row_index > this.max) return null
+
+          this.size--
+
+          return this.data[this.row_index][this.element_index++]
+        }
+      }
+
+      function estimate(c: TileCoordinates): number {
+        return Vector2.max_axis(Vector2.sub(b, c))
+      }
+
+      const queue = new Queue(this.max_distance)
+
+      const grid = new ChunkedData<number>()
+
+      function push(node: Node) {
+        if (node.estimated_total <= queue.max && grid.get(node.position) == undefined) {
+          grid.set(node.position, node.distance)
+
+          queue.push(node)
+        }
+      }
+
+      push({
+        position: ChunkedData.split(a),
+        distance: 0,
+        estimated_total: estimate(a)
+      })
+
+      let n = 0
+
+      while (true) {
+        const next = queue.pop()
+
+        if (!next) break
+
+        n++
+
+        const tile_data = await this.map_date.getTile(next.position.coords)
+
+        for (let dir of direction.all) {
+
+          if (TileMovementData.free(tile_data, dir)) {
+            const target_tile = TileCoordinates.move(next.position.coords, direction.toVector(dir))
+
+            if (TileCoordinates.equals(b, target_tile)) return next.distance + 1
+
+            const successor: Node = {
+              position: ChunkedData.split(target_tile),
+              distance: next.distance + 1,
+              estimated_total: next.distance + 1 + estimate(target_tile)
+            }
+
+            push(successor)
+          }
+        }
+      }
+
+      return Number.MAX_VALUE
     }
 
   }
@@ -532,8 +650,9 @@ class CalibrationQueue {
 
 
     const salesmen_result: OffsetSelection[] = await new TravellingSalesmanProblem(sorted_by_should_angle,
-      new TravellingSalesmanProblem.PathFindingDistanceFunction()
-        .comap(s => TileCoordinates.move(this.parent.reference.value(), s.offset))
+      //new TravellingSalesmanProblem.PathFindingDistanceFunction()
+      new TravellingSalesmanProblem.AStarDistanceFunction(HostedMapData.get(), 64)
+        .comap(s => TileCoordinates.move(this.parent.reference.value(), OffsetSelection.activeOffset(s)))
     ).greedy(start_offset ? {offset: start_offset} : null)
 
     this.queue = salesmen_result
@@ -547,7 +666,7 @@ class CalibrationQueue {
     this.queue = f.function()
 
     if (this.queue.length > 0) {
-      await this.sortQueue(this.parent.reference.value())
+      await this.sortQueue(TileCoordinates.move(this.parent.reference.value(), this.parent.selection.value()?.offset?.offset ?? {x: 0, y: 0}))
 
       this.filler = f
 
@@ -907,8 +1026,7 @@ export class CompassCalibrationTool extends NisModal {
   updateHoveredTileView(tile: TileCoordinates) {
     const offset = tile ? Fraction.reduce(Vector2.sub(tile, this.reference.value())) : null
 
-
-    const existing_sample = offset ? timeSync("Find", () => this.sample_set.find(offset)) : null
+    const existing_sample = offset ? this.sample_set.find(offset) : null
 
     const layout = new Properties()
 
