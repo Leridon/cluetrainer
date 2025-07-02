@@ -104,7 +104,7 @@ class SelectionStatusWidget extends Widget {
 
       const is_far_away = delta > (range_size / 10)
 
-      const text = `Δ=${Angles.radiansToDegrees(delta).toFixed(3)}° (${((delta / range_size) * 100).toFixed(2)}% of ${Angles.toString(Angles.AngleRange.size(status.offset.auto.desired_range), 2)} range)`
+      const text = `Δ=${Angles.radiansToDegrees(delta).toFixed(3)}° (${((delta / range_size) * 100).toFixed(2)}% of ${Angles.toString(Angles.AngleRange.size(status.offset.auto.desired_range), 3)} range)`
 
       layout.named("Auto", is_far_away ? C.span(text).css("color", "red") : text)
     } else {
