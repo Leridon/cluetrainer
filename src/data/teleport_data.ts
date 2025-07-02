@@ -3090,7 +3090,7 @@ name: "Entrana",
       {
         id: "eternalmagicpiscatoris",
         target: {"origin": {"x": 2329, "y": 3585, "level": 0}},
-        code: "1",
+        code: "1,1",
         name: "Eternal Magic Trees - Piscatoris",
         menu_ticks: 1,
       },

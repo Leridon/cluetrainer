@@ -392,6 +392,12 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+        builder.wip(54, "TBD")
+          .list(l => l
+            .item("Fixed hotkey for the Eternal Magic Trees - Piscatoris teleport on the Nature's sentinel outfit.")
+          )
+
+
         builder.release(53, "Hot Fix: Lost Grove Scan Range", new Date(Date.parse("2025-06-30")))
           .list(l => l
             .item("Fixed the scan range for the Lost Grove scan.")
