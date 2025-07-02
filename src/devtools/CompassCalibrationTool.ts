@@ -13,7 +13,7 @@ import ExportStringModal from "../trainer/ui/widgets/modals/ExportStringModal";
 import {MapEntity} from "../lib/gamemap/MapEntity";
 import {TileCoordinates, TileRectangle} from "../lib/runescape/coordinates";
 import * as leaflet from "leaflet";
-import {GameLayer} from "../lib/gamemap/GameLayer";
+import {GameLayer, time, timeSync} from "../lib/gamemap/GameLayer";
 import {GameMapMouseEvent} from "../lib/gamemap/MapEvents";
 import {tilePolygon} from "../trainer/ui/polygon_helpers";
 import {CompassReader} from "../trainer/ui/neosolving/cluereader/CompassReader";
@@ -28,7 +28,7 @@ import {Angles} from "../lib/math/Angles";
 import {storage} from "../lib/util/storage";
 import KeyValueStore from "../lib/util/KeyValueStore";
 import {ConfirmationModal} from "../trainer/ui/widgets/modals/ConfirmationModal";
-import {HostedMapData} from "../lib/runescape/movement";
+import {HostedMapData, PathFinder} from "../lib/runescape/movement";
 import {GameMapControl} from "../lib/gamemap/GameMapControl";
 import TransportLayer from "../trainer/ui/map/TransportLayer";
 import getExpectedAngle = Compasses.getExpectedAngle;
@@ -44,6 +44,9 @@ import AngleRange = Angles.AngleRange;
 import angleDifference = Angles.angleDifference;
 import avg = util.avg;
 import gielinor_compass = clue_data.gielinor_compass;
+import AsyncInitialization = util.AsyncInitialization;
+import async_init = util.async_init;
+import {TileArea} from "../lib/runescape/coordinates/TileArea";
 
 type Fraction = Vector2
 
@@ -267,6 +270,114 @@ class SampleSetBuilder {
   }
 }
 
+async function indexOfMinBy<T>(data: T[], f: (_: T) => Promise<number>) {
+  let index = -1
+  let min_Value = Number.MAX_VALUE
+
+  for (let i = data.length - 1; i >= 0; i--) {
+    const v = data[i]
+    const x = await f(v)
+
+    if (x < min_Value) {
+      index = i
+      min_Value = x
+    }
+  }
+  return index
+}
+
+class TravellingSalesmanProblem<T> {
+  private _init: AsyncInitialization
+
+  distance_map: number[][]
+
+  constructor(private spots: T[], private distance: TravellingSalesmanProblem.StatefulDistanceFunction<T>) {
+    this.distance_map = spots.map(a => spots.map(b => 0))
+
+    this._init = async_init(async () => {
+      for (let i = 0; i < this.distance_map.length; i++) {
+        for (let j = i + 1; j < this.distance_map.length; j++) {
+          const d = await time(`${i} - ${j}`, () => distance.distance(spots[i], spots[j]))
+
+          this.distance_map[i][j] = d
+          this.distance_map[j][i] = d
+        }
+      }
+    })
+
+  }
+
+  private async _greedy(start_position: T): Promise<number[]> {
+    if (this.spots.length == 0) return []
+
+    await this._init.wait()
+
+    const path: number[] = []
+
+    const availability = this.spots.map((_, i) => i)
+
+    const best_start = start_position ? await indexOfMinBy(availability, async i => await this.distance.distance(start_position, this.spots[i])) : 0
+
+    availability.splice(best_start, 1)
+
+    let position = availability[best_start]
+
+    while (availability.length > 0) {
+      const greedy_best_i = await indexOfMinBy(availability, async i => this.distance_map[position][i])
+
+      path.push(position = availability[greedy_best_i])
+
+      availability.splice(greedy_best_i, 1)
+    }
+
+    return path
+  }
+
+  async greedy(start_position: T): Promise<T[]> {
+    return (await this._greedy(start_position)).map(i => this.spots[i])
+  }
+}
+
+namespace TravellingSalesmanProblem {
+  export abstract class StatefulDistanceFunction<T> {
+    abstract distance(a: T, b: T): number | Promise<number>
+
+    comap<U>(f: (_: U) => T): StatefulDistanceFunction<U> {
+      const self = this
+
+      return new class extends StatefulDistanceFunction<U> {
+        distance(a: U, b: U): number | Promise<number> {
+          return self.distance(f(a), f(b))
+        }
+
+      }
+    }
+  }
+
+  export class PathFindingDistanceFunction extends StatefulDistanceFunction<TileCoordinates> {
+    private states: {
+      origin: TileCoordinates,
+      state: PathFinder.state
+    }[] = []
+
+    async distance(a: TileCoordinates, b: TileCoordinates): Promise<number> {
+      let state = this.states.find(s => TileCoordinates.eq(a, s.origin))
+
+      if (!state) {
+        this.states.push(state = {
+          origin: a,
+          state: PathFinder.init_djikstra(a)
+        })
+      }
+
+      const path = await PathFinder.find(state.state, TileArea.init(b))
+
+      return path ? PathFinder.pathLength(path) : Number.MAX_VALUE
+    }
+
+  }
+}
+
 /**
  * Uses the farey sequence to find the rationale number (as a Vector2 where y is the numerator and x is the denominator) closest to the given number,
  * where the denominator is not bigger than the given limit.
@@ -419,26 +530,11 @@ class CalibrationQueue {
 
     const sorted_by_should_angle = lodash.sortBy(this.queue, s => CalibrationTool.shouldAngle(s.offset))
 
-    let salesmen_result: OffsetSelection[] = []
 
-    if (sorted_by_should_angle.length > 0) {
-
-      let position = start_offset ?? OffsetSelection.activeOffset(sorted_by_should_angle[0])
-
-      while (sorted_by_should_angle.length > 0) {
-        const greedy_best =
-          lodash.minBy(sorted_by_should_angle.map((s, i) => ({s, i})),
-            ({s, i}) => {
-              return Vector2.max_axis(Vector2.sub(position, OffsetSelection.activeOffset(s))) + i * 3
-            })
-
-        sorted_by_should_angle.splice(greedy_best.i, 1)
-
-        position = OffsetSelection.activeOffset(greedy_best.s)
-
-        salesmen_result.push(greedy_best.s)
-      }
-    }
+    const salesmen_result: OffsetSelection[] = await new TravellingSalesmanProblem(sorted_by_should_angle,
+      new TravellingSalesmanProblem.PathFindingDistanceFunction()
+        .comap(s => TileCoordinates.move(this.parent.reference.value(), s.offset))
+    ).greedy(start_offset ? {offset: start_offset} : null)
 
     this.queue = salesmen_result
 
@@ -811,7 +907,8 @@ export class CompassCalibrationTool extends NisModal {
   updateHoveredTileView(tile: TileCoordinates) {
     const offset = tile ? Fraction.reduce(Vector2.sub(tile, this.reference.value())) : null
 
-    const existing_sample = offset ? this.sample_set.find(offset) : null
+
+    const existing_sample = offset ? timeSync("Find", () => this.sample_set.find(offset)) : null
 
     const layout = new Properties()
 
@@ -1024,7 +1121,7 @@ export namespace CalibrationTool {
       )
 
       leaflet.polyline(
-          queue.slice(0, Math.min(queue.length, 10)).map(s => Vector2.toLatLong(Vector2.add(this.tool.reference.value(), OffsetSelection.activeOffset(s))))
+          queue.map(s => Vector2.toLatLong(Vector2.add(this.tool.reference.value(), OffsetSelection.activeOffset(s))))
         )
         .setStyle({color: "#ffff00", weight: 3})
         .addTo(this.queue_view)
