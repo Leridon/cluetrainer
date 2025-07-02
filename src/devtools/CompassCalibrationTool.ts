@@ -13,7 +13,7 @@ import ExportStringModal from "../trainer/ui/widgets/modals/ExportStringModal";
 import {MapEntity} from "../lib/gamemap/MapEntity";
 import {TileCoordinates, TileRectangle} from "../lib/runescape/coordinates";
 import * as leaflet from "leaflet";
-import {GameLayer, time} from "../lib/gamemap/GameLayer";
+import {GameLayer} from "../lib/gamemap/GameLayer";
 import {GameMapMouseEvent} from "../lib/gamemap/MapEvents";
 import {tilePolygon} from "../trainer/ui/polygon_helpers";
 import {CompassReader} from "../trainer/ui/neosolving/cluereader/CompassReader";
@@ -48,6 +48,7 @@ import avg = util.avg;
 import gielinor_compass = clue_data.gielinor_compass;
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
+import profileAsync = util.profileAsync;
 
 type Fraction = Vector2
 
@@ -77,7 +78,7 @@ type OffsetSelection = {
 
 namespace OffsetSelection {
   export function activeOffset(self: OffsetSelection): Vector2 {
-    return self.highlighted_offset ?? self.offset
+    return self?.highlighted_offset ?? self?.offset
   }
 }
 
@@ -272,7 +273,7 @@ class SampleSetBuilder {
 }
 
 async function indexOfMinBy<T>(data: T[], f: (_: T) => Promise<number>) {
-  let index = -1
+  let index: number = undefined
   let min_Value = Number.MAX_VALUE
 
   for (let i = 0; i < data.length; i++) {
@@ -298,7 +299,7 @@ class TravellingSalesmanProblem<T> {
 
     this.distance_map.forEach((row, i) => row[i] = 0)
 
-    this._init = async_init(async () => await time("Computing distances", async () => {
+    this._init = async_init(async () => await profileAsync(async () => {
       for (let i = 0; i < this.distance_map.length; i++) {
         for (let j = i + 1; j < this.distance_map.length; j++) {
           const d = await distance.distance(spots[i], spots[j])
@@ -307,12 +308,14 @@ class TravellingSalesmanProblem<T> {
           this.distance_map[j][i] = d
         }
       }
-    }))
+    }, "Computing distances"))
   }
 
   private async getDistance(a: number, b: number): Promise<number> {
+    if (!this.distance_map[a]) debugger
+
     if (this.distance_map[a][b] == undefined) {
-      const d = await time(`${a} - ${b}`, () => this.distance.distance(this.spots[a], this.spots[b]))
+      const d = await profileAsync(async () => this.distance.distance(this.spots[a], this.spots[b]), `${a} - ${b}`)
 
       this.distance_map[a][b] = d
       this.distance_map[b][a] = d
@@ -330,18 +333,16 @@ class TravellingSalesmanProblem<T> {
 
     const availability = this.spots.map((_, i) => i)
 
-    const best_start = start_position ? await indexOfMinBy(availability, async i => await this.distance.distance(start_position, this.spots[i])) : 0
+    const best_start = start_position ? await indexOfMinBy(availability, async i => await this.distance.distance(start_position, this.spots[i])) ?? 0 : 0
 
     availability.splice(best_start, 1)
 
     let position = availability[best_start]
 
     while (availability.length > 0) {
-      let greedy_best_i = await indexOfMinBy(availability, async i => {
+      const greedy_best_i = await indexOfMinBy(availability, async i => {
         return this.getDistance(position, i)
-      })
-
-      if (greedy_best_i < 0) greedy_best_i = 0
+      }) ?? 0
 
       path.push(position = availability[greedy_best_i])
 
@@ -352,7 +353,7 @@ class TravellingSalesmanProblem<T> {
   }
 
   async greedy(start_position: T): Promise<T[]> {
-    return await time(`Salesman ${this.spots.length}`, async () => (await this._greedy(start_position)).map(i => this.spots[i]))
+    return await profileAsync(async () => (await this._greedy(start_position)).map(i => this.spots[i]), `Salesman ${this.spots.length}`)
   }
 }
 
@@ -666,7 +667,7 @@ class CalibrationQueue {
     this.queue = f.function()
 
     if (this.queue.length > 0) {
-      await this.sortQueue(TileCoordinates.move(this.parent.reference.value(), this.parent.selection.value()?.offset?.offset ?? {x: 0, y: 0}))
+      await this.sortQueue(this.parent.reference.value(), OffsetSelection.activeOffset(this.parent.selection.value().offset))
 
       this.filler = f
 

@@ -346,8 +346,10 @@ export namespace PathFinder {
     while (state.queue.length < step_limit && state.next < state.queue.length) {
       const e = state.queue[state.next++]
 
+      const e_movement_data: TileMovementData = await state.data.getTile(e.coords)
+
       for (let i of movement_direction_priority) {
-        if (await state.data.canMove(e.coords, i)) push(move(e.coords, direction.toVector(i)), e)
+        if (TileMovementData.free(e_movement_data, i)) push(move(e.coords, direction.toVector(i)), e)
       }
 
       if (target(e.coords)) {
@@ -512,7 +514,7 @@ export namespace MovementAbilities {
       }>
   }*/
 
-  export async function possibility_raster(origin: TileCoordinates, surge_escape_for: direction[] = []): Promise<{
+  export async function possibility_raster(data: MapData, origin: TileCoordinates, surge_escape_for: direction[] = []): Promise<{
     targets: {
       direction: direction,
       surge: TileCoordinates,
@@ -532,9 +534,11 @@ export namespace MovementAbilities {
     async function handle(actor: actor): Promise<void> {
       raster.set(actor.position, true)
 
-      let delta = Vector2.abs(Vector2.sub(actor.position, origin))
+      const actor_tile_movement_data = await data.getTile(actor.position)
 
-      let movement_in_range = {
+      const delta = Vector2.abs(Vector2.sub(actor.position, origin))
+
+      const movement_in_range = {
         x: delta.x < range,
         y: delta.y < range
       }
@@ -542,7 +546,7 @@ export namespace MovementAbilities {
 
       if (direction.isCardinal(actor.movement)) {
 
-        if (movement_in_range.y && movement_in_range.x && await HostedMapData.get().canMove(actor.position, actor.movement)) {
+        if (movement_in_range.y && movement_in_range.x && TileMovementData.free(actor_tile_movement_data, actor.movement)) {
           await handle({
             position: TileCoordinates.move(actor.position, direction.toVector(actor.movement)),
             movement: actor.movement
@@ -551,14 +555,14 @@ export namespace MovementAbilities {
       } else {
         let [north_south, east_west] = direction.split(actor.movement)
 
-        if (movement_in_range.x && movement_in_range.y && await HostedMapData.get().canMove( actor.position, actor.movement)) {
+        if (movement_in_range.x && movement_in_range.y && TileMovementData.free(actor_tile_movement_data, actor.movement)) {
           await handle({
             position: TileCoordinates.move(actor.position, direction.toVector(actor.movement)),
             movement: actor.movement
           })
 
           // Create vertical mirror actor
-          if (await HostedMapData.get().canMove(actor.position, north_south)) {
+          if (TileMovementData.free(actor_tile_movement_data, north_south)) {
             await handle({
               position: TileCoordinates.move(actor.position, direction.toVector(north_south)),
               movement: north_south
@@ -566,27 +570,27 @@ export namespace MovementAbilities {
           }
 
           // Create horizontal mirror actor
-          if (await HostedMapData.get().canMove(actor.position, east_west)) {
+          if (TileMovementData.free(actor_tile_movement_data, east_west)) {
             await handle({
               position: TileCoordinates.move(actor.position, direction.toVector(east_west)),
               movement: east_west
             })
           }
-        } else if (movement_in_range.x && await HostedMapData.get().canMove(actor.position, east_west)) {
+        } else if (movement_in_range.x && TileMovementData.free(actor_tile_movement_data, east_west)) {
           await handle({
             position: TileCoordinates.move(actor.position, direction.toVector(east_west)),
             movement: actor.movement
           })
 
           // Create vertical mirror actor
-          if (await HostedMapData.get().canMove(actor.position, north_south)) {
+          if (TileMovementData.free(actor_tile_movement_data, north_south)) {
             await handle({
               position: TileCoordinates.move(actor.position, direction.toVector(north_south)),
               movement: north_south
             })
           }
 
-        } else if (movement_in_range.y && await HostedMapData.get().canMove(actor.position, north_south)) {
+        } else if (movement_in_range.y && TileMovementData.free(actor_tile_movement_data, north_south)) {
           await handle({
             position: TileCoordinates.move(actor.position, direction.toVector(north_south)),
             movement: actor.movement
@@ -650,12 +654,14 @@ export namespace MovementAbilities {
         direction: direction.fromVector(Vector2.sub(target, position))
       }
 
+      const movement_data = await data.getTile(position)
+
       let next: TileCoordinates = null
 
       for (let choice of choices) {
         const candidate = move(position, choice.delta)
 
-        if (Rectangle.containsTile(bound, candidate) && (await data.canMove(position, choice.dir))) {
+        if (Rectangle.containsTile(bound, candidate) && TileMovementData.free(movement_data, choice.dir)) {
           next = candidate
           break
         }

@@ -23,10 +23,12 @@ import {BigNisButton} from "../ui/widgets/BigNisButton";
 import {Menu} from "../ui/widgets/ContextMenu";
 import * as assert from "assert";
 import {Notification} from "../ui/NotificationBar";
+import {util} from "../../lib/util/util";
 import movement_ability = MovementAbilities.movement_ability;
 import hboxl = C.hboxl;
 import hgrid = C.hgrid;
 import notification = Notification.notification;
+import profileAsync = util.profileAsync;
 
 class SpiderwebTool {
   private layer = observe<GameLayer>(null)
@@ -37,19 +39,6 @@ class SpiderwebTool {
 
   constructor(private editor: PathEditor, private layout: Properties) {
     layout.header("Pathfinding Lite", "center", 1)
-
-    /*
-    layout.row(new LightButton("Path Target").setEnabled(!!editor.options.target)
-      .onClick(() => this.do(editor.options.target))
-    )
-    layout.row(new LightButton("Custom Target")
-      .onClick(() => {
-        this.editor.interaction_guard.set(new DrawTileAreaInteraction([], ["commit", "reset"]).onCommit(area => {
-          this.do([TileArea.activate(TileArea.fromTiles(area))])
-        }))
-
-      })
-    )*/
 
     layout.row(
       hgrid(
