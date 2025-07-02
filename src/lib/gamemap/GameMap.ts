@@ -158,7 +158,7 @@ export class GameMap extends leaflet.Map {
       })
 
       this.on("mousemove", (e) => {
-        let t = this.eventCoordinate(e)
+        let t =TileCoordinates.snap(this.eventCoordinate(e))
 
         if (this.internal_root_layer.activeEntity()?.isStillHovered() == false) {
           this.internal_root_layer.requestEntityActivation(null)
