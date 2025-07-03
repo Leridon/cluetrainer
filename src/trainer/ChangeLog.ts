@@ -395,10 +395,11 @@ export namespace Changelog {
         builder.wip(54, "TBD")
           .list(l => l
             .item("Fixed hotkey for the Eternal Magic Trees - Piscatoris teleport on the Nature's sentinel outfit.")
+            .item("Fixed hotkey for the Harmony Island teleport on the Big Book o´ Piracy.")
           )
 
 
-        builder.release(53, "Hot Fix: Lost Grove Scan Range", new Date(Date.parse("2025-06-30")))
+        builder.release(53, "Hotfix: Lost Grove Scan Range", new Date(Date.parse("2025-06-30")))
           .list(l => l
             .item("Fixed the scan range for the Lost Grove scan.")
             .item("Added the Solak boss portal destination to the teleport dataset.")
