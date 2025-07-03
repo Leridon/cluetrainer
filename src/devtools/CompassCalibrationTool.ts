@@ -323,13 +323,12 @@ class TravellingSalesmanProblem<T> {
 
     await this._init.wait()
 
-    const path: number[] = []
-
     const availability = this.spots.map((_, i) => i)
 
     const best_start = start_position ? await indexOfMinBy(availability, async i => await this.distance.distance(start_position, this.spots[i])) ?? 0 : 0
 
     let position = availability[best_start]
+    const path: number[] = [position]
 
     availability.splice(best_start, 1)
 
@@ -613,8 +612,6 @@ class CalibrationQueue {
   }
 
   private async sortQueue(reference: TileCoordinates, start_offset: Vector2 = undefined) {
-    console.log("Sorting")
-
     const rect: TileRectangle = {"topleft": {"x": 1950, "y": 4152}, "botright": {"x": 3898, "y": 2594}, "level": 0}
 
     const backlog: OffsetSelection[] = []
@@ -646,15 +643,11 @@ class CalibrationQueue {
 
     const reference_digspot = this.parent.reference.value()
 
-    console.log(`Before salesman: ${sorted_by_should_angle.length}`)
-
     this.queue = await new TravellingSalesmanProblem(sorted_by_should_angle,
       //new TravellingSalesmanProblem.PathFindingDistanceFunction()
       new TravellingSalesmanProblem.AStarDistanceFunction(HostedMapData.get(), 64)
         .comap(s => TileCoordinates.move(reference_digspot, OffsetSelection.activeOffset(s)))
     ).greedy(start_offset ? {offset: start_offset} : null)
-
-    console.log(`After salesman: ${this.queue.length}`)
 
     this.queue.push(...lodash.sortBy(backlog, s => CalibrationTool.shouldAngle(s.offset)))
   }
@@ -663,8 +656,6 @@ class CalibrationQueue {
     this.clear()
 
     this.queue = f.function()
-
-    console.log("Filling")
 
     if (this.queue.length > 0) {
       await this.sortQueue(this.parent.reference.value(), OffsetSelection.activeOffset(this.parent.selection.value().offset))
@@ -675,8 +666,6 @@ class CalibrationQueue {
 
       this.changed.trigger(this)
     }
-
-    console.log("End Filling")
   }
 }
 
@@ -945,8 +934,6 @@ export class CompassCalibrationTool extends NisModal {
 
             return Angles.AngleRange.split(range, sections)
           })
-
-          console.log(taken_ranges)
 
           return taken_ranges.map(range => findAutoSpotForAngleRange(range))
         }
