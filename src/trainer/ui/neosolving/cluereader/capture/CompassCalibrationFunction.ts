@@ -133,6 +133,24 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
     }
   }
 
+  reverse_sample(should_angle: number) {
+    for (let i = 0; i < this.samples.length; i++) {
+      const sample = this.samples[i]
+      const next = index(this.samples, i + 1)
+
+      if (Angles.AngleRange.contains(this.samples[i].is_angle, should_angle)) {
+        return Angles.UncertainAngle.fromAngle(sample.read_angle)
+      } else if (Angles.AngleRange.contains(Angles.AngleRange.between(this.samples[i].is_angle, next.is_angle), should_angle)) {
+        return Angles.UncertainAngle.fromRange(Angles.AngleRange.construct(
+          sample.read_angle,
+          next.read_angle
+        ))
+      }
+    }
+
+    return undefined
+  }
+
   apply(read_angle: number): Angles.UncertainAngle {
     return this.sample(read_angle).result;
   }
