@@ -12,7 +12,7 @@ export namespace Angles {
     return (degrees / 360) * (2 * Math.PI)
   }
 
-  export const EQUALITY_EPSILON = degreesToRadians(0.001)
+  export const EQUALITY_EPSILON = degreesToRadians(0.035)
 
   export function isSameRadians(a: number, b: number) {
     return Math.abs(a - b) < EQUALITY_EPSILON

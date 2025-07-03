@@ -33,6 +33,9 @@ import {GameMapControl} from "../lib/gamemap/GameMapControl";
 import TransportLayer from "../trainer/ui/map/TransportLayer";
 import {TileArea} from "../lib/runescape/coordinates/TileArea";
 import {ChunkedData} from "../lib/util/ChunkedData";
+import {SelectTileInteraction} from "../lib/gamemap/interaction/SelectTileInteraction";
+import {InteractionGuard} from "../lib/gamemap/interaction/InteractionLayer";
+import InteractionTopControl from "../trainer/ui/map/InteractionTopControl";
 import getExpectedAngle = Compasses.getExpectedAngle;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
@@ -108,6 +111,10 @@ class SelectionStatusWidget extends Widget {
       const text = `Δ=${Angles.radiansToDegrees(delta).toFixed(3)}° (${((delta / range_size) * 100).toFixed(2)}% of ${Angles.toString(Angles.AngleRange.size(status.offset.auto.desired_range), 3)} range)`
 
       layout.named("Auto", is_far_away ? C.span(text).css("color", "red") : text)
+
+      layout.row(new LightButton("Backlog").slim().onClick(() => {
+        this.tool.spot_queue.backlog(status.offset)
+      }))
     } else {
       if (this.tool.spot_queue.size() > 0) {
         layout.named("Auto", new LightButton("Resume")
@@ -118,11 +125,12 @@ class SelectionStatusWidget extends Widget {
       }
     }
 
+
     layout.header("Existing Sample", "left", 1)
 
     if (status.existing_sample) {
       layout
-        .named("Sampled", hgrid(Angles.toString(status.existing_sample.is_angle), new LightButton("Delete")
+        .named("Sampled", hgrid(Angles.toString(status.existing_sample.is_angle, 3), new LightButton("Delete")
           .slim()
           .setEnabled(!!status.existing_sample)
           .onClick(() => this.tool.delete())))
@@ -208,7 +216,9 @@ class SampleSetBuilder {
       const entry_index = this.state.samples.findIndex(s => Vector2.eq(s.position, position))
 
       if (entry_index >= 0) {
-        this.state.samples.splice(entry_index, 1)
+        const [e] = this.state.samples.splice(entry_index, 1)
+
+        this.record_event.trigger(e)
       }
     }
 
@@ -320,7 +330,7 @@ class TravellingSalesmanProblem<T> {
           this.distance_map[j][i] = d
         }
       }
-    }, "Computing distances"))
+    }, `Computing distances ${this.spots.length}`))
   }
 
   async wait<T>(f: (_: this) => T): Promise<T> {
@@ -378,7 +388,7 @@ class TravellingSalesmanProblem<T> {
 
     let n = 0
 
-    while (true) {
+    while (n < 100) {
       let best_swap: [number, number] = undefined
       let best_improvement = 0
 
@@ -602,7 +612,11 @@ namespace TravellingSalesmanProblem {
         estimated_total: estimate(a)
       })
 
-      while (true) {
+      let iterations = 1000
+
+      while (iterations > 0) {
+        iterations--
+
         const next = queue.pop()
 
         if (!next) break
@@ -690,6 +704,7 @@ function approximateFractionAsRationaleNumber(max_denominator: number,
 
 type QueueFillerfunction = {
   name: string,
+  repeatable?: boolean,
   function: () => OffsetSelection[]
 }
 
@@ -703,14 +718,13 @@ class CalibrationQueue {
     this.parent.sample_set.record_event.on(async sample => {
       const removed = this.remove(sample.position)
 
-      if (removed > 0) {
-        await this.sortQueue(this.parent.reference.value(), sample.position)
-      }
+      if (removed != undefined) {
+        const activated = this.dequeue(removed)
 
-      const activated = this.dequeue()
-
-      if (removed && !activated) {
-        this.fill(this.filler)
+        if (!activated) {
+          if (this.filler?.repeatable) this.fill(this.filler)
+          else this.filler = null
+        }
       }
     })
 
@@ -721,9 +735,21 @@ class CalibrationQueue {
     })
   }
 
-  dequeue(): boolean {
-    if (this.queue.length > 0) {
-      this.parent.setOffset(this.queue[0])
+  backlog(offset: OffsetSelection) {
+    const index = this.queue.indexOf(offset)
+
+    if (index >= 0) {
+      this.queue.push(...this.queue.splice(index, 1))
+
+      this.changed.trigger(this)
+
+      this.dequeue()
+    }
+  }
+
+  dequeue(index: number = 0): boolean {
+    if (index >= 0 && index < this.queue.length) {
+      this.parent.setOffset(this.queue[index])
       return true
     }
 
@@ -759,7 +785,7 @@ class CalibrationQueue {
   }
 
   private async sortQueue(reference: TileCoordinates, start_offset: Vector2 = undefined) {
-    if(this.queue.length == 0) return
+    if (this.queue.length == 0) return
 
     const rect: TileRectangle = {"topleft": {"x": 1950, "y": 4152}, "botright": {"x": 3898, "y": 2594}, "level": 0}
 
@@ -1004,14 +1030,37 @@ export class CompassCalibrationTool extends NisModal {
     props.named("Samples", this.sample_set.size().toString())
     props.named("Unique Angles", hgrid(this.sample_set.function.samples.length.toString(), new LightButton("Analyze").slim().onClick(() => {
 
+      this.layer.guard.set(
+        new SelectTileInteraction()
+          .add(new InteractionTopControl()
+            .setText("Select a tile to analyze.")
+          )
+          .onCommit(tile => {
+            const grouped = lodash.groupBy(gielinor_compass.spots, spot =>
+              this.sample_set.function.reverse_sample(Compasses.getExpectedAngle(tile, spot)).median
+            )
+
+            const discriminated_spots = Object.entries(grouped).filter(([angle, spots]) => {
+              return spots.length == 1
+            })
+
+            console.log(Object.fromEntries(Object.entries(grouped).filter(([key, value]) => value.length > 1).map(([key, value]) => [key, Angles.UncertainAngle.fromRange(Angles.AngleRange.fromAngles(...value.map(spot => Compasses.getExpectedAngle(tile, spot))))])))
+            console.log(`Discriminates ${discriminated_spots.length}/${gielinor_compass.spots.length} spots `)
+          })
+      )
     })))
     props.named("Average Epsilon", Angles.toString(this.sample_set.function.averageEpsilon(), 3))
     props.named("Min Epsilon (Min)", `${Angles.toString(Math.min(...minEpsilons), 3)} - ${Angles.toString(Math.max(...minEpsilons), 3)} (${Angles.toString(avg(...minEpsilons), 3)} avg.)`)
-    props.named("Implausibilities", hgrid(bad_samples.length.toString(), new LightButton("Delete All")
+    props.named("Implausibilities", hgrid(bad_samples.length.toString(), new LightButton("Queue All")
       .slim()
       .setEnabled(bad_samples.length > 0)
       .onClick(() => {
-        this.sample_set.delete(...bad_samples.flatMap(s => s.raw_samples).map(s => s.position))
+        this.spot_queue.fill({
+          name: "Implausibilities",
+          function: () => bad_samples.flatMap(s => s.raw_samples).map(s => ({
+            offset: s.position
+          }))
+        })
       })))
 
     props.named("Largest Gap", hgrid(Angles.toString(Angles.AngleRange.size(uncalibrated[0]), 3),
@@ -1053,14 +1102,23 @@ export class CompassCalibrationTool extends NisModal {
     }
   }
 
-  setOffset(offset: OffsetSelection) {
+  setOffset(offset: OffsetSelection, zoom: boolean = true) {
+    if (!offset.auto) {
+      const in_queue = this.spot_queue.queue.find(e => Vector2.eq(e.offset, offset.offset))
+
+      if (in_queue) {
+        in_queue.highlighted_offset = offset.highlighted_offset
+        offset = in_queue
+      }
+    }
+
     this.selection.set({
       existing_sample: this.sample_set.find(offset.offset),
       offset: offset,
     })
 
     if (this.layer) {
-      if (offset.auto) this.layer.getMap().fitView(TileRectangle.from(TileCoordinates.move(this.reference.value(), OffsetSelection.activeOffset(offset))), {
+      if (zoom) this.layer.getMap().fitView(TileRectangle.from(TileCoordinates.move(this.reference.value(), OffsetSelection.activeOffset(offset))), {
         maxZoom: this.layer.getMap().getZoom(),
         animate: true
       })
@@ -1071,6 +1129,7 @@ export class CompassCalibrationTool extends NisModal {
     this.spot_queue.fill(
       {
         name: "Largest Gap",
+        repeatable: true,
         function: () => {
           const candidates = this.sample_set.function.uncalibrated_ranges()
 
@@ -1253,11 +1312,14 @@ export namespace CalibrationTool {
   }
 
   export class Layer extends GameLayer {
+    guard: InteractionGuard
+
     markers: KnownMarker[]
 
     constructor(public tool: CompassCalibrationTool) {
       super()
 
+      this.guard = new InteractionGuard().setDefaultLayer(this)
       this.add(new HoverTileDisplay(tool))
       this.add(new TransportLayer(true, {teleport_policy: "target_only", transport_policy: "none"}))
 
@@ -1313,7 +1375,7 @@ export namespace CalibrationTool {
 
           const gcd = greatestCommonDivisor(Math.abs(off.x), Math.abs(off.y))
 
-          this.tool.setOffset({offset: Vector2.scale(1 / gcd, off)})
+          this.tool.setOffset({offset: Vector2.scale(1 / gcd, off), highlighted_offset: off}, false)
         }
       })
     }
@@ -1405,8 +1467,13 @@ export namespace CalibrationTool {
     }
 
     eventHover(event: GameMapMouseEvent) {
+      function getcamerapos(coord: TileCoordinates): string {
+        return `${coord.level},${~~(coord.x / 64)},${~~(coord.y / 64)},${coord.x % 64},${coord.y % 64}`
+      }
+
+
       event.onPre(() => {
-        this.content.text(`${TileCoordinates.toString(event.tile())}: ${Vector2.toString(Vector2.sub(event.tile(), this.tool.reference.value()))}`)
+        this.content.text(`${getcamerapos(event.tile())}: ${Vector2.toString(Vector2.sub(event.tile(), this.tool.reference.value()))}`)
         this.tool.updateHoveredTileView(event.tile())
       })
 
