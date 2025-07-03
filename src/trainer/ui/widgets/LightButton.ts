@@ -12,6 +12,12 @@ export default class LightButton extends Button {
     this.addClass("ctr-lightbutton").append(text)
   }
 
+  slim(): this {
+    this.addClass("ctr-lightbutton-slim")
+
+    return this
+  }
+
   setText(text: string): this {
     this.text(text)
     return this
