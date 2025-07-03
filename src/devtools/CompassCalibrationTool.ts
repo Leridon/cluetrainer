@@ -49,6 +49,7 @@ import gielinor_compass = clue_data.gielinor_compass;
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
 import profileAsync = util.profileAsync;
+import hgrid = C.hgrid;
 
 type Fraction = Vector2
 
@@ -121,21 +122,14 @@ class SelectionStatusWidget extends Widget {
 
     if (status.existing_sample) {
       layout
-        .named("Sampled", Angles.toString(status.existing_sample.is_angle))
+        .named("Sampled", hgrid(Angles.toString(status.existing_sample.is_angle), new LightButton("Delete")
+          .slim()
+          .setEnabled(!!status.existing_sample)
+          .onClick(() => this.tool.delete())))
         .named("Fingerprint", CompassReader.ReadFingerprint.toString(status.existing_sample.fingerprint))
     } else {
       layout.row(italic("None"))
     }
-
-    layout.row(
-      new ButtonRow().buttons(
-        new LightButton("Commit (Alt+1)")
-          .onClick(() => this.tool.commit()),
-        new LightButton("Delete")
-          .setEnabled(!!status.existing_sample)
-          .onClick(() => this.tool.delete())
-      )
-    )
   }
 }
 
@@ -335,9 +329,9 @@ class TravellingSalesmanProblem<T> {
 
     const best_start = start_position ? await indexOfMinBy(availability, async i => await this.distance.distance(start_position, this.spots[i])) ?? 0 : 0
 
-    availability.splice(best_start, 1)
-
     let position = availability[best_start]
+
+    availability.splice(best_start, 1)
 
     while (availability.length > 0) {
       const greedy_best_i = await indexOfMinBy(availability, async i => {
@@ -345,6 +339,8 @@ class TravellingSalesmanProblem<T> {
       }) ?? 0
 
       path.push(position = availability[greedy_best_i])
+
+      if (position == undefined) debugger
 
       availability.splice(greedy_best_i, 1)
     }
@@ -358,7 +354,6 @@ class TravellingSalesmanProblem<T> {
 }
 
 namespace TravellingSalesmanProblem {
-
 
   export abstract class StatefulDistanceFunction<T> {
     abstract distance(a: T, b: T): number | Promise<number>
@@ -402,6 +397,8 @@ namespace TravellingSalesmanProblem {
     constructor(private map_date: HostedMapData, private max_distance: number) {super();}
 
     async distance(a: TileCoordinates, b: TileCoordinates): Promise<number> {
+      if (TileCoordinates.eq(a, b)) return 0
+
       type Node = {
         position: ChunkedData.coordinates,
         distance: number,
@@ -462,14 +459,10 @@ namespace TravellingSalesmanProblem {
         estimated_total: estimate(a)
       })
 
-      let n = 0
-
       while (true) {
         const next = queue.pop()
 
         if (!next) break
-
-        n++
 
         const tile_data = await this.map_date.getTile(next.position.coords)
 
@@ -620,6 +613,8 @@ class CalibrationQueue {
   }
 
   private async sortQueue(reference: TileCoordinates, start_offset: Vector2 = undefined) {
+    console.log("Sorting")
+
     const rect: TileRectangle = {"topleft": {"x": 1950, "y": 4152}, "botright": {"x": 3898, "y": 2594}, "level": 0}
 
     const backlog: OffsetSelection[] = []
@@ -649,14 +644,17 @@ class CalibrationQueue {
 
     const sorted_by_should_angle = lodash.sortBy(this.queue, s => CalibrationTool.shouldAngle(s.offset))
 
+    const reference_digspot = this.parent.reference.value()
 
-    const salesmen_result: OffsetSelection[] = await new TravellingSalesmanProblem(sorted_by_should_angle,
+    console.log(`Before salesman: ${sorted_by_should_angle.length}`)
+
+    this.queue = await new TravellingSalesmanProblem(sorted_by_should_angle,
       //new TravellingSalesmanProblem.PathFindingDistanceFunction()
       new TravellingSalesmanProblem.AStarDistanceFunction(HostedMapData.get(), 64)
-        .comap(s => TileCoordinates.move(this.parent.reference.value(), OffsetSelection.activeOffset(s)))
+        .comap(s => TileCoordinates.move(reference_digspot, OffsetSelection.activeOffset(s)))
     ).greedy(start_offset ? {offset: start_offset} : null)
 
-    this.queue = salesmen_result
+    console.log(`After salesman: ${this.queue.length}`)
 
     this.queue.push(...lodash.sortBy(backlog, s => CalibrationTool.shouldAngle(s.offset)))
   }
@@ -665,6 +663,8 @@ class CalibrationQueue {
     this.clear()
 
     this.queue = f.function()
+
+    console.log("Filling")
 
     if (this.queue.length > 0) {
       await this.sortQueue(this.parent.reference.value(), OffsetSelection.activeOffset(this.parent.selection.value().offset))
@@ -675,6 +675,8 @@ class CalibrationQueue {
 
       this.changed.trigger(this)
     }
+
+    console.log("End Filling")
   }
 }
 
@@ -696,11 +698,10 @@ class CalibrationQueueView extends Widget {
 
     this.props.header("Offset Queue")
 
-    this.props.named("Size", this.queue.size().toString())
+    this.props.named("Size", hgrid(this.queue.size().toString(), new LightButton("Clear").slim().onClick(() => this.queue.clear())))
     this.props.named("Type", this.queue.filler ? this.queue.filler.name : "")
   }
 }
-
 
 function findAutoSpotForAngleRange(range: AngleRange): OffsetSelection {
 
@@ -825,14 +826,18 @@ export class CompassCalibrationTool extends NisModal {
 
       const isPlausible = Angles.UncertainAngle.contains(current_sample.result, CalibrationTool.shouldAngle(this.selection.value().offset.offset))
 
-      props.named("Plausible", isPlausible ? "Yes" : "No")
-
-      props.row(new LightButton("Force Commit Implausible Sample")
+      props.named("Plausible", hgrid(isPlausible ? "Yes" : "No", new LightButton(isPlausible ? "Commit (Alt+1)" : "Force Commit")
+        .slim()
         .setEnabled(!isPlausible)
-        .onClick(() => {
+        .onClick(async () => {
+          if (!isPlausible) {
+            const really = await ConfirmationModal.simple("Commit Implausible Sample?", "Are you sure you want to record this implausible sample?", "Cancel", "Confirm").do()
+
+            if (!really) return
+          }
           this.commit(true)
         })
-      )
+      ))
     }
 
     this.current_calibrated_angle_view.empty().append(props)
@@ -853,22 +858,21 @@ export class CompassCalibrationTool extends NisModal {
 
     props.named("Last Change", this.sample_set.date().toLocaleString())
     props.named("Samples", this.sample_set.size().toString())
-    props.named("Unique Angles", this.sample_set.function.samples.length.toString())
+    props.named("Unique Angles", hgrid(this.sample_set.function.samples.length.toString(), new LightButton("Analyze").slim().onClick(() => {
+
+    })))
     props.named("Average Epsilon", Angles.toString(this.sample_set.function.averageEpsilon(), 3))
     props.named("Min Epsilon (Min)", `${Angles.toString(Math.min(...minEpsilons), 3)} - ${Angles.toString(Math.max(...minEpsilons), 3)} (${Angles.toString(avg(...minEpsilons), 3)} avg.)`)
-    props.named("Implausibilities", bad_samples.length.toString())
+    props.named("Implausibilities", hgrid(bad_samples.length.toString(), new LightButton("Delete All")
+      .slim()
+      .setEnabled(bad_samples.length > 0)
+      .onClick(() => {
+        this.sample_set.delete(...bad_samples.flatMap(s => s.raw_samples).map(s => s.position))
+      })))
 
-    if (bad_samples.length > 0) {
-      props.row(new LightButton("Delete Implausible Samples")
-        .setEnabled(bad_samples.length > 0)
-        .onClick(() => {
-          this.sample_set.delete(...bad_samples.flatMap(s => s.raw_samples).map(s => s.position))
-        }))
-    }
-
-
-    props.named("Largest Gap", Angles.toString(Angles.AngleRange.size(uncalibrated[0]), 3))
-    props.row(new LightButton("Queue Largest Gaps").onClick(() => this.fillQueueWithBiggestUncalibratedRange()))
+    props.named("Largest Gap", hgrid(Angles.toString(Angles.AngleRange.size(uncalibrated[0]), 3),
+      new LightButton("Queue").slim().onClick(() => this.fillQueueWithBiggestUncalibratedRange())
+    ))
 
     this.sample_set.function.uncalibrated_ranges()
 
@@ -895,7 +899,7 @@ export class CompassCalibrationTool extends NisModal {
       const is_plausible = Angles.UncertainAngle.contains(current_sample.result, CalibrationTool.shouldAngle(this.selection.value().offset.offset))
 
       if (!is_plausible) {
-        notification("Implausible sample", "error").show()
+        notification("Implausible angle. Click `Force Commit` to commit it anyway.", "error").show()
         return
       }
     }
@@ -941,6 +945,8 @@ export class CompassCalibrationTool extends NisModal {
 
             return Angles.AngleRange.split(range, sections)
           })
+
+          console.log(taken_ranges)
 
           return taken_ranges.map(range => findAutoSpotForAngleRange(range))
         }
