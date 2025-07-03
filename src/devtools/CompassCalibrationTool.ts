@@ -266,15 +266,15 @@ class SampleSetBuilder {
   }
 }
 
-async function indexOfMinBy<T>(data: T[], f: (_: T) => Promise<number>) {
+function indexOfMinBy<T>(data: T[], f: (_: T, i: number) => number) {
   let index: number = undefined
   let min_Value = Number.MAX_VALUE
 
   for (let i = 0; i < data.length; i++) {
     const v = data[i]
-    const x = await f(v)
+    const x = f(v, i)
 
-    if (x < min_Value) {
+    if (x != undefined && x < min_Value) {
       index = i
       min_Value = x
     }
@@ -286,17 +286,35 @@ async function indexOfMinBy<T>(data: T[], f: (_: T) => Promise<number>) {
 class TravellingSalesmanProblem<T> {
   private _init: AsyncInitialization
 
-  distance_map: number[][]
+  private distance_map: number[][]
+  private start_distance: number[]
 
-  constructor(private spots: T[], private distance: TravellingSalesmanProblem.StatefulDistanceFunction<T>) {
-    this.distance_map = spots.map(a => spots.map(b => undefined))
+  private come_from_solution: number[] = this.spots.map((_, i) => i)
+
+  private start_position_index: number
+
+  private spots_with_start: T[]
+
+  constructor(private spots: T[],
+              private distance: TravellingSalesmanProblem.StatefulDistanceFunction<T>,
+              private start_position: T
+  ) {
+    this.spots_with_start = [...spots, start_position]
+    this.start_position_index = spots.length
+
+    this.distance_map = this.spots_with_start.map(_ => this.spots_with_start.map(_ => undefined))
 
     this.distance_map.forEach((row, i) => row[i] = 0)
 
     this._init = async_init(async () => await profileAsync(async () => {
       for (let i = 0; i < this.distance_map.length; i++) {
         for (let j = i + 1; j < this.distance_map.length; j++) {
-          const d = await distance.distance(spots[i], spots[j])
+          const a = this.spots_with_start[i]
+          const b = this.spots_with_start[j]
+
+          const d = !a || !b
+            ? 0
+            : await distance.distance(a, b)
 
           this.distance_map[i][j] = d
           this.distance_map[j][i] = d
@@ -305,54 +323,180 @@ class TravellingSalesmanProblem<T> {
     }, "Computing distances"))
   }
 
-  private async getDistance(a: number, b: number): Promise<number> {
-    if (!this.distance_map[a]) debugger
+  async wait<T>(f: (_: this) => T): Promise<T> {
+    return this._init.wait().then(() => f(this))
+  }
 
-    if (this.distance_map[a][b] == undefined) {
-      const d = await profileAsync(async () => this.distance.distance(this.spots[a], this.spots[b]), `${a} - ${b}`)
+  private _assert_init() {
+    if (!this._init.isInitialized()) throw new Error("TravellingSalesmanProblem must be awaited before it can be solved.")
+  }
 
-      this.distance_map[a][b] = d
-      this.distance_map[b][a] = d
-    }
-
+  private getDistance(a: number, b: number): number {
     return this.distance_map[a][b]
   }
 
-  private async _greedy(start_position: T): Promise<number[]> {
+  private _greedy(): number[] {
+    this._assert_init()
+
     if (this.spots.length == 0) return []
 
-    await this._init.wait()
+    // A solution is an array that maps spot indices to the index of the previous node in the path (come-from)
+    const come_from_map: number[] = this.spots.map(() => undefined)
 
-    const availability = this.spots.map((_, i) => i)
+    let position = this.start_position_index
 
-    const best_start = start_position ? await indexOfMinBy(availability, async i => await this.distance.distance(start_position, this.spots[i])) ?? 0 : 0
+    for (let i = 0; i < come_from_map.length; i++) {
+      const greedy_best_i = indexOfMinBy(come_from_map, (value, i) => value == undefined ? this.getDistance(position, i) : undefined)
 
-    let position = availability[best_start]
-    const path: number[] = [position]
-
-    availability.splice(best_start, 1)
-
-    while (availability.length > 0) {
-      const greedy_best_i = await indexOfMinBy(availability, async i => {
-        return this.getDistance(position, i)
-      }) ?? 0
-
-      path.push(position = availability[greedy_best_i])
-
-      if (position == undefined) debugger
-
-      availability.splice(greedy_best_i, 1)
+      come_from_map[greedy_best_i] = position
+      position = greedy_best_i
     }
 
-    return path
+    return come_from_map
   }
 
-  async greedy(start_position: T): Promise<T[]> {
-    return await profileAsync(async () => (await this._greedy(start_position)).map(i => this.spots[i]), `Salesman ${this.spots.length}`)
+  greedy(): this {
+    this.come_from_solution = util.profile(() => this._greedy(), `Greedy Salesman ${this.spots.length}`)
+
+    return this
+  }
+
+  getResult(): T[] {
+    console.log(`Final cost ${this._evaluateComeFrom(this.come_from_solution)}`)
+
+    return TravellingSalesmanProblem.go_to_to_solution(TravellingSalesmanProblem.come_from_to_go_to(this.come_from_solution)).map(p => this.spots[p])
+  }
+
+  private _evaluateComeFrom(come_from_solution: number[]): number {
+    return lodash.sum(come_from_solution.map((come_from, pos) => this.getDistance(come_from, pos)))
+  }
+
+  private _optimize_by_pairwise_exchange() {
+    let best = TravellingSalesmanProblem.go_to_to_solution(
+      TravellingSalesmanProblem.come_from_to_go_to(this.come_from_solution)
+    )
+
+    let n = 0
+
+    while (true) {
+      let best_swap: [number, number] = undefined
+      let best_improvement = 0
+
+      for (let i = 0; i < this.spots.length; i++) {
+        const a = i > 0 ? best[i - 1] : this.start_position_index
+        const b = best[i]
+        const c = best[i + 1]
+
+        for (let j = i + 1; j < this.spots.length; j++) {
+          const x = best[j - 1]
+          const y = best[j]
+          const z = j + 1 < best.length ? best[j + 1] : undefined
+
+          let pre_swap = 0
+          let post_swap = 0
+
+          pre_swap += this.getDistance(a, b)
+          pre_swap += this.getDistance(b, c)
+
+          post_swap += this.getDistance(a, y)
+
+          if (j == i + 1) {
+            post_swap += this.getDistance(y, b)
+          } else {
+            pre_swap += this.getDistance(x, y)
+
+            post_swap += this.getDistance(y, c)
+            post_swap += this.getDistance(x, b)
+          }
+
+          if (z != undefined) {
+            pre_swap += this.getDistance(y, z)
+            post_swap += this.getDistance(b, z)
+          }
+
+          const improvement = pre_swap - post_swap
+
+          if (n == 6 && j == i + 1) {
+            console.log(`${i} <-> ${j} : ${improvement}`)
+          }
+
+          if (improvement > best_improvement) {
+            best_swap = [i, j]
+            best_improvement = improvement
+          }
+        }
+      }
+
+      if (!best_swap) break
+      n++
+      if (n > 100) throw new Error(`Aborting after ${n} swaps`)
+
+      console.log(`Swapping ${best_swap} for gain of ${best_improvement}`)
+      const copy = [...best]
+
+      copy[best_swap[0]] = best[best_swap[1]]
+      copy[best_swap[1]] = best[best_swap[0]]
+
+      best = copy
+
+      console.log("After swap")
+      console.log(best)
+
+      console.log(`${best.length} Score ${this._evaluateComeFrom(TravellingSalesmanProblem.solution_to_come_from(best))}`)
+    }
+
+    console.log("Old")
+    console.log(this.come_from_solution)
+
+    this.come_from_solution = TravellingSalesmanProblem.solution_to_come_from(best)
+
+    console.log("New")
+    console.log(this.come_from_solution)
+
+    console.log(`Did ${n} improvements`)
+
+    return best
+  }
+
+  optimize_by_pairwise_exchange(): this {
+    util.profile(() => this._optimize_by_pairwise_exchange(), `Pairwise Optimization`)
+
+    return this
   }
 }
 
 namespace TravellingSalesmanProblem {
+
+  export function come_from_to_go_to(come_from: number[]): number[] {
+    const go_to_solution: number[] = new Array(come_from.length + 1)
+
+    come_from.forEach((come_from, go_to) => go_to_solution[come_from] = go_to)
+
+    return go_to_solution
+  }
+
+  export function solution_to_come_from(solution: number[]): number[] {
+    const come_from = [...solution]
+
+    solution.forEach((s, i) => {
+      come_from[s] = i == 0 ? solution.length : solution[i - 1]
+    })
+
+    return come_from
+  }
+
+  export function go_to_to_solution(go_to: number[]): number[] {
+    const solution: number[] = []
+
+    let position = go_to[go_to.length - 1]
+
+    while (position != undefined) {
+      solution.push(position)
+      position = go_to[position]
+    }
+
+    return solution
+  }
 
   export abstract class StatefulDistanceFunction<T> {
     abstract distance(a: T, b: T): number | Promise<number>
@@ -483,9 +627,8 @@ namespace TravellingSalesmanProblem {
         }
       }
 
-      return Number.MAX_VALUE
+      return Math.min(2 * this.max_distance, Vector2.max_axis(Vector2.sub(a, b)))
     }
-
   }
 }
 
@@ -557,8 +700,12 @@ class CalibrationQueue {
   changed = ewent<this>()
 
   constructor(public readonly parent: CompassCalibrationTool) {
-    this.parent.sample_set.record_event.on(sample => {
+    this.parent.sample_set.record_event.on(async sample => {
       const removed = this.remove(sample.position)
+
+      if (removed > 0) {
+        await this.sortQueue(this.parent.reference.value(), sample.position)
+      }
 
       const activated = this.dequeue()
 
@@ -583,7 +730,7 @@ class CalibrationQueue {
     return false
   }
 
-  remove(offset: Vector2): boolean {
+  remove(offset: Vector2): number {
     const i = this.queue.findIndex(e => Vector2.eq(offset, e.offset))
 
     if (i >= 0) {
@@ -591,10 +738,10 @@ class CalibrationQueue {
 
       this.changed.trigger(this)
 
-      return true
+      return i
     }
 
-    return false
+    return undefined
   }
 
   size(): number {
@@ -612,6 +759,8 @@ class CalibrationQueue {
   }
 
   private async sortQueue(reference: TileCoordinates, start_offset: Vector2 = undefined) {
+    if(this.queue.length == 0) return
+
     const rect: TileRectangle = {"topleft": {"x": 1950, "y": 4152}, "botright": {"x": 3898, "y": 2594}, "level": 0}
 
     const backlog: OffsetSelection[] = []
@@ -646,8 +795,15 @@ class CalibrationQueue {
     this.queue = await new TravellingSalesmanProblem(sorted_by_should_angle,
       //new TravellingSalesmanProblem.PathFindingDistanceFunction()
       new TravellingSalesmanProblem.AStarDistanceFunction(HostedMapData.get(), 64)
-        .comap(s => TileCoordinates.move(reference_digspot, OffsetSelection.activeOffset(s)))
-    ).greedy(start_offset ? {offset: start_offset} : null)
+        .comap(s => TileCoordinates.move(reference_digspot, OffsetSelection.activeOffset(s))),
+      start_offset ? {offset: start_offset} : null
+    )
+      .wait(problem => problem
+        .greedy()
+        .optimize_by_pairwise_exchange()
+        .getResult()
+      )
+
 
     this.queue.push(...lodash.sortBy(backlog, s => CalibrationTool.shouldAngle(s.offset)))
   }
@@ -817,7 +973,6 @@ export class CompassCalibrationTool extends NisModal {
 
       props.named("Plausible", hgrid(isPlausible ? "Yes" : "No", new LightButton(isPlausible ? "Commit (Alt+1)" : "Force Commit")
         .slim()
-        .setEnabled(!isPlausible)
         .onClick(async () => {
           if (!isPlausible) {
             const really = await ConfirmationModal.simple("Commit Implausible Sample?", "Are you sure you want to record this implausible sample?", "Cancel", "Confirm").do()
