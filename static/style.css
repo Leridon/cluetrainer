@@ -997,7 +997,7 @@ video {
     grid-row: auto;
 }
 
-.nisl-property-content > .ctr-lightbutton, .ctr-lightbutton-slim {
+.nisl-property-content > .ctr-lightbutton, .ctr-lightbutton.ctr-lightbutton-slim {
     margin: 0;
     font-size: 0.9em;
 }
