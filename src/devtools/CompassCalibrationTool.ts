@@ -23,7 +23,7 @@ import {clue_data} from "../data/clues";
 import Properties from "../trainer/ui/widgets/Properties";
 import {C} from "../lib/ui/constructors";
 import {Notification} from "../trainer/ui/NotificationBar";
-import {AngularKeyframeFunction, FullCompassCalibrationFunction} from "trainer/ui/neosolving/cluereader/capture/CompassCalibrationFunction";
+import {FullCompassCalibrationFunction} from "trainer/ui/neosolving/cluereader/capture/CompassCalibrationFunction";
 import {Angles} from "../lib/math/Angles";
 import {storage} from "../lib/util/storage";
 import KeyValueStore from "../lib/util/KeyValueStore";
@@ -36,6 +36,7 @@ import {ChunkedData} from "../lib/util/ChunkedData";
 import {SelectTileInteraction} from "../lib/gamemap/interaction/SelectTileInteraction";
 import {InteractionGuard} from "../lib/gamemap/interaction/InteractionLayer";
 import InteractionTopControl from "../trainer/ui/map/InteractionTopControl";
+import {PathGraphics} from "../trainer/ui/path_graphics";
 import getExpectedAngle = Compasses.getExpectedAngle;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
@@ -206,6 +207,14 @@ class SampleSetBuilder {
     this.set_loaded.trigger(this)
 
     return true
+  }
+
+  getCSV(): string {
+    return util.makeCSV(this.state.samples)(
+      {name: "Is", f: e => e.is_angle},
+      {name: "Should", f: e => CalibrationTool.shouldAngle(e.position)},
+      {name: "Delta", f: e => Angles.angleDifferenceSigned(e.is_angle, CalibrationTool.shouldAngle(e.position))},
+    )
   }
 
   delete(...positions: Vector2[]): void {
@@ -1182,7 +1191,7 @@ export class CompassCalibrationTool extends NisModal {
         ).show()
       }),
       new LightButton("Export CSV").onClick(() => {
-        new ExportStringModal(AngularKeyframeFunction.fromCalibrationSamples(this.sample_set.get(), "cosine", 0).getCSV()).show()
+        new ExportStringModal(this.sample_set.getCSV()).show()
       }),
     ).appendTo(menu_column)
 
@@ -1246,7 +1255,7 @@ export class CompassCalibrationTool extends NisModal {
 
     if (existing_sample) {
       layout
-        .named("Sampled", Angles.toString(existing_sample.is_angle))
+        .named("Sampled", Angles.toString(existing_sample.is_angle, 3))
         .named("Fingerprint", CompassReader.ReadFingerprint.toString(existing_sample.fingerprint))
     } else {
       layout.row(italic("None"))
@@ -1257,6 +1266,9 @@ export class CompassCalibrationTool extends NisModal {
 }
 
 export namespace CalibrationTool {
+  import arrow = PathGraphics.arrow;
+  import gielinor_compass = clue_data.gielinor_compass;
+
   export function cleanExport(samples: RawSample[]): string {
     return "[\n" +
       lodash.sortBy(samples, s => Vector2.angle(ANGLE_REFERENCE_VECTOR, {x: -s.position.x, y: -s.position.y})).map(s => cleanedJSON(s, undefined)).join(",\n")
@@ -1271,7 +1283,6 @@ export namespace CalibrationTool {
     position: Vector2, is_angle: number, fingerprint?: CompassReader.ReadFingerprint
   }
 
-  import gielinor_compass = clue_data.gielinor_compass;
 
   export class KnownMarker extends MapEntity {
     constructor(public spot: TileCoordinates) {
@@ -1446,14 +1457,21 @@ export namespace CalibrationTool {
               .setStyle({color: "#ffff00"})
               .addTo(this.queue_view)
           }
+
+          arrow(this.tool.reference.value(), TileCoordinates.move(this.tool.reference.value(), OffsetSelection.activeOffset(sel)), {
+            type: "none"
+          })
+            .setStyle({color: "#ffff00", weight: 3})
+            .addTo(this.queue_view)
+
         }
       )
-
+/*
       leaflet.polyline(
           queue.map(s => Vector2.toLatLong(Vector2.add(this.tool.reference.value(), OffsetSelection.activeOffset(s))))
         )
         .setStyle({color: "#ffff00", weight: 3})
-        .addTo(this.queue_view)
+        .addTo(this.queue_view)*/
     }
   }
 
