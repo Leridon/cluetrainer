@@ -426,4 +426,16 @@ export namespace util {
 
     return sorted[mid]
   }
+
+  export function makeCSV<T>(data: T[], separator: string = "\t"): (...columns: {
+    name: string,
+    f: (_: T) => any
+  }[]) => string {
+    return (...cols) => {
+      return [
+        cols.map(c => c.name).join(separator),
+        ...data.map(e => cols.map(c => c.f(e)).join(separator))
+      ].join("\n")
+    }
+  }
 }

@@ -186,7 +186,7 @@ export namespace FullCompassCalibrationFunction {
 
       i++
 
-      while (i < sorted_samples.length && Angles.isSameRadians(sorted_samples[i].is_angle, group_angle)) i++
+      while (i < sorted_samples.length && (Angles.isSameRadians(sorted_samples[i].is_angle, group_angle))) i++
       // i now points to the next sample that is not part of this group
 
       const group = sorted_samples.slice(group_start_i, i)
