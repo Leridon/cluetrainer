@@ -392,16 +392,18 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-        builder.wip(54, "TBD")
+        builder.release(54, "New Methods and Bugfixes", new Date(Date.parse("2025-07-06")))
+          .notification("New Methods were released")
           .list(l => l
-            .item("Fixed hotkey for the Eternal Magic Trees - Piscatoris teleport on the Nature's sentinel outfit.")
-            .item("Fixed hotkey for the Harmony Island teleport on the Big Book o´ Piracy.")
             .item("Added methods for all new elite compass spots added in the recent game update.")
             .item("Added a method using the quest cape teleport for the Celia Diggory anagram in master clues.")
             .item("Added a method using the Big Book o´ Piracy teleport to Mos Le´Harmless for the Brother Tranquility anagram in master clues.")
             .item("Modified the methods for the Captain Ninto and Gnome Coach hard anagrams to account for their new, static locations.")
             .item("Fixed the method for the medium clue step in the Kandarin Monastery, which could not be executed as intended.")
-          )
+            .item("Changed the detection threshold for map clues to be more lenient.")
+            .item("Fixed hotkey for the Eternal Magic Trees - Piscatoris teleport on the Nature's sentinel outfit.")
+            .item("Fixed hotkey for the Harmony Island teleport on the Big Book o´ Piracy.")
+          ).render(p => p.paragraph("The scan tree for the Lost Grove scan is still in the works and is expected to release some time next week."))
 
 
         builder.release(53, "Hotfix: Lost Grove Scan Range", new Date(Date.parse("2025-06-30")))

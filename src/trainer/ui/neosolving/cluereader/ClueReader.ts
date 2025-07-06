@@ -29,7 +29,6 @@ import findBestMatch = util.findBestMatch;
 import SliderState = Sliders.SliderState;
 import log = Log.log;
 import cleanedJSON = util.cleanedJSON;
-import ScanStep = Clues.ScanStep;
 import async_init = util.async_init;
 import AsyncInitialization = util.AsyncInitialization;
 
@@ -181,16 +180,18 @@ export class ClueReader {
                   return null
                 }
               case "map":
+                const MAP_DETECTION_MAX_SCORE = 130000
+
                 const fingerprint = oldlib.computeImageFingerprint(modal.body.getData(), 20, 20, 90, 25, 300, 240);
 
-                const best = findBestMatch(clue_data.map, c => comparetiledata(c.ocr_data, fingerprint), 70000, true)
+                const best = findBestMatch(clue_data.map, c => comparetiledata(c.ocr_data, fingerprint), undefined, true)
 
                 if (CLUEREADERDEBUG) {
                   log().log("Best map match", "ClueReader")
                   log().log(best, "ClueReader")
                 }
 
-                if (!best?.score) return null
+                if (!best?.score || best.score > MAP_DETECTION_MAX_SCORE) return null
 
                 if (CLUEREADERDEBUG) {
                   log().log(`Found ${best.value.id}, confidence ${best.score}`)
