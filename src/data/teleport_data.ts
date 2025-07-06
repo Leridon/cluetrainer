@@ -1791,7 +1791,7 @@ name: "Guthix Memorial",
       {
         id: "harmony",
         target: {"origin": {"x": 3797, "y": 2836, "level": 0}},
-        code: "3",
+        code: "4",
         name: "Harmony Island",
       },
     ],
