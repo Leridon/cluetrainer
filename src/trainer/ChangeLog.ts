@@ -399,6 +399,7 @@ export namespace Changelog {
             .item("Added methods for all new elite compass spots added in the recent game update.")
             .item("Added a method using the quest cape teleport for the Celia Diggory anagram in master clues.")
             .item("Added a method using the Big Book o´ Piracy teleport to Mos Le´Harmless for the Brother Tranquility anagram in master clues.")
+            .item("Modified the methods for the Captain Ninto and Gnome Coach hard anagrams to account for their new, static locations.")
           )
 
 
