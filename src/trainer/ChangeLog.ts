@@ -400,6 +400,7 @@ export namespace Changelog {
             .item("Added a method using the quest cape teleport for the Celia Diggory anagram in master clues.")
             .item("Added a method using the Big Book o´ Piracy teleport to Mos Le´Harmless for the Brother Tranquility anagram in master clues.")
             .item("Modified the methods for the Captain Ninto and Gnome Coach hard anagrams to account for their new, static locations.")
+            .item("Fixed the method for the medium clue step in the Kandarin Monastery, which could not be executed as intended.")
           )
 
 
