@@ -116,8 +116,6 @@ export class CompassReader {
       antialiasing: antialiasing_detected
     }
 
-    Rectangle.size(Rectangle.from(...rectangle_samples))
-
     if (antialiasing_detected) {
       if (rectangle_samples.length < 400) return {
         type: "likely_closed",
