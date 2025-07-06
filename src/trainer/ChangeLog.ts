@@ -392,10 +392,11 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-        builder.wip(54, "New Methods and Bugfixes")
+        builder.wip(55, "New Methods and Bugfixes")
           .list(l => l
             .item("Updated the internal compass calibration tool.")
             .item("Updated the compass calibration for anti aliasing turned off to be much more accurate.")
+            .item("Added the amulet of nature teleport to Falador farm as a builtin triangulation strategy.")
           )
 
       builder.release(55, "Lost Grove Method and Minor Fixes", new Date(Date.parse("2025-07-12")))

@@ -1280,7 +1280,7 @@ export namespace CompassSolving {
 
     export const master_whales_maw: TriangulationPreset = {
       compass_id: clue_data.arc_compass.id,
-      id: -6,
+      id: -9,
       name: "{{teleport arctabs whalesmaw}} Whale`s Maw",
       sequence: [
         {teleport: {group: "arctabs", spot: "whalesmaw"}},
@@ -1297,6 +1297,15 @@ export namespace CompassSolving {
       ]
     }
 
+    export const elite_amulet_of_nature: TriangulationPreset = {
+      compass_id: [clue_data.gielinor_compass.id, clue_data.tetracompass.id],
+      id: -8,
+      name: "{{teleport amuletofnature faladortree}} Falador",
+      sequence: [
+        {tile: {"x": 3005, "y": 3375, "level": 0}},
+      ]
+    }
+
     export const builtin: TriangulationPreset[] = [
       elite_moonclan_southfeldiphills,
       elite_moonclan_iceplateu,
@@ -1304,7 +1313,8 @@ export namespace CompassSolving {
       elite_falador,
       master_turtle_island_dock,
       master_whales_maw,
-      elite_menaphos_house_south_feldip_hills
+      elite_menaphos_house_south_feldip_hills,
+      elite_amulet_of_nature
     ]
   }
 
