@@ -34,8 +34,8 @@ export class CompassReader {
     const buf = this.capture.compass_area.getData()
 
     const buf_center = {
-      x: buf.width / 2,
-      y: buf.height / 2
+      x: ~~(buf.width / 2),
+      y: ~~(buf.height / 2)
     }
 
     function getRed(x: number, y: number) {
@@ -3576,6 +3576,7 @@ export namespace CompassReader {
       export type Normal = Base & { state: "normal", result: AngleResult.Success }
 
       export function equals(a: State, b: State): boolean {
+        if (!!a != !!b) return false
         if (a.state != b.state) return false
 
         if (a.state == "normal" && b.state == "normal") {
