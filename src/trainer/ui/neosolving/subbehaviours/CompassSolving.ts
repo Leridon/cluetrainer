@@ -536,7 +536,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       }
     })()
 
-
     const info = Compasses.TriangulationPoint.construct(CompassSolving.Spot.coords(entry.position), angle)
 
     if (!this.spots.some(s => Compasses.isPossible([info], s.spot.spot))) {

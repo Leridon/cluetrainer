@@ -397,6 +397,8 @@ export namespace Changelog {
             .item("Updated the internal compass calibration tool.")
             .item("Updated the compass calibration for anti aliasing turned off to be much more accurate.")
             .item("Added the amulet of nature teleport to Falador farm as a builtin triangulation strategy.")
+            .item("Migrated the compass overlay to new library code, so that it will disappear after Clue Trainer is reloaded or closed.")
+            .item("Added an antialiasing indicator to the compass overlay.")
           )
 
       builder.release(55, "Lost Grove Method and Minor Fixes", new Date(Date.parse("2025-07-12")))
