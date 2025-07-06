@@ -110,10 +110,9 @@ export class CompassReader {
       return false
     })()
 
-
     const fingerprint: CompassReader.ReadFingerprint = {
       pixel_count: rectangle_samples.length,
-      compass_size: Rectangle.size(Rectangle.from(...rectangle_samples)),
+      compass_size: rectangle_samples.length > 0 ? Rectangle.size(Rectangle.from(...rectangle_samples)) : undefined,
       antialiasing: antialiasing_detected
     }
 
@@ -3517,7 +3516,7 @@ export namespace CompassReader {
           })
         }
 
-        if(state.fingerprint?.antialiasing) {
+        if (state.fingerprint?.antialiasing) {
           overlay_geometry.text("Antialiasing detected",
             Vector2.add(ScreenRectangle.center(reader.capture.body.screenRectangle()), {x: 5, y: -60}), {
               shadow: true,
