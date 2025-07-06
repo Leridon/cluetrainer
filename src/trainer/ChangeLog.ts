@@ -396,6 +396,7 @@ export namespace Changelog {
           .list(l => l
             .item("Fixed hotkey for the Eternal Magic Trees - Piscatoris teleport on the Nature's sentinel outfit.")
             .item("Fixed hotkey for the Harmony Island teleport on the Big Book o´ Piracy.")
+            .item("Added methods for all new elite compass spots added in the recent game update.")
             .item("Added a method using the quest cape teleport for the Celia Diggory anagram in master clues.")
             .item("Added a method using the Big Book o´ Piracy teleport to Mos Le´Harmless for the Brother Tranquility anagram in master clues.")
           )
