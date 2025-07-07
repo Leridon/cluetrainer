@@ -49,6 +49,7 @@ import staticentity = C.staticentity;
 import entity = C.entity;
 import notification = Notification.notification;
 import log = Log.log;
+import {Alt1ScreenCaptureService} from "../lib/alt1/capture/Alt1ScreenCaptureService";
 
 declare global {
   var cluetrainer_build_environment: ClueTrainer.BuildEnvironment
@@ -346,13 +347,28 @@ export class ClueTrainer extends Behaviour {
       }
     }
 
-    document.body.addEventListener("keydown", e => {
+    document.body.addEventListener("keydown", async e => {
+      function logScreen() {
+        if (Alt1.exists()) {
+          return Alt1.instance().capturing.captureOnce({options: {area: null, interval: null}}).then(img => {
+            log().log("Screenshot", "Screenshot", img.value.getData())
+            notification("Screenshot added to log", "information").show()
+          })
+        }
+      }
+
       if (e.key == "F6") {
         log().log("Log exported")
 
         logDiagnostics()
 
+        if (this.version.build_info?.is_beta_build) await logScreen()
+
         LogViewer.do(log().get())
+      }
+
+      if (e.key == "F7") {
+        await logScreen()
       }
 
       if (e.key == "F4") {
