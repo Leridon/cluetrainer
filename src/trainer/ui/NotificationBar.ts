@@ -74,6 +74,9 @@ export class Notification {
     return this
   }
 
+  /**
+   * @param duration Timeout duration in milliseconds
+   */
   setDuration(duration: number | null): this {
     this._duration = duration
 

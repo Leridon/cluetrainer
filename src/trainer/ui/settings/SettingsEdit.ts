@@ -61,6 +61,8 @@ import TeleportGroup = Transportation.TeleportGroup;
 import span = C.span;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import Appendable = C.Appendable;
+import {Notification} from "../NotificationBar";
+import notification = Notification.notification;
 
 class SettingsLayout extends Properties {
   constructor() {super();}
@@ -473,7 +475,7 @@ class ScanSettingsEdit extends Widget {
             }
           }))
         )
-        .css("width", "100%")
+          .css("width", "100%")
           .setValue(this.value.input_control_enabled)
           .onCommit(v => this.value.input_control_enabled = v),
       )
@@ -1271,7 +1273,7 @@ class CompassSettingsEdit extends Widget {
     this.layout.setting(new Checkbox("Show method previews")
         .onCommit(v => this.value.show_method_preview_of_secondary_solutions = v)
         .setValue(this.value.show_method_preview_of_secondary_solutions),
-      "When active method previews for all remaining candidates are shown after the first triangulation step."
+      "When active, method previews for all remaining candidates are shown after the first triangulation step."
     )
 
     this.layout.namedSetting("Beam Color",
@@ -1325,6 +1327,8 @@ class CompassSettingsEdit extends Widget {
     }
 
     this.layout.setting("Custom Strategies", "You can create your own triangulation presets if none of the builtin presets fit your needs. Don't forget to activate your custom preset in the section above.")
+
+    this.layout.row(new LightButton("Manage Custom Strategies"))
 
     type T = CompassSolving.TriangulationPreset | "create"
 
@@ -1709,13 +1713,23 @@ export class SettingsModal extends FormModal<{
     this.title.set("Settings")
   }
 
+  private hasUnsavedChanges(): boolean {
+    return !lodash.isEqual(deps().app.settings.settings, this.edit.value)
+  }
+
   protected getValueForCancel(): { saved: boolean; value: Settings.Settings } {
     return {saved: !!this.last_saved_value, value: this.last_saved_value}
   }
 
   private save() {
-    this.last_saved_value = lodash.cloneDeep(this.edit.value)
-    deps().app.settings.set(this.last_saved_value)
+    if (this.hasUnsavedChanges()) {
+      this.last_saved_value = lodash.cloneDeep(this.edit.value)
+      deps().app.settings.set(this.last_saved_value)
+
+      notification("Changes to settings saved.").setDuration(3000).show()
+    } else {
+      notification("No changes to save.").setDuration(3000).show()
+    }
   }
 
   private static instance: SettingsModal = null
@@ -1734,6 +1748,39 @@ export class SettingsModal extends FormModal<{
     return SettingsModal.instance.do()
   }
 
+  protected onClose() {
+    this.maybeCancel()
+  }
+
+  private maybeCancel() {
+    if (this.hasUnsavedChanges()) {
+      new ConfirmationModal<"discard" | "goback" | "saveandexit">({
+        title: "Unsaved Changes",
+        body: "There are unsaved changes to your settings. How do you want to proceed?",
+        options: [
+          {kind: "cancel", text: "Discard", value: "discard"},
+          {kind: "neutral", text: "Go Back", value: "goback", is_cancel: true},
+          {kind: "confirm", text: "Save", value: "saveandexit"},
+        ]
+      }).do().then(action => {
+        switch (action) {
+          case "discard":
+            this.cancel()
+            break;
+          case "goback":
+            // Do nothing
+            break;
+          case "saveandexit":
+            this.save()
+            this.cancel()
+            break;
+        }
+      })
+    } else {
+      this.cancel()
+    }
+  }
+
   render() {
     super.render()
 
@@ -1745,7 +1792,7 @@ export class SettingsModal extends FormModal<{
   getButtons(): BigNisButton[] {
     return [
       new BigNisButton("Cancel", "cancel")
-        .onClick(() => this.cancel()),
+        .onClick(() => this.maybeCancel()),
       new BigNisButton("Save", "confirm")
         .onClick(() => this.save()),
       new BigNisButton("Save and Close", "confirm")
