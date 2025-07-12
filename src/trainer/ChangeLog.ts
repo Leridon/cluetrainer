@@ -403,6 +403,7 @@ export namespace Changelog {
           .item("Changed a redclick target in the Menaphos scan route for easier execution.")
           .item("Fixed the path for the master emote step in front of the Menaphos library to actually land in the emote range.")
           .item("When closing the settings window with unsaved changes, you will now be prompted for confirmation.")
+          .item("Hotfixed: Fixed unintentionally close zoom for the start of the Brimhaven dungeon scan.")
         )
 
         builder.release(54, "New Methods and Bugfixes", new Date(Date.parse("2025-07-06")))

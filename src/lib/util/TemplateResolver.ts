@@ -108,7 +108,7 @@ export namespace TemplateResolver {
           s += "&nbsp;"
 
           if (contains_dom) {
-            result.push({type: "domelement", value: span().setInnerHtml(s).css("white-space", "nowrap")})
+            result.push({type: "domelement", value: span().setInnerHtml(s)})
           } else {
             result.push({type: "safestring", value: s})
           }
