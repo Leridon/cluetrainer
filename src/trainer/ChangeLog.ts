@@ -395,6 +395,7 @@ export namespace Changelog {
       builder.wip(55, "TBD", new Date(Date.parse("TBD")))
         .list(l => l
           .item("Fixed location of the teleport to Velucia on the Archaeology teleport.")
+          .item("Updated paths for compass steps north of the Crafting Guild to match the environment changes of the 110 Crafting update.")
         )
 
         builder.release(54, "New Methods and Bugfixes", new Date(Date.parse("2025-07-06")))
