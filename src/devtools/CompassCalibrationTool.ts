@@ -1072,6 +1072,19 @@ export class CompassCalibrationTool extends NisModal {
         })
       })))
 
+    /*
+    props.row(new LightButton("Delete all near 90°").onClick(() => {
+      this.sample_set.delete(...this.sample_set.get().filter(s => {
+        const should_angle = CalibrationTool.shouldAngle(s.position)
+
+        for (let i = 0; i < 4; i++) {
+          if (Angles.angleDifference(should_angle, i * Math.PI / 2) < Angles.degreesToRadians(10)) return true
+        }
+
+        return false
+      }).map(s => s.position))
+    }))*/
+
     props.named("Largest Gap", hgrid(Angles.toString(Angles.AngleRange.size(uncalibrated[0]), 3),
       new LightButton("Queue").slim().onClick(() => this.fillQueueWithBiggestUncalibratedRange())
     ))
@@ -1145,7 +1158,7 @@ export class CompassCalibrationTool extends NisModal {
           const largest_range = Angles.AngleRange.size(candidates[0])
 
           const index_of_first_range_not_considered = candidates.findIndex((candidate, index) =>
-            !(Angles.AngleRange.size(candidate) >= 0.8 * largest_range)
+            !(Angles.AngleRange.size(candidate) >= 0.7 * largest_range)
           )
 
           const taken_ranges = (index_of_first_range_not_considered >= 0
@@ -1266,7 +1279,6 @@ export class CompassCalibrationTool extends NisModal {
 }
 
 export namespace CalibrationTool {
-  import arrow = PathGraphics.arrow;
   import gielinor_compass = clue_data.gielinor_compass;
 
   export function cleanExport(samples: RawSample[]): string {
@@ -1457,21 +1469,21 @@ export namespace CalibrationTool {
               .setStyle({color: "#ffff00"})
               .addTo(this.queue_view)
           }
-
-          arrow(this.tool.reference.value(), TileCoordinates.move(this.tool.reference.value(), OffsetSelection.activeOffset(sel)), {
-            type: "none"
-          })
-            .setStyle({color: "#ffff00", weight: 3})
-            .addTo(this.queue_view)
+          /*
+                    arrow(this.tool.reference.value(), TileCoordinates.move(this.tool.reference.value(), OffsetSelection.activeOffset(sel)), {
+                      type: "none"
+                    })
+                      .setStyle({color: "#ffff00", weight: 3})
+                      .addTo(this.queue_view)*/
 
         }
       )
-/*
+
       leaflet.polyline(
           queue.map(s => Vector2.toLatLong(Vector2.add(this.tool.reference.value(), OffsetSelection.activeOffset(s))))
         )
         .setStyle({color: "#ffff00", weight: 3})
-        .addTo(this.queue_view)*/
+        .addTo(this.queue_view)
     }
   }
 

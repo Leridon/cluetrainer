@@ -62,6 +62,8 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
   }
 
   bad_samples(): FullCompassCalibrationFunction.CompressedSample[] {
+    return this.samples.filter(s => s.is_merged)
+
     return this.samples.flatMap((s, i) => {
       const next = index(this.samples, i + 1)
 
@@ -162,7 +164,8 @@ export namespace FullCompassCalibrationFunction {
   export type CompressedSample = {
     is_angle: Angles.AngleRange,
     should_angle: Angles.AngleRange,
-    raw_samples: CalibrationTool.RawSample[]
+    raw_samples: CalibrationTool.RawSample[],
+    is_merged?: boolean
   }
 
   export namespace CompressedSample {
@@ -197,8 +200,6 @@ export namespace FullCompassCalibrationFunction {
       })
     }
 
-    // TODO: Merge neighbouring, overlapping samples
-
     // Sort compressed samples by is angle range
     compressed_samples.sort(Order.comap(Order.natural_order, s => s.is_angle.from))
 
@@ -211,7 +212,6 @@ export namespace FullCompassCalibrationFunction {
 
       if (merged_i < 0) break
 
-
       const sample = compressed_samples[merged_i]
       const next = index(compressed_samples, merged_i + 1)
 
@@ -219,6 +219,7 @@ export namespace FullCompassCalibrationFunction {
       sample.is_angle = Angles.AngleRange.merge(sample.is_angle, next.is_angle)
 
       sample.raw_samples.push(...next.raw_samples)
+      sample.is_merged = true
 
       compressed_samples.splice((merged_i + 1) % compressed_samples.length, 1)
     }
