@@ -394,10 +394,14 @@ export namespace Changelog {
 
       builder.wip(55, "TBD", new Date(Date.parse("TBD")))
         .list(l => l
+          .item("Added a scan tree for the Lost Grove scan.", new List()
+            .item("This is still subject for improvement. Let us know your thoughts on the route.")
+          )
           .item("Fixed location of the teleport to Velucia on the Archaeology teleport.")
           .item("Updated paths for compass steps north of the Crafting Guild to match the environment changes of the 110 Crafting update.")
           .item("Fixed an impossible surge in the Haunted Woods scan route.")
           .item("Changed a redclick target in the Menaphos scan route for easier execution.")
+          .item("Fixed the path for the master emote step in front of the Menaphos library to actually land in the emote range.")
         )
 
         builder.release(54, "New Methods and Bugfixes", new Date(Date.parse("2025-07-06")))
