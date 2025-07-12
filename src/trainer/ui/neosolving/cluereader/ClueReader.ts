@@ -359,9 +359,6 @@ export class ClueReader {
         }
 
         if (compass_state?.type == "likely_closed" || compass_state?.type == "likely_concealed") {
-          console.error("Compass found, but not parsed properly")
-          console.error(`Broken: ${compass_state.type}, Reason: ${compass_state.details}`)
-
           return null
         }
 

@@ -1,6 +1,5 @@
 import {CapturedImage, NeedleImage} from "../../../../../lib/alt1/capture";
 import {async_lazy, lazy} from "../../../../../lib/Lazy";
-import {ImageDetect} from "alt1";
 import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
 import {util} from "../../../../../lib/util/util";
 import {Vector2} from "../../../../../lib/math";
@@ -10,10 +9,11 @@ import sampleImage = util.sampleImage;
 
 export class CapturedCompass {
 
+  public readonly anchor_area: CapturedImage
   public readonly arc_line: CapturedImage
   public readonly compass_area: CapturedImage
 
-  constructor(public readonly body: CapturedImage) {
+  constructor(public readonly body: CapturedImage, public readonly finder: CapturedCompass.CompassFinder) {
     body.setName("compass")
 
     this.arc_line = body.getSubSection({
@@ -22,10 +22,14 @@ export class CapturedCompass {
     }).setName("arc line")
 
     this.compass_area = body.getSubSection(CapturedCompass.ARROW_RECT_FROM_BODY).setName("compass body")
+    this.anchor_area = body.getSubSection({
+      origin: Vector2.neg(CapturedCompass.origin_offset_from_anchor),
+      size: finder.anchor.size()
+    })
   }
 
   recapture(img: CapturedImage): CapturedCompass {
-    return new CapturedCompass(this.body.recapture(img))
+    return new CapturedCompass(this.body.recapture(img), this.finder)
   }
 
   private _is_arc_lines = lazy(() => {
@@ -49,31 +53,37 @@ export class CapturedCompass {
 }
 
 export namespace CapturedCompass {
+  export class CompassFinder implements Finder<CapturedCompass> {
+    constructor(public readonly anchor: NeedleImage) {
+    }
+
+    /**
+     * Looks for a compass in the given {@link CapturedImage} by looking for the north-indicator.
+     * @param screen The image to search for a compass interface.
+     */
+    find(screen: CapturedImage): CapturedCompass {
+      const position = screen.findNeedle(this.anchor)[0]
+
+      if (position) {
+        const section = screen.getScreenSection(
+          ScreenRectangle.move(
+            position.screenRectangle(),
+            CapturedCompass.origin_offset_from_anchor,
+            CapturedCompass.UI_SIZE
+          ),
+        )
+
+        return new CapturedCompass(section, this)
+      }
+
+      return null
+    }
+  }
+
   export const finder = async_lazy(async () => {
     const anchor = await CapturedCompass.anchor.get()
 
-    return new class implements Finder<CapturedCompass> {
-      /**
-       * Looks for a compass in the given {@link CapturedImage} by looking for the north-indicator.
-       * @param screen The image to search for a compass interface.
-       */
-      find(screen: CapturedImage): CapturedCompass {
-        const position = screen.findNeedle(anchor)[0]
-
-        if (position) {
-          const section = screen.getSubSection(
-            ScreenRectangle.move(position.relativeRectangle(),
-              CapturedCompass.origin_offset_from_anchor,
-              CapturedCompass.UI_SIZE),
-          )
-
-          return new CapturedCompass(section)
-        }
-
-        return null
-      }
-
-    }
+    return new CompassFinder(anchor)
   })
 
   export const anchor = async_lazy(async () => await NeedleImage.fromURL("/alt1anchors/compassnorth.png"))
