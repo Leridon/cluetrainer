@@ -392,7 +392,7 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-        builder.wip(55, "Compass Changes")
+        builder.wip(56, "Compass Changes")
           .list(l => l
             .item("Updated the internal compass calibration tool.")
             .item("Updated the compass calibration for anti aliasing turned off to be much more accurate.")
@@ -400,6 +400,11 @@ export namespace Changelog {
             .item("Migrated the compass overlay to new library code, so that it will disappear after Clue Trainer is reloaded or closed.")
             .item("Added an antialiasing indicator to the compass overlay.")
             .item("Added interactive tooltips to the compass status overlay.")
+            .item("Upgraded the compass reader.", new List()
+              .item("It now produces more precise angles.")
+              .item("It is more resistant against interference from tooltips or infobox popups.")
+              .item("Closed compasses are detected more consistently.")
+            )
           )
 
       builder.release(55, "Lost Grove Method and Minor Fixes", new Date(Date.parse("2025-07-12")))
