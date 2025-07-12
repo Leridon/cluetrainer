@@ -505,7 +505,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
       solution_area: undefined
     }
 
-    log().log(`Changed state ${this.state.state_id} (${NeoSolving.ActiveState.title(this.state)})`, "Solving")
+    log().log(`Created state ${this.state.state_id} (${NeoSolving.ActiveState.title(this.state)})`, "Solving")
 
     this.history.push(this.state)
 

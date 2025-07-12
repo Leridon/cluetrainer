@@ -130,6 +130,10 @@ export namespace Angles {
       return construct(a.to, b.from)
     }
 
+    export function merge(a: AngleRange, b: AngleRange): AngleRange {
+      return construct(Math.min(a.from, b.from), Math.max(a.to, b.to))
+    }
+
     export function size(self: AngleRange): number {
       return normalizeAngle(self.to - self.from)
     }

@@ -8,7 +8,6 @@ import {lazy} from "../../../../../lib/Lazy";
 import index = util.index;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
 import UncertainAngle = Angles.UncertainAngle;
-import angleDifference = Angles.angleDifference;
 import Order = util.Order;
 
 export interface CompassCalibrationFunction {
@@ -31,7 +30,7 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
   private _inbetweens = lazy(() => {
     if (this.samples.length == 0) return [Angles.AngleRange.around(Math.PI / 8, 2 * Math.PI)]
     else return this.samples.map((sample, i) =>
-      Angles.AngleRange.between(sample.is_angle, index(this.samples, i + 1).is_angle)
+      Angles.AngleRange.between(sample.should_angle, index(this.samples, i + 1).should_angle)
     ).sort(Order.reverse(Order.comap(Order.natural_order, r => Angles.AngleRange.size(r))))
   })
 
@@ -41,7 +40,7 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
 
   minEpsilons(): number[] {
     return this.samples.map((sample, i) =>
-      Angles.AngleRange.size(sample.is_angle) / 2
+      Angles.AngleRange.size(sample.should_angle) / 2
     )
   }
 
@@ -52,7 +51,7 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
       const below = index(this.samples, i - 1)
       const above = index(this.samples, i + 1)
 
-      average_epsilon += Angles.AngleRange.size(sample.is_angle) / (2 * Math.PI) * FullCompassCalibrationFunction.SamplingResult.fromHit(below, sample, above).result.epsilon
+      average_epsilon += Angles.AngleRange.size(sample.should_angle) / (2 * Math.PI) * FullCompassCalibrationFunction.SamplingResult.fromHit(below, sample, above).result.epsilon
 
       const gap_above = FullCompassCalibrationFunction.SamplingResult.fromBetween(sample, above)
 
@@ -66,7 +65,7 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
     return this.samples.flatMap((s, i) => {
       const next = index(this.samples, i + 1)
 
-      const diff = Angles.angleDifferenceSigned(s.is_angle.to, next.is_angle.from)
+      const diff = Angles.angleDifferenceSigned(s.should_angle.to, next.should_angle.from)
 
       const is_bad = diff < 0 && Math.abs(diff) < Math.PI
 
@@ -82,20 +81,20 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
         details: {
           type: "outside",
           before: {
-            read_angle: Math.PI / 2,
-            is_angle: {from: 0, to: Math.PI},
+            is_angle: {from: Math.PI / 2, to: Math.PI / 2},
+            should_angle: {from: 0, to: Math.PI},
             raw_samples: []
           },
           after: {
-            read_angle: 3 * Math.PI / 2,
-            is_angle: {from: Math.PI, to: 2 * Math.PI},
+            is_angle: {from: 3 * Math.PI / 2, to: 3 * Math.PI / 2,},
+            should_angle: {from: Math.PI, to: 2 * Math.PI},
             raw_samples: []
           },
         }
       }
     }
 
-    if (read_angle < this.samples[0].read_angle) read_angle += 2 * Math.PI;
+    if (read_angle < this.samples[0].is_angle.from) read_angle += 2 * Math.PI;
 
     // Binary search for the angle in the sample set
     const find_lower = (lower: number, higher: number): number => {
@@ -105,9 +104,9 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
 
       const median_i = Math.ceil((lower + higher) / 2)
 
-      if (Angles.isSameRadians(read_angle, this.samples[median_i].read_angle)) return median_i
+      if (Angles.AngleRange.contains(this.samples[median_i].is_angle, read_angle)) return median_i
 
-      if (read_angle >= this.samples[median_i].read_angle) return find_lower(median_i, higher)
+      if (read_angle > this.samples[median_i].is_angle.to) return find_lower(median_i, higher)
       else return find_lower(lower, median_i - 1)
     }
 
@@ -115,7 +114,7 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
 
     const sample = index(this.samples, sample_i)
 
-    if (angleDifference(read_angle, sample.read_angle) < Angles.EQUALITY_EPSILON) {
+    if (Angles.AngleRange.contains(sample.is_angle, read_angle)) {
       // Read angle is within this sample
       // We need to include the range before and after this slice as well.
 
@@ -133,17 +132,17 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
     }
   }
 
-  reverse_sample(should_angle: number) {
+  reverse_sample(should_angle: number): Angles.UncertainAngle {
     for (let i = 0; i < this.samples.length; i++) {
       const sample = this.samples[i]
       const next = index(this.samples, i + 1)
 
-      if (Angles.AngleRange.contains(this.samples[i].is_angle, should_angle)) {
-        return Angles.UncertainAngle.fromAngle(sample.read_angle)
-      } else if (Angles.AngleRange.contains(Angles.AngleRange.between(this.samples[i].is_angle, next.is_angle), should_angle)) {
+      if (Angles.AngleRange.contains(this.samples[i].should_angle, should_angle)) {
+        return Angles.UncertainAngle.fromRange(sample.is_angle)
+      } else if (Angles.AngleRange.contains(Angles.AngleRange.between(this.samples[i].should_angle, next.should_angle), should_angle)) {
         return Angles.UncertainAngle.fromRange(Angles.AngleRange.construct(
-          sample.read_angle,
-          next.read_angle
+          sample.is_angle.to,
+          next.is_angle.from
         ))
       }
     }
@@ -161,46 +160,72 @@ export namespace FullCompassCalibrationFunction {
    * A compressed sample is a data point mapping a read-angle to a range of should-angles
    */
   export type CompressedSample = {
-    read_angle: number,
     is_angle: Angles.AngleRange,
+    should_angle: Angles.AngleRange,
     raw_samples: CalibrationTool.RawSample[]
   }
 
   export namespace CompressedSample {
     export function toString(self: CompressedSample) {
-      return `${Angles.toString(self.read_angle, 3)} -> [${Angles.toString(self.is_angle.from, 3)}, ${Angles.toString(self.is_angle.to, 3)}]`
+      return `${Angles.AngleRange.toString(self.is_angle, 3)} -> [${Angles.toString(self.should_angle.from, 3)}, ${Angles.toString(self.should_angle.to, 3)}]`
     }
   }
 
   export function compress(samples: CalibrationTool.RawSample[]): CompressedSample[] {
-    const sorted_samples = lodash.sortBy(samples, s => s.is_angle)
+    const sorted_samples = lodash.sortBy(samples, s => CalibrationTool.shouldAngle(s.position))
 
     let i = 0;
 
     const compressed_samples: CompressedSample[] = []
 
     while (i < sorted_samples.length) {
-      const group_angle = sorted_samples[i].is_angle
+      const group_angle = Angles.AngleRange.fromAngles(sorted_samples[i].is_angle)
 
       const group_start_i = i
 
       i++
 
-      while (i < sorted_samples.length && (Angles.isSameRadians(sorted_samples[i].is_angle, group_angle))) i++
+      while (i < sorted_samples.length && (Angles.AngleRange.contains(group_angle, sorted_samples[i].is_angle))) i++
       // i now points to the next sample that is not part of this group
 
       const group = sorted_samples.slice(group_start_i, i)
 
-      const should_range = Angles.AngleRange.fromAngles(
-        ...group.map(s => CalibrationTool.shouldAngle(s.position))
-      )
-
       compressed_samples.push({
-        read_angle: group_angle,
-        is_angle: should_range,
+        is_angle: Angles.AngleRange.fromAngles(...group.map(s => s.is_angle)),
+        should_angle: Angles.AngleRange.fromAngles(...group.map(s => CalibrationTool.shouldAngle(s.position))),
         raw_samples: group
       })
     }
+
+    // TODO: Merge neighbouring, overlapping samples
+
+    // Sort compressed samples by is angle range
+    compressed_samples.sort(Order.comap(Order.natural_order, s => s.is_angle.from))
+
+    while (true) {
+      const merged_i = compressed_samples.findIndex((sample, i) => {
+        const next = index(compressed_samples, i + 1)
+
+        return Angles.angleDifferenceSigned(sample.should_angle.to, next.should_angle.from) < 0
+      })
+
+      if (merged_i < 0) break
+
+
+      const sample = compressed_samples[merged_i]
+      const next = index(compressed_samples, merged_i + 1)
+
+      console.log(`Merging ${merged_i}`)
+
+      sample.should_angle = Angles.AngleRange.merge(sample.should_angle, next.should_angle)
+      sample.is_angle = Angles.AngleRange.merge(sample.is_angle, next.is_angle)
+
+      sample.raw_samples.push(...next.raw_samples)
+
+      compressed_samples.splice((merged_i + 1) % compressed_samples.length, 1)
+    }
+
+    return compressed_samples
 
     return compressed_samples
   }
@@ -223,7 +248,7 @@ export namespace FullCompassCalibrationFunction {
     export function fromBetween(below: CompressedSample, above: CompressedSample): SamplingResult {
       return {
         result: UncertainAngle.fromRange(
-          Angles.AngleRange.between(below.is_angle, above.is_angle)
+          Angles.AngleRange.between(below.should_angle, above.should_angle)
         ),
         details: {
           type: "outside",
@@ -235,7 +260,7 @@ export namespace FullCompassCalibrationFunction {
 
     export function fromHit(below: CompressedSample, hit: CompressedSample, above: CompressedSample): SamplingResult {
       return {
-        result: UncertainAngle.fromRange(Angles.AngleRange.between(below.is_angle, above.is_angle)),
+        result: UncertainAngle.fromRange(Angles.AngleRange.between(below.should_angle, above.should_angle)),
         details: {
           type: "within",
           before: below,
