@@ -219,6 +219,7 @@ export namespace Alt1Overlay {
     }
 
     protected end() {
+      this.active_tooltip?.remove()
     }
 
     public isHovered(): boolean {
