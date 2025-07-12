@@ -396,6 +396,8 @@ export namespace Changelog {
         .list(l => l
           .item("Fixed location of the teleport to Velucia on the Archaeology teleport.")
           .item("Updated paths for compass steps north of the Crafting Guild to match the environment changes of the 110 Crafting update.")
+          .item("Fixed an impossible surge in the Haunted Woods scan route.")
+          .item("Changed a redclick target in the Menaphos scan route for easier execution.")
         )
 
         builder.release(54, "New Methods and Bugfixes", new Date(Date.parse("2025-07-06")))
