@@ -392,6 +392,19 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+      builder.release(55, "Lost Grove Method and Minor Fixes", new Date(Date.parse("2025-07-12")))
+        .list(l => l
+          .item("Added a scan tree for the Lost Grove scan.", new List()
+            .item("This is still subject for improvement. Let us know your thoughts on the route.")
+          )
+          .item("Fixed location of the teleport to Velucia on the Archaeology teleport.")
+          .item("Fixed paths for compass steps north of the Crafting Guild to match the environment changes of the 110 Crafting update.")
+          .item("Fixed an impossible surge in the Haunted Woods scan route.")
+          .item("Changed a redclick target in the Menaphos scan route for easier execution.")
+          .item("Fixed the path for the master emote step in front of the Menaphos library to actually land in the emote range.")
+          .item("When closing the settings window with unsaved changes, you will now be prompted for confirmation.")
+        )
+
         builder.release(54, "New Methods and Bugfixes", new Date(Date.parse("2025-07-06")))
           .notification("New Methods were released")
           .list(l => l

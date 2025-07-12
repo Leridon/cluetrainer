@@ -3604,7 +3604,7 @@ name: "Entrana",
       },
       {
         id: "velucia",
-        target: {"origin": {"x": 3342, "y": 3382, "level": 0}},
+        target: {"origin": {"x": 3342, "y": 3383, "level": 0}},
         code: "0,9",
         name: "Collectors - Velucia",
         menu_ticks: 2,
