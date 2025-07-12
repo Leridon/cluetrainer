@@ -50,7 +50,7 @@ export class CompassReader {
     }
 
     if (CompassReader.DEBUG_COMPASS_READER) {
-      CompassReader.debug_overlay.setGeometry(
+      CompassReader.debug_overlay?.setGeometry(
         this.capture.compass_area.debugOverlay2().buffer()
       )
     }
