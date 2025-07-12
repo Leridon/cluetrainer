@@ -42,4 +42,12 @@ export namespace WikiPage {
     name: string,
     comment?: string
   }
+
+  export function placeholder(): WikiPage {
+    return new class extends WikiPage {
+      render(): void {
+        this.todo()
+      }
+    }
+  }
 }

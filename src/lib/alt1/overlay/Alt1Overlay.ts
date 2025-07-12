@@ -16,6 +16,7 @@ import log = Log.log;
 
 export class Alt1Overlay extends Behaviour {
   private parent: Alt1Overlay | null = null
+  private children_bound_to_rerender: Alt1Overlay[] = []
 
   private group_name: string = uuid()
   private is_frozen = false
@@ -79,6 +80,8 @@ export class Alt1Overlay extends Behaviour {
     ) {
       this.setGeometry(this.render())
     }
+
+    this.children_bound_to_rerender.forEach(c => c.rerender())
   }
 
   protected render(): Alt1OverlayDrawCalls.Buffer {
@@ -128,7 +131,7 @@ export class Alt1Overlay extends Behaviour {
     this.is_actually_visible.set(this.visible.value() && (this.parent == null || this.parent.isVisible()))
   }
 
-  public addTo(parent: Alt1Overlay): this {
+  public addTo(parent: Alt1Overlay, bind_rerender: boolean = false): this {
     if (this.parent != null) {
       log().log("ERROR: Overlay already has a parent.", "Overlays")
       return this
@@ -141,6 +144,8 @@ export class Alt1Overlay extends Behaviour {
     this.refreshVisibility()
 
     parent.withSub(this)
+
+    if (bind_rerender) parent.children_bound_to_rerender.push(this)
 
     return this
   }

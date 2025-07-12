@@ -215,8 +215,6 @@ export namespace FullCompassCalibrationFunction {
       const sample = compressed_samples[merged_i]
       const next = index(compressed_samples, merged_i + 1)
 
-      console.log(`Merging ${merged_i}`)
-
       sample.should_angle = Angles.AngleRange.merge(sample.should_angle, next.should_angle)
       sample.is_angle = Angles.AngleRange.merge(sample.is_angle, next.is_angle)
 

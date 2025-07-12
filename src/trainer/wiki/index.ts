@@ -9,6 +9,7 @@ import {WikiPageMethodEditing} from "./pages/WikiPageMethodEditing";
 import {WikiPageScanTreeEditing} from "./pages/WikiPageScanTreeEditing";
 import {WikiPageInteractiveOverlays} from "./pages/WikiPageInteractiveOverlay";
 import {WikiPageTooFarDifferentLevel} from "./pages/scans/WikiPageTooFarDifferentLevel";
+import {WikiPage} from "./WikiPage";
 
 export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
   constructor() {
@@ -26,11 +27,20 @@ export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
         {id: "toofardifferentlevel", name: "Try scanning a different level.", short_name: "Different Level", renderer: () => new WikiPageTooFarDifferentLevel()}
       ]
     }, {
-      name: "Miscellaneous",
+      name: "Compasses",
       entries: [
-        {id: "interactiveoverlays", name: "Interactive Overlays", renderer: () => new WikiPageInteractiveOverlays()}
+        {id: "compassclues", name: "Compass Clues", renderer: () => WikiPage.placeholder()},
+        {id: "compasssolver", name: "Compass Solver", renderer: () => WikiPage.placeholder()},
+        {id: "compasssolverantialiasing", name: "Antialiasing", renderer: () => WikiPage.placeholder()},
       ]
     },
+      {
+        name: "Miscellaneous",
+        entries: [
+          {id: "interactiveoverlays", name: "Interactive Overlays", renderer: () => new WikiPageInteractiveOverlays()}
+        ]
+
+      },
       {
         name: "Method Creation",
         entries: [
@@ -44,7 +54,7 @@ export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
 
 export namespace ClueTrainerWiki {
   export type page_id = "home" | "scantrees" | "scantreecontroloverlay" | "scans" | "scanequivalenceclasses"
-    | "methodediting" | "scantreeediting" | "toofardifferentlevel" | "interactiveoverlays"
+    | "methodediting" | "scantreeediting" | "toofardifferentlevel" | "interactiveoverlays" | "compassclues" | "compasssolver" | "compasssolverantialiasing"
 
   let instance: ClueTrainerWiki = null
 
