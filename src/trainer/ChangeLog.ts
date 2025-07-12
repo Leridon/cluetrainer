@@ -392,6 +392,11 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+      builder.wip(55, "TBD", new Date(Date.parse("TBD")))
+        .list(l => l
+          .item("Fixed location of the teleport to Velucia on the Archaeology teleport.")
+        )
+
         builder.release(54, "New Methods and Bugfixes", new Date(Date.parse("2025-07-06")))
           .notification("New Methods were released")
           .list(l => l
