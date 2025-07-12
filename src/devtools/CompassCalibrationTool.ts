@@ -36,7 +36,6 @@ import {ChunkedData} from "../lib/util/ChunkedData";
 import {SelectTileInteraction} from "../lib/gamemap/interaction/SelectTileInteraction";
 import {InteractionGuard} from "../lib/gamemap/interaction/InteractionLayer";
 import InteractionTopControl from "../trainer/ui/map/InteractionTopControl";
-import {PathGraphics} from "../trainer/ui/path_graphics";
 import getExpectedAngle = Compasses.getExpectedAngle;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
@@ -54,10 +53,11 @@ import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
 import profileAsync = util.profileAsync;
 import hgrid = C.hgrid;
+import index = util.index;
 
 type Fraction = Vector2
 
-namespace Fraction {
+export namespace Fraction {
   export function value(rationale: Vector2): number {
     return rationale.y / rationale.x
   }
@@ -139,6 +139,15 @@ class SelectionStatusWidget extends Widget {
     } else {
       layout.row(italic("None"))
     }
+
+    layout.row(new LightButton("Queue neighbouring samples").slim().onClick(() => {
+      this.tool.spot_queue.push({
+        name: `Neigbours of ${Vector2.toString(status.offset.offset)}`,
+        function: () => {
+          return this.tool.sample_set.function.reverse_sample(CalibrationTool.shouldAngle(status.offset.offset)).relevant_samples.flatMap(s => s.raw_samples.map(s => s.position)).map(o => ({offset: o}))
+        }
+      })
+    }))
   }
 }
 
@@ -718,37 +727,51 @@ type QueueFillerfunction = {
 }
 
 class CalibrationQueue {
-  public queue: OffsetSelection[] = []
-  public filler: QueueFillerfunction
+  public _backlog: CalibrationQueue.State[] = []
 
   changed = ewent<this>()
 
+  public head(): CalibrationQueue.State {
+    return this._backlog[this._backlog.length - 1]
+  }
+
+  public pop() {
+    const popped = this._backlog.pop()
+
+    if (popped) this.changed.trigger(this)
+
+    return popped
+  }
+
   constructor(public readonly parent: CompassCalibrationTool) {
     this.parent.sample_set.record_event.on(async sample => {
-      const removed = this.remove(sample.position)
+      this.remove(sample.position)
 
-      if (removed != undefined) {
-        const activated = this.dequeue(removed)
+      while (this.head()?.queue.length == 0) {
+        const head = this.pop()
 
-        if (!activated) {
-          if (this.filler?.repeatable) this.fill(this.filler)
-          else this.filler = null
-        }
+        if (head.filler?.repeatable) if (await this.push(head.filler)) return
       }
+
+      this.dequeue()
     })
 
     this.parent.reference.subscribe(async ref => {
-      await this.sortQueue(ref)
+      CalibrationQueue.State.sort(this.head(), ref)
 
       this.changed.trigger(this)
     })
   }
 
   backlog(offset: OffsetSelection) {
-    const index = this.queue.indexOf(offset)
+    const head = this.head()
+
+    if (!head) return
+
+    const index = head.queue.indexOf(offset)
 
     if (index >= 0) {
-      this.queue.push(...this.queue.splice(index, 1))
+      head.queue.push(...head.queue.splice(index, 1))
 
       this.changed.trigger(this)
 
@@ -757,105 +780,120 @@ class CalibrationQueue {
   }
 
   dequeue(index: number = 0): boolean {
-    if (index >= 0 && index < this.queue.length) {
-      this.parent.setOffset(this.queue[index])
+    const head = this.head()
+
+    if (!head) return
+
+    if (index >= 0 && index < head.queue.length) {
+      this.parent.setOffset(head.queue[index])
       return true
     }
 
     return false
   }
 
-  remove(offset: Vector2): number {
-    const i = this.queue.findIndex(e => Vector2.eq(offset, e.offset))
+  private remove(offset: Vector2): number {
+    const index_removed_from_current_state = index(this._backlog.map(stack => CalibrationQueue.State.remove(stack, offset)), -1)
 
-    if (i >= 0) {
-      this.queue.splice(i, 1)
+    if (index_removed_from_current_state != undefined) this.changed.trigger(this)
 
-      this.changed.trigger(this)
-
-      return i
-    }
-
-    return undefined
+    return index_removed_from_current_state
   }
 
   size(): number {
-    return this.queue.length
+    return this.head()?.queue?.length ?? 0
   }
 
   clear() {
-    if (this.queue.length > 0) {
-      this.queue = []
-
+    if (this._backlog.length > 0) {
+      this._backlog = []
       this.changed.trigger(this)
     }
-
-    this.filler = null
   }
 
-  private async sortQueue(reference: TileCoordinates, start_offset: Vector2 = undefined) {
-    if (this.queue.length == 0) return
-
-    const rect: TileRectangle = {"topleft": {"x": 1950, "y": 4152}, "botright": {"x": 3898, "y": 2594}, "level": 0}
-
-    const backlog: OffsetSelection[] = []
-
-    async function findAccessibleOffset(sel: OffsetSelection, i: number = 1): Promise<number> {
-      const off = Vector2.scale(i, sel.offset)
-
-      const pos = TileCoordinates.move(reference, off)
-
-      if (!TileRectangle.contains(rect, pos)) return 0
-
-      if (await HostedMapData.get().isAccessible(pos)) return i
-      else return findAccessibleOffset(sel, i + 1)
+  async push(f: QueueFillerfunction): Promise<boolean> {
+    const new_state: CalibrationQueue.State = {
+      queue: f.function(),
+      filler: f
     }
 
-    for (let offsetSelection of this.queue) {
-      const index = await findAccessibleOffset(offsetSelection)
+    if (new_state.queue.length == 0) return false
 
-      if (index == 0) {
-        backlog.push(offsetSelection)
-      } else {
-        offsetSelection.highlighted_offset = Vector2.scale(index, offsetSelection.offset)
+    await CalibrationQueue.State.sort(new_state, this.parent.reference.value(), OffsetSelection.activeOffset(this.parent.selection.value().offset))
+
+    this._backlog.push(new_state)
+    this.dequeue()
+    this.changed.trigger(this)
+
+    return true
+  }
+}
+
+namespace CalibrationQueue {
+  export type State = {
+    queue: OffsetSelection[]
+    filler: QueueFillerfunction,
+  }
+
+  export namespace State {
+    export function remove(self: State, offset: Vector2): number {
+      const i = self.queue.findIndex(e => Vector2.eq(offset, e.offset))
+
+      if (i >= 0) {
+        self.queue.splice(i, 1)
+
+        return i
       }
+
+      return undefined
     }
 
-    backlog.forEach(offsetSelection => this.queue.splice(this.queue.indexOf(offsetSelection), 1))
+    export async function sort(self: State, reference: TileCoordinates, start_offset: Vector2 = undefined) {
+      if (self.queue.length == 0) return
 
-    const sorted_by_should_angle = lodash.sortBy(this.queue, s => CalibrationTool.shouldAngle(s.offset))
+      const rect: TileRectangle = {"topleft": {"x": 1950, "y": 4152}, "botright": {"x": 3898, "y": 2594}, "level": 0}
 
-    const reference_digspot = this.parent.reference.value()
+      const backlog: OffsetSelection[] = []
 
-    this.queue = await new TravellingSalesmanProblem(sorted_by_should_angle,
-      //new TravellingSalesmanProblem.PathFindingDistanceFunction()
-      new TravellingSalesmanProblem.AStarDistanceFunction(HostedMapData.get(), 64)
-        .comap(s => TileCoordinates.move(reference_digspot, OffsetSelection.activeOffset(s))),
-      start_offset ? {offset: start_offset} : null
-    )
-      .wait(problem => problem
-        .greedy()
-        .optimize_by_pairwise_exchange()
-        .getResult()
+      async function findAccessibleOffset(sel: OffsetSelection, i: number = 1): Promise<number> {
+        const off = Vector2.scale(i, sel.offset)
+
+        const pos = TileCoordinates.move(reference, off)
+
+        if (!TileRectangle.contains(rect, pos)) return 0
+
+        if (await HostedMapData.get().isAccessible(pos)) return i
+        else return findAccessibleOffset(sel, i + 1)
+      }
+
+      for (let offsetSelection of self.queue) {
+        const index = await findAccessibleOffset(offsetSelection)
+
+        if (index == 0) {
+          backlog.push(offsetSelection)
+        } else {
+          offsetSelection.highlighted_offset = Vector2.scale(index, offsetSelection.offset)
+        }
+      }
+
+      backlog.forEach(offsetSelection => self.queue.splice(self.queue.indexOf(offsetSelection), 1))
+
+      const sorted_by_should_angle = lodash.sortBy(self.queue, s => CalibrationTool.shouldAngle(s.offset))
+
+      self.queue = await new TravellingSalesmanProblem(sorted_by_should_angle,
+        //new TravellingSalesmanProblem.PathFindingDistanceFunction()
+        new TravellingSalesmanProblem.AStarDistanceFunction(HostedMapData.get(), 64)
+          .comap(s => TileCoordinates.move(reference, OffsetSelection.activeOffset(s))),
+        start_offset ? {offset: start_offset} : null
       )
+        .wait(problem => problem
+          .greedy()
+          .optimize_by_pairwise_exchange()
+          .getResult()
+        )
 
 
-    this.queue.push(...lodash.sortBy(backlog, s => CalibrationTool.shouldAngle(s.offset)))
-  }
-
-  async fill(f: QueueFillerfunction) {
-    this.clear()
-
-    this.queue = f.function()
-
-    if (this.queue.length > 0) {
-      await this.sortQueue(this.parent.reference.value(), OffsetSelection.activeOffset(this.parent.selection.value().offset))
-
-      this.filler = f
-
-      this.dequeue()
-
-      this.changed.trigger(this)
+      self.queue.push(...lodash.sortBy(backlog, s => CalibrationTool.shouldAngle(s.offset)))
     }
   }
 }
@@ -878,8 +916,13 @@ class CalibrationQueueView extends Widget {
 
     this.props.header("Offset Queue")
 
-    this.props.named("Size", hgrid(this.queue.size().toString(), new LightButton("Clear").slim().onClick(() => this.queue.clear())))
-    this.props.named("Type", this.queue.filler ? this.queue.filler.name : "")
+    const head = this.queue.head()
+
+    const head_size = head?.queue?.length ?? 0
+
+    this.props.named("Type", head?.filler ? head.filler.name : "")
+    this.props.named("Size", hgrid(head_size.toString(), new LightButton("Pop").setEnabled(!!this.queue.head()).slim().onClick(() => this.queue.pop())))
+    this.props.named("Backlog", hgrid((lodash.sumBy(this.queue._backlog, l => l.queue.length) - head_size).toString(), new LightButton("Clear").slim().onClick(() => this.queue.clear())))
   }
 }
 
@@ -951,11 +994,7 @@ export class CompassCalibrationTool extends NisModal {
     })
 
     this.sample_set.set_loaded.on(() => {
-      if (this.spot_queue.filler) {
-        this.spot_queue.fill(this.spot_queue.filler)
-      } else {
-        this.spot_queue.clear()
-      }
+      this.spot_queue.clear()
     })
 
     this.reader.onChange(() => {
@@ -1046,7 +1085,7 @@ export class CompassCalibrationTool extends NisModal {
           )
           .onCommit(tile => {
             const grouped = lodash.groupBy(gielinor_compass.spots, spot =>
-              this.sample_set.function.reverse_sample(Compasses.getExpectedAngle(tile, spot)).median
+              this.sample_set.function.reverse_sample(Compasses.getExpectedAngle(tile, spot)).angle.median
             )
 
             const discriminated_spots = Object.entries(grouped).filter(([angle, spots]) => {
@@ -1064,7 +1103,7 @@ export class CompassCalibrationTool extends NisModal {
       .slim()
       .setEnabled(bad_samples.length > 0)
       .onClick(() => {
-        this.spot_queue.fill({
+        this.spot_queue.push({
           name: "Implausibilities",
           function: () => bad_samples.flatMap(s => s.raw_samples).map(s => ({
             offset: s.position
@@ -1084,6 +1123,24 @@ export class CompassCalibrationTool extends NisModal {
         return false
       }).map(s => s.position))
     }))*/
+
+    props.row(new LightButton("Queue Manual").onClick(() => {
+        this.spot_queue.push({
+          name: "Fill",
+          function: () => {
+            const legends_cape = {x: 2728, y: 3348, level: 0}
+
+            const spots = [68, 388, 192, 100, 144, 150]
+
+            return spots.map(spot_id => {
+              return {
+                offset: Fraction.reduce(Vector2.sub(legends_cape, gielinor_compass.spots[spot_id - 1]))
+              }
+            })
+          }
+        })
+      })
+    )
 
     props.named("Largest Gap", hgrid(Angles.toString(Angles.AngleRange.size(uncalibrated[0]), 3),
       new LightButton("Queue").slim().onClick(() => this.fillQueueWithBiggestUncalibratedRange())
@@ -1126,7 +1183,7 @@ export class CompassCalibrationTool extends NisModal {
 
   setOffset(offset: OffsetSelection, zoom: boolean = true) {
     if (!offset.auto) {
-      const in_queue = this.spot_queue.queue.find(e => Vector2.eq(e.offset, offset.offset))
+      const in_queue = this.spot_queue.head()?.queue?.find(e => Vector2.eq(e.offset, offset.offset))
 
       if (in_queue) {
         in_queue.highlighted_offset = offset.highlighted_offset
@@ -1148,7 +1205,7 @@ export class CompassCalibrationTool extends NisModal {
   }
 
   fillQueueWithBiggestUncalibratedRange() {
-    this.spot_queue.fill(
+    this.spot_queue.push(
       {
         name: "Largest Gap",
         repeatable: true,
@@ -1461,7 +1518,7 @@ export namespace CalibrationTool {
 
       const selection = this.tool.selection.value()
 
-      const queue = this.tool.spot_queue.parent.spot_queue.queue
+      const queue = this.tool.spot_queue.parent.spot_queue.head().queue
 
       queue.forEach(sel => {
           if (!Vector2.eq(selection.offset.offset, sel.offset)) {
