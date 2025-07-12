@@ -1,7 +1,6 @@
 import {Compasses} from "../../../../lib/cluetheory/Compasses";
 import {Rectangle, Vector2} from "../../../../lib/math";
 import lodash from "lodash";
-import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
 import {CapturedCompass} from "./capture/CapturedCompass";
 import {lazy, Lazy} from "../../../../lib/Lazy";
 import {EwentHandler, observe} from "../../../../lib/reactive";
@@ -22,6 +21,7 @@ import {ClueTrainerWiki} from "../../../wiki";
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
 import log = Log.log;
 import AntialiasingType = CompassReader.AntialiasingType;
+import profile = util.profile;
 
 export class CompassReader {
   constructor(public readonly capture: CapturedCompass, private calibration_functions: (_: AntialiasingType) => CompassCalibrationFunction = typ => CompassReader.calibration_tables[typ]) {
@@ -52,9 +52,9 @@ export class CompassReader {
     }
 
     if (CompassReader.DEBUG_COMPASS_READER) {
-      CompassReader.debug_overlay.clear()
-
-      this.capture.compass_area.debugOverlay(CompassReader.debug_overlay)
+      CompassReader.debug_overlay.setGeometry(
+        this.capture.compass_area.debugOverlay2().buffer()
+      )
     }
 
     const TARGET_X_SAMPLE_OFFSETS: Vector2[] = [
@@ -83,33 +83,125 @@ export class CompassReader {
     })) return {type: "likely_solved", fingerprint: undefined}
 
     const rectangle_samples: Vector2[] = []
+    let antialiasing_detected: boolean = false
 
-    // Gather all black pixels
-    for (let y = 0; y < buf.height; y++) {
-      for (let x = 0; x < buf.width; x++) {
-        if (isArrow(x, y)) {
-          rectangle_samples.push({x, y})
+    const scan_map: boolean[][] = new Array(buf.width).fill(null).map(() => new Array(buf.width).fill(false))
+
+    let visits = 0
+
+    function visitNew(x: number, y: number): boolean {
+      visits++
+      scan_map[y][x] = true // Mark as seen
+
+      if (!isArrow(x, y)) {
+        if (!antialiasing_detected && Vector2.max_axis(Vector2.sub(buf_center, {x, y})) < 20 && buf.getPixel(x, y)[0] < 40) antialiasing_detected = true
+
+        return false // Not an arrow pixel, don't follow up
+      }
+
+      rectangle_samples.push({x, y})
+
+      return true
+    }
+
+
+    function visit(x: number, y: number): boolean {
+      visits++
+
+      if (x < 0 || y < 0 || x >= buf.width || y >= buf.height) return false // Out of bounds
+      if (scan_map[y][x]) return false // Already seen
+
+      visits--
+
+      return visitNew(x, y)
+    }
+
+    function floodFillScanDFS(x: number, y: number) {
+      if (!visit(x, y)) return
+
+      floodFillScanDFS(x - 1, y - 1)
+      floodFillScanDFS(x - 1, y)
+      floodFillScanDFS(x - 1, y + 1)
+      floodFillScanDFS(x, y - 1)
+      floodFillScanDFS(x, y + 1)
+      floodFillScanDFS(x + 1, y - 1)
+      floodFillScanDFS(x + 1, y)
+      floodFillScanDFS(x + 1, y + 1)
+    }
+
+    function floodFillScanDFSLine(x: number, y: number): [number, number] {
+      function visitLine(x: number, y: number): [number, number] {
+        if (!visit(x, y)) return null
+
+        let min_x: number = x - 1
+        let max_x: number = x + 1
+
+        while (min_x >= 0 && visitNew(min_x, y)) min_x--
+        while (max_x < buf.width && visitNew(max_x, y)) max_x++
+
+        return [min_x + 1, max_x - 1]
+      }
+
+      const line = visitLine(x, y)
+
+      if (!line) return
+
+      const [min_x, max_x] = line
+
+      for (let x = min_x - 1; x <= max_x + 1; x++) {
+        const child_line = floodFillScanDFSLine(x, y + 1)
+
+        if (child_line) x = child_line[1] + 1
+      }
+
+      for (let x = min_x - 1; x <= max_x + 1; x++) {
+        const child_line = floodFillScanDFSLine(x, y - 1)
+
+        if (child_line) x = child_line[1] + 1
+      }
+
+      return line
+    }
+
+    function floodFillScanBFS(x: number, y: number) {
+      const queue = []
+
+      function push(x: number, y: number) {
+        if (visit(x, y)) queue.push([x, y]) // Push to queue
+      }
+
+      push(x, y)
+
+      let i = 0
+
+      while (i < queue.length) {
+        const [x, y] = queue[i++]
+
+        push(x - 1, y - 1)
+        push(x - 1, y)
+        push(x - 1, y + 1)
+        push(x, y - 1)
+        push(x, y + 1)
+        push(x + 1, y - 1)
+        push(x + 1, y)
+        push(x + 1, y + 1)
+      }
+    }
+
+    function simpleScan() {
+      for (let y = 0; y < buf.height; y++) {
+        for (let x = 0; x < buf.width; x++) {
+          if (isArrow(x, y)) {
+            rectangle_samples.push({x, y})
+          }
         }
       }
     }
 
-    // Check for antialiasing
-    const antialiasing_detected = (() => {
-      const ANTIALIASING_SEARCH_RADIUS = 40
-
-      const aa_search_origin = Vector2.add(buf_center, {x: -ANTIALIASING_SEARCH_RADIUS, y: -ANTIALIASING_SEARCH_RADIUS})
-      const aa_search_end = Vector2.add(buf_center, {x: ANTIALIASING_SEARCH_RADIUS, y: ANTIALIASING_SEARCH_RADIUS})
-
-      for (let y = aa_search_origin.y; y < aa_search_end.y; y++) {
-        for (let x = aa_search_origin.x; x < aa_search_end.x; x++) {
-          const red = buf.getPixel(x, y)[0]
-
-          if (!isArrow(x, y) && red < 40) return true
-        }
-      }
-
-      return false
-    })()
+    // Gather all black pixels
+    profile(() => floodFillScanDFSLine(buf_center.x, buf_center.y), "Flood fill")
+    //profile(() => simpleScan(), "Flood fill")
+    console.log(`${visits} visits with ${rectangle_samples.length} samples`)
 
     const fingerprint: CompassReader.ReadFingerprint = {
       pixel_count: rectangle_samples.length,
@@ -199,8 +291,6 @@ export class CompassReader {
       log().log(`Angle: ${Angles.toString(initial_angle, 3)} (CoM), ${Angles.toString(angle_after_rectangle_sample, 3)} (rect), ${Angles.UncertainAngle.toString(final_angle, 3)} (final)`,
         "Compass Reader"
       )
-
-      CompassReader.debug_overlay.render()
     }
 
     return {
@@ -221,7 +311,7 @@ export namespace CompassReader {
   import AsyncInitialization = util.AsyncInitialization;
   import degreesToRadians = Angles.degreesToRadians;
   import UncertainAngle = Angles.UncertainAngle;
-  export const DEBUG_COMPASS_READER = false
+  export const DEBUG_COMPASS_READER = true
   export const DISABLE_CALIBRATION = false
 
   export type ReadFingerprint = {
@@ -253,7 +343,7 @@ export namespace CompassReader {
     export type LikelySolved = Base & { type: "likely_solved" }
   }
 
-  export const debug_overlay = new LegacyOverlayGeometry()
+  export const debug_overlay = Alt1Overlay.manual()
 
   export type AntialiasingType = "off" | "msaa"
 
@@ -3502,7 +3592,7 @@ export namespace CompassReader {
 
       should_rerender ||= previous_committed_state != this.committed_state.value()
 
-      if(should_rerender) this.status_overlay?.rerender()
+      if (should_rerender) this.status_overlay?.rerender()
     }
 
     onChange(handler: (new_value: Service.State, old: Service.State) => any, handler_f?: (_: EwentHandler<any>) => void): this {

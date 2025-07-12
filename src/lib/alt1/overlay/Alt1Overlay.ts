@@ -31,6 +31,8 @@ export class Alt1Overlay extends Behaviour {
 
     this.visible.subscribe(() => this.refreshVisibility())
     this.is_actually_visible.subscribe(() => this.refresh())
+
+    this.heartbeater.bindToPageLifetime(this)
   }
 
   private readonly _interactivity = lazy(() => {
@@ -56,7 +58,7 @@ export class Alt1Overlay extends Behaviour {
   }
 
   private refresh() {
-    if (!this.isActive()) return
+    if (!this.isActive() && !this.oneshot) return
 
     if (this._interactivity.hasValue()) {
       this._interactivity.get().refreshTooltip()
@@ -67,7 +69,7 @@ export class Alt1Overlay extends Behaviour {
 
     if (this.isVisible()) {
       alt1.overLaySetGroup(this.group_name)
-      this.overlay.playback(this.heartbeater.HEARTBEAT * 1.5)
+      this.overlay.playback(this.oneshot?.alive_time ?? this.heartbeater.HEARTBEAT * 1.5)
       alt1.overLaySetGroup("")
     }
 
@@ -99,8 +101,6 @@ export class Alt1Overlay extends Behaviour {
       this.heartbeater.onHeartbeat(() => this.refresh())
         .bindTo(this.lifetime_manager)
     }
-
-    this.heartbeater.bindToPageLifetime(this)
 
     this.refresh()
   }
@@ -158,6 +158,10 @@ export class Alt1Overlay extends Behaviour {
     overlay.start()
 
     return overlay
+  }
+
+  static manual(time: number = 3000): Alt1Overlay {
+    return new Alt1Overlay({alive_time: time}).start()
   }
 }
 

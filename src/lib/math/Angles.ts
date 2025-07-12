@@ -12,7 +12,7 @@ export namespace Angles {
     return (degrees / 360) * (2 * Math.PI)
   }
 
-  export const EQUALITY_EPSILON = degreesToRadians(0.035)
+  export const EQUALITY_EPSILON = degreesToRadians(0.01)
 
   export function isSameRadians(a: number, b: number) {
     return Math.abs(a - b) < EQUALITY_EPSILON
@@ -63,7 +63,7 @@ export namespace Angles {
     }
 
     export function contains(range: AngleRange, angle: number): boolean {
-      if (angle >= range.from && angle <= range.to) return true
+      if (angle >= range.from - EQUALITY_EPSILON && angle <= range.to + EQUALITY_EPSILON) return true
 
       const complement = angle + 2 * Math.PI
 

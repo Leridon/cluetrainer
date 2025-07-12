@@ -80,10 +80,8 @@ export namespace CapturedCompass {
   export const origin_offset_from_anchor = {x: -78, y: -20}
   export const UI_SIZE = {x: 172, y: 259}
 
-
-  export const ARROW_CENTER_OFFSET_FROM_BODY_TL = {x: 88, y: 137}
-  export const INNER_COMPASS_RADIUS: number = 75
-  export const TOTAL_COMPASS_RADIUS: number = 80
+  export const ARROW_CENTER_OFFSET_FROM_BODY_TL = {x: 89, y: 137}
+  export const TOTAL_COMPASS_RADIUS: number = 85
 
   export const ARROW_RECT_FROM_BODY: ScreenRectangle = {
     origin: Vector2.sub(ARROW_CENTER_OFFSET_FROM_BODY_TL, {x: TOTAL_COMPASS_RADIUS, y: TOTAL_COMPASS_RADIUS}),
