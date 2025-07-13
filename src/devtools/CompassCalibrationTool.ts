@@ -36,6 +36,7 @@ import {ChunkedData} from "../lib/util/ChunkedData";
 import {SelectTileInteraction} from "../lib/gamemap/interaction/SelectTileInteraction";
 import {InteractionGuard} from "../lib/gamemap/interaction/InteractionLayer";
 import InteractionTopControl from "../trainer/ui/map/InteractionTopControl";
+import {PathGraphics} from "../trainer/ui/path_graphics";
 import getExpectedAngle = Compasses.getExpectedAngle;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
@@ -444,10 +445,6 @@ class TravellingSalesmanProblem<T> {
 
           const improvement = pre_swap - post_swap
 
-          if (n == 6 && j == i + 1) {
-            console.log(`${i} <-> ${j} : ${improvement}`)
-          }
-
           if (improvement > best_improvement) {
             best_swap = [i, j]
             best_improvement = improvement
@@ -459,27 +456,15 @@ class TravellingSalesmanProblem<T> {
       n++
       if (n > 100) throw new Error(`Aborting after ${n} swaps`)
 
-      console.log(`Swapping ${best_swap} for gain of ${best_improvement}`)
       const copy = [...best]
 
       copy[best_swap[0]] = best[best_swap[1]]
       copy[best_swap[1]] = best[best_swap[0]]
 
       best = copy
-
-      console.log("After swap")
-      console.log(best)
-
-      console.log(`${best.length} Score ${this._evaluateComeFrom(TravellingSalesmanProblem.solution_to_come_from(best))}`)
     }
 
-    console.log("Old")
-    console.log(this.come_from_solution)
-
     this.come_from_solution = TravellingSalesmanProblem.solution_to_come_from(best)
-
-    console.log("New")
-    console.log(this.come_from_solution)
 
     console.log(`Did ${n} improvements`)
 
@@ -569,6 +554,8 @@ namespace TravellingSalesmanProblem {
 
     async distance(a: TileCoordinates, b: TileCoordinates): Promise<number> {
       if (TileCoordinates.eq(a, b)) return 0
+
+      if (Vector2.max_axis(Vector2.sub(a, b)) > this.max_distance) return Math.min(2 * this.max_distance, Vector2.max_axis(Vector2.sub(a, b)))
 
       type Node = {
         position: ChunkedData.coordinates,
@@ -723,6 +710,8 @@ function approximateFractionAsRationaleNumber(max_denominator: number,
 type QueueFillerfunction = {
   name: string,
   repeatable?: boolean,
+  disable_sorting?: boolean,
+  show_line?: boolean,
   function: () => OffsetSelection[]
 }
 
@@ -745,7 +734,8 @@ class CalibrationQueue {
 
   constructor(public readonly parent: CompassCalibrationTool) {
     this.parent.sample_set.record_event.on(async sample => {
-      this.remove(sample.position)
+      const head = this.head()
+      const head_removal_index = this.remove(sample.position)
 
       while (this.head()?.queue.length == 0) {
         const head = this.pop()
@@ -753,7 +743,7 @@ class CalibrationQueue {
         if (head.filler?.repeatable) if (await this.push(head.filler)) return
       }
 
-      this.dequeue()
+      this.dequeue(head == this.head() ? head_removal_index : 0)
     })
 
     this.parent.reference.subscribe(async ref => {
@@ -819,7 +809,7 @@ class CalibrationQueue {
 
     if (new_state.queue.length == 0) return false
 
-    await CalibrationQueue.State.sort(new_state, this.parent.reference.value(), OffsetSelection.activeOffset(this.parent.selection.value().offset))
+    if (!f.disable_sorting) await CalibrationQueue.State.sort(new_state, this.parent.reference.value(), OffsetSelection.activeOffset(this.parent.selection.value().offset))
 
     this._backlog.push(new_state)
     this.dequeue()
@@ -1111,36 +1101,45 @@ export class CompassCalibrationTool extends NisModal {
         })
       })))
 
-    /*
-    props.row(new LightButton("Delete all near 90°").onClick(() => {
+    /*props.row(new LightButton("Delete all near 90°").onClick(() => {
       this.sample_set.delete(...this.sample_set.get().filter(s => {
         const should_angle = CalibrationTool.shouldAngle(s.position)
 
-        for (let i = 0; i < 4; i++) {
-          if (Angles.angleDifference(should_angle, i * Math.PI / 2) < Angles.degreesToRadians(10)) return true
+        for (let i = 0; i < 2; i++) {
+          const diff = Angles.angleDifference(should_angle, i * Math.PI)
+
+          if (diff < Angles.degreesToRadians(18) && diff > Angles.degreesToRadians(10)) return true
         }
 
         return false
       }).map(s => s.position))
-    }))*/
+    }))
 
     props.row(new LightButton("Queue Manual").onClick(() => {
         this.spot_queue.push({
           name: "Fill",
+          show_line: true,
+          disable_sorting: true,
           function: () => {
-            const legends_cape = {x: 2728, y: 3348, level: 0}
+            type ProblematicSpots = {
+              reference: TileCoordinates,
+              spots: number[]
+            }
 
-            const spots = [68, 388, 192, 100, 144, 150]
+            const problems: ProblematicSpots[] = [
+              {reference: {x: 2728, y: 3348, level: 0}, spots: [68, 388, 192, 100, 196, 390, 104, 158, 195]}, // legends cape
+              {reference: {x: 3005, y: 3375, level: 0}, spots: [352, 57, 317, 91, 158, 86]}, // natures amulet
+            ]
 
-            return spots.map(spot_id => {
+            return problems.flatMap(problem => problem.spots.map(spot_id => {
               return {
-                offset: Fraction.reduce(Vector2.sub(legends_cape, gielinor_compass.spots[spot_id - 1]))
+                offset: Fraction.reduce(Vector2.sub(problem.reference, gielinor_compass.spots[spot_id - 1]))
               }
-            })
+            }))
           }
         })
       })
-    )
+    )*/
 
     props.named("Largest Gap", hgrid(Angles.toString(Angles.AngleRange.size(uncalibrated[0]), 3),
       new LightButton("Queue").slim().onClick(() => this.fillQueueWithBiggestUncalibratedRange())
@@ -1205,6 +1204,8 @@ export class CompassCalibrationTool extends NisModal {
   }
 
   fillQueueWithBiggestUncalibratedRange() {
+    const MAX_RANGE = Angles.degreesToRadians(0.3)
+
     this.spot_queue.push(
       {
         name: "Largest Gap",
@@ -1214,16 +1215,19 @@ export class CompassCalibrationTool extends NisModal {
 
           const largest_range = Angles.AngleRange.size(candidates[0])
 
-          const index_of_first_range_not_considered = candidates.findIndex((candidate, index) =>
-            !(Angles.AngleRange.size(candidate) >= 0.7 * largest_range)
-          )
+          const index_of_first_range_not_considered = Math.min(300, candidates.findIndex((candidate, index) => {
+              const size = Angles.AngleRange.size(candidate)
+
+              return size < 0.7 * largest_range && size < MAX_RANGE
+            }
+          ))
 
           const taken_ranges = (index_of_first_range_not_considered >= 0
             ? candidates.slice(0, index_of_first_range_not_considered)
             : candidates).flatMap(range => {
             const size = Angles.AngleRange.size(range)
 
-            const sections = Math.max(1, Math.round(size / (Math.PI / 4)))
+            const sections = Math.max(1, Math.ceil(size / MAX_RANGE))
 
             return Angles.AngleRange.split(range, sections)
           })
@@ -1337,6 +1341,7 @@ export class CompassCalibrationTool extends NisModal {
 
 export namespace CalibrationTool {
   import gielinor_compass = clue_data.gielinor_compass;
+  import arrow = PathGraphics.arrow;
 
   export function cleanExport(samples: RawSample[]): string {
     return "[\n" +
@@ -1518,29 +1523,33 @@ export namespace CalibrationTool {
 
       const selection = this.tool.selection.value()
 
-      const queue = this.tool.spot_queue.parent.spot_queue.head().queue
+      const queue = this.tool.spot_queue.parent.spot_queue.head()
 
-      queue.forEach(sel => {
+      queue.queue.forEach(sel => {
           if (!Vector2.eq(selection.offset.offset, sel.offset)) {
             tilePolygon(TileCoordinates.move(this.tool.reference.value(), OffsetSelection.activeOffset(sel)))
               .setStyle({color: "#ffff00"})
               .addTo(this.queue_view)
           }
-          /*
-                    arrow(this.tool.reference.value(), TileCoordinates.move(this.tool.reference.value(), OffsetSelection.activeOffset(sel)), {
-                      type: "none"
-                    })
-                      .setStyle({color: "#ffff00", weight: 3})
-                      .addTo(this.queue_view)*/
 
+          if (queue.filler.show_line) {
+            arrow(this.tool.reference.value(), TileCoordinates.move(this.tool.reference.value(), OffsetSelection.activeOffset(sel)), {
+              type: "none"
+            })
+              .setStyle({color: "#00ffd9", weight: 1})
+              .addTo(this.queue_view)
+          }
         }
       )
 
-      leaflet.polyline(
-          queue.map(s => Vector2.toLatLong(Vector2.add(this.tool.reference.value(), OffsetSelection.activeOffset(s))))
-        )
-        .setStyle({color: "#ffff00", weight: 3})
-        .addTo(this.queue_view)
+      if (!queue.filler.show_line) {
+        leaflet.polyline(
+            queue.queue.map(s => Vector2.toLatLong(Vector2.add(this.tool.reference.value(), OffsetSelection.activeOffset(s))))
+          )
+          .setStyle({color: "#ffff00", weight: 3})
+          .addTo(this.queue_view)
+      }
+
     }
   }
 
