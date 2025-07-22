@@ -36,7 +36,6 @@ class SpiderwebTool {
   private clear_button: LightButton
   private calculate_button: LightButton
 
-
   constructor(private editor: PathEditor, private layout: Properties) {
     layout.header("Pathfinding Lite", "center", 1)
 
@@ -77,7 +76,7 @@ class SpiderwebTool {
       return
     }
 
-    this.layer.set(new SpiderwebTool.PreviewLayer(this.editor).addTo(this.editor.game_layer))
+    this.layer.set(new SpiderwebTool.PreviewLayer(this.editor).addTo(this.editor.handler_layer))
 
     groups.map(g => new SpiderwebTool.InversePathFindingResultEntity(g)).forEach(e => e.addTo(this.layer.value()))
   }
