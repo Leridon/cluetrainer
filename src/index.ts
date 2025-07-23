@@ -1,7 +1,9 @@
-import {ClueTrainer} from "./trainer/ClueTrainer";
+import {BroadcastReaderApp} from "./broadcastreader/BroadcastReaderApp";
 
 document.addEventListener("DOMContentLoaded", (e) => {
-  ClueTrainer.instance().start()
+  //ClueTrainer.instance().start()
+
+  new BroadcastReaderApp().start()
 })
 
 
