@@ -163,9 +163,9 @@ export namespace ChatReader {
 
       return [
         {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_broadcast_bronze.data.png"), character: "\u2746"}, //HEAVY CHEVRON SNOWFLAKE
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_broadcast_death.data.png"), character: "\u{1F480}"}, //SKULL
         {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_broadcast_gold.data.png"), character: "\u2746"}, //HEAVY CHEVRON SNOWFLAKE
         {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_broadcast_silver.data.png"), character: "\u2746"}, //HEAVY CHEVRON SNOWFLAKE
-        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_hcimdeath.png"), character: "\u{1F480}"}, //SKULL
         {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badgegim.data.png"), character: "\u3289"}, //CIRCLED IDEOGRAPH TEN
         {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badgehcim.data.png"), character: "\u{1F480}"}, //SKULL
         {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badgeironman.data.png"), character: "\u26AF"}, //UNMARRIED PARTNERSHIP SYMBOL

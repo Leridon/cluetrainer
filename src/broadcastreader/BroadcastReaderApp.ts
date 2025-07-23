@@ -30,6 +30,10 @@ import hbox = C.hbox;
 import Message = MessageBuffer.Message;
 import renderTimespan = util.renderTimespan;
 import spacer = C.spacer;
+import {LogViewer} from "../devtools/LogViewer";
+import {DevelopmentModal} from "../devtools/DevelopmentMenu";
+import {Log} from "../lib/util/Log";
+import log = Log.log;
 
 const item_mapping: {
   item: string,
@@ -270,6 +274,15 @@ export class BroadcastReaderApp extends Behaviour {
     }
 
     NotificationBar.instance().appendTo(jquery("body"))
+
+
+    document.body.addEventListener("keydown", async e => {
+      if (e.key == "F6") {
+        log().log("Log exported")
+
+        LogViewer.do(log().get())
+      }
+    })
 
     setInterval(() => {
       this.login.updateTime()
