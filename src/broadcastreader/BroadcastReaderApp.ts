@@ -19,6 +19,8 @@ import {MessageBuffer} from "../lib/alt1/readers/chatreader/ChatBuffer";
 import {ExpandIcon, NislIcon} from "../trainer/ui/nisl";
 import {ExpansionBehaviour} from "../lib/ui/ExpansionBehaviour";
 import {Alt1} from "../lib/alt1/Alt1";
+import {LogViewer} from "../devtools/LogViewer";
+import {Log} from "../lib/util/Log";
 import notification = Notification.notification;
 import findBestMatch = util.findBestMatch;
 import stringSimilarity = util.stringSimilarity;
@@ -30,9 +32,6 @@ import hbox = C.hbox;
 import Message = MessageBuffer.Message;
 import renderTimespan = util.renderTimespan;
 import spacer = C.spacer;
-import {LogViewer} from "../devtools/LogViewer";
-import {DevelopmentModal} from "../devtools/DevelopmentMenu";
-import {Log} from "../lib/util/Log";
 import log = Log.log;
 
 const item_mapping: {
@@ -270,7 +269,7 @@ export class BroadcastReaderApp extends Behaviour {
 
   protected begin() {
     if (Alt1.exists()) {
-      alt1.identifyAppUrl("appconfig.json");
+      alt1.identifyAppUrl("appconfig.broadcastreader.json");
     }
 
     NotificationBar.instance().appendTo(jquery("body"))
