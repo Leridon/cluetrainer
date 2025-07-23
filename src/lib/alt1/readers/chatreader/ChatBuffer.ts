@@ -8,13 +8,13 @@ export class MessageBuffer {
 
   private _messages: MessageBuffer.Message[] = []
 
-  add(message: MessageBuffer.Message): boolean {
+  add(message: MessageBuffer.Message): MessageBuffer.Message {
     let i = this._messages.length
 
     while (i > 0) {
       const msg = this._messages[i - 1]
 
-      if (MessageBuffer.Message.equals(message, msg)) return false
+      if (MessageBuffer.Message.equals(message, msg)) return null
 
       if (msg.timestamp < message.timestamp) break
 
@@ -25,7 +25,7 @@ export class MessageBuffer {
 
     this.new_message.trigger(message)
 
-    return true
+    return message
   }
 
   get(): MessageBuffer.Message[] {

@@ -2,7 +2,7 @@ import {NeoSolvingSubBehaviour} from "../NeoSolvingSubBehaviour";
 import NeoSolvingBehaviour from "../NeoSolvingBehaviour";
 import {GameLayer} from "../../../../lib/gamemap/GameLayer";
 import {Clues} from "../../../../lib/runescape/clues";
-import {TileCoordinates, TileRectangle} from "../../../../lib/runescape/coordinates";
+import {GieliCoordinates, TileCoordinates, TileRectangle} from "../../../../lib/runescape/coordinates";
 import {GameMapMouseEvent} from "../../../../lib/gamemap/MapEvents";
 import {C} from "../../../../lib/ui/constructors";
 import * as leaflet from "leaflet"
@@ -10,7 +10,7 @@ import {Rectangle, Transform, Vector2} from "../../../../lib/math";
 import {MapEntity} from "../../../../lib/gamemap/MapEntity";
 import {Compasses} from "../../../../lib/cluetheory/Compasses";
 import {TeleportSpotEntity} from "../../map/entities/TeleportSpotEntity";
-import lodash, {isArray} from "lodash";
+import lodash, {identity, isArray} from "lodash";
 import {CompassReader} from "../cluereader/CompassReader";
 import {Transportation} from "../../../../lib/runescape/transportation";
 import {TransportData} from "../../../../data/transports";
@@ -32,6 +32,8 @@ import {Log} from "../../../../lib/util/Log";
 import {TextRendering} from "../../TextRendering";
 import {Alt1} from "../../../../lib/alt1/Alt1";
 import {Angles} from "../../../../lib/math/Angles";
+import {ChatReader} from "../../../../lib/alt1/readers/ChatReader";
+import {CaptureInterval} from "../../../../lib/alt1/capture";
 import span = C.span;
 import cls = C.cls;
 import TeleportGroup = Transportation.TeleportGroup;
@@ -530,11 +532,17 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       } else {
         const state = this.process.state()
 
-        if (state.state != "normal") return
+        if (state.state != "normal") return undefined
 
         return state.result.angle
       }
     })()
+
+    if (angle == undefined) {
+      if (is_manual) notification("Cannot commit undefined angle.", "error").show()
+
+      return
+    }
 
     const info = Compasses.TriangulationPoint.construct(CompassSolving.Spot.coords(entry.position), angle)
 
@@ -759,10 +767,14 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       this.setSelection(this.entries.length - 1)
     }
 
+    if (entry.information) {
+      this.updatePossibilities(false)
+    }
+
     return entry
   }
 
-  async registerSpot(coords: TileArea.ActiveTileArea | TeleportGroup.Spot, is_compass_solution: boolean): Promise<void> {
+  async registerSpot(coords: TileArea.ActiveTileArea | TeleportGroup.Spot, is_compass_solution: boolean): Promise<CompassSolving.Entry> {
     const entry = this.entries.find((entry, i) => {
       if (i < this.entry_selection_index) return false
       if (entry.preconfigured && entry.information == null) return false
@@ -792,11 +804,13 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     if (hadInfo) {
       if (entry.is_solution_of_previous_clue && is_compass_solution) {
-        await this.commit(entry)
+        this.commit(entry)
       } else {
         await this.updatePossibilities(false)
       }
     }
+
+    return entry
   }
 
   /**
@@ -896,6 +910,55 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
   protected async begin() {
     this.layer = new CompassHandlingLayer(this)
     this.parent.layer.add(this.layer)
+
+    if (Alt1.exists()) {
+
+      this.lifetime_manager.bind(
+        ChatReader.instance().subscribe({options: () => ({interval: CaptureInterval.fromApproximateInterval(100), paused: () => !this.needs_more_info})})
+      )
+
+      ChatReader.instance().new_message_bulk.on(async e => {
+        const trigger = e.find(m => m.text.includes("The sextant displays"))
+
+        if (!trigger || trigger.timestamp < Date.now() - 2000) {
+          console.log("Discarding because message is too old")
+          return
+        }
+
+        const rest = e.filter(m => m.timestamp == trigger.timestamp)
+
+        console.log(rest)
+
+        const latitude_message = rest.map(m => m.text.match(/^(\d\d) degrees, (\d\d) minutes (north|south)/)).find(identity)
+        const longitude_message = rest.map(m => m.text.match(/^(\d\d) degrees, (\d\d) minutes (east|west)/)).find(identity)
+
+        if (!longitude_message || !latitude_message) {
+          console.log("Discarding because lat or long is missing.")
+          return
+        }
+
+        const coords: GieliCoordinates = {
+          longitude: {
+            degrees: Number(longitude_message[1]),
+            minutes: Number(longitude_message[2]),
+            direction: longitude_message[3] as "east" | "west"
+          }, latitude: {
+            degrees: Number(latitude_message[1]),
+            minutes: Number(latitude_message[2]),
+            direction: latitude_message[3] as "north" | "south"
+          }
+        }
+
+        log().log(GieliCoordinates.toString(coords))
+
+        if (this.process.state()?.state != "normal") return
+
+        const entry = await this.registerSpot(TileArea.activate(TileArea.init(GieliCoordinates.toCoords(coords))), false)
+        await this.commit(entry)
+
+      }).bindTo(this.lifetime_manager)
+    }
+
 
     if (this.reader) {
       this.process?.start()
