@@ -11,7 +11,7 @@ import {ChatboxFinder} from "./chatreader/ChatboxFinder";
 import {ChatAnchors} from "./chatreader/ChatAnchors";
 import {CapturedChatbox} from "./chatreader/CapturedChatbox";
 import {MessageBuffer} from "./chatreader/ChatBuffer";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {Alt1} from "../Alt1";
 import {Alt1ScreenCaptureService} from "../capture/Alt1ScreenCaptureService";
 import {Alt1Color} from "../Alt1Color";
@@ -53,11 +53,8 @@ export class ChatReader extends DerivedCaptureService {
     super();
 
     this.new_message.on(msg => {
-      if (!this.debug_mode) return
-
-      console.log(Message.toString(msg))
-
       this.collected_unreported_messages.push(msg)
+      if (this.debug_mode) log().log(Message.toString(msg))
     })
 
     this.initialization = async_init(async () => {
@@ -91,6 +88,7 @@ export class ChatReader extends DerivedCaptureService {
 
     try {
       if (notification.time.time - this.search_interval > this.last_search || this.chatboxes.length == 0) {
+
         this.last_search = notification.time.time
 
         const current_boxes = this.initialization.get().finder.find(capture)
@@ -109,7 +107,9 @@ export class ChatReader extends DerivedCaptureService {
 
         this.chatboxes.push(...new_readers)
 
-        this.chatboxes.forEach(box => box.chatbox.identifyFontAndOffset(this.initialization.get().needles))
+        this.chatboxes.forEach((box) =>
+          box.chatbox.identifyFontAndOffset(this.initialization.get().needles)
+        )
         // TODO: If font can't be identified, display some kind of warning
 
       } else {
