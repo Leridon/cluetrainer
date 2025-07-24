@@ -330,7 +330,9 @@ export class ClueReader {
           if (CLUEREADERDEBUG)
             notification(`Scan ${scan_text}`).show()
 
-          const best = findBestMatch(clue_data.scan, scan => stringSimilarity(scan_text, scan.scantext))
+          const best = findBestMatch(clue_data.scan, scan => stringSimilarity(scan_text, scan.scantext), 0.9)
+
+          if (!best) return null
 
           return {type: "scan", step: best.value, scan_interface: scan}
         }
