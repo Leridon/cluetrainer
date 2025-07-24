@@ -1,0 +1,16 @@
+{
+  "appName": "CC Broadcast Reader",
+  "description": "Broadcast reader",
+  "appUrl": "index.html",
+  "configUrl": "appconfig.json",
+  "iconUrl": "assets/icons/broadcast.png",
+  "defaultWidth": 250,
+  "defaultHeight": 180,
+  "minWidth": 250,
+  "minHeight": 180,
+  "maxWidth": 1000,
+  "maxHeight": 1000,
+  "requestHandlers": [],
+  "activators": [],
+  "permissions": "pixel,gamestate,overlay"
+}
