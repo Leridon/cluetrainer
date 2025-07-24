@@ -911,55 +911,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     this.layer = new CompassHandlingLayer(this)
     this.parent.layer.add(this.layer)
 
-    if (Alt1.exists()) {
-
-      this.lifetime_manager.bind(
-        ChatReader.instance().subscribe({options: () => ({interval: CaptureInterval.fromApproximateInterval(100), paused: () => !this.needs_more_info})})
-      )
-
-      ChatReader.instance().new_message_bulk.on(async e => {
-        const trigger = e.find(m => m.text.includes("The sextant displays"))
-
-        if (!trigger || trigger.timestamp < Date.now() - 2000) {
-          console.log("Discarding because message is too old")
-          return
-        }
-
-        const rest = e.filter(m => m.timestamp == trigger.timestamp)
-
-        console.log(rest)
-
-        const latitude_message = rest.map(m => m.text.match(/^(\d\d) degrees, (\d\d) minutes (north|south)/)).find(identity)
-        const longitude_message = rest.map(m => m.text.match(/^(\d\d) degrees, (\d\d) minutes (east|west)/)).find(identity)
-
-        if (!longitude_message || !latitude_message) {
-          console.log("Discarding because lat or long is missing.")
-          return
-        }
-
-        const coords: GieliCoordinates = {
-          longitude: {
-            degrees: Number(longitude_message[1]),
-            minutes: Number(longitude_message[2]),
-            direction: longitude_message[3] as "east" | "west"
-          }, latitude: {
-            degrees: Number(latitude_message[1]),
-            minutes: Number(latitude_message[2]),
-            direction: latitude_message[3] as "north" | "south"
-          }
-        }
-
-        log().log(GieliCoordinates.toString(coords))
-
-        if (this.process.state()?.state != "normal") return
-
-        const entry = await this.registerSpot(TileArea.activate(TileArea.init(GieliCoordinates.toCoords(coords))), false)
-        await this.commit(entry)
-
-      }).bindTo(this.lifetime_manager)
-    }
-
-
     if (this.reader) {
       this.process?.start()
 
@@ -980,6 +931,65 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       this.renderWidget()
 
       await this.reset()
+
+      if (Alt1.exists()) {
+        this.lifetime_manager.bind(
+          ChatReader.instance().subscribe({
+            options: () => ({
+              interval: CaptureInterval.fromApproximateInterval(300), paused: () => {
+                console.log(this.needs_more_info)
+                return !this.needs_more_info
+              }
+            })
+          })
+        )
+
+        ChatReader.instance().new_message_bulk.on(async e => {
+          log().log(`Got ${e.length} new messages`, "Sextant Reading", e)
+
+          const trigger = e.find(m => m.text.includes("The sextant displays"))
+
+          if (!trigger) {
+            log().log("Discarding because message is not a sextant display", "Sextant Reading")
+            return
+          }
+
+          if (!trigger || trigger.timestamp < Date.now() - 2000) {
+            log().log("Discarding because message is too old")
+            return
+          }
+
+          const rest = e.filter(m => m.timestamp == trigger.timestamp)
+
+          const latitude_message = rest.map(m => m.text.match(/^(\d\d) degrees, (\d\d) minutes (north|south)/)).find(identity)
+          const longitude_message = rest.map(m => m.text.match(/^(\d\d) degrees, (\d\d) minutes (east|west)/)).find(identity)
+
+          if (!longitude_message || !latitude_message) {
+            log().log("Discarding because lat or long is missing.")
+            return
+          }
+
+          const coords: GieliCoordinates = {
+            longitude: {
+              degrees: Number(longitude_message[1]),
+              minutes: Number(longitude_message[2]),
+              direction: longitude_message[3] as "east" | "west"
+            }, latitude: {
+              degrees: Number(latitude_message[1]),
+              minutes: Number(latitude_message[2]),
+              direction: latitude_message[3] as "north" | "south"
+            }
+          }
+
+          log().log(GieliCoordinates.toString(coords))
+
+          if (this.process.state()?.state != "normal") return
+
+          const entry = await this.registerSpot(TileArea.activate(TileArea.init(GieliCoordinates.toCoords(coords))), false)
+          await this.commit(entry)
+
+        }).bindTo(this.lifetime_manager)
+      }
     }
   }
 
