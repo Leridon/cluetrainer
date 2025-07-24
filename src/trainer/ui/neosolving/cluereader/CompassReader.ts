@@ -340,7 +340,7 @@ export namespace CompassReader {
     export type LikelySolved = Base & { type: "likely_solved" }
   }
 
-  export const debug_overlay = Alt1Overlay.manual()
+  export const debug_overlay = Alt1.checkPermission(p => p.overlays) ? Alt1Overlay.manual() : null
 
   export type AntialiasingType = "off" | "msaa"
 

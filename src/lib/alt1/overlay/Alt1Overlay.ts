@@ -58,7 +58,7 @@ export class Alt1Overlay extends Behaviour {
   }
 
   private refresh() {
-    if (!Alt1.exists()) return
+    if (!Alt1.checkPermission(p => p.overlays)) return
 
     if (!this.isActive() && !this.oneshot) return
 
@@ -163,8 +163,6 @@ export class Alt1Overlay extends Behaviour {
   }
 
   static manual(time: number = 3000): Alt1Overlay {
-    if(!Alt1.exists()) return null
-
     return new Alt1Overlay({alive_time: time}).start()
   }
 }
