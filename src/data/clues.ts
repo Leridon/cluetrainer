@@ -4402,7 +4402,7 @@ export namespace clue_data {
         "level": 0
       }, {"x": 3590, "y": 3475, "level": 0}],
       "range": 11,
-      "scantext": "the Haunted Woods"
+      "scantext": "Haunted Woods"
     }, {
       "id": 360,
       "type": "scan",
@@ -4430,7 +4430,7 @@ export namespace clue_data {
         "level": 0
       }, {"x": 2942, "y": 2934, "level": 0}],
       "range": 14,
-      "scantext": "the Kharazi Jungle"
+      "scantext": "Kharazi Jungle"
     }, {
       "id": 361,
       "type": "scan",

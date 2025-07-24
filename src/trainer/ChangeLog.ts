@@ -407,6 +407,7 @@ export namespace Changelog {
               .item("Improved the detection logic for solved compasses. This should improve the behaviour for back to back compasses further.")
             )
             .item("Fixed that teleports added with the 110 runecrafting update were not detected when hovering them and pressing Alt+1.")
+            .item("Updated Clue Chasers recommendations for passage of the abyss setup to include the Delver's anklet.")
           )
 
         builder.release(55, "Lost Grove Method and Minor Fixes", new Date(Date.parse("2025-07-12")))
