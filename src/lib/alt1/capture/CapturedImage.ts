@@ -6,7 +6,6 @@ import {LegacyOverlayGeometry} from "../LegacyOverlayGeometry";
 import {NeedleImage} from "./NeedleImage";
 import * as lodash from "lodash";
 import {Alt1Color} from "../Alt1Color";
-import {Alt1Overlay} from "../overlay/Alt1Overlay";
 import {Alt1OverlayDrawCalls} from "../overlay/Alt1OverlayDrawCalls";
 
 export class CapturedImage {
@@ -45,6 +44,10 @@ export class CapturedImage {
       //debugger
       throw new Error("Tried to perform an operation on an expired ImgRefBind")
     }
+  }
+
+  timestamp(): number {
+    return this.capture.timestamp
   }
 
   setName(name: string): this {

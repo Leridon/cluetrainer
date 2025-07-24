@@ -34,6 +34,7 @@ import {Alt1} from "../../../../lib/alt1/Alt1";
 import {Angles} from "../../../../lib/math/Angles";
 import {ChatReader} from "../../../../lib/alt1/readers/ChatReader";
 import {CaptureInterval} from "../../../../lib/alt1/capture";
+import {MessageBuffer} from "../../../../lib/alt1/readers/chatreader/ChatBuffer";
 import span = C.span;
 import cls = C.cls;
 import TeleportGroup = Transportation.TeleportGroup;
@@ -378,7 +379,13 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
             this.entries.forEach(e => e.widget.setPreviewAngle(is_state?.state == "normal" ? is_state.result.angle : null))
           }
         }
+
+        if (!was_state && this.latest_unhandled_sextant_position) {
+          log().log("Checking backlogged sextant position")
+          this.tryToHandleSextantPosition()
+        }
       }, h => h.bindTo(this.lifetime_manager))
+
     }
   }
 
@@ -509,13 +516,13 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     }
   }
 
-  async commit(entry: CompassSolving.Entry = undefined, is_manual: boolean = false) {
+  async commit(entry: CompassSolving.Entry = undefined, is_manual: boolean = false): Promise<boolean> {
     entry = entry ?? this.entries[this.entry_selection_index]
 
-    if (!entry || !this.entries.includes(entry)) return
+    if (!entry || !this.entries.includes(entry)) return false
 
-    if (!entry?.position) return
-    if (entry.information != null) return
+    if (!entry?.position) return false
+    if (entry.information != null) return false
 
     const angle: UncertainAngle = ((): UncertainAngle => {
       if (DEBUG_ANGLE_OVERRIDE != null) return DEBUG_ANGLE_OVERRIDE
@@ -541,7 +548,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     if (angle == undefined) {
       if (is_manual) notification("Cannot commit undefined angle.", "error").show()
 
-      return
+      return false
     }
 
     const info = Compasses.TriangulationPoint.construct(CompassSolving.Spot.coords(entry.position), angle)
@@ -551,7 +558,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
       log().log(`Cowardly refusing to lock in impossible angle ${UncertainAngle.toString(info.angle_radians, 6)} from ${info.modified_origin.x} | ${info.modified_origin.y}`, "Compass Solving")
 
-      return
+      return false
     }
 
     log().log(`Committing ${UncertainAngle.toString(info.angle_radians)} to entry ${this.entries.indexOf(entry)} (${info.modified_origin.x} | ${info.modified_origin.y})`, "Compass Solving")
@@ -615,6 +622,8 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
         this.setSelection(index_of_next_free_entry)
       }
     }
+
+    return true
   }
 
   private async updateMethodPreviews() {
@@ -774,6 +783,11 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     return entry
   }
 
+  private latest_unhandled_sextant_position: {
+    trigger_message: MessageBuffer.Message,
+    position: TileCoordinates,
+  } = null
+
   async registerSpot(coords: TileArea.ActiveTileArea | TeleportGroup.Spot, is_compass_solution: boolean): Promise<CompassSolving.Entry> {
     const entry = this.entries.find((entry, i) => {
       if (i < this.entry_selection_index) return false
@@ -907,6 +921,28 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     }
   }
 
+  private async tryToHandleSextantPosition() {
+    if (!this.latest_unhandled_sextant_position) return
+
+    const reader_state = this.process.state()
+
+    if (!reader_state) return
+
+    if (reader_state.state != "normal") {
+      log().log("Discarding because no valid angle is available.")
+
+      this.latest_unhandled_sextant_position = null
+
+      return
+    }
+
+    const entry = await this.registerSpot(TileArea.activate(TileArea.init(this.latest_unhandled_sextant_position.position)), false)
+
+    await this.commit(entry, true)
+
+    this.latest_unhandled_sextant_position = null
+  }
+
   protected async begin() {
     this.layer = new CompassHandlingLayer(this)
     this.parent.layer.add(this.layer)
@@ -947,19 +983,19 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
         ChatReader.instance().new_message_bulk.on(async e => {
           log().log(`Got ${e.length} new messages`, "Sextant Reading", e)
 
-          const trigger = e.find(m => m.text.includes("The sextant displays"))
+          const trigger_message = lodash.maxBy(e.filter(m => m.text.includes("The sextant displays")), m => m.timestamp)
 
-          if (!trigger) {
+          if (!trigger_message) {
             log().log("Discarding because message is not a sextant display", "Sextant Reading")
             return
           }
 
-          if (!trigger || trigger.timestamp < Date.now() - 2000) {
-            log().log("Discarding because message is too old")
+          if (!trigger_message || (Date.now() - trigger_message.timestamp) > 3000) {
+            log().log(`Discarding because message is too old (${(Date.now() - trigger_message.timestamp).toFixed(0)}ms ago)`, "Sextant Reading")
             return
           }
 
-          const rest = e.filter(m => m.timestamp == trigger.timestamp)
+          const rest = e.filter(m => m.timestamp == trigger_message.timestamp)
 
           const latitude_message = rest.map(m => m.text.match(/^(\d\d) degrees, (\d\d) minutes (north|south)/)).find(identity)
           const longitude_message = rest.map(m => m.text.match(/^(\d\d) degrees, (\d\d) minutes (east|west)/)).find(identity)
@@ -981,12 +1017,16 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
             }
           }
 
-          log().log(GieliCoordinates.toString(coords))
+          if (!this.latest_unhandled_sextant_position || trigger_message.timestamp > this.latest_unhandled_sextant_position.trigger_message.timestamp) {
+            this.latest_unhandled_sextant_position = {
+              trigger_message: trigger_message,
+              position: GieliCoordinates.toCoords(coords)
+            }
 
-          if (this.process.state()?.state != "normal") return
+            log().log(GieliCoordinates.toString(coords))
 
-          const entry = await this.registerSpot(TileArea.activate(TileArea.init(GieliCoordinates.toCoords(coords))), false)
-          await this.commit(entry)
+            this.tryToHandleSextantPosition()
+          }
 
         }).bindTo(this.lifetime_manager)
       }
