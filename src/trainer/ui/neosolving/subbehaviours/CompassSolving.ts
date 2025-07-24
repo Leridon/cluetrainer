@@ -1084,13 +1084,14 @@ export namespace CompassSolving {
         }, {
         expected: "Cast Taverley Teleport",
         teleport_id: {group: "normalspellbook", spot: "taverley"}
-      }, {
-        expected: "Cast Varrock Teleport",
-        teleport_id: {group: "normalspellbook", spot: "varrock"}
-      }, {
-        expected: "Cast Lumbridge Teleport",
-        teleport_id: {group: "normalspellbook", spot: "lumbridge"}
-      }, {
+      },
+        {expected: "Cast Varrock Teleport", teleport_id: {group: "normalspellbook", spot: "varrock"}},
+        {expected: "Cast Lumbridge Teleport", teleport_id: {group: "normalspellbook", spot: "lumbridge"}},
+        {expected: "Cast North-western Anachronia Teleport", teleport_id: {group: "normalspellbook", spot: "northwesternanachronia"}},
+        {expected: "Cast Eastern Anachronia Teleport", teleport_id: {group: "normalspellbook", spot: "easternanachronia"}},
+        {expected: "Cast Northern Lost Grove Teleport", teleport_id: {group: "normalspellbook", spot: "northlostgrove"}},
+
+        {
         expected: "Cast Falador Teleport",
         teleport_id: {group: "normalspellbook", spot: "falador"}
       }, {
@@ -1145,6 +1146,8 @@ export namespace CompassSolving {
         {expected: "Cast Barbarian Teleport", teleport_id: {group: "lunarspellbook", spot: "barbarian"}},
         {expected: "Cast North Ardougne Teleport", teleport_id: {group: "lunarspellbook", spot: "northardougne"}},
         {expected: "Cast Khazard Teleport", teleport_id: {group: "lunarspellbook", spot: "khazard"}},
+        {expected: "Cast Western Kharazi Jungle Teleport", teleport_id: {group: "lunarspellbook", spot: "westernkharazi"}},
+        {expected: "Cast Mountain Camp Teleport", teleport_id: {group: "lunarspellbook", spot: "mountaincamp"}},
         {expected: "Cast Fishing Guild Teleport", teleport_id: {group: "lunarspellbook", spot: "fishing"}},
         {expected: "Cast Catherby Teleport", teleport_id: {group: "lunarspellbook", spot: "catherby"}},
         {expected: "Cast Ice Plateau Teleport", teleport_id: {group: "lunarspellbook", spot: "iceplateu"}},
