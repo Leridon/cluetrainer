@@ -10,6 +10,9 @@ import {WikiPageScanTreeEditing} from "./pages/WikiPageScanTreeEditing";
 import {WikiPageInteractiveOverlays} from "./pages/WikiPageInteractiveOverlay";
 import {WikiPageTooFarDifferentLevel} from "./pages/scans/WikiPageTooFarDifferentLevel";
 import {WikiPage} from "./WikiPage";
+import {WikiPageCompassClues} from "./pages/compass/WikiPageCompassClues";
+import {WikiPageCompassSolver} from "./pages/compass/WikiPageCompassSolver";
+import {WikiPageCompassAngleUncertainty} from "./pages/compass/WikiPageCompassAngleUncertainty";
 
 export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
   constructor() {
@@ -29,9 +32,9 @@ export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
     }, {
       name: "Compasses",
       entries: [
-        {id: "compassclues", name: "Compass Clues", renderer: () => WikiPage.placeholder()},
-        {id: "compasssolver", name: "Compass Solver", renderer: () => WikiPage.placeholder()},
-        {id: "compasssolverantialiasing", name: "Antialiasing", renderer: () => WikiPage.placeholder()},
+        {id: "compassclues", name: "Compass Clues", renderer: () => new WikiPageCompassClues()},
+        {id: "compasssolver", name: "Compass Solver", renderer: () => new WikiPageCompassSolver()},
+        {id: "compasssolveruncertainty", name: "Improving Accuracy", renderer: () => new WikiPageCompassAngleUncertainty()},
       ]
     },
       {
@@ -54,11 +57,11 @@ export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
 
 export namespace ClueTrainerWiki {
   export type page_id = "home" | "scantrees" | "scantreecontroloverlay" | "scans" | "scanequivalenceclasses"
-    | "methodediting" | "scantreeediting" | "toofardifferentlevel" | "interactiveoverlays" | "compassclues" | "compasssolver" | "compasssolverantialiasing"
+    | "methodediting" | "scantreeediting" | "toofardifferentlevel" | "interactiveoverlays" | "compassclues" | "compasssolver" | "compasssolverantialiasing" | "compasssolveruncertainty"
 
   let instance: ClueTrainerWiki = null
 
-  export function openOnPage(page?: page_id) {
+  export function openOnPage(page?: page_id): void {
     if (instance) instance.setActiveSection(page)
     else {
       const modal = new class extends NisModal {

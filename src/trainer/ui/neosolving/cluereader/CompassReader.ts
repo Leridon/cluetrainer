@@ -822,7 +822,7 @@ export namespace CompassReader {
           constructor() {
             super()
 
-            this.interactivity().main_hotkey_pressed.on(() => ClueTrainerWiki.openOnPage("compasssolverantialiasing"))
+            this.interactivity().main_hotkey_pressed.on(() => ClueTrainerWiki.openOnPage("compasssolveruncertainty"))
           }
 
           protected renderWithBuilder(overlay_geometry: Alt1OverlayDrawCalls.GeometryBuilder) {

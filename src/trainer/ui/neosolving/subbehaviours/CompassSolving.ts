@@ -280,8 +280,12 @@ class CompassEntryWidget extends Widget {
             PathGraphics.Teleport.asSpan(this.entry.position),
             span(this.entry.position.spot.name)
           )
+
+          position.tooltip(TileArea.toString(this.entry.position.targetArea()))
         } else {
           position.append(span(Vector2.toString(this.entry.position.center())))
+
+          position.tooltip(TileArea.toString(this.entry.position.parent))
         }
       } else {
         position.append(italic("No location selected"))
