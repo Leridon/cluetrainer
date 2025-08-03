@@ -47,6 +47,7 @@ import {AugmentedMethod} from "../../model/MethodPackManager";
 import {SolvingMethods} from "../../model/methods";
 import {SectionControl} from "../widgets/SectionControl";
 import {ScanPanelOverlay} from "../neosolving/subbehaviours/scans/ScanPanelReader";
+import {Notification} from "../NotificationBar";
 import cls = C.cls;
 import PotaColor = Settings.PotaColor;
 import hbox = C.hbox;
@@ -61,7 +62,6 @@ import TeleportGroup = Transportation.TeleportGroup;
 import span = C.span;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import Appendable = C.Appendable;
-import {Notification} from "../NotificationBar";
 import notification = Notification.notification;
 
 class SettingsLayout extends Properties {
@@ -1328,7 +1328,7 @@ class CompassSettingsEdit extends Widget {
 
     this.layout.setting("Custom Strategies", "You can create your own triangulation presets if none of the builtin presets fit your needs. Don't forget to activate your custom preset in the section above.")
 
-    this.layout.row(new LightButton("Manage Custom Strategies"))
+    // this.layout.row(new LightButton("Manage Custom Strategies"))
 
     type T = CompassSolving.TriangulationPreset | "create"
 
@@ -1573,6 +1573,12 @@ class CompassSettingsEdit extends Widget {
         .onCommit(v => this.value.skip_triangulation_point_if_colinear = v)
         .setValue(this.value.skip_triangulation_point_if_colinear),
       "When active, preset triangulation spots that are too close to being in-line with a previously drawn triangulation arrow are skipped (unless they are the last one remaining)."
+    )
+
+    this.layout.setting(new Checkbox("Read chat for sextant positions")
+        .onCommit(v => this.value.read_chat_for_sextant_message = v)
+        .setValue(this.value.read_chat_for_sextant_message),
+      "When active, the compass solver looks for the chat message produced by using a sextant. If one is detected, the current compass angle is drawn as a line from that position."
     )
   }
 }

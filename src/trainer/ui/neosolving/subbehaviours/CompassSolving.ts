@@ -931,7 +931,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     if (!reader_state) return
 
     if (reader_state.state != "normal") {
-      log().log("Discarding because no valid angle is available.")
+      log().log("Discarding sextant because no valid angle is available.")
 
       this.latest_unhandled_sextant_position = null
 
@@ -982,55 +982,54 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
           })
         )
 
-        ChatReader.instance().new_message_bulk.on(async e => {
-          log().log(`Got ${e.length} new messages`, "Sextant Reading", e)
+        if (this.settings.read_chat_for_sextant_message) {
+          ChatReader.instance().new_message_bulk.on(async e => {
+            log().log(`Got ${e.length} new messages`, "Sextant Reading", e)
 
-          const trigger_message = lodash.maxBy(e.filter(m => m.text.includes("The sextant displays")), m => m.timestamp)
+            const trigger_message = lodash.maxBy(e.filter(m => m.text.includes("The sextant displays")), m => m.timestamp)
 
-          if (!trigger_message) {
-            log().log("Discarding because message is not a sextant display", "Sextant Reading")
-            return
-          }
-
-          if (!trigger_message || (Date.now() - trigger_message.timestamp) > 3000) {
-            log().log(`Discarding because message is too old (${(Date.now() - trigger_message.timestamp).toFixed(0)}ms ago)`, "Sextant Reading")
-            return
-          }
-
-          const rest = e.filter(m => m.timestamp == trigger_message.timestamp)
-
-          const latitude_message = rest.map(m => m.text.match(/^(\d\d) degrees, (\d\d) minutes (north|south)/)).find(identity)
-          const longitude_message = rest.map(m => m.text.match(/^(\d\d) degrees, (\d\d) minutes (east|west)/)).find(identity)
-
-          if (!longitude_message || !latitude_message) {
-            log().log("Discarding because lat or long is missing.")
-            return
-          }
-
-          const coords: GieliCoordinates = {
-            longitude: {
-              degrees: Number(longitude_message[1]),
-              minutes: Number(longitude_message[2]),
-              direction: longitude_message[3] as "east" | "west"
-            }, latitude: {
-              degrees: Number(latitude_message[1]),
-              minutes: Number(latitude_message[2]),
-              direction: latitude_message[3] as "north" | "south"
-            }
-          }
-
-          if (!this.latest_unhandled_sextant_position || trigger_message.timestamp > this.latest_unhandled_sextant_position.trigger_message.timestamp) {
-            this.latest_unhandled_sextant_position = {
-              trigger_message: trigger_message,
-              position: GieliCoordinates.toCoords(coords)
+            if (!trigger_message) {
+              return
             }
 
-            log().log(GieliCoordinates.toString(coords))
+            if (!trigger_message || (Date.now() - trigger_message.timestamp) > 3000) {
+              return
+            }
 
-            this.tryToHandleSextantPosition()
-          }
+            const rest = e.filter(m => m.timestamp == trigger_message.timestamp)
 
-        }).bindTo(this.lifetime_manager)
+            const latitude_message = rest.map(m => m.text.match(/^(\d\d) degrees, (\d\d) minutes (north|south)/)).find(identity)
+            const longitude_message = rest.map(m => m.text.match(/^(\d\d) degrees, (\d\d) minutes (east|west)/)).find(identity)
+
+            if (!longitude_message || !latitude_message) {
+              return
+            }
+
+            const coords: GieliCoordinates = {
+              longitude: {
+                degrees: Number(longitude_message[1]),
+                minutes: Number(longitude_message[2]),
+                direction: longitude_message[3] as "east" | "west"
+              }, latitude: {
+                degrees: Number(latitude_message[1]),
+                minutes: Number(latitude_message[2]),
+                direction: latitude_message[3] as "north" | "south"
+              }
+            }
+
+            if (!this.latest_unhandled_sextant_position || trigger_message.timestamp > this.latest_unhandled_sextant_position.trigger_message.timestamp) {
+              this.latest_unhandled_sextant_position = {
+                trigger_message: trigger_message,
+                position: GieliCoordinates.toCoords(coords)
+              }
+
+              log().log(GieliCoordinates.toString(coords))
+
+              this.tryToHandleSextantPosition()
+            }
+
+          }).bindTo(this.lifetime_manager)
+        }
       }
     }
   }
@@ -1094,9 +1093,9 @@ export namespace CompassSolving {
         {expected: "Cast Northern Lost Grove Teleport", teleport_id: {group: "normalspellbook", spot: "northlostgrove"}},
 
         {
-        expected: "Cast Falador Teleport",
-        teleport_id: {group: "normalspellbook", spot: "falador"}
-      }, {
+          expected: "Cast Falador Teleport",
+          teleport_id: {group: "normalspellbook", spot: "falador"}
+        }, {
         expected: "Cast Camelot Teleport",
         teleport_id: {group: "normalspellbook", spot: "camelot"}
       }, {
@@ -1325,7 +1324,8 @@ export namespace CompassSolving {
     show_method_preview_of_secondary_solutions: boolean,
     invert_preset_sequence_if_previous_solution_was_used: boolean,
     skip_triangulation_point_if_colinear: boolean,
-    beam_color: string
+    beam_color: string,
+    read_chat_for_sextant_message: boolean
   }
 
   export type TriangulationPreset = {
@@ -1446,7 +1446,8 @@ export namespace CompassSolving {
       show_method_preview_of_secondary_solutions: true,
       invert_preset_sequence_if_previous_solution_was_used: false,
       skip_triangulation_point_if_colinear: true,
-      beam_color: '#3388ff'
+      beam_color: '#3388ff',
+      read_chat_for_sextant_message: true
     }
 
     export function normalize(settings: Settings): Settings {
@@ -1462,8 +1463,7 @@ export namespace CompassSolving {
       if (![true, false].includes(settings.invert_preset_sequence_if_previous_solution_was_used)) settings.show_method_preview_of_secondary_solutions = DEFAULT.invert_preset_sequence_if_previous_solution_was_used
       if (![true, false].includes(settings.skip_triangulation_point_if_colinear)) settings.skip_triangulation_point_if_colinear = DEFAULT.skip_triangulation_point_if_colinear
       if (typeof settings.beam_color != "string") settings.beam_color = DEFAULT.beam_color
-
-      //settings.use_previous_solution_as_start = false // Options disabled for now because it doesn't work reliably
+      if (![true, false].includes(settings.read_chat_for_sextant_message)) settings.read_chat_for_sextant_message = DEFAULT.read_chat_for_sextant_message
 
       return settings
     }
