@@ -193,7 +193,7 @@ export namespace Angles {
     }
 
     export function toString(self: UncertainAngle, precision: number = 1): string {
-      return toAngleString(self, precision) + "  " + toUncertaintyString(self, precision)
+      return toAngleString(self, precision) + " " + toUncertaintyString(self, precision)
     }
 
     export function contains(self: UncertainAngle, angle: number): boolean {
