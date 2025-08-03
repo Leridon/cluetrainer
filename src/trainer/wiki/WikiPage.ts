@@ -21,7 +21,7 @@ export abstract class WikiPage extends Properties {
       C.img(url).css2({"max-width": "200px", margin: "0 auto"}),
     ))
 
-    if(caption) this.row(hboxc(italic(caption).css("font-size", "0.8em")))
+    if(caption) this.row(hboxc(italic(caption).css("font-size", "0.9em")))
   }
 
   seeAlso(entries: WikiPage.SeeAlso[]) {

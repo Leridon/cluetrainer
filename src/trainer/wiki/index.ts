@@ -9,10 +9,11 @@ import {WikiPageMethodEditing} from "./pages/WikiPageMethodEditing";
 import {WikiPageScanTreeEditing} from "./pages/WikiPageScanTreeEditing";
 import {WikiPageInteractiveOverlays} from "./pages/WikiPageInteractiveOverlay";
 import {WikiPageTooFarDifferentLevel} from "./pages/scans/WikiPageTooFarDifferentLevel";
-import {WikiPage} from "./WikiPage";
 import {WikiPageCompassClues} from "./pages/compass/WikiPageCompassClues";
 import {WikiPageCompassSolver} from "./pages/compass/WikiPageCompassSolver";
 import {WikiPageCompassAngleUncertainty} from "./pages/compass/WikiPageCompassAngleUncertainty";
+import {QueryLinks} from "../query_functions";
+import {ClueTrainerCommands} from "../ClueTrainer";
 
 export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
   constructor() {
@@ -51,13 +52,25 @@ export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
           {id: "scantreeediting", name: "Creating Scan Trees", short_name: "Scan Trees", renderer: () => new WikiPageScanTreeEditing()},
           {id: "scanequivalenceclasses", name: "Scan Tree Equivalence Classes", short_name: "Equivalence Classes", renderer: () => new WikiPageScanEquivalenceClasses()},
         ]
-      }]);
+      }], page => QueryLinks.link(ClueTrainerCommands.wiki_command, {page: page}, false));
   }
 }
 
 export namespace ClueTrainerWiki {
-  export type page_id = "home" | "scantrees" | "scantreecontroloverlay" | "scans" | "scanequivalenceclasses"
-    | "methodediting" | "scantreeediting" | "toofardifferentlevel" | "interactiveoverlays" | "compassclues" | "compasssolver" | "compasssolverantialiasing" | "compasssolveruncertainty"
+  export type page_id =
+    "home"
+    | "scantrees"
+    | "scantreecontroloverlay"
+    | "scans"
+    | "scanequivalenceclasses"
+    | "methodediting"
+    | "scantreeediting"
+    | "toofardifferentlevel"
+    | "interactiveoverlays"
+    | "compassclues"
+    | "compasssolver"
+    | "compasssolverantialiasing"
+    | "compasssolveruncertainty"
 
   let instance: ClueTrainerWiki = null
 

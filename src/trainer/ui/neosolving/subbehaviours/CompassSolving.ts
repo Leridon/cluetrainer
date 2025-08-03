@@ -52,6 +52,7 @@ import log = Log.log;
 import render_digspot = TextRendering.render_digspot;
 import UncertainAngle = Angles.UncertainAngle;
 import degreesToRadians = Angles.degreesToRadians;
+import {ClueTrainerWiki} from "../../../wiki";
 
 class CompassHandlingLayer extends GameLayer {
   private lines: {
@@ -409,19 +410,16 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       .append(
         inlineimg("/assets/icons/arrow.png").tooltip("Compass Solver"),
         "Compass Solver",
-        /*inlineimg("/assets/icons/info_nis.png").addClass("ctr-clickable")
-          .css("height", "1em")
-          .css("margin-left", "4px")
-          .on("click", async () => {
-
-          }),*/
         C.spacer(),
-        inlineimg("/assets/icons/reset_nis.png").addClass("ctr-clickable")
+        inlineimg("/assets/icons/reset_nis.png").addClass("ctr-clickable").css("height", "1em").css("margin-top", "2px")
           .on("click", async () => {
             this.reset(true)
           })
           .tooltip("Reset compass solver."),
-        inlineimg("/assets/icons/settings.png").addClass("ctr-clickable")
+        inlineimg("/assets/icons/info_nis.png").css("height", "1em").css("margin-top", "2px").addClass("ctr-clickable")
+          .on("click", () => ClueTrainerWiki.openOnPage("compasssolver"))
+          .tooltip("Learn more about the compass solver."),
+        inlineimg("/assets/icons/settings.png").addClass("ctr-clickable").css("height", "1em").css("margin-top", "2px")
           .on("click", async () => {
             const result = await SettingsModal.openOnPage("compass")
 
@@ -429,6 +427,11 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
           }),
       )
       .appendTo(container)
+
+    inlineimg("/assets/icons/settings.png").addClass("ctr-clickable").css("height", "1em").css("margin-top", "2px")
+      .on("click", async () => {
+        await SettingsModal.openOnPage("scans")
+      }),
 
     this.entry_container = c().css("flex-basis", "100%").appendTo(container)
     //this.spot_selection_container = c().appendTo(container)

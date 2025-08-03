@@ -2,6 +2,7 @@ import Widget from "../../../lib/ui/Widget";
 import {Observable, observe} from "../../../lib/reactive";
 import {C} from "../../../lib/ui/constructors";
 import cls = C.cls;
+import {ClickToCopy} from "../../../lib/ui/ClickToCopy";
 
 export class SectionControl<id_type extends string = string> extends Widget {
   menu_bar: Widget
@@ -15,9 +16,9 @@ export class SectionControl<id_type extends string = string> extends Widget {
     button: Widget
   }[] = []
 
-  private active_entry: Observable<string> = observe(null)
+  private active_entry: Observable<id_type> = observe(null)
 
-  constructor(private sections: SectionControl.Section<id_type>[]) {
+  constructor(private sections: SectionControl.Section<id_type>[], section_link: (_: id_type) => string = null) {
     super(cls("ctr-section-control"));
 
     this.active_entry.subscribe(active => {
@@ -29,12 +30,18 @@ export class SectionControl<id_type extends string = string> extends Widget {
         if (isActive) {
           this.content.empty()
 
-          this.content.append(
-            C.cls("ctr-section-control-content-header")
+          const header = C.cls("ctr-section-control-content-header")
               .css("padding-left", "0")
-              .text(e.original.entry.name),
+              .text(e.original.entry.name)
+
+          if (section_link) {
+            this.content.append(new ClickToCopy(section_link(active)))
+          }
+
+          this.content.append(header,
             e.original.entry.renderer()
           )
+
 
           this.content.raw().scrollTo(0, 0)
         }
