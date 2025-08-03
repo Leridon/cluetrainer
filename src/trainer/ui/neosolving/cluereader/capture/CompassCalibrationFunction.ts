@@ -23,7 +23,7 @@ export namespace CompassCalibrationFunction {
 }
 
 export class FullCompassCalibrationFunction implements CompassCalibrationFunction {
-  constructor(public readonly samples: FullCompassCalibrationFunction.CompressedSample[]) {
+  constructor(public readonly samples: FullCompassCalibrationFunction.CombinedSample[]) {
 
   }
 
@@ -61,19 +61,8 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
     return average_epsilon
   }
 
-  bad_samples(): FullCompassCalibrationFunction.CompressedSample[] {
+  bad_samples(): FullCompassCalibrationFunction.CombinedSample[] {
     return this.samples.filter(s => s.is_merged)
-
-    return this.samples.flatMap((s, i) => {
-      const next = index(this.samples, i + 1)
-
-      const diff = Angles.angleDifferenceSigned(s.should_angle.to, next.should_angle.from)
-
-      const is_bad = diff < 0 && Math.abs(diff) < Math.PI
-
-      if (is_bad) return [s, next]
-      else return []
-    })
   }
 
   sample(read_angle: number): FullCompassCalibrationFunction.SamplingResult {
@@ -136,7 +125,7 @@ export class FullCompassCalibrationFunction implements CompassCalibrationFunctio
 
   reverse_sample(should_angle: number): {
     angle: Angles.UncertainAngle,
-    relevant_samples: FullCompassCalibrationFunction.CompressedSample[]
+    relevant_samples: FullCompassCalibrationFunction.CombinedSample[]
   } {
     for (let i = 0; i < this.samples.length; i++) {
       const sample = this.samples[i]
@@ -170,25 +159,25 @@ export namespace FullCompassCalibrationFunction {
   /**
    * A compressed sample is a data point mapping a read-angle to a range of should-angles
    */
-  export type CompressedSample = {
+  export type CombinedSample = {
     is_angle: Angles.AngleRange,
     should_angle: Angles.AngleRange,
     raw_samples: CalibrationTool.RawSample[],
     is_merged?: boolean
   }
 
-  export namespace CompressedSample {
-    export function toString(self: CompressedSample) {
+  export namespace CombinedSample {
+    export function toString(self: CombinedSample) {
       return `${Angles.AngleRange.toString(self.is_angle, 3)} -> [${Angles.toString(self.should_angle.from, 3)}, ${Angles.toString(self.should_angle.to, 3)}]`
     }
   }
 
-  export function compress(samples: CalibrationTool.RawSample[]): CompressedSample[] {
+  export function combine(samples: CalibrationTool.RawSample[]): CombinedSample[] {
     const sorted_samples = lodash.sortBy(samples, s => CalibrationTool.shouldAngle(s.position))
 
     let i = 0;
 
-    const compressed_samples: CompressedSample[] = []
+    const compressed_samples: CombinedSample[] = []
 
     while (i < sorted_samples.length) {
       const group_angle = Angles.AngleRange.fromAngles(sorted_samples[i].is_angle)
@@ -238,22 +227,34 @@ export namespace FullCompassCalibrationFunction {
     return compressed_samples
   }
 
+  export type CompressedSample = [number, number, number, number]
+
+  export namespace CompressedSample {
+    export function expand(samples: CompressedSample[]): CombinedSample[] {
+      return samples.map(s => ({
+        is_angle: {from: s[0][0], to: s[0][1]},
+        should_angle: {from: s[1][0], to: s[1][1]},
+        raw_samples: []
+      }))
+    }
+  }
+
   export type SamplingResult = {
     result: UncertainAngle,
     details: { type: string } & ({
       type: "within",
-      before: CompressedSample,
-      in_sample: CompressedSample,
-      after: CompressedSample,
+      before: CombinedSample,
+      in_sample: CombinedSample,
+      after: CombinedSample,
     } | {
       type: "outside",
-      before: CompressedSample,
-      after: CompressedSample
+      before: CombinedSample,
+      after: CombinedSample
     })
   }
 
   export namespace SamplingResult {
-    export function fromBetween(below: CompressedSample, above: CompressedSample): SamplingResult {
+    export function fromBetween(below: CombinedSample, above: CombinedSample): SamplingResult {
       return {
         result: UncertainAngle.fromRange(
           Angles.AngleRange.between(below.should_angle, above.should_angle)
@@ -266,7 +267,7 @@ export namespace FullCompassCalibrationFunction {
       }
     }
 
-    export function fromHit(below: CompressedSample, hit: CompressedSample, above: CompressedSample): SamplingResult {
+    export function fromHit(below: CombinedSample, hit: CombinedSample, above: CombinedSample): SamplingResult {
       return {
         result: UncertainAngle.fromRange(Angles.AngleRange.between(below.should_angle, above.should_angle)),
         details: {
@@ -283,7 +284,7 @@ export namespace FullCompassCalibrationFunction {
 
       switch (self.details.type) {
         case "within":
-          string += `${CompressedSample.toString(self.details.before)}`
+          string += `${CombinedSample.toString(self.details.before)}`
 
         case "outside":
       }

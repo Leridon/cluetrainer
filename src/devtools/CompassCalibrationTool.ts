@@ -200,7 +200,7 @@ class SampleSetBuilder {
   }
 
   private update() {
-    this.function = new FullCompassCalibrationFunction(FullCompassCalibrationFunction.compress(this.state.samples))
+    this.function = new FullCompassCalibrationFunction(FullCompassCalibrationFunction.combine(this.state.samples))
 
     this.set_changed.trigger(this.state.samples)
   }
@@ -1020,14 +1020,14 @@ export class CompassCalibrationTool extends NisModal {
 
       switch (result.details.type) {
         case "outside":
-          props.named("Before", FullCompassCalibrationFunction.CompressedSample.toString(result.details.before))
+          props.named("Before", FullCompassCalibrationFunction.CombinedSample.toString(result.details.before))
           props.named("Hit", "-")
-          props.named("After", FullCompassCalibrationFunction.CompressedSample.toString(result.details.after))
+          props.named("After", FullCompassCalibrationFunction.CombinedSample.toString(result.details.after))
           break;
         case "within":
-          props.named("Before", FullCompassCalibrationFunction.CompressedSample.toString(result.details.before))
-          props.named("Hit", FullCompassCalibrationFunction.CompressedSample.toString(result.details.in_sample))
-          props.named("After", FullCompassCalibrationFunction.CompressedSample.toString(result.details.after))
+          props.named("Before", FullCompassCalibrationFunction.CombinedSample.toString(result.details.before))
+          props.named("Hit", FullCompassCalibrationFunction.CombinedSample.toString(result.details.in_sample))
+          props.named("After", FullCompassCalibrationFunction.CombinedSample.toString(result.details.after))
           break;
       }
 
@@ -1267,6 +1267,12 @@ export class CompassCalibrationTool extends NisModal {
       new LightButton("Export CSV").onClick(() => {
         new ExportStringModal(this.sample_set.getCSV()).show()
       }),
+      new LightButton("Export Small").onClick(() => {
+
+        new ExportStringModal("[" + this.sample_set.function.samples.map(s => {
+          return `[${s.is_angle.from.toFixed(4)},${s.is_angle.to.toFixed(4)},${s.should_angle.from.toFixed(4)},${s.should_angle.to.toFixed(4)}]`
+        }).join(",") + "]", "", "calibration_samples.json").show()
+      }),
     ).appendTo(menu_column)
 
     new ButtonRow().buttons(
@@ -1281,8 +1287,10 @@ export class CompassCalibrationTool extends NisModal {
           })
         }
       }),
-      new LightButton("Load NO AA").onClick(() => {
-        this.sample_set.set(lodash.cloneDeep(CompassReader.no_aa_samples))
+      new LightButton("Load NO AA").onClick(async () => {
+        const response = await fetch("/data/compass/no_aa_calibration.json")
+
+        this.sample_set.set(await response.json())
       }),
       new LightButton("Load MSAA").onClick(() => {
         this.sample_set.set(lodash.cloneDeep(CompassReader.msaa_samples))
