@@ -232,8 +232,8 @@ export namespace FullCompassCalibrationFunction {
   export namespace CompressedSample {
     export function expand(samples: CompressedSample[]): CombinedSample[] {
       return samples.map(s => ({
-        is_angle: {from: s[0][0], to: s[0][1]},
-        should_angle: {from: s[1][0], to: s[1][1]},
+        is_angle: {from: s[0], to: s[1]},
+        should_angle: {from: s[2], to: s[3]},
         raw_samples: []
       }))
     }
