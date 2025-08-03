@@ -21,7 +21,7 @@ export class WikiPageCompassSolver extends WikiPage {
 
     this.paragraph("Triangulation points are added in two steps: First, a position is selected to create a new triangulation point. Later, an angle is recorded to draw the actual triangulation beam on the map. Triangulation points without an angle are called incomplete. The position of a triangulation point is an area. You can see its size and coordinates by hovering over the triangulation point's position.")
 
-    this.image("/media/wiki/compass/positiontooltip.png", "Position of an incomplete Moonclan teleport triangulation point without.")
+    this.image("/media/wiki/compass/positiontooltip.png", "Position of an incomplete Moonclan teleport triangulation point.")
 
     this.paragraph("Complete triangulation points are drawn as beams on the Clue Trainer map. Beam's aren't just a line, but are shaped like a cone. This is because the associated angle always has a little bit of uncertainty included in it. For example, even though the angle might show as 13.1°, it is actually 13.1° ±0.121 degrees. You can learn more about uncertainty in the ", text_link("dedicated wiki page", () => ClueTrainerWiki.openOnPage("compasssolveruncertainty")), ".")
 
@@ -33,13 +33,13 @@ export class WikiPageCompassSolver extends WikiPage {
 
     this.header("... by clicking the map", "left", 1)
 
-    this.paragraph("One way to create triangulation points is by clicking them on the Clue Trainer map. You can click either teleport icons or arbitrary tiles to add them as a new triangulation point. When clicking a tile, a square of a given ")
+    this.paragraph("One way to create triangulation points is by clicking them on the Clue Trainer map. You can click either teleport icons or arbitrary tiles to add a new triangulation point at the respective position. When clicking a tile, a square of a given size is used to account for imprecise clicking. The size of the square can be configured in the compass settings.")
 
-    this.header("... by hovering a teleport and pressing Alt+1", "left", 1)
+    this.header("... by hovering a teleport option and pressing Alt+1", "left", 1)
 
     this.paragraph("If you used Alt1's builtin Clue Solver before, you may be familiar with this method. You can right click various teleports in the game and press Alt+1 (or whatever your main hotkey is bound to) to add that teleport as a new triangulation point.")
 
-    this.paragraph(italic("Dev note: If you notice a teleport that does not work with this method, please reach so it can be added."))
+    this.paragraph(italic("Dev note: If you notice a teleport that does not work with this method, please reach out so it can be added."))
 
     this.header("... by using preconfigured triangulation strategies", "left", 1)
 
@@ -49,9 +49,9 @@ export class WikiPageCompassSolver extends WikiPage {
 
     this.header("... by using the previous clue's solution", "left", 1)
 
-    this.paragraph("This option needs to be activated in the compass settings. It facilitates 1-teleport or even 0-teleport triangulation strategies. When active, the compass solver assume that you still aare at the location of previous clue's solution and create a triangulation point at that location. It will also automatically record the first angle of the compass arrow the solver reads after opening the clue. If you moved away from the previous clue's solution area before opening the next clue, this can produce unexpected results, so you need to be aware of this and potentially manually remove this triangulation point again.")
+    this.paragraph("This option needs to be activated in the compass settings. It facilitates 1-teleport or even 0-teleport triangulation strategies. When active, the compass solver assumes that you still are at the location of previous clue's solution and create a triangulation point at that location. It will also automatically record the first angle of the compass arrow the solver reads after opening the clue. If you moved away from the previous clue's solution area before opening the next clue, this can produce unexpected results, so you need to be aware of this and potentially manually remove this triangulation point again.")
 
-    this.paragraph("If the previous clue step was a scan clue, the assumed location may encompass the entire scan area, causing the triangulation beam to be very wide. You can narrow it down by following the", text_link("Scan Tree", () => ClueTrainerWiki.openOnPage("scantrees")), ", or by manually clicking the final dig spot marker.")
+    this.paragraph("If the previous clue step was a scan clue, the assumed location may encompass the entire scan area, causing the triangulation beam to be very wide. You can narrow it down by following the ", text_link("Scan Tree", () => ClueTrainerWiki.openOnPage("scantrees")), ", or by manually clicking the final dig spot marker.")
 
     this.paragraph("Except for tetracompasses, the previous clue's solution is always assumed to be at least a 3 by 3 square of tiles, because this is the area where you can dig to solve the step.")
 
