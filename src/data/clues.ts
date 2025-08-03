@@ -2526,7 +2526,7 @@ export namespace clue_data {
       "items": ["Splitbark helmet", "Mud pie", "Rune platebofy"],
       "emotes": ["Blow kiss"],
       "double_agent": true,
-      "area": {"origin": {"x": 2851, "y": 2951, "level": 0}, "size": {"x": 3, "y": 4}},
+      "area": {"origin": {"x": 2851, "y": 2952, "level": 0}, "size": {"x": 3, "y": 3}},
       "hidey_hole": {"name": "Potted plant (hidey-hole)", "location": {"topleft": {"x": 2856, "y": 2954}, "botright": {"x": 2857, "y": 2953}, "level": 0}}
     }, {
       "id": 232,
