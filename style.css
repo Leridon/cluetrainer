@@ -1083,6 +1083,10 @@ video {
     color: #0d65e7;
 }
 
+.nisl-textlink:hover {
+    color: var(--bs-link-hover-color);
+}
+
 /* Context menu */
 
 .nisl-context-menu {
