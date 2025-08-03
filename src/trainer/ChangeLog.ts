@@ -364,7 +364,10 @@ export namespace Changelog {
 
     render(f: (_: Properties) => void): this {
       const old = this.entry.render
-      this.entry.render = layout => {old(layout), f(layout)}
+      this.entry.render = layout => {
+        old(layout);
+        f(layout)
+      }
 
       return this
     }
@@ -408,6 +411,7 @@ export namespace Changelog {
             )
             .item("Fixed that teleports added with the 110 runecrafting update were not detected when hovering them and pressing Alt+1.")
             .item("Updated Clue Chasers recommendations for passage of the abyss setup to include the Delver's anklet.")
+            .item("Fixed a bug that caused tetracompass solutions to be 3x3 instead of 1x1 when using the previous solution as a starting point.")
           )
 
         builder.release(55, "Lost Grove Method and Minor Fixes", new Date(Date.parse("2025-07-12")))

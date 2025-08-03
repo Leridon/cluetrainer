@@ -658,7 +658,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     await this.spot_selection_callback(spot?.spot?.spot)
 
-    if (set_as_solution && set_as_solution) {
+    if (set_as_solution) {
       this.registerSolution(this.clue.single_tile_target ? TileArea.fromTiles([spot.spot.spot]) : digSpotArea(spot.spot.spot))
     }
   }
@@ -715,7 +715,9 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     }
 
     if (possible.length > 0 && possible.length <= 5) {
-      const area = TileRectangle.extend(TileRectangle.from(...possible.map(s => s.spot.spot)), 1)
+      let area = TileRectangle.from(...possible.map(s => s.spot.spot))
+
+      if (!this.clue.single_tile_target) area = TileRectangle.extend(area, 1)
 
       this.registerSolution(TileArea.fromRect(area))
     }
