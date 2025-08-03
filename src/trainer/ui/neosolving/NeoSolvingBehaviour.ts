@@ -540,7 +540,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
   setSolutionArea(state: NeoSolving.ActiveState, area: TileArea): void {
     if (!state) return
 
-    log().log(`Setting clue solution (state ${state.state_id}) to ${area.size?.x ?? 1}x${area.size?.y ?? 1} at ${TileCoordinates.toString(area.origin)}`, "Solving")
+    log().log(`Setting clue solution (state ${state.state_id}) to ${TileArea.toString(area)}`, "Solving")
 
     state.solution_area = area
   }

@@ -556,7 +556,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     if (!this.spots.some(s => Compasses.isPossible([info], s.spot.spot))) {
       if (is_manual) notification("Refusing to lock in impossible angle.", "error").show()
 
-      log().log(`Cowardly refusing to lock in impossible angle ${UncertainAngle.toString(info.angle_radians, 6)} from ${info.modified_origin.x} | ${info.modified_origin.y}`, "Compass Solving")
+      log().log(`Cowardly refusing to lock in impossible angle ${UncertainAngle.toString(info.angle_radians, 3)} from ${TileArea.toString(info.position.parent)}`, "Compass Solving")
 
       return false
     }
