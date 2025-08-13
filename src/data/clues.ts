@@ -4586,7 +4586,7 @@ export namespace clue_data {
         "level": 0
       }, {"x": 3174, "y": 3705, "level": 0}, {"x": 3152, "y": 3698, "level": 0}, {"x": 3145, "y": 3681, "level": 0}, {"x": 3146, "y": 3698, "level": 0}],
       "range": 11,
-      "scantext": "The crater of the Wilderness volcano"
+      "scantext": "The crater in the Wilderness"
     }, {
       "id": 368,
       "type": "scan",
