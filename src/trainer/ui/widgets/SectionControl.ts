@@ -1,8 +1,9 @@
 import Widget from "../../../lib/ui/Widget";
 import {Observable, observe} from "../../../lib/reactive";
 import {C} from "../../../lib/ui/constructors";
-import cls = C.cls;
 import {ClickToCopy} from "../../../lib/ui/ClickToCopy";
+import cls = C.cls;
+import spacer = C.spacer;
 
 export class SectionControl<id_type extends string = string> extends Widget {
   menu_bar: Widget
@@ -31,11 +32,12 @@ export class SectionControl<id_type extends string = string> extends Widget {
           this.content.empty()
 
           const header = C.cls("ctr-section-control-content-header")
-              .css("padding-left", "0")
-              .text(e.original.entry.name)
+            .css("padding-left", "0")
+            .text(e.original.entry.name)
 
           if (section_link) {
-            this.content.append(new ClickToCopy(section_link(active)))
+            header.css("display", "flex")
+            header.append(spacer(), new ClickToCopy(section_link(active), "Copy direct link"))
           }
 
           this.content.append(header,
