@@ -108,8 +108,10 @@ export class Alt1Overlay extends Behaviour {
   }
 
   protected end() {
-    alt1.overLayClearGroup(this.group_name)
-    alt1.overLayRefreshGroup(this.group_name)
+    if(Alt1.exists()) {
+      alt1.overLayClearGroup(this.group_name)
+      alt1.overLayRefreshGroup(this.group_name)
+    }
   }
 
   private freeze() {
