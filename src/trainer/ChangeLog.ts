@@ -412,6 +412,8 @@ export namespace Changelog {
             .item("Fixed that teleports added with the 110 runecrafting update were not detected when hovering them and pressing Alt+1.")
             .item("Updated Clue Chasers recommendations for passage of the abyss setup to include the Delver's anklet.")
             .item("Fixed a bug that caused tetracompass solutions to be 3x3 instead of 1x1 when using the previous solution as a starting point.")
+            .item("Added direct links for Cluepedia pages. They can be copied by a button in the top right corner of the page.")
+            .item("Fixed a bug that caused an Alt1 function to be called when not in Alt1.")
           )
 
         builder.release(55, "Lost Grove Method and Minor Fixes", new Date(Date.parse("2025-07-12")))
