@@ -1328,7 +1328,7 @@ class CompassSettingsEdit extends Widget {
 
     this.layout.setting("Custom Strategies", "You can create your own triangulation presets if none of the builtin presets fit your needs. Don't forget to activate your custom preset in the section above.")
 
-    this.layout.row(new LightButton("Manage Custom Strategies"))
+   // this.layout.row(new LightButton("Manage Custom Strategies"))
 
     type T = CompassSolving.TriangulationPreset | "create"
 
