@@ -5,6 +5,7 @@ import text_link = C.text_link;
 import link = C.link;
 import space = C.space;
 import italic = C.italic;
+import hboxc = C.hboxc;
 
 export abstract class WikiPage extends Properties {
   constructor() {
@@ -14,6 +15,14 @@ export abstract class WikiPage extends Properties {
   }
 
   abstract render(): void
+
+  image(url: string, caption?: string) {
+    this.row(hboxc(
+      C.img(url).css2({"max-width": "200px", margin: "0 auto"}),
+    ))
+
+    if(caption) this.row(hboxc(italic(caption).css("font-size", "0.9em")))
+  }
 
   seeAlso(entries: WikiPage.SeeAlso[]) {
     this.header("See Also")
@@ -41,5 +50,13 @@ export namespace WikiPage {
     action: (() => void) | string,
     name: string,
     comment?: string
+  }
+
+  export function placeholder(): WikiPage {
+    return new class extends WikiPage {
+      render(): void {
+        this.todo()
+      }
+    }
   }
 }

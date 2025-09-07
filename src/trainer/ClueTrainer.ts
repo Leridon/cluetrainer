@@ -1,13 +1,8 @@
 import {storage} from "lib/util/storage";
 import {TemplateResolver} from "lib/util/TemplateResolver";
-import {ClueTier, ClueType} from "lib/runescape/clues";
 import {GameMap, GameMapWidget} from "lib/gamemap/GameMap";
 import {QueryLinks} from "trainer/query_functions";
-import {Path} from "lib/runescape/pathing";
-import {ExportImport} from "lib/util/exportString";
-import {TileRectangle} from "lib/runescape/coordinates/TileRectangle";
 import Behaviour, {SingleBehaviour} from "lib/ui/Behaviour";
-import {SolvingMethods} from "./model/methods";
 import MainTabControl from "./ui/MainTabControl";
 import Widget from "../lib/ui/Widget";
 import {MethodPackManager} from "./model/MethodPackManager";
@@ -38,6 +33,7 @@ import {PermissionChecker} from "./startup_messages/PermissionChecker";
 import {SuccessfullInstallationNotice} from "./startup_messages/SuccessfullInstallationNotice";
 import {lazy} from "../lib/Lazy";
 import {Alt1} from "../lib/alt1/Alt1";
+import {ClueTrainerWiki} from "./wiki";
 import ActiveTeleportCustomization = Transportation.TeleportGroup.ActiveTeleportCustomization;
 import TeleportSettings = Settings.TeleportSettings;
 import inlineimg = C.inlineimg;
@@ -54,82 +50,21 @@ declare global {
   var cluetrainer_build_environment: ClueTrainer.BuildEnvironment
 }
 
-export namespace ScanTrainerCommands {
-  import Command = QueryLinks.Command;
-  import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
-
-  export const load_path: Command<{
-    steps: Path.raw,
-    target?: TileRectangle,
-    start_state?: Path.movement_state
-  }> = {
-    name: "load_path",
-    parser: {
-      steps: ExportImport.imp<Path.Step[]>({expected_type: "path", expected_version: 0}), // import is idempotent if it's not a serialized payload string
-    },
+export namespace ClueTrainerCommands {
+  export const wiki_command: QueryLinks.Command<{ page: ClueTrainerWiki.page_id }> = {
+    name: "wiki",
     default: {},
-    serializer: {},
-    instantiate: (arg: {
-      steps: Path.raw,
-      target?: TileRectangle,
-      start_state?: Path.movement_state
-    }) => (app: ClueTrainer): void => {
-      // TODO: Fix the PathEditor behaviour stuff
-
-      /*
-      new PathEditor(app.map.map).start().load(arg.steps, {
-          commit_handler: null,
-          discard_handler: () => {
-          },
-          target: arg.target,
-          start_state: arg.start_state
-      })*/
-    },
-  }
-
-  export const load_overview: Command<{
-    tiers: ClueTier[],
-    types: ClueType[]
-  }> = {
-    name: "load_overview",
+    instantiate: (arg: { page: ClueTrainerWiki.page_id }) => () => ClueTrainerWiki.openOnPage(arg.page),
     parser: {
-      tiers: (s: string) => s.split(",").map(t => t == "null" ? null : t) as ClueTier[],
-      types: (s: string) => s.split(",") as ClueType[]
-    },
-    default: {
-      tiers: ["easy", "medium", "hard", "elite", "master", null],
-      types: ["anagram", "compass", "coordinates", "cryptic", "emote", "map", "scan", "simple", "skilling"]
+      page: (s: string) => s as ClueTrainerWiki.page_id
     },
     serializer: {
-      tiers: (tiers: ClueTier[]) => tiers.join(","),
-      types: (tiers: ClueType[]) => tiers.join(",")
-    },
-    instantiate: ({tiers, types}) => (app: ClueTrainer): void => {
-      //TODO app.main_behaviour.set(new SimpleLayerBehaviour(app.map, new OverviewLayer(clues.filter(c => tiers.indexOf(c.tier) >= 0 && types.indexOf(c.type) >= 0), app)))
-    },
-  }
-
-  export const load_method: Command<{
-    method: ScanTreeMethod
-  }> = {
-    name: "load_method",
-    parser: {
-      // method: (a) => imp<ScanTree.ScanTreeMethod>({expected_type: "scantree", expected_version: 0})(a)
-    },
-    default: {},
-    serializer: {
-      // method: (a) => exp({type: "scantree", version: 0}, true, true)(a)
-    },
-    instantiate: ({method}) => (app: ClueTrainer): void => {
-      //let resolved = resolve(method)
-      //let resolved = withClue(method, app.data.clues.byId(method.clue_id) as ScanStep)
-
-      //app.showMethod(resolved)
-    },
+      page: (page: ClueTrainerWiki.page_id) => page
+    }
   }
 
   export const index = [
-    load_path, load_overview, load_method
+    wiki_command
   ]
 }
 
@@ -346,13 +281,28 @@ export class ClueTrainer extends Behaviour {
       }
     }
 
-    document.body.addEventListener("keydown", e => {
+    document.body.addEventListener("keydown", async e => {
+      function logScreen() {
+        if (Alt1.exists()) {
+          return Alt1.instance().capturing.captureOnce({options: {area: null, interval: null}}).then(img => {
+            log().log("Screenshot", "Screenshot", img.value.getData())
+            notification("Screenshot added to log", "information").show()
+          })
+        }
+      }
+
       if (e.key == "F6") {
         log().log("Log exported")
 
         logDiagnostics()
 
+        if (this.version.build_info?.is_beta_build) await logScreen()
+
         LogViewer.do(log().get())
+      }
+
+      if (e.key == "F7") {
+        await logScreen()
       }
 
       if (e.key == "F4") {
@@ -385,6 +335,12 @@ export class ClueTrainer extends Behaviour {
 
       document.title = "Clue Trainer (Beta Branch)"
     }
+
+    const query_function = QueryLinks.get_from_params(ClueTrainerCommands.index, new URLSearchParams(window.location.search))
+
+    if (query_function) query_function()
+
+    window.history.pushState({}, null, `${location.protocol}//${location.host}`)
   }
 
   protected end() {
@@ -392,6 +348,7 @@ export class ClueTrainer extends Behaviour {
 }
 
 export namespace ClueTrainer {
+
   export type BuildEnvironment = {
     is_beta_build: boolean,
     commit_sha: string,

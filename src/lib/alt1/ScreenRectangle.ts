@@ -60,10 +60,12 @@ export namespace ScreenRectangle {
     return Vector2.snap(Vector2.add(rect.origin, Vector2.scale(0.5, rect.size)))
   }
 
-  export function centeredOn(center: Vector2, radius: number): ScreenRectangle {
+  export function centeredOn(center: Vector2, radius: number | Vector2): ScreenRectangle {
+    if (typeof radius == "number") radius = {x: radius, y: radius}
+
     return {
-      origin: Vector2.sub(center, {x: radius, y: radius}),
-      size: {x: 2 * radius, y: 2 * radius}
+      origin: Vector2.sub(center, radius),
+      size: Vector2.scale(2, radius)
     }
   }
 

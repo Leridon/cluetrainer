@@ -3,7 +3,6 @@ import Properties from "../trainer/ui/widgets/Properties";
 import LightButton from "../trainer/ui/widgets/LightButton";
 import {SliderBenchmarkModal, SliderDataEntry} from "./SliderBenchmarking";
 import {PDBGeneratorModal, RegionIndexingModal} from "./sliderdb/RegionEditor";
-import {CompassReader} from "../trainer/ui/neosolving/cluereader/CompassReader";
 import {clue_trainer_test_set} from "../test/tests";
 import {PDBManager} from "../trainer/ui/neosolving/subbehaviours/SliderSolving";
 import {makeshift_main} from "../trainer/main";
@@ -14,11 +13,16 @@ import {deps} from "../trainer/dependencies";
 import {SliderShuffleAnalysis} from "./SliderShuffleAnalysis";
 import {Notification} from "../trainer/ui/NotificationBar";
 import {ClueReader} from "../trainer/ui/neosolving/cluereader/ClueReader";
-import {CapturedImage} from "../lib/alt1/capture";
 import ExportStringModal from "../trainer/ui/widgets/modals/ExportStringModal";
 import {export_method_csv} from "./MethodCSVExport";
 import {MethodPackManager} from "../trainer/model/MethodPackManager";
+import {CapturedImage} from "../lib/alt1/capture";
+import {CompassCalibrationTool} from "./CompassCalibrationTool";
+import {util} from "../lib/util/util";
+import {SlideReader} from "../trainer/ui/neosolving/cluereader/SliderReader";
 import notification = Notification.notification;
+import cleanedJSON = util.cleanedJSON;
+import lodash from "lodash";
 
 
 export class DevelopmentModal extends NisModal {
@@ -82,10 +86,20 @@ export class DevelopmentModal extends NisModal {
       })
     )
 
+    layout.row(new LightButton("Create compressed slider references")
+      .onClick(async () => {
+        const sliders = await Promise.all(SlideReader.reference_slider_themes.map(SlideReader.downloadReferenceSliderFromTheme))
+        const encoded = SlideReader.SimplifiedReferenceSliderMap.encode(sliders)
+        const decoded = Object.values(SlideReader.SimplifiedReferenceSliderMap.decode(encoded))
+
+        ExportStringModal.do(cleanedJSON(encoded), "Slider references", "slider_references.json")
+      })
+    )
+
     layout.header("Compass")
     layout.row(new LightButton("Calibration Tool")
       .onClick(() => {
-        new CompassReader.CalibrationTool().show()
+        new CompassCalibrationTool().show()
       })
     )
 

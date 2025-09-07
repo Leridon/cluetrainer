@@ -209,7 +209,6 @@ export namespace SlideReader {
     return _instance.get()
   }
 
-
   export const DETECTION_THRESHOLD_SCORE = 0.9
 
   export const DEBUG_SLIDE_READER = false
@@ -254,22 +253,42 @@ export namespace SlideReader {
     return {tiles, theme: known_theme}
   }
 
+
+  export const reference_slider_themes: string[] = ["adventurer", "araxxor", "archers", "black_dragon", "bridge", "castle", "clan_citadel", "corporeal_beast", "drakan_bloodveld",
+    "elves", "general_graardor", "gregorovic", "helwyr", "ice_strykewyrm", "menaphos_pharaoh", "nomad", "nymora", "seal", "sword_of_edicts", "tree", "troll", "tuska", "v", "vanstrom_klause", "werewolf", "wizard", "wyvern"
+  ]
+
+  export async function downloadReferenceSliderFromTheme(theme: string): Promise<SliderPuzzle> {
+    return parseSliderImage(await ImageDetect.imageDataFromUrl(getThemeImageUrl(theme)), 0, theme)
+  }
+
+  export type SimplifiedReferenceSliderMap = Record<string, string[]>
+
+  export namespace SimplifiedReferenceSliderMap {
+    export function encode(sliders: SliderPuzzle[]): SimplifiedReferenceSliderMap {
+      return Object.fromEntries<SimplifiedReferenceSliderMap[string]>(sliders.map(slider => {
+        return [slider.theme, slider.tiles.map(t => ImageFingerprint.toBase64(t.signature))] as const
+      }))
+    }
+
+    export function decode(self: SimplifiedReferenceSliderMap): Record<string, Sliders.SliderPuzzle> {
+      return lodash.mapValues(self, (tiles, theme) => {
+        return {
+          tiles: tiles.map((t, i) => ({position: i, signature: ImageFingerprint.fromBase64(t), theme: theme})),
+          theme: theme
+        } satisfies Sliders.SliderPuzzle
+      })
+    }
+  }
+
   const reference_sliders: LazyAsync<Record<string, Sliders.SliderPuzzle>> = async_lazy<Record<string, SliderPuzzle>>(async () => {
-    const themes = ["adventurer", "araxxor", "archers", "black_dragon", "bridge", "castle", "clan_citadel", "corporeal_beast", "drakan_bloodveld",
-      "elves", "general_graardor", "gregorovic", "helwyr", "ice_strykewyrm", "menaphos_pharaoh", "nomad", "nymora", "seal", "sword_of_edicts", "tree", "troll", "tuska", "v", "vanstrom_klause", "werewolf", "wizard", "wyvern"
-    ]
+    const res = await fetch("/data/sliders/slider_references.json")
 
-    const unused_themes = []
-
-    return Object.fromEntries(await Promise.all(themes.map(async theme => {
-      return [theme, parseSliderImage(await ImageDetect.imageDataFromUrl(getThemeImageUrl(theme)),
-        0,
-        theme)]
-    })))
+    return SimplifiedReferenceSliderMap.decode((await res.json()) as SimplifiedReferenceSliderMap)
   })
 
   export const _blank_tile_reference: LazyAsync<ImageFingerprint[]> = async_lazy(async () => {
-    const data = await ImageDetect.imageDataFromUrl("/alt1anchors/sliders/blanktiles.png")
+    const data = await ImageDetect.imageDataFromUrl("/data/sliders/sliders/blanktiles.png")
 
     const tile_number = data.width / TILE_SIZE
 
@@ -283,6 +302,6 @@ export namespace SlideReader {
   })
 
   export function getThemeImageUrl(theme: string): string {
-    return `alt1anchors/sliders/${theme}.png`
+    return `data/sliders/sliders/${theme}.png`
   }
 }

@@ -23,10 +23,12 @@ import {BigNisButton} from "../ui/widgets/BigNisButton";
 import {Menu} from "../ui/widgets/ContextMenu";
 import * as assert from "assert";
 import {Notification} from "../ui/NotificationBar";
+import {util} from "../../lib/util/util";
 import movement_ability = MovementAbilities.movement_ability;
 import hboxl = C.hboxl;
 import hgrid = C.hgrid;
 import notification = Notification.notification;
+import profileAsync = util.profileAsync;
 
 class SpiderwebTool {
   private layer = observe<GameLayer>(null)
@@ -34,22 +36,8 @@ class SpiderwebTool {
   private clear_button: LightButton
   private calculate_button: LightButton
 
-
   constructor(private editor: PathEditor, private layout: Properties) {
     layout.header("Pathfinding Lite", "center", 1)
-
-    /*
-    layout.row(new LightButton("Path Target").setEnabled(!!editor.options.target)
-      .onClick(() => this.do(editor.options.target))
-    )
-    layout.row(new LightButton("Custom Target")
-      .onClick(() => {
-        this.editor.interaction_guard.set(new DrawTileAreaInteraction([], ["commit", "reset"]).onCommit(area => {
-          this.do([TileArea.activate(TileArea.fromTiles(area))])
-        }))
-
-      })
-    )*/
 
     layout.row(
       hgrid(
@@ -88,7 +76,7 @@ class SpiderwebTool {
       return
     }
 
-    this.layer.set(new SpiderwebTool.PreviewLayer(this.editor).addTo(this.editor.game_layer))
+    this.layer.set(new SpiderwebTool.PreviewLayer(this.editor).addTo(this.editor.handler_layer))
 
     groups.map(g => new SpiderwebTool.InversePathFindingResultEntity(g)).forEach(e => e.addTo(this.layer.value()))
   }

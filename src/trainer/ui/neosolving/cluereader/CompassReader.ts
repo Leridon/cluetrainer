@@ -1,170 +1,40 @@
 import {Compasses} from "../../../../lib/cluetheory/Compasses";
-import {mixColor} from "alt1";
-import {angleDifference, circularMean, degreesToRadians, normalizeAngle, radiansToDegrees, Rectangle, Vector2} from "../../../../lib/math";
-import * as lodash from "lodash";
-import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
+import {Rectangle, Vector2} from "../../../../lib/math";
+import lodash from "lodash";
 import {CapturedCompass} from "./capture/CapturedCompass";
 import {lazy, Lazy} from "../../../../lib/Lazy";
-import {NisModal} from "../../../../lib/ui/NisModal";
-import {GameMapMiniWidget, levelIcon} from "../../../../lib/gamemap/GameMap";
-import {GameLayer} from "../../../../lib/gamemap/GameLayer";
-import {clue_data} from "../../../../data/clues";
-import * as leaflet from "leaflet";
-import {MapEntity} from "../../../../lib/gamemap/MapEntity";
-import {TileCoordinates} from "../../../../lib/runescape/coordinates";
-import {GameMapMouseEvent} from "../../../../lib/gamemap/MapEvents";
-import {tilePolygon} from "../../polygon_helpers";
 import {EwentHandler, observe} from "../../../../lib/reactive";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
 import {CapturedImage, CaptureInterval} from "../../../../lib/alt1/capture";
-import {deps} from "../../../dependencies";
-import {util} from "../../../../lib/util/util";
-import LightButton from "../../widgets/LightButton";
-import ButtonRow from "../../../../lib/ui/ButtonRow";
-import ExportStringModal from "../../widgets/modals/ExportStringModal";
-import ImportStringModal from "../../widgets/modals/ImportStringModal";
-import {Alt1MainHotkeyEvent} from "../../../../lib/alt1/Alt1MainHotkeyEvent";
-import Widget from "../../../../lib/ui/Widget";
 import {Log} from "../../../../lib/util/Log";
 import Behaviour from "../../../../lib/ui/Behaviour";
 import {Finder} from "../../../../lib/alt1/capture/Finder";
 import {Alt1} from "../../../../lib/alt1/Alt1";
+import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
+import {AngularKeyframeFunction, CompassCalibrationFunction, FullCompassCalibrationFunction} from "./capture/CompassCalibrationFunction";
+import {util} from "../../../../lib/util/util";
+import {Angles} from "../../../../lib/math/Angles";
+import {CalibrationTool} from "../../../../devtools/CompassCalibrationTool";
+import {Alt1Overlay} from "../../../../lib/alt1/overlay/Alt1Overlay";
+import {Alt1OverlayDrawCalls} from "../../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
+import {ClueTrainerWiki} from "../../../wiki";
+import {ImageDetect} from "alt1";
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
 import log = Log.log;
-import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
-import {Alt1ScreenCaptureService} from "../../../../lib/alt1/capture/Alt1ScreenCaptureService";
-
-class AngularKeyframeFunction {
-  private constructor(private readonly keyframes: {
-                        original?: Vector2,
-                        angle: number,
-                        value: number
-                      }[],
-                      private base_f: (_: number) => number = () => 0) {
-    this.keyframes = lodash.sortBy(keyframes, e => e.angle)
-  }
-
-  withBaseline(f: (_: number) => number): this {
-    this.base_f = f
-
-    return this
-  }
-
-  getSampleTable(): number[] {
-    const samples: number[] = []
-
-    const FRAMES = 5000
-
-    for (let i = 0; i <= FRAMES; i++) {
-      samples.push(this.sample(i * (2 * Math.PI / FRAMES)))
-    }
-
-    return samples
-  }
-
-  getCSV(): string {
-    const header = "Is,Delta,Base-Delta,Full-Delta,X,Y\n"
-
-    return header + this.keyframes.map((keyframe) => {
-      return [keyframe.angle, keyframe.value, this.base_f(keyframe.angle), keyframe.value + this.base_f(keyframe.angle)]
-        .map(radiansToDegrees).join(",") + `,${keyframe.original?.x},${keyframe.original?.y}`
-    }).join("\n")
-  }
-
-  sample(angle: number): number {
-    if (this.keyframes.length == 0) return 0
-    if (this.keyframes.length == 1) return this.keyframes[0].value
-
-    // TODO: Optimize with binary search instead
-
-    let index_a = lodash.findLastIndex(this.keyframes, e => e.angle < angle)
-    if (index_a < 0) index_a = this.keyframes.length - 1
-
-    const index_b = (index_a + 1) % this.keyframes.length
-
-    const previous = this.keyframes[index_a]
-    const next = this.keyframes[index_b]
-
-    const t = angleDifference(angle, previous.angle) / angleDifference(next.angle, previous.angle)
-
-    // Linearly interpolate between keyframes
-    return (1 - t) * previous.value + t * next.value + this.base_f(angle)
-  }
-
-  static fromCalibrationSamples(samples: {
-                                  position: Vector2, is_angle_degrees: number
-                                }[],
-                                baseline_type: "cosine" | null = null,
-  ): AngularKeyframeFunction {
-
-    const keyframes = samples.filter(s => s.is_angle_degrees != undefined).map(({position, is_angle_degrees}) => {
-      const should_angle = Vector2.angle(ANGLE_REFERENCE_VECTOR, {x: -position.x, y: -position.y})
-      const is_angle = degreesToRadians(is_angle_degrees)
-
-      let dif = should_angle - is_angle
-      if (dif < -Math.PI) dif += 2 * Math.PI
-
-      return {
-        original: position,
-        angle: is_angle,
-        value: dif
-      }
-    })
-
-    const baseline_function = (() => {
-      switch (baseline_type) {
-        case null:
-          return () => 0
-        case "cosine":
-          // This would probably be the place for a fourier transform tbh, but this simplified version should be enough
-
-          const PHASES = 4
-
-          const max = Math.max(...keyframes.map(f => f.value))
-          const min = Math.min(...keyframes.map(f => f.value))
-
-          const offset = (max + min) / 2
-          const amplitude = (max - min) / 2
-
-          const hill_samples = keyframes.filter(k => Math.abs(max - k.value) < amplitude / 10).map(k => k.angle % (2 * Math.PI / PHASES))
-
-          const phase = circularMean(hill_samples)
-
-          //const phase = lodash.maxBy(keyframes, k => k.value).angle
-
-          return (x) => amplitude * Math.cos(PHASES * (x - phase)) + offset
-      }
-    })()
-
-    const reduced_keyframes = keyframes.map(f => ({...f, value: f.value - baseline_function(f.angle)}))
-
-    return new AngularKeyframeFunction(
-      reduced_keyframes, baseline_function
-    ).withBaseline(baseline_function)
-  }
-}
-
-namespace AngularKeyframeFunction {
-  export type Sample = {
-    position: Vector2, is_angle_degrees: number
-  }
-}
+import AntialiasingType = CompassReader.AntialiasingType;
 
 export class CompassReader {
-  constructor(public readonly capture: CapturedCompass, private disable_calibration: boolean = false) {
-
+  constructor(public readonly capture: CapturedCompass, private calibration_functions: (_: AntialiasingType) => CompassCalibrationFunction = typ => CompassReader.calibration_tables[typ]) {
   }
 
   private _angle: Lazy<CompassReader.AngleResult> = lazy((): CompassReader.AngleResult => {
-    const CENTER_SIZE = 2
-    const OFFSET = CENTER_SIZE - 1
     const CENTER_OFFSET = {x: CapturedCompass.TOTAL_COMPASS_RADIUS, y: CapturedCompass.TOTAL_COMPASS_RADIUS}
 
     const buf = this.capture.compass_area.getData()
 
     const buf_center = {
-      x: buf.width / 2,
-      y: buf.height / 2
+      x: ~~(buf.width / 2),
+      y: ~~(buf.height / 2)
     }
 
     function getRed(x: number, y: number) {
@@ -180,9 +50,9 @@ export class CompassReader {
     }
 
     if (CompassReader.DEBUG_COMPASS_READER) {
-      CompassReader.debug_overlay.clear()
-
-      this.capture.compass_area.debugOverlay(CompassReader.debug_overlay)
+      CompassReader.debug_overlay?.setGeometry(
+        this.capture.compass_area.debugOverlay2().buffer()
+      )
     }
 
     const TARGET_X_SAMPLE_OFFSETS: Vector2[] = [
@@ -205,134 +75,169 @@ export class CompassReader {
     ]
 
     if (TARGET_X_SAMPLE_OFFSETS.every(coords => {
-      const red = getRed(coords.x, coords.y)
+      const [r, g, b, _] = buf.getPixel(CENTER_OFFSET.x + coords.x, CENTER_OFFSET.y + coords.y)
 
-      const res = red >= 70 && red <= 110
-
-      //if (!res) console.log(`${red} at ${coords.x}|${coords.y}`)
-
-      return res
-    })) return {type: "likely_solved"}
-
-    /*
-    const circle_sampled_pixels: Vector2[] = (() => {
-      const sampled: Vector2[] = []
-      const r = CapturedCompass.INNER_COMPASS_RADIUS
-
-      const self = this
-
-      function sample(x: number, y: number): void {
-        if (isArrow(x, y)) {
-          sampled.push({x, y})
-        }
-
-        if (CompassReader.DEBUG_COMPASS_READER) {
-          CompassReader.debug_overlay.rect(
-            Rectangle.centeredOn(Vector2.add(self.capture.compass_area.screenRectangle().origin, CENTER_OFFSET, {x, y}), 0),
-            {color: isArrow(x, y) ? Alt1Color.red : Alt1Color.green, width: 1})
-        }
-
-      }
-
-      let x = CENTER_SIZE + CapturedCompass.INNER_COMPASS_RADIUS
-      let y = 0;
-
-      // Initialising the value of P
-      let P = 1 - r;
-      while (x > y) {
-        if (P <= 0) {
-          // Mid-point is inside or on the perimeter
-          P = P + 2 * y + 1;
-        } else { // Mid-point is outside the perimeter
-          x--;
-          P = P + 2 * y - 2 * x + 1;
-        }
-
-        // All the perimeter points have already been printed
-        if (x < y) break;
-
-        // Printing the generated point and its reflection
-        // in the other octants after translation
-
-        sample(x, y + OFFSET) // Octant 1
-        sample(-x + OFFSET, y + OFFSET) // Octant 4
-        sample(-x + OFFSET, -y) // Octant 5
-        sample(x, -y) // Octant 8
-
-        // If the generated point is on the line x = y then
-        // the perimeter points have already been printed
-        if (x != y) {
-          sample(y + OFFSET, x)       // Octant 2
-          sample(-y, x)                   // Octant 3
-          sample(-y, -x + OFFSET)        // Octant 6
-          sample(y + OFFSET, -x + OFFSET) // Octant 7
-        }
-
-        y++;
-      }
-
-      return sampled
-    })()
-
-    if (CompassReader.DEBUG_COMPASS_READER) {
-      for (let p of circle_sampled_pixels) {
-        CompassReader.debug_overlay.line(
-          Vector2.add(this.capture.compass_area.screenRectangle().origin, CENTER_OFFSET),
-          Vector2.add(this.capture.compass_area.screenRectangle().origin, CENTER_OFFSET, p),
-          {width: 1, color: Alt1Color.red}
-        )
-      }
-
-      CompassReader.debug_overlay.render()
-    }
-
-    let circle_failure_reason: AngleResult = null
-
-    if (circle_sampled_pixels.length == 0) return {type: "likely_closed", details: "No pixels while sampling the circle"}
-    if (circle_sampled_pixels.length > 10) {
-      circle_failure_reason = {type: "likely_concealed", details: `Too many pixels while sampling the circle (${circle_sampled_pixels.length} > 10)`}
-    }
-
-    // Map all sample points to their respective angle
-    // The angle is taken from the true center of the compass arrow, which is why we offset the samples by 0.5
-    // Also, the y axis is flipped to convert from screen coordinates to the internally used coordinate system
-    const angles = circle_sampled_pixels.map(p => Vector2.angle(
-      ANGLE_REFERENCE_VECTOR, Vector2.normalize({x: p.x - 0.5, y: -p.y}))
-    )
-
-    const angle_after_circle_sampling = !circle_failure_reason ? normalizeAngle(circularMean(angles)) : 0
-
-    if (angles.some(a => angleDifference(a, angle_after_circle_sampling) > CompassReader.CIRCLE_SAMPLE_CONCEALED_THRESHOLD)) {
-      circle_failure_reason = {type: "likely_concealed", details: "Too much variance in the sampled pixels on the circumference"}
-    }
-*/
+      return [r, g, b].every(c => c >= 70 && c < 110)
+    })) return {type: "likely_solved", fingerprint: undefined}
 
     const rectangle_samples: Vector2[] = []
+    let antialiasing_detected: boolean = false
 
-    let antialiasing_detected = false
+    const scan_map: boolean[][] = new Array(buf.width).fill(null).map(() => new Array(buf.width).fill(false))
 
-    const ANTIALIASING_SEARCH_RADIUS = 40
+    function visitNew(x: number, y: number): boolean {
+      scan_map[y][x] = true // Mark as seen
 
-    for (let y = 0; y < buf.height; y++) {
-      for (let x = 0; x < buf.width; x++) {
-        if (isArrow(x, y)) {
-          rectangle_samples.push({x, y})
-        } else if (!antialiasing_detected && Vector2.max_axis(Vector2.sub({x, y}, buf_center)) <= ANTIALIASING_SEARCH_RADIUS) {
-          const red = buf.getPixel(x, y)[0]
+      if (!isArrow(x, y)) {
+        if (!antialiasing_detected && Vector2.max_axis(Vector2.sub(buf_center, {x, y})) < 15 && buf.getColorDifference(x, y, 0, 0, 0) < 250) antialiasing_detected = true
 
-          if (red < 40) antialiasing_detected = true
+        return false // Not an arrow pixel, don't follow up
+      }
+
+      rectangle_samples.push({x, y})
+
+      return true
+    }
+
+    function visit(x: number, y: number): boolean {
+      if (x < 0 || y < 0 || x >= buf.width || y >= buf.height) return false // Out of bounds
+      if (scan_map[y][x]) return false // Already seen
+
+      return visitNew(x, y)
+    }
+
+    function floodFillScanDFS(x: number, y: number) {
+      if (!visit(x, y)) return
+
+      floodFillScanDFS(x - 1, y - 1)
+      floodFillScanDFS(x - 1, y)
+      floodFillScanDFS(x - 1, y + 1)
+      floodFillScanDFS(x, y - 1)
+      floodFillScanDFS(x, y + 1)
+      floodFillScanDFS(x + 1, y - 1)
+      floodFillScanDFS(x + 1, y)
+      floodFillScanDFS(x + 1, y + 1)
+    }
+
+    function floodFillScanDFSLine(x: number, y: number): [number, number] {
+      function visitLine(x: number, y: number): [number, number] {
+        if (!visit(x, y)) return null
+
+        let min_x: number = x - 1
+        let max_x: number = x + 1
+
+        while (min_x >= 0 && visitNew(min_x, y)) min_x--
+        while (max_x < buf.width && visitNew(max_x, y)) max_x++
+
+        return [min_x + 1, max_x - 1]
+      }
+
+      const line = visitLine(x, y)
+
+      if (!line) return
+
+      const [min_x, max_x] = line
+
+      for (let x = min_x - 1; x <= max_x + 1; x++) {
+        const child_line = floodFillScanDFSLine(x, y + 1)
+
+        if (child_line) x = child_line[1] + 1
+      }
+
+      for (let x = min_x - 1; x <= max_x + 1; x++) {
+        const child_line = floodFillScanDFSLine(x, y - 1)
+
+        if (child_line) x = child_line[1] + 1
+      }
+
+      return line
+    }
+
+    function floodFillScanBFS(x: number, y: number) {
+      const queue = []
+
+      function push(x: number, y: number) {
+        if (visit(x, y)) queue.push([x, y]) // Push to queue
+      }
+
+      push(x, y)
+
+      let i = 0
+
+      while (i < queue.length) {
+        const [x, y] = queue[i++]
+
+        push(x - 1, y - 1)
+        push(x - 1, y)
+        push(x - 1, y + 1)
+        push(x, y - 1)
+        push(x, y + 1)
+        push(x + 1, y - 1)
+        push(x + 1, y)
+        push(x + 1, y + 1)
+      }
+    }
+
+    function simpleScan() {
+      for (let y = 0; y < buf.height; y++) {
+        for (let x = 0; x < buf.width; x++) {
+          if (isArrow(x, y)) {
+            rectangle_samples.push({x, y})
+          }
         }
+      }
+    }
+
+    // Gather all black pixels
+    floodFillScanDFSLine(buf_center.x, buf_center.y)
+    //profile(() => simpleScan(), "Flood fill")
+
+    const fingerprint: CompassReader.ReadFingerprint = {
+      pixel_count: rectangle_samples.length,
+      compass_size: rectangle_samples.length > 0 ? Rectangle.size(Rectangle.from(...rectangle_samples)) : undefined,
+      antialiasing: antialiasing_detected
+    }
+
+    if (rectangle_samples.length < 400) {
+      // TODO: This would be neater with findSubimage, but that results in a weird bug
+      if (ImageDetect.simpleCompare(this.capture.anchor_area.getData(), this.capture.finder.anchor.underlying, 0, 0) < 100) {
+        return {
+          type: "likely_concealed",
+          fingerprint: fingerprint,
+          details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample.`
+        }
+      }
+
+      return {
+        type: "likely_closed",
+        fingerprint: fingerprint,
+        details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample.`
       }
     }
 
     if (antialiasing_detected) {
-      if (rectangle_samples.length < 400) return {type: "likely_closed", details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample. [MSAA]`}
-      if (rectangle_samples.length < 1700) return {type: "likely_concealed", details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample. [MSAA]`}
-      if (rectangle_samples.length > 2250) return {type: "likely_concealed", details: `Too many pixels (${rectangle_samples.length}) sampled for the rectangle sample. [MSAA]`}
+
+      if (rectangle_samples.length < 2000) return {
+        type: "likely_concealed",
+        fingerprint: fingerprint,
+        details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample. [MSAA]`
+      }
+      if (rectangle_samples.length > 2250) return {
+        type: "likely_concealed",
+        fingerprint: fingerprint,
+        details: `Too many pixels (${rectangle_samples.length}) sampled for the rectangle sample. [MSAA]`
+      }
     } else {
-      if (rectangle_samples.length < 400) return {type: "likely_closed", details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample.`}
-      if (rectangle_samples.length < 1900) return {type: "likely_concealed", details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample.`}
-      if (rectangle_samples.length > 2300) return {type: "likely_concealed", details: `Too many pixels (${rectangle_samples.length}) sampled for the rectangle sample.`}
+      if (rectangle_samples.length < 1900) return {
+        type: "likely_concealed",
+        fingerprint: fingerprint,
+        details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample.`
+      }
+      if (rectangle_samples.length > 2300) return {
+        type: "likely_concealed",
+        fingerprint: fingerprint,
+        details: `Too many pixels (${rectangle_samples.length}) sampled for the rectangle sample.`
+      }
     }
 
     const center_of_mass: Vector2 = {
@@ -359,8 +264,8 @@ export class CompassReader {
 
       if (Number.isNaN(angle)) return []
 
-      if (angleDifference(angle, initial_angle) > Math.PI / 2)
-        angle = normalizeAngle(angle - Math.PI)
+      if (Angles.angleDifference(angle, initial_angle) > Math.PI / 2)
+        angle = Angles.normalizeAngle(angle - Math.PI)
 
       return {
         angle: angle,
@@ -368,30 +273,28 @@ export class CompassReader {
       }
     })
 
-    const angle_after_rectangle_sample = normalizeAngle(Math.atan2(
+    const angle_after_rectangle_sample = Angles.normalizeAngle(Math.atan2(
       lodash.sum(angle_samples.map(a => a.weight * Math.sin(a.angle))),
       lodash.sum(angle_samples.map(a => a.weight * Math.cos(a.angle))),
     ))
 
-    const calibration_mode = (this.disable_calibration || CompassReader.DISABLE_CALIBRATION) ? null
-      : (antialiasing_detected ? "msaa" : "off")
+    const calibration_mode: CompassReader.AntialiasingType = antialiasing_detected ? "msaa" : "off"
 
-    const final_angle = calibration_mode
-      ? normalizeAngle(angle_after_rectangle_sample + CompassReader.calibration_tables[calibration_mode].sample(angle_after_rectangle_sample))
-      : angle_after_rectangle_sample
+    const calibration_function = CompassReader.DISABLE_CALIBRATION ? CompassCalibrationFunction.none : this.calibration_functions?.(calibration_mode) ?? CompassCalibrationFunction.none
+
+    const final_angle = calibration_function.apply(angle_after_rectangle_sample)
 
     if (CompassReader.DEBUG_COMPASS_READER) {
-      log().log(`Angle: ${radiansToDegrees(initial_angle).toFixed(3)}° (CoM), ${radiansToDegrees(angle_after_rectangle_sample).toFixed(3)}° (rect), ${radiansToDegrees(final_angle).toFixed(3)}° (final)`,
+      log().log(`Angle: ${Angles.toString(initial_angle, 3)} (CoM), ${Angles.toString(angle_after_rectangle_sample, 3)} (rect), ${Angles.UncertainAngle.toString(final_angle, 3)} (final)`,
         "Compass Reader"
       )
-
-      CompassReader.debug_overlay.render()
     }
 
     return {
       type: "success",
+      fingerprint: fingerprint,
       angle: final_angle,
-      antialiasing: antialiasing_detected
+      raw_angle: angle_after_rectangle_sample
     }
   })
 
@@ -401,556 +304,317 @@ export class CompassReader {
 }
 
 export namespace CompassReader {
-  import greatestCommonDivisor = util.greatestCommonDivisor;
-  import cleanedJSON = util.cleanedJSON;
-  import log = Log.log;
-  import getExpectedAngle = Compasses.getExpectedAngle;
   import async_init = util.async_init;
   import AsyncInitialization = util.AsyncInitialization;
+  import degreesToRadians = Angles.degreesToRadians;
+  import UncertainAngle = Angles.UncertainAngle;
   export const DEBUG_COMPASS_READER = false
   export const DISABLE_CALIBRATION = false
 
-  export const RESOLUTION_INACCURACY_DEGREES = 0.2 // Calculated on a napkin, so might not be completely accurate
-  export const CALIBRATION_INACCURACY_DEGREES = 0.1
-  export const EPSILON = degreesToRadians(RESOLUTION_INACCURACY_DEGREES + CALIBRATION_INACCURACY_DEGREES)
-  export const CIRCLE_SAMPLE_CONCEALED_THRESHOLD = degreesToRadians(3)
+  export type ReadFingerprint = {
+    pixel_count?: number,
+    compass_size?: Vector2,
+    antialiasing?: boolean
+  }
 
-  export type AngleResult = {
-    type: "success",
-    angle: number,
-    antialiasing: boolean,
-  } | { type: "likely_closed", details: string }
-    | { type: "likely_concealed", details: string }
-    | { type: "likely_solved" }
+  export namespace ReadFingerprint {
+    export function toString(self: ReadFingerprint) {
+      return `${self?.pixel_count ?? "?"}px (${self?.compass_size?.x ?? "?"} x ${self?.compass_size?.y ?? "?"})`
+    }
+  }
 
-  export const debug_overlay = new LegacyOverlayGeometry()
+  export type AngleResult = AngleResult.Success | AngleResult.LikelyClosed | AngleResult.LikelyConcealed | AngleResult.LikelySolved
 
-  export const calibration_tables = {
-    "off": AngularKeyframeFunction.fromCalibrationSamples([
-        {"position": {"x": -1, "y": 0}, "is_angle_degrees": 358.97548361371},
-        {"position": {"x": -10, "y": -1}, "is_angle_degrees": 3.0915850765454644},
-        {"position": {"x": -9, "y": -1}, "is_angle_degrees": 3.6243978639386847},
-        {"position": {"x": -8, "y": -1}, "is_angle_degrees": 4.2740649320954125},
-        {"position": {"x": -7, "y": -1}, "is_angle_degrees": 4.943912355929411},
-        {"position": {"x": -6, "y": -1}, "is_angle_degrees": 5.9502482933470295},
-        {"position": {"x": -5, "y": -1}, "is_angle_degrees": 7.5132324018603756},
-        {"position": {"x": -9, "y": -2}, "is_angle_degrees": 8.424254191266932},
-        {"position": {"x": -4, "y": -1}, "is_angle_degrees": 9.533531319479852},
-        {"position": {"x": -7, "y": -2}, "is_angle_degrees": 11.25501316445402},
-        {"position": {"x": -10, "y": -3}, "is_angle_degrees": 11.799394482103063},
-        {"position": {"x": -3, "y": -1}, "is_angle_degrees": 13.542012421869865},
-        {"position": {"x": -8, "y": -3}, "is_angle_degrees": 15.628595494232096},
-        {"position": {"x": -5, "y": -2}, "is_angle_degrees": 16.697241942175143},
-        {"position": {"x": -7, "y": -3}, "is_angle_degrees": 18.109935497202898},
-        {"position": {"x": -9, "y": -4}, "is_angle_degrees": 18.774155031273363},
-        {"position": {"x": -2, "y": -1}, "is_angle_degrees": 21.561442482587285},
-        {"position": {"x": -9, "y": -5}, "is_angle_degrees": 24.191451389629563},
-        {"position": {"x": -7, "y": -4}, "is_angle_degrees": 24.79365104945731},
-        {"position": {"x": -5, "y": -3}, "is_angle_degrees": 25.976762815159063},
-        {"position": {"x": -8, "y": -5}, "is_angle_degrees": 27.197789443178184},
-        {"position": {"x": -3, "y": -2}, "is_angle_degrees": 28.864414114670076},
-        {"position": {"x": -10, "y": -7}, "is_angle_degrees": 30.50935413319901},
-        {"position": {"x": -7, "y": -5}, "is_angle_degrees": 31.143675854268547},
-        {"position": {"x": -4, "y": -3}, "is_angle_degrees": 32.686018586961616},
-        {"position": {"x": -9, "y": -7}, "is_angle_degrees": 33.8521592566474},
-        {"position": {"x": -5, "y": -4}, "is_angle_degrees": 34.785374033080494},
-        {"position": {"x": -6, "y": -5}, "is_angle_degrees": 36.15311641904172},
-        {"position": {"x": -7, "y": -6}, "is_angle_degrees": 37.251947329520604},
-        {"position": {"x": -8, "y": -7}, "is_angle_degrees": 38.14663407012484},
-        {"position": {"x": -9, "y": -8}, "is_angle_degrees": 38.67345995185955},
-        {"position": {"x": -10, "y": -9}, "is_angle_degrees": 39.21630511981937},
-        {"position": {"y": -1, "x": -1}, "is_angle_degrees": 43.61960030459728},
-        {"position": {"x": -9, "y": -10}, "is_angle_degrees": 47.90406441239121},
-        {"position": {"x": -8, "y": -9}, "is_angle_degrees": 48.26401621257827},
-        {"position": {"x": -7, "y": -8}, "is_angle_degrees": 49.01093035602379},
-        {"position": {"x": -6, "y": -7}, "is_angle_degrees": 49.74368797148861},
-        {"position": {"x": -5, "y": -6}, "is_angle_degrees": 50.76736678868917},
-        {"position": {"x": -4, "y": -5}, "is_angle_degrees": 52.24306240574763},
-        {"position": {"x": -7, "y": -9}, "is_angle_degrees": 53.354777279488026},
-        {"position": {"x": -3, "y": -4}, "is_angle_degrees": 54.482207281985765},
-        {"position": {"x": -5, "y": -7}, "is_angle_degrees": 55.986496449727134},
-        {"position": {"x": -7, "y": -10}, "is_angle_degrees": 56.55164864969998},
-        {"position": {"x": -2, "y": -3}, "is_angle_degrees": 58.21159214357648},
-        {"position": {"x": -5, "y": -8}, "is_angle_degrees": 59.996464967912566},
-        {"position": {"x": -3, "y": -5}, "is_angle_degrees": 60.941347237890895},
-        {"position": {"x": -4, "y": -7}, "is_angle_degrees": 62.30115088364926},
-        {"position": {"x": -5, "y": -9}, "is_angle_degrees": 63.05030110535739},
-        {"position": {"x": -1, "y": -2}, "is_angle_degrees": 65.3972229459928},
-        {"position": {"x": -4, "y": -9}, "is_angle_degrees": 67.9381924609354},
-        {"position": {"x": -3, "y": -7}, "is_angle_degrees": 68.63531796270765},
-        {"position": {"x": -2, "y": -5}, "is_angle_degrees": 69.93855280359594},
-        {"position": {"x": -3, "y": -8}, "is_angle_degrees": 71.30162959036313},
-        {"position": {"x": -1, "y": -3}, "is_angle_degrees": 73.34657713754882},
-        {"position": {"x": -3, "y": -10}, "is_angle_degrees": 74.99221499403964},
-        {"position": {"x": -2, "y": -7}, "is_angle_degrees": 75.65052612412218},
-        {"position": {"x": -1, "y": -4}, "is_angle_degrees": 77.4976879484156},
-        {"position": {"x": -2, "y": -9}, "is_angle_degrees": 78.9091931688932},
-        {"position": {"x": -1, "y": -5}, "is_angle_degrees": 79.87351008276288},
-        {"position": {"x": -1, "y": -6}, "is_angle_degrees": 81.57231676838403},
-        {"position": {"x": -1, "y": -7}, "is_angle_degrees": 82.71948916286081},
-        {"position": {"x": -1, "y": -8}, "is_angle_degrees": 83.65512262278655},
-        {"position": {"x": -1, "y": -9}, "is_angle_degrees": 84.15716308021892},
-        {"position": {"x": -1, "y": -10}, "is_angle_degrees": 84.72127405207037},
-        {"position": {"x": 0, "y": -1}, "is_angle_degrees": 88.81969121931886},
-        {"position": {"x": 1, "y": -10}, "is_angle_degrees": 93.44415500445876},
-        {"position": {"x": 1, "y": -9}, "is_angle_degrees": 93.82836112012463},
-        {"position": {"x": 1, "y": -8}, "is_angle_degrees": 94.29809632316037},
-        {"position": {"x": 1, "y": -7}, "is_angle_degrees": 95.06947700454371},
-        {"position": {"x": 1, "y": -6}, "is_angle_degrees": 96.16780558595977},
-        {"position": {"x": 1, "y": -5}, "is_angle_degrees": 97.58977886721772},
-        {"position": {"x": 2, "y": -9}, "is_angle_degrees": 98.46634764544287},
-        {"position": {"x": 1, "y": -4}, "is_angle_degrees": 99.5840229047626},
-        {"position": {"x": 2, "y": -7}, "is_angle_degrees": 101.37254723330575},
-        {"position": {"x": 3, "y": -10}, "is_angle_degrees": 102.0417318219204},
-        {"position": {"x": 1, "y": -3}, "is_angle_degrees": 103.73657745745831},
-        {"position": {"x": 3, "y": -8}, "is_angle_degrees": 105.62859549423209},
-        {"position": {"x": 2, "y": -5}, "is_angle_degrees": 106.84382873101586},
-        {"position": {"x": 3, "y": -7}, "is_angle_degrees": 108.24790833191284},
-        {"position": {"x": 4, "y": -9}, "is_angle_degrees": 109.03305369040385},
-        {"position": {"x": 1, "y": -2}, "is_angle_degrees": 111.56144248258734},
-        {"position": {"x": 5, "y": -9}, "is_angle_degrees": 114.17025803688227},
-        {"position": {"x": 4, "y": -7}, "is_angle_degrees": 114.90794888539249},
-        {"position": {"x": 3, "y": -5}, "is_angle_degrees": 116.13918305040671},
-        {"position": {"x": 5, "y": -8}, "is_angle_degrees": 117.19778944317821},
-        {"position": {"x": 2, "y": -3}, "is_angle_degrees": 119.1425984804859},
-        {"position": {"x": 7, "y": -10}, "is_angle_degrees": 120.63452506540716},
-        {"position": {"x": 5, "y": -7}, "is_angle_degrees": 121.14367585426854},
-        {"position": {"x": 3, "y": -4}, "is_angle_degrees": 122.68601858696164},
-        {"position": {"x": 7, "y": -9}, "is_angle_degrees": 123.8521592566474},
-        {"position": {"x": 4, "y": -5}, "is_angle_degrees": 124.96838479956568},
-        {"position": {"x": 5, "y": -6}, "is_angle_degrees": 126.44628903768498},
-        {"position": {"x": 6, "y": -7}, "is_angle_degrees": 127.60227097408769},
-        {"position": {"x": 7, "y": -8}, "is_angle_degrees": 128.1466340701248},
-        {"position": {"x": 8, "y": -9}, "is_angle_degrees": 128.82196032664805},
-        {"position": {"x": 9, "y": -10}, "is_angle_degrees": 129.3660359438609},
-        {"position": {"x": 1, "y": -1}, "is_angle_degrees": 133.61960030459727},
-        {"position": {"x": 10, "y": -9}, "is_angle_degrees": 138.17144963663821},
-        {"position": {"x": 9, "y": -8}, "is_angle_degrees": 138.67713160080982},
-        {"position": {"x": 8, "y": -7}, "is_angle_degrees": 139.0109303560238},
-        {"position": {"x": 7, "y": -6}, "is_angle_degrees": 139.92487782495525},
-        {"position": {"x": 6, "y": -5}, "is_angle_degrees": 140.96074988145998},
-        {"position": {"x": 5, "y": -4}, "is_angle_degrees": 142.47975023747753},
-        {"position": {"x": 9, "y": -7}, "is_angle_degrees": 143.35477727948808},
-        {"position": {"x": 4, "y": -3}, "is_angle_degrees": 144.48220728198572},
-        {"position": {"x": 7, "y": -5}, "is_angle_degrees": 145.98649644972713},
-        {"position": {"x": 10, "y": -7}, "is_angle_degrees": 146.83852648423527},
-        {"position": {"x": 3, "y": -2}, "is_angle_degrees": 148.41189959121326},
-        {"position": {"x": 8, "y": -5}, "is_angle_degrees": 149.99646496791254},
-        {"position": {"x": 5, "y": -3}, "is_angle_degrees": 151.23110249069535},
-        {"position": {"x": 7, "y": -4}, "is_angle_degrees": 152.36472837101428},
-        {"position": {"x": 9, "y": -5}, "is_angle_degrees": 153.1069843794491},
-        {"position": {"x": 2, "y": -1}, "is_angle_degrees": 155.3972229459928},
-        {"position": {"x": 9, "y": -4}, "is_angle_degrees": 158.11428899635948},
-        {"position": {"x": 7, "y": -3}, "is_angle_degrees": 158.82739948470518},
-        {"position": {"x": 5, "y": -2}, "is_angle_degrees": 160.062970095961},
-        {"position": {"x": 8, "y": -3}, "is_angle_degrees": 161.3016295903631},
-        {"position": {"x": 3, "y": -1}, "is_angle_degrees": 163.5033282727502},
-        {"position": {"x": 10, "y": -3}, "is_angle_degrees": 165.2612094402138},
-        {"position": {"x": 7, "y": -2}, "is_angle_degrees": 165.82765228852304},
-        {"position": {"x": 4, "y": -1}, "is_angle_degrees": 167.48803697142048},
-        {"position": {"x": 9, "y": -2}, "is_angle_degrees": 168.88465955024463},
-        {"position": {"x": 5, "y": -1}, "is_angle_degrees": 170.03444123017778},
-        {"position": {"x": 6, "y": -1}, "is_angle_degrees": 171.70537931037876},
-        {"position": {"x": 7, "y": -1}, "is_angle_degrees": 172.85534104418582},
-        {"position": {"x": 8, "y": -1}, "is_angle_degrees": 173.6391145845945},
-        {"position": {"x": 9, "y": -1}, "is_angle_degrees": 174.29046341543932},
-        {"position": {"x": 10, "y": -1}, "is_angle_degrees": 174.89986177694306},
-        {"position": {"x": 1, "y": 0}, "is_angle_degrees": 178.9454106464548},
-        {"position": {"x": 10, "y": 1}, "is_angle_degrees": 183.46500054547502},
-        {"position": {"x": 9, "y": 1}, "is_angle_degrees": 183.8451728388274},
-        {"position": {"x": 8, "y": 1}, "is_angle_degrees": 184.3402314808313},
-        {"position": {"x": 7, "y": 1}, "is_angle_degrees": 185.09664795446173},
-        {"position": {"x": 6, "y": 1}, "is_angle_degrees": 186.2222018600384},
-        {"position": {"x": 5, "y": 1}, "is_angle_degrees": 187.6006155768384},
-        {"position": {"x": 9, "y": 2}, "is_angle_degrees": 188.5063293429787},
-        {"position": {"x": 4, "y": 1}, "is_angle_degrees": 189.63145560451437},
-        {"position": {"x": 7, "y": 2}, "is_angle_degrees": 191.2988014247723},
-        {"position": {"x": 10, "y": 3}, "is_angle_degrees": 192.04173182192037},
-        {"position": {"x": 3, "y": 1}, "is_angle_degrees": 193.7365774574583},
-        {"position": {"x": 8, "y": 3}, "is_angle_degrees": 195.62859549423206},
-        {"position": {"x": 5, "y": 2}, "is_angle_degrees": 196.84382873101583},
-        {"position": {"x": 7, "y": 3}, "is_angle_degrees": 198.2479083319128},
-        {"position": {"x": 9, "y": 4}, "is_angle_degrees": 199.03305369040382},
-        {"position": {"x": 2, "y": 1}, "is_angle_degrees": 201.5614424825873},
-        {"position": {"x": 9, "y": 5}, "is_angle_degrees": 204.1914513896296},
-        {"position": {"x": 7, "y": 4}, "is_angle_degrees": 204.7936510494573},
-        {"position": {"x": 5, "y": 3}, "is_angle_degrees": 206.1391830504067},
-        {"position": {"x": 8, "y": 5}, "is_angle_degrees": 207.19778944317824},
-        {"position": {"x": 3, "y": 2}, "is_angle_degrees": 209.14259848048587},
-        {"position": {"x": 10, "y": 7}, "is_angle_degrees": 210.50935413319908},
-        {"position": {"x": 7, "y": 5}, "is_angle_degrees": 211.14367585426857},
-        {"position": {"x": 4, "y": 3}, "is_angle_degrees": 212.68601858696158},
-        {"position": {"x": 9, "y": 7}, "is_angle_degrees": 213.8521592566474},
-        {"position": {"x": 5, "y": 4}, "is_angle_degrees": 214.9683847995657},
-        {"position": {"x": 6, "y": 5}, "is_angle_degrees": 216.1531164190416},
-        {"position": {"x": 7, "y": 6}, "is_angle_degrees": 217.60227097408762},
-        {"position": {"x": 8, "y": 7}, "is_angle_degrees": 218.14663407012475},
-        {"position": {"x": 9, "y": 8}, "is_angle_degrees": 218.82196032664802},
-        {"position": {"x": 10, "y": 9}, "is_angle_degrees": 219.36603594386088},
-        {"position": {"y": 1, "x": 1}, "is_angle_degrees": 223.61960030459727},
-        {"position": {"x": 9, "y": 10}, "is_angle_degrees": 228.17144963663827},
-        {"position": {"x": 8, "y": 9}, "is_angle_degrees": 228.6771316008098},
-        {"position": {"x": 7, "y": 8}, "is_angle_degrees": 229.01093035602378},
-        {"position": {"x": 6, "y": 7}, "is_angle_degrees": 229.92487782495525},
-        {"position": {"x": 5, "y": 6}, "is_angle_degrees": 230.96074988145992},
-        {"position": {"x": 4, "y": 5}, "is_angle_degrees": 232.24306240574765},
-        {"position": {"x": 7, "y": 9}, "is_angle_degrees": 233.35477727948802},
-        {"position": {"x": 3, "y": 4}, "is_angle_degrees": 234.48220728198575},
-        {"position": {"x": 5, "y": 7}, "is_angle_degrees": 235.98649644972707},
-        {"position": {"x": 7, "y": 10}, "is_angle_degrees": 236.83852648423527},
-        {"position": {"x": 2, "y": 3}, "is_angle_degrees": 238.21159214357647},
-        {"position": {"x": 5, "y": 8}, "is_angle_degrees": 239.99646496791257},
-        {"position": {"x": 3, "y": 5}, "is_angle_degrees": 240.94134723789088},
-        {"position": {"x": 4, "y": 7}, "is_angle_degrees": 242.36472837101428},
-        {"position": {"x": 5, "y": 9}, "is_angle_degrees": 243.10698437944907},
-        {"position": {"x": 1, "y": 2}, "is_angle_degrees": 245.39722294599275},
-        {"position": {"x": 4, "y": 9}, "is_angle_degrees": 247.93819246093537},
-        {"position": {"x": 3, "y": 7}, "is_angle_degrees": 248.63531796270763},
-        {"position": {"x": 2, "y": 5}, "is_angle_degrees": 250.062970095961},
-        {"position": {"x": 3, "y": 8}, "is_angle_degrees": 251.30162959036312},
-        {"position": {"x": 1, "y": 3}, "is_angle_degrees": 253.50332827275014},
-        {"position": {"x": 3, "y": 10}, "is_angle_degrees": 254.99221499403959},
-        {"position": {"x": 2, "y": 7}, "is_angle_degrees": 255.82765228852304},
-        {"position": {"x": 1, "y": 4}, "is_angle_degrees": 257.48803697142046},
-        {"position": {"x": 2, "y": 9}, "is_angle_degrees": 258.88465955024463},
-        {"position": {"x": 1, "y": 5}, "is_angle_degrees": 260.0344412301777},
-        {"position": {"x": 1, "y": 6}, "is_angle_degrees": 261.5414743063807},
-        {"position": {"x": 1, "y": 7}, "is_angle_degrees": 262.70418106028814},
-        {"position": {"x": 1, "y": 8}, "is_angle_degrees": 263.6438870226672},
-        {"position": {"x": 1, "y": 9}, "is_angle_degrees": 264.2950487518362},
-        {"position": {"x": 1, "y": 10}, "is_angle_degrees": 264.71882322839576},
-        {"position": {"x": 0, "y": 1}, "is_angle_degrees": 268.9574622056212},
-        {"position": {"x": -1, "y": 10}, "is_angle_degrees": 273.4535523780269},
-        {"position": {"x": -1, "y": 9}, "is_angle_degrees": 273.6585928958727},
-        {"position": {"x": -1, "y": 8}, "is_angle_degrees": 274.3202088854179},
-        {"position": {"x": -1, "y": 7}, "is_angle_degrees": 275.09664795446173},
-        {"position": {"x": -1, "y": 6}, "is_angle_degrees": 276.1960778097401},
-        {"position": {"x": -1, "y": 5}, "is_angle_degrees": 277.5738361587578},
-        {"position": {"x": -2, "y": 9}, "is_angle_degrees": 278.5063293429787},
-        {"position": {"x": -1, "y": 4}, "is_angle_degrees": 279.6314556045144},
-        {"position": {"x": -2, "y": 7}, "is_angle_degrees": 281.2988014247723},
-        {"position": {"x": -3, "y": 10}, "is_angle_degrees": 282.0417318219204},
-        {"position": {"x": -1, "y": 3}, "is_angle_degrees": 283.54201242186986},
-        {"position": {"x": -3, "y": 8}, "is_angle_degrees": 285.62859549423206},
-        {"position": {"x": -2, "y": 5}, "is_angle_degrees": 286.6972419421751},
-        {"position": {"x": -3, "y": 7}, "is_angle_degrees": 288.24790833191287},
-        {"position": {"x": -4, "y": 9}, "is_angle_degrees": 289.03305369040385},
-        {"position": {"x": -1, "y": 2}, "is_angle_degrees": 291.56144248258727},
-        {"position": {"x": -5, "y": 9}, "is_angle_degrees": 294.1914513896296},
-        {"position": {"x": -4, "y": 7}, "is_angle_degrees": 294.7936510494573},
-        {"position": {"x": -3, "y": 5}, "is_angle_degrees": 296.1391830504067},
-        {"position": {"x": -5, "y": 8}, "is_angle_degrees": 297.19778944317824},
-        {"position": {"x": -2, "y": 3}, "is_angle_degrees": 299.1425984804859},
-        {"position": {"x": -7, "y": 10}, "is_angle_degrees": 300.5093541331991},
-        {"position": {"x": -5, "y": 7}, "is_angle_degrees": 301.14367585426857},
-        {"position": {"x": -3, "y": 4}, "is_angle_degrees": 302.6860185869616},
-        {"position": {"x": -7, "y": 9}, "is_angle_degrees": 303.85215925664744},
-        {"position": {"x": -4, "y": 5}, "is_angle_degrees": 304.96838479956574},
-        {"position": {"x": -5, "y": 6}, "is_angle_degrees": 306.1531164190416},
-        {"position": {"x": -6, "y": 7}, "is_angle_degrees": 307.2519473295205},
-        {"position": {"x": -7, "y": 8}, "is_angle_degrees": 308.1466340701247},
-        {"position": {"x": -8, "y": 9}, "is_angle_degrees": 308.67345995185957},
-        {"position": {"x": -9, "y": 10}, "is_angle_degrees": 309.2163051198193},
-        {"position": {"x": -1, "y": 1}, "is_angle_degrees": 313.6196003045972},
-        {"position": {"x": -10, "y": 9}, "is_angle_degrees": 317.90406441239116},
-        {"position": {"x": -9, "y": 8}, "is_angle_degrees": 318.2640162125783},
-        {"position": {"x": -8, "y": 7}, "is_angle_degrees": 319.01093035602383},
-        {"position": {"x": -7, "y": 6}, "is_angle_degrees": 319.7436879714886},
-        {"position": {"x": -6, "y": 5}, "is_angle_degrees": 320.96074988145995},
-        {"position": {"x": -5, "y": 4}, "is_angle_degrees": 322.24306240574754},
-        {"position": {"x": -9, "y": 7}, "is_angle_degrees": 323.354777279488},
-        {"position": {"x": -4, "y": 3}, "is_angle_degrees": 324.48220728198584},
-        {"position": {"x": -7, "y": 5}, "is_angle_degrees": 325.9864964497272},
-        {"position": {"x": -10, "y": 7}, "is_angle_degrees": 326.8385264842353},
-        {"position": {"x": -3, "y": 2}, "is_angle_degrees": 328.21159214357647},
-        {"position": {"x": -8, "y": 5}, "is_angle_degrees": 329.9964649679126},
-        {"position": {"x": -5, "y": 3}, "is_angle_degrees": 330.94134723789085},
-        {"position": {"x": -7, "y": 4}, "is_angle_degrees": 332.3647283710143},
-        {"position": {"x": -9, "y": 5}, "is_angle_degrees": 333.10698437944905},
-        {"position": {"x": -2, "y": 1}, "is_angle_degrees": 335.3972229459928},
-        {"position": {"x": -9, "y": 4}, "is_angle_degrees": 337.93819246093534},
-        {"position": {"x": -7, "y": 3}, "is_angle_degrees": 338.6353179627076},
-        {"position": {"x": -5, "y": 2}, "is_angle_degrees": 339.93855280359594},
-        {"position": {"x": -8, "y": 3}, "is_angle_degrees": 341.3016295903631},
-        {"position": {"x": -3, "y": 1}, "is_angle_degrees": 343.3465771375488},
-        {"position": {"x": -10, "y": 3}, "is_angle_degrees": 344.9954729437606},
-        {"position": {"x": -7, "y": 2}, "is_angle_degrees": 345.8364433506414},
-        {"position": {"x": -4, "y": 1}, "is_angle_degrees": 347.50804883835036},
-        {"position": {"x": -9, "y": 2}, "is_angle_degrees": 348.930281257497},
-        {"position": {"x": -5, "y": 1}, "is_angle_degrees": 350.08925994058677},
-        {"position": {"x": -6, "y": 1}, "is_angle_degrees": 351.605980234129},
-        {"position": {"x": -7, "y": 1}, "is_angle_degrees": 352.7440875549545},
-        {"position": {"x": -8, "y": 1}, "is_angle_degrees": 353.66974667281113},
-        {"position": {"x": -9, "y": 1}, "is_angle_degrees": 354.17074283320943},
-        {"position": {"x": -10, "y": 1}, "is_angle_degrees": 354.74060261085043}
-      ],
-      "cosine"
-    )
-    ,
-    "msaa": AngularKeyframeFunction.fromCalibrationSamples([
-        {"position": {"x": -1, "y": 0}, "is_angle_degrees": 358.9062404843492},
-        {"position": {"x": -10, "y": -1}, "is_angle_degrees": 3.015824227135354},
-        {"position": {"x": -9, "y": -1}, "is_angle_degrees": 3.4063907032698832},
-        {"position": {"x": -8, "y": -1}, "is_angle_degrees": 4.150534306491888},
-        {"position": {"x": -7, "y": -1}, "is_angle_degrees": 4.873816202645667},
-        {"position": {"x": -6, "y": -1}, "is_angle_degrees": 5.744130607255902},
-        {"position": {"x": -5, "y": -1}, "is_angle_degrees": 7.309591296822936},
-        {"position": {"x": -9, "y": -2}, "is_angle_degrees": 8.257751757183227},
-        {"position": {"x": -4, "y": -1}, "is_angle_degrees": 9.547210309382997},
-        {"position": {"x": -7, "y": -2}, "is_angle_degrees": 11.269958340678484},
-        {"position": {"x": -10, "y": -3}, "is_angle_degrees": 11.763352100044244},
-        {"position": {"x": -3, "y": -1}, "is_angle_degrees": 13.519196308111681},
-        {"position": {"x": -8, "y": -3}, "is_angle_degrees": 15.57015809489564},
-        {"position": {"x": -5, "y": -2}, "is_angle_degrees": 16.688472405851865},
-        {"position": {"x": -7, "y": -3}, "is_angle_degrees": 17.90575643760454},
-        {"position": {"x": -9, "y": -4}, "is_angle_degrees": 18.74998936088447},
-        {"position": {"x": -2, "y": -1}, "is_angle_degrees": 21.618285125982755},
-        {"position": {"x": -9, "y": -5}, "is_angle_degrees": 24.047216250388274},
-        {"position": {"x": -7, "y": -4}, "is_angle_degrees": 24.78168335956703},
-        {"position": {"x": -5, "y": -3}, "is_angle_degrees": 25.841972128937723},
-        {"position": {"x": -8, "y": -5}, "is_angle_degrees": 27.08020133177423},
-        {"position": {"x": -3, "y": -2}, "is_angle_degrees": 28.87600384213773},
-        {"position": {"x": -10, "y": -7}, "is_angle_degrees": 30.434166824264857},
-        {"position": {"x": -7, "y": -5}, "is_angle_degrees": 31.108609946620774},
-        {"position": {"x": -4, "y": -3}, "is_angle_degrees": 32.609970338749285},
-        {"position": {"x": -9, "y": -7}, "is_angle_degrees": 33.906090472833256},
-        {"position": {"x": -5, "y": -4}, "is_angle_degrees": 34.681766233120584},
-        {"position": {"x": -6, "y": -5}, "is_angle_degrees": 36.296355869293514},
-        {"position": {"x": -7, "y": -6}, "is_angle_degrees": 37.29676915898529},
-        {"position": {"x": -8, "y": -7}, "is_angle_degrees": 38.022337873723416},
-        {"position": {"x": -9, "y": -8}, "is_angle_degrees": 38.672754953141485},
-        {"position": {"x": -10, "y": -9}, "is_angle_degrees": 39.08997114699732},
-        {"position": {"y": -1, "x": -1}, "is_angle_degrees": 43.58144568725352},
-        {"position": {"x": -9, "y": -10}, "is_angle_degrees": 47.84445639103594},
-        {"position": {"x": -8, "y": -9}, "is_angle_degrees": 48.341366631916294},
-        {"position": {"x": -7, "y": -8}, "is_angle_degrees": 49.17711633077582},
-        {"position": {"x": -6, "y": -7}, "is_angle_degrees": 49.6844862515901},
-        {"position": {"x": -5, "y": -6}, "is_angle_degrees": 50.76829785745487},
-        {"position": {"x": -4, "y": -5}, "is_angle_degrees": 52.32160818440021},
-        {"position": {"x": -7, "y": -9}, "is_angle_degrees": 53.374509182143406},
-        {"position": {"x": -3, "y": -4}, "is_angle_degrees": 54.62827230045663},
-        {"position": {"x": -5, "y": -7}, "is_angle_degrees": 55.97053707956072},
-        {"position": {"x": -7, "y": -10}, "is_angle_degrees": 56.5987246121811},
-        {"position": {"x": -2, "y": -3}, "is_angle_degrees": 58.07037986169753},
-        {"position": {"x": -5, "y": -8}, "is_angle_degrees": 60.01488725059763},
-        {"position": {"x": -3, "y": -5}, "is_angle_degrees": 61.03513199258265},
-        {"position": {"x": -4, "y": -7}, "is_angle_degrees": 62.328258510155},
-        {"position": {"x": -5, "y": -9}, "is_angle_degrees": 62.88426080498041},
-        {"position": {"x": -1, "y": -2}, "is_angle_degrees": 65.59300770955178},
-        {"position": {"x": -4, "y": -9}, "is_angle_degrees": 67.93741623972126},
-        {"position": {"x": -3, "y": -7}, "is_angle_degrees": 68.51132980210602},
-        {"position": {"x": -2, "y": -5}, "is_angle_degrees": 69.83170410057323},
-        {"position": {"x": -3, "y": -8}, "is_angle_degrees": 71.27333083970323},
-        {"position": {"x": -1, "y": -3}, "is_angle_degrees": 73.19941067962753},
-        {"position": {"x": -3, "y": -10}, "is_angle_degrees": 75.00764684394484},
-        {"position": {"x": -2, "y": -7}, "is_angle_degrees": 75.63081972103929},
-        {"position": {"x": -1, "y": -4}, "is_angle_degrees": 77.54688376909357},
-        {"position": {"x": -2, "y": -9}, "is_angle_degrees": 78.76986032195386},
-        {"position": {"x": -1, "y": -5}, "is_angle_degrees": 79.78753018792194},
-        {"position": {"x": -1, "y": -6}, "is_angle_degrees": 81.53998824464456},
-        {"position": {"x": -1, "y": -7}, "is_angle_degrees": 82.70102255937597},
-        {"position": {"x": -1, "y": -8}, "is_angle_degrees": 83.57217920592066},
-        {"position": {"x": -1, "y": -9}, "is_angle_degrees": 84.11478590387199},
-        {"position": {"x": -1, "y": -10}, "is_angle_degrees": 84.62081287565084},
-        {"position": {"x": 0, "y": -1}, "is_angle_degrees": 88.75059834389745},
-        {"position": {"x": 1, "y": -10}, "is_angle_degrees": 93.22996828015556},
-        {"position": {"x": 1, "y": -9}, "is_angle_degrees": 93.6014367507076},
-        {"position": {"x": 1, "y": -8}, "is_angle_degrees": 94.17501817246028},
-        {"position": {"x": 1, "y": -7}, "is_angle_degrees": 94.99039577943437},
-        {"position": {"x": 1, "y": -6}, "is_angle_degrees": 95.95728406075649},
-        {"position": {"x": 1, "y": -5}, "is_angle_degrees": 97.5239791753578},
-        {"position": {"x": 2, "y": -9}, "is_angle_degrees": 98.31670747228206},
-        {"position": {"x": 1, "y": -4}, "is_angle_degrees": 99.59805178089688},
-        {"position": {"x": 2, "y": -7}, "is_angle_degrees": 101.42636280812371},
-        {"position": {"x": 3, "y": -10}, "is_angle_degrees": 102.0398244093453},
-        {"position": {"x": 1, "y": -3}, "is_angle_degrees": 103.6483432977611},
-        {"position": {"x": 3, "y": -8}, "is_angle_degrees": 105.57015809489563},
-        {"position": {"x": 2, "y": -5}, "is_angle_degrees": 106.86376624548261},
-        {"position": {"x": 3, "y": -7}, "is_angle_degrees": 108.1464651205289},
-        {"position": {"x": 4, "y": -9}, "is_angle_degrees": 108.96485127495743},
-        {"position": {"x": 1, "y": -2}, "is_angle_degrees": 111.61828512598277},
-        {"position": {"x": 5, "y": -9}, "is_angle_degrees": 114.2214754602621},
-        {"position": {"x": 4, "y": -7}, "is_angle_degrees": 114.94717175735904},
-        {"position": {"x": 3, "y": -5}, "is_angle_degrees": 116.0249793273514},
-        {"position": {"x": 5, "y": -8}, "is_angle_degrees": 117.08020133177425},
-        {"position": {"x": 2, "y": -3}, "is_angle_degrees": 119.05417812006047},
-        {"position": {"x": 7, "y": -10}, "is_angle_degrees": 120.61595904264577},
-        {"position": {"x": 5, "y": -7}, "is_angle_degrees": 121.10860994662077},
-        {"position": {"x": 3, "y": -4}, "is_angle_degrees": 122.60997033874926},
-        {"position": {"x": 7, "y": -9}, "is_angle_degrees": 123.90609047283323},
-        {"position": {"x": 4, "y": -5}, "is_angle_degrees": 124.80989374618962},
-        {"position": {"x": 5, "y": -6}, "is_angle_degrees": 126.46501357523641},
-        {"position": {"x": 6, "y": -7}, "is_angle_degrees": 127.49736615816256},
-        {"position": {"x": 7, "y": -8}, "is_angle_degrees": 128.02233787372342},
-        {"position": {"x": 8, "y": -9}, "is_angle_degrees": 128.82865816003024},
-        {"position": {"x": 9, "y": -10}, "is_angle_degrees": 129.2455032837375},
-        {"position": {"x": 1, "y": -1}, "is_angle_degrees": 133.5814456872535},
-        {"position": {"x": 10, "y": -9}, "is_angle_degrees": 138.01373371960534},
-        {"position": {"x": 9, "y": -8}, "is_angle_degrees": 138.48429205891387},
-        {"position": {"x": 8, "y": -7}, "is_angle_degrees": 139.1771163307758},
-        {"position": {"x": 7, "y": -6}, "is_angle_degrees": 140.04817548781395},
-        {"position": {"x": 6, "y": -5}, "is_angle_degrees": 140.97614431680358},
-        {"position": {"x": 5, "y": -4}, "is_angle_degrees": 142.42968193418042},
-        {"position": {"x": 9, "y": -7}, "is_angle_degrees": 143.37450918214338},
-        {"position": {"x": 4, "y": -3}, "is_angle_degrees": 144.62827230045662},
-        {"position": {"x": 7, "y": -5}, "is_angle_degrees": 145.97053707956073},
-        {"position": {"x": 10, "y": -7}, "is_angle_degrees": 146.71217806281234},
-        {"position": {"x": 3, "y": -2}, "is_angle_degrees": 148.3480817813216},
-        {"position": {"x": 8, "y": -5}, "is_angle_degrees": 150.01488725059764},
-        {"position": {"x": 5, "y": -3}, "is_angle_degrees": 151.11942009130226},
-        {"position": {"x": 7, "y": -4}, "is_angle_degrees": 152.48882478832707},
-        {"position": {"x": 9, "y": -5}, "is_angle_degrees": 153.03818150572462},
-        {"position": {"x": 2, "y": -1}, "is_angle_degrees": 155.59300770955178},
-        {"position": {"x": 9, "y": -4}, "is_angle_degrees": 158.1120814237667},
-        {"position": {"x": 7, "y": -3}, "is_angle_degrees": 158.69019268359077},
-        {"position": {"x": 5, "y": -2}, "is_angle_degrees": 159.95731219968815},
-        {"position": {"x": 8, "y": -3}, "is_angle_degrees": 161.27333083970322},
-        {"position": {"x": 3, "y": -1}, "is_angle_degrees": 163.38350382859878},
-        {"position": {"x": 10, "y": -3}, "is_angle_degrees": 165.13760046767635},
-        {"position": {"x": 7, "y": -2}, "is_angle_degrees": 165.77390924845312},
-        {"position": {"x": 4, "y": -1}, "is_angle_degrees": 167.55014528069785},
-        {"position": {"x": 9, "y": -2}, "is_angle_degrees": 168.76986032195387},
-        {"position": {"x": 5, "y": -1}, "is_angle_degrees": 169.8956044687564},
-        {"position": {"x": 6, "y": -1}, "is_angle_degrees": 171.7043010947753},
-        {"position": {"x": 7, "y": -1}, "is_angle_degrees": 172.95213437442902},
-        {"position": {"x": 8, "y": -1}, "is_angle_degrees": 173.53133623729605},
-        {"position": {"x": 9, "y": -1}, "is_angle_degrees": 174.27058718929518},
-        {"position": {"x": 10, "y": -1}, "is_angle_degrees": 174.74450865179196},
-        {"position": {"x": 1, "y": 0}, "is_angle_degrees": 178.87193028119924},
-        {"position": {"x": 10, "y": 1}, "is_angle_degrees": 183.22996828015556},
-        {"position": {"x": 9, "y": 1}, "is_angle_degrees": 183.62316853267237},
-        {"position": {"x": 8, "y": 1}, "is_angle_degrees": 184.1982922640779},
-        {"position": {"x": 7, "y": 1}, "is_angle_degrees": 185.0206411031291},
-        {"position": {"x": 6, "y": 1}, "is_angle_degrees": 185.95728406075645},
-        {"position": {"x": 5, "y": 1}, "is_angle_degrees": 187.3539122007621},
-        {"position": {"x": 9, "y": 2}, "is_angle_degrees": 188.31670747228205},
-        {"position": {"x": 4, "y": 1}, "is_angle_degrees": 189.59805178089687},
-        {"position": {"x": 7, "y": 2}, "is_angle_degrees": 191.26995834067847},
-        {"position": {"x": 10, "y": 3}, "is_angle_degrees": 192.03982440934527},
-        {"position": {"x": 3, "y": 1}, "is_angle_degrees": 193.64834329776107},
-        {"position": {"x": 8, "y": 3}, "is_angle_degrees": 195.57015809489562},
-        {"position": {"x": 5, "y": 2}, "is_angle_degrees": 196.86376624548254},
-        {"position": {"x": 7, "y": 3}, "is_angle_degrees": 198.14646512052886},
-        {"position": {"x": 9, "y": 4}, "is_angle_degrees": 198.96485127495743},
-        {"position": {"x": 2, "y": 1}, "is_angle_degrees": 201.61828512598277},
-        {"position": {"x": 9, "y": 5}, "is_angle_degrees": 204.04721625038826},
-        {"position": {"x": 7, "y": 4}, "is_angle_degrees": 204.781683359567},
-        {"position": {"x": 5, "y": 3}, "is_angle_degrees": 206.02497932735136},
-        {"position": {"x": 8, "y": 5}, "is_angle_degrees": 207.08020133177425},
-        {"position": {"x": 3, "y": 2}, "is_angle_degrees": 209.05417812006047},
-        {"position": {"x": 10, "y": 7}, "is_angle_degrees": 210.43416682426485},
-        {"position": {"x": 7, "y": 5}, "is_angle_degrees": 211.10860994662073},
-        {"position": {"x": 4, "y": 3}, "is_angle_degrees": 212.60997033874935},
-        {"position": {"x": 9, "y": 7}, "is_angle_degrees": 213.9060904728331},
-        {"position": {"x": 5, "y": 4}, "is_angle_degrees": 214.8098937461895},
-        {"position": {"x": 6, "y": 5}, "is_angle_degrees": 216.29635586929354},
-        {"position": {"x": 7, "y": 6}, "is_angle_degrees": 217.49736615816246},
-        {"position": {"x": 8, "y": 7}, "is_angle_degrees": 218.02233787372333},
-        {"position": {"x": 9, "y": 8}, "is_angle_degrees": 218.82865816003016},
-        {"position": {"x": 10, "y": 9}, "is_angle_degrees": 219.24550328373743},
-        {"position": {"y": 1, "x": 1}, "is_angle_degrees": 223.58144568725348},
-        {"position": {"x": 9, "y": 10}, "is_angle_degrees": 228.0137337196053},
-        {"position": {"x": 8, "y": 9}, "is_angle_degrees": 228.4842920589138},
-        {"position": {"x": 7, "y": 8}, "is_angle_degrees": 229.17711633077585},
-        {"position": {"x": 6, "y": 7}, "is_angle_degrees": 230.04817548781398},
-        {"position": {"x": 5, "y": 6}, "is_angle_degrees": 230.97614431680344},
-        {"position": {"x": 4, "y": 5}, "is_angle_degrees": 232.32160818440016},
-        {"position": {"x": 7, "y": 9}, "is_angle_degrees": 233.37450918214327},
-        {"position": {"x": 3, "y": 4}, "is_angle_degrees": 234.62827230045656},
-        {"position": {"x": 5, "y": 7}, "is_angle_degrees": 235.97053707956078},
-        {"position": {"x": 7, "y": 10}, "is_angle_degrees": 236.7121780628123},
-        {"position": {"x": 2, "y": 3}, "is_angle_degrees": 238.07037986169746},
-        {"position": {"x": 5, "y": 8}, "is_angle_degrees": 240.01488725059764},
-        {"position": {"x": 3, "y": 5}, "is_angle_degrees": 241.0351319925826},
-        {"position": {"x": 4, "y": 7}, "is_angle_degrees": 242.48882478832692},
-        {"position": {"x": 5, "y": 9}, "is_angle_degrees": 243.03818150572462},
-        {"position": {"x": 1, "y": 2}, "is_angle_degrees": 245.59300770955178},
-        {"position": {"x": 4, "y": 9}, "is_angle_degrees": 247.9374162397213},
-        {"position": {"x": 3, "y": 7}, "is_angle_degrees": 248.51132980210596},
-        {"position": {"x": 2, "y": 5}, "is_angle_degrees": 249.95731219968818},
-        {"position": {"x": 3, "y": 8}, "is_angle_degrees": 251.27333083970322},
-        {"position": {"x": 1, "y": 3}, "is_angle_degrees": 253.38350382859878},
-        {"position": {"x": 3, "y": 10}, "is_angle_degrees": 255.01187448977316},
-        {"position": {"x": 2, "y": 7}, "is_angle_degrees": 255.7739092484531},
-        {"position": {"x": 1, "y": 4}, "is_angle_degrees": 257.5468837690936},
-        {"position": {"x": 2, "y": 9}, "is_angle_degrees": 258.76986032195384},
-        {"position": {"x": 1, "y": 5}, "is_angle_degrees": 259.8956044687564},
-        {"position": {"x": 1, "y": 6}, "is_angle_degrees": 261.5399882446446},
-        {"position": {"x": 1, "y": 7}, "is_angle_degrees": 262.6713286659715},
-        {"position": {"x": 1, "y": 8}, "is_angle_degrees": 263.531336237296},
-        {"position": {"x": 1, "y": 9}, "is_angle_degrees": 264.27058718929516},
-        {"position": {"x": 1, "y": 10}, "is_angle_degrees": 264.5930379316402},
-        {"position": {"x": 0, "y": 1}, "is_angle_degrees": 268.8853991059313},
-        {"position": {"x": -1, "y": 10}, "is_angle_degrees": 273.22996828015556},
-        {"position": {"x": -1, "y": 9}, "is_angle_degrees": 273.44906766582966},
-        {"position": {"x": -1, "y": 8}, "is_angle_degrees": 274.1982922640779},
-        {"position": {"x": -1, "y": 7}, "is_angle_degrees": 275.0206411031291},
-        {"position": {"x": -1, "y": 6}, "is_angle_degrees": 275.9572840607565},
-        {"position": {"x": -1, "y": 5}, "is_angle_degrees": 277.3539122007621},
-        {"position": {"x": -2, "y": 9}, "is_angle_degrees": 278.30713187597485},
-        {"position": {"x": -1, "y": 4}, "is_angle_degrees": 279.59805178089687},
-        {"position": {"x": -2, "y": 7}, "is_angle_degrees": 281.26995834067844},
-        {"position": {"x": -3, "y": 10}, "is_angle_degrees": 282.03982440934533},
-        {"position": {"x": -1, "y": 3}, "is_angle_degrees": 283.51919630811165},
-        {"position": {"x": -3, "y": 8}, "is_angle_degrees": 285.57015809489565},
-        {"position": {"x": -2, "y": 5}, "is_angle_degrees": 286.6884724058518},
-        {"position": {"x": -3, "y": 7}, "is_angle_degrees": 288.1464651205289},
-        {"position": {"x": -4, "y": 9}, "is_angle_degrees": 288.96485127495737},
-        {"position": {"x": -1, "y": 2}, "is_angle_degrees": 291.6182851259827},
-        {"position": {"x": -5, "y": 9}, "is_angle_degrees": 294.04721625038826},
-        {"position": {"x": -4, "y": 7}, "is_angle_degrees": 294.781683359567},
-        {"position": {"x": -3, "y": 5}, "is_angle_degrees": 296.02497932735133},
-        {"position": {"x": -5, "y": 8}, "is_angle_degrees": 297.0802013317742},
-        {"position": {"x": -2, "y": 3}, "is_angle_degrees": 299.05417812006044},
-        {"position": {"x": -7, "y": 10}, "is_angle_degrees": 300.4341668242649},
-        {"position": {"x": -5, "y": 7}, "is_angle_degrees": 301.10860994662073},
-        {"position": {"x": -3, "y": 4}, "is_angle_degrees": 302.6099703387494},
-        {"position": {"x": -7, "y": 9}, "is_angle_degrees": 303.9060904728331},
-        {"position": {"x": -4, "y": 5}, "is_angle_degrees": 304.8098937461895},
-        {"position": {"x": -5, "y": 6}, "is_angle_degrees": 306.2963558692935},
-        {"position": {"x": -6, "y": 7}, "is_angle_degrees": 307.29676915898517},
-        {"position": {"x": -7, "y": 8}, "is_angle_degrees": 308.0223378737234},
-        {"position": {"x": -8, "y": 9}, "is_angle_degrees": 308.67275495314135},
-        {"position": {"x": -9, "y": 10}, "is_angle_degrees": 309.0899711469973},
-        {"position": {"x": -1, "y": 1}, "is_angle_degrees": 313.5814456872535},
-        {"position": {"x": -10, "y": 9}, "is_angle_degrees": 317.84445639103586},
-        {"position": {"x": -9, "y": 8}, "is_angle_degrees": 318.34136663191634},
-        {"position": {"x": -8, "y": 7}, "is_angle_degrees": 319.17711633077585},
-        {"position": {"x": -7, "y": 6}, "is_angle_degrees": 319.6844862515901},
-        {"position": {"x": -6, "y": 5}, "is_angle_degrees": 320.9761443168036},
-        {"position": {"x": -5, "y": 4}, "is_angle_degrees": 322.32160818440013},
-        {"position": {"x": -9, "y": 7}, "is_angle_degrees": 323.3745091821434},
-        {"position": {"x": -4, "y": 3}, "is_angle_degrees": 324.6282723004566},
-        {"position": {"x": -7, "y": 5}, "is_angle_degrees": 325.9705370795608},
-        {"position": {"x": -10, "y": 7}, "is_angle_degrees": 326.7121780628124},
-        {"position": {"x": -3, "y": 2}, "is_angle_degrees": 328.0703798616976},
-        {"position": {"x": -8, "y": 5}, "is_angle_degrees": 330.0148872505976},
-        {"position": {"x": -5, "y": 3}, "is_angle_degrees": 331.03513199258265},
-        {"position": {"x": -7, "y": 4}, "is_angle_degrees": 332.488824788327},
-        {"position": {"x": -9, "y": 5}, "is_angle_degrees": 333.0381815057246},
-        {"position": {"x": -2, "y": 1}, "is_angle_degrees": 335.5930077095517},
-        {"position": {"x": -9, "y": 4}, "is_angle_degrees": 337.9374162397213},
-        {"position": {"x": -7, "y": 3}, "is_angle_degrees": 338.511329802106},
-        {"position": {"x": -5, "y": 2}, "is_angle_degrees": 339.83170410057323},
-        {"position": {"x": -8, "y": 3}, "is_angle_degrees": 341.27333083970325},
-        {"position": {"x": -3, "y": 1}, "is_angle_degrees": 343.19941067962753},
-        {"position": {"x": -10, "y": 3}, "is_angle_degrees": 345.0162001165841},
-        {"position": {"x": -7, "y": 2}, "is_angle_degrees": 345.78173034615276},
-        {"position": {"x": -4, "y": 1}, "is_angle_degrees": 347.5468837690936},
-        {"position": {"x": -9, "y": 2}, "is_angle_degrees": 348.7854454385997},
-        {"position": {"x": -5, "y": 1}, "is_angle_degrees": 349.9166763043462},
-        {"position": {"x": -6, "y": 1}, "is_angle_degrees": 351.57457222457924},
-        {"position": {"x": -7, "y": 1}, "is_angle_degrees": 352.7424032196642},
-        {"position": {"x": -8, "y": 1}, "is_angle_degrees": 353.60953047306907},
-        {"position": {"x": -9, "y": 1}, "is_angle_degrees": 354.15608220452185},
-        {"position": {"x": -10, "y": 1}, "is_angle_degrees": 354.6625599088827}
-      ],
-      "cosine"
+  export namespace AngleResult {
+
+    export type Base = { type: string, fingerprint: ReadFingerprint }
+
+    export type Success = Base & {
+      type: "success",
+      angle: UncertainAngle,
+      raw_angle: number,
+    }
+
+    export type LikelyClosed = Base & { type: "likely_closed", details: string }
+    export type LikelyConcealed = Base & { type: "likely_concealed", details: string }
+    export type LikelySolved = Base & { type: "likely_solved" }
+  }
+
+  export const debug_overlay = Alt1.checkPermission(p => p.overlays) ? Alt1Overlay.manual() : null
+
+  export const no_aa_small: FullCompassCalibrationFunction.CompressedSample[] = [[0.0021, 0.0021, 0.0270, 0.0298], [0.0041, 0.0041, 0.0305, 0.0339], [0.0069, 0.0069, 0.0347, 0.0370], [0.0093, 0.0093, 0.0384, 0.0416], [0.0129, 0.0129, 0.0425, 0.0449], [0.0162, 0.0162, 0.0461, 0.0491], [0.0195, 0.0195, 0.0500, 0.0535], [0.0226, 0.0226, 0.0549, 0.0576], [0.0254, 0.0254, 0.0583, 0.0611], [0.0283, 0.0283, 0.0624, 0.0648], [0.0312, 0.0312, 0.0661, 0.0693], [0.0339, 0.0339, 0.0701, 0.0726], [0.0370, 0.0370, 0.0739, 0.0768], [0.0394, 0.0394, 0.0776, 0.0804], [0.0433, 0.0433, 0.0812, 0.0840], [0.0464, 0.0464, 0.0855, 0.0887], [0.0494, 0.0494, 0.0893, 0.0917], [0.0510, 0.0510, 0.0928, 0.0961], [0.0543, 0.0543, 0.0969, 0.0997], [0.0604, 0.0604, 0.1009, 0.1035], [0.0618, 0.0618, 0.1049, 0.1077], [0.0641, 0.0641, 0.1092, 0.1119], [0.0670, 0.0670, 0.1132, 0.1158], [0.0682, 0.0682, 0.1161, 0.1194], [0.0718, 0.0718, 0.1206, 0.1235], [0.0758, 0.0758, 0.1244, 0.1271], [0.0784, 0.0784, 0.1283, 0.1311], [0.0812, 0.0812, 0.1318, 0.1348], [0.0838, 0.0838, 0.1353, 0.1384], [0.0875, 0.0875, 0.1394, 0.1419], [0.0889, 0.0889, 0.1432, 0.1462], [0.0921, 0.0921, 0.1471, 0.1498], [0.0954, 0.0954, 0.1512, 0.1541], [0.0987, 0.0987, 0.1543, 0.1572], [0.1014, 0.1014, 0.1587, 0.1604], [0.1049, 0.1049, 0.1618, 0.1651], [0.1086, 0.1086, 0.1668, 0.1682], [0.1114, 0.1114, 0.1694, 0.1719], [0.1141, 0.1141, 0.1732, 0.1759], [0.1167, 0.1167, 0.1772, 0.1799], [0.1191, 0.1191, 0.1811, 0.1840], [0.1216, 0.1216, 0.1848, 0.1874], [0.1263, 0.1263, 0.1887, 0.1920], [0.1286, 0.1286, 0.1924, 0.1957], [0.1327, 0.1327, 0.1967, 0.1990], [0.1331, 0.1331, 0.2001, 0.2027], [0.1359, 0.1359, 0.2040, 0.2063], [0.1394, 0.1394, 0.2078, 0.2107], [0.1427, 0.1427, 0.2116, 0.2141], [0.1457, 0.1457, 0.2154, 0.2177], [0.1484, 0.1484, 0.2187, 0.2213], [0.1509, 0.1509, 0.2227, 0.2255], [0.1548, 0.1548, 0.2266, 0.2292], [0.1576, 0.1576, 0.2305, 0.2319], [0.1601, 0.1601, 0.2332, 0.2355], [0.1638, 0.1638, 0.2368, 0.2397], [0.1659, 0.1659, 0.2405, 0.2436], [0.1681, 0.1681, 0.2450, 0.2476], [0.1718, 0.1718, 0.2485, 0.2508], [0.1741, 0.1741, 0.2521, 0.2546], [0.1780, 0.1780, 0.2554, 0.2585], [0.1802, 0.1802, 0.2596, 0.2621], [0.1849, 0.1849, 0.2632, 0.2660], [0.1878, 0.1878, 0.2674, 0.2698], [0.1919, 0.1919, 0.2709, 0.2721], [0.1944, 0.1944, 0.2735, 0.2761], [0.1972, 0.1972, 0.2773, 0.2799], [0.1985, 0.1985, 0.2812, 0.2838], [0.2032, 0.2032, 0.2851, 0.2876], [0.2067, 0.2067, 0.2889, 0.2915], [0.2102, 0.2102, 0.2929, 0.2942], [0.2125, 0.2125, 0.2954, 0.2977], [0.2179, 0.2179, 0.2990, 0.3016], [0.2205, 0.2205, 0.3029, 0.3052], [0.2230, 0.2230, 0.3059, 0.3092], [0.2258, 0.2258, 0.3104, 0.3117], [0.2300, 0.2300, 0.3129, 0.3156], [0.2345, 0.2345, 0.3166, 0.3194], [0.2364, 0.2364, 0.3205, 0.3227], [0.2397, 0.2397, 0.3235, 0.3267], [0.2415, 0.2415, 0.3277, 0.3303], [0.2458, 0.2458, 0.3317, 0.3332], [0.2481, 0.2481, 0.3342, 0.3367], [0.2524, 0.2524, 0.3379, 0.3404], [0.2557, 0.2557, 0.3416, 0.3441], [0.2587, 0.2587, 0.3446, 0.3474], [0.2623, 0.2623, 0.3488, 0.3500], [0.2668, 0.2668, 0.3514, 0.3540], [0.2693, 0.2693, 0.3551, 0.3574], [0.2728, 0.2728, 0.3588, 0.3612], [0.2759, 0.2759, 0.3621, 0.3642], [0.2799, 0.2799, 0.3652, 0.3681], [0.2832, 0.2832, 0.3685, 0.3717], [0.2867, 0.2867, 0.3726, 0.3743], [0.2882, 0.2882, 0.3757, 0.3781], [0.2914, 0.2914, 0.3787, 0.3817], [0.2940, 0.2940, 0.3827, 0.3846], [0.2993, 0.2993, 0.3853, 0.3883], [0.3021, 0.3021, 0.3899, 0.3917], [0.3051, 0.3051, 0.3924, 0.3948], [0.3077, 0.3077, 0.3957, 0.3979], [0.3131, 0.3131, 0.3988, 0.4019], [0.3161, 0.3161, 0.4027, 0.4052], [0.3185, 0.3185, 0.4060, 0.4076], [0.3217, 0.3217, 0.4089, 0.4113], [0.3249, 0.3249, 0.4124, 0.4140], [0.3277, 0.3277, 0.4155, 0.4182], [0.3321, 0.3322, 0.4195, 0.4208], [0.3337, 0.3337, 0.4223, 0.4246], [0.3365, 0.3365, 0.4252, 0.4277], [0.3403, 0.3403, 0.4288, 0.4311], [0.3447, 0.3447, 0.4321, 0.4343], [0.3477, 0.3477, 0.4354, 0.4375], [0.3514, 0.3514, 0.4383, 0.4408], [0.3546, 0.3546, 0.4412, 0.4434], [0.3595, 0.3595, 0.4444, 0.4468], [0.3628, 0.3628, 0.4475, 0.4502], [0.3662, 0.3662, 0.4512, 0.4528], [0.3694, 0.3694, 0.4543, 0.4561], [0.3712, 0.3712, 0.4570, 0.4595], [0.3729, 0.3729, 0.4604, 0.4624], [0.3763, 0.3763, 0.4636, 0.4659], [0.3782, 0.3782, 0.4669, 0.4687], [0.3874, 0.3874, 0.4696, 0.4721], [0.3889, 0.3889, 0.4725, 0.4747], [0.3933, 0.3933, 0.4759, 0.4773], [0.3956, 0.3956, 0.4787, 0.4817], [0.3961, 0.3961, 0.4825, 0.4843], [0.3994, 0.3994, 0.4852, 0.4878], [0.4020, 0.4020, 0.4883, 0.4900], [0.4045, 0.4045, 0.4912, 0.4936], [0.4081, 0.4081, 0.4943, 0.4964], [0.4113, 0.4113, 0.4970, 0.4993], [0.4136, 0.4136, 0.5007, 0.5028], [0.4173, 0.4173, 0.5036, 0.5053], [0.4219, 0.4222, 0.5062, 0.5113], [0.4251, 0.4251, 0.5124, 0.5148], [0.4302, 0.4302, 0.5155, 0.5176], [0.4327, 0.4327, 0.5181, 0.5201], [0.4347, 0.4347, 0.5209, 0.5233], [0.4377, 0.4377, 0.5239, 0.5261], [0.4421, 0.4421, 0.5271, 0.5292], [0.4442, 0.4442, 0.5301, 0.5322], [0.4463, 0.4463, 0.5337, 0.5346], [0.4509, 0.4509, 0.5354, 0.5369], [0.4534, 0.4534, 0.5384, 0.5404], [0.4562, 0.4562, 0.5414, 0.5438], [0.4603, 0.4603, 0.5445, 0.5468], [0.4622, 0.4622, 0.5477, 0.5495], [0.4656, 0.4656, 0.5504, 0.5524], [0.4677, 0.4677, 0.5526, 0.5546], [0.4727, 0.4727, 0.5559, 0.5581], [0.4747, 0.4747, 0.5586, 0.5607], [0.4773, 0.4773, 0.5623, 0.5626], [0.4803, 0.4803, 0.5639, 0.5653], [0.4834, 0.4834, 0.5665, 0.5688], [0.4858, 0.4858, 0.5700, 0.5713], [0.4895, 0.4895, 0.5725, 0.5744], [0.4930, 0.4930, 0.5751, 0.5764], [0.4952, 0.4952, 0.5776, 0.5803], [0.4986, 0.4986, 0.5804, 0.5822], [0.5030, 0.5030, 0.5834, 0.5847], [0.5038, 0.5038, 0.5861, 0.5880], [0.5086, 0.5086, 0.5890, 0.5899], [0.5116, 0.5116, 0.5913, 0.5937], [0.5136, 0.5136, 0.5942, 0.5958], [0.5154, 0.5154, 0.5972, 0.5987], [0.5211, 0.5211, 0.5995, 0.6015], [0.5229, 0.5229, 0.6023, 0.6043], [0.5266, 0.5266, 0.6051, 0.6070], [0.5289, 0.5289, 0.6083, 0.6095], [0.5325, 0.5325, 0.6107, 0.6122], [0.5347, 0.5347, 0.6126, 0.6144], [0.5390, 0.5390, 0.6151, 0.6163], [0.5417, 0.5417, 0.6178, 0.6200], [0.5436, 0.5436, 0.6202, 0.6227], [0.5460, 0.5460, 0.6237, 0.6249], [0.5487, 0.5487, 0.6255, 0.6273], [0.5524, 0.5524, 0.6288, 0.6300], [0.5542, 0.5542, 0.6309, 0.6327], [0.5583, 0.5583, 0.6342, 0.6346], [0.5625, 0.5625, 0.6356, 0.6371], [0.5639, 0.5639, 0.6381, 0.6399], [0.5683, 0.5683, 0.6408, 0.6421], [0.5705, 0.5705, 0.6435, 0.6453], [0.5744, 0.5744, 0.6461, 0.6472], [0.5769, 0.5770, 0.6483, 0.6506], [0.5798, 0.5799, 0.6516, 0.6528], [0.5822, 0.5824, 0.6538, 0.6548], [0.5854, 0.5855, 0.6558, 0.6576], [0.5878, 0.5880, 0.6582, 0.6600], [0.5908, 0.5910, 0.6610, 0.6628], [0.5945, 0.5946, 0.6632, 0.6645], [0.5973, 0.5974, 0.6654, 0.6669], [0.5993, 0.5993, 0.6679, 0.6696], [0.6023, 0.6023, 0.6709, 0.6722], [0.6071, 0.6071, 0.6730, 0.6747], [0.6103, 0.6103, 0.6752, 0.6764], [0.6127, 0.6127, 0.6777, 0.6794], [0.6163, 0.6163, 0.6798, 0.6815], [0.6170, 0.6170, 0.6823, 0.6841], [0.6202, 0.6202, 0.6848, 0.6865], [0.6240, 0.6240, 0.6868, 0.6881], [0.6276, 0.6276, 0.6894, 0.6904], [0.6304, 0.6304, 0.6915, 0.6936], [0.6310, 0.6310, 0.6947, 0.6947], [0.6361, 0.6361, 0.6961, 0.6974], [0.6394, 0.6394, 0.6987, 0.6999], [0.6405, 0.6405, 0.7011, 0.7023], [0.6463, 0.6463, 0.7029, 0.7045], [0.6474, 0.6474, 0.7058, 0.7069], [0.6502, 0.6502, 0.7077, 0.7093], [0.6563, 0.6563, 0.7097, 0.7118], [0.6596, 0.6596, 0.7125, 0.7141], [0.6611, 0.6611, 0.7149, 0.7157], [0.6639, 0.6639, 0.7165, 0.7182], [0.6658, 0.6658, 0.7188, 0.7204], [0.6689, 0.6689, 0.7210, 0.7224], [0.6720, 0.6721, 0.7235, 0.7251], [0.6750, 0.6751, 0.7252, 0.7266], [0.6776, 0.6777, 0.7280, 0.7293], [0.6814, 0.6814, 0.7297, 0.7313], [0.6845, 0.6846, 0.7317, 0.7333], [0.6871, 0.6872, 0.7346, 0.7359], [0.6907, 0.6908, 0.7363, 0.7378], [0.6938, 0.6939, 0.7389, 0.7400], [0.6963, 0.6964, 0.7404, 0.7419], [0.6985, 0.6987, 0.7429, 0.7438], [0.7017, 0.7018, 0.7446, 0.7465], [0.7042, 0.7043, 0.7474, 0.7484], [0.7074, 0.7075, 0.7493, 0.7503], [0.7112, 0.7112, 0.7509, 0.7524], [0.7155, 0.7155, 0.7532, 0.7542], [0.7171, 0.7171, 0.7551, 0.7568], [0.7201, 0.7202, 0.7579, 0.7591], [0.7229, 0.7229, 0.7598, 0.7610], [0.7248, 0.7248, 0.7612, 0.7632], [0.7277, 0.7277, 0.7641, 0.7652], [0.7336, 0.7336, 0.7656, 0.7670], [0.7358, 0.7358, 0.7679, 0.7687], [0.7389, 0.7389, 0.7698, 0.7707], [0.7418, 0.7418, 0.7713, 0.7727], [0.7433, 0.7433, 0.7736, 0.7746], [0.7460, 0.7461, 0.7756, 0.7770], [0.7494, 0.7494, 0.7779, 0.7789], [0.7545, 0.7545, 0.7798, 0.7812], [0.7574, 0.7574, 0.7812, 0.7826], [0.7586, 0.7586, 0.7838, 0.7840], [0.7613, 0.7613, 0.7854, 0.7870], [0.7639, 0.7639, 0.7882, 0.7883], [0.7663, 0.7663, 0.7895, 0.7910], [0.7692, 0.7692, 0.7918, 0.7929], [0.7723, 0.7723, 0.7938, 0.7949], [0.7742, 0.7742, 0.7952, 0.7966], [0.7789, 0.7789, 0.7972, 0.7981], [0.7835, 0.7835, 0.7991, 0.8009], [0.7843, 0.7845, 0.8010, 0.8029], [0.7876, 0.7877, 0.8038, 0.8046], [0.7907, 0.7907, 0.8052, 0.8067], [0.7924, 0.7924, 0.8081, 0.8090], [0.7972, 0.7972, 0.8096, 0.8110], [0.8004, 0.8004, 0.8117, 0.8129], [0.8036, 0.8036, 0.8137, 0.8148], [0.8060, 0.8060, 0.8154, 0.8169], [0.8093, 0.8093, 0.8176, 0.8194], [0.8109, 0.8109, 0.8199, 0.8215], [0.8143, 0.8143, 0.8224, 0.8234], [0.8189, 0.8189, 0.8243, 0.8254], [0.8220, 0.8220, 0.8258, 0.8273], [0.8251, 0.8251, 0.8279, 0.8298], [0.8267, 0.8267, 0.8304, 0.8319], [0.8290, 0.8290, 0.8330, 0.8334], [0.8325, 0.8325, 0.8349, 0.8355], [0.8360, 0.8361, 0.8364, 0.8380], [0.8408, 0.8408, 0.8395, 0.8405], [0.8424, 0.8434, 0.8409, 0.8442], [0.8496, 0.8496, 0.8454, 0.8473], [0.8503, 0.8503, 0.8488, 0.8488], [0.8527, 0.8529, 0.8498, 0.8514], [0.8554, 0.8554, 0.8520, 0.8535], [0.8571, 0.8571, 0.8540, 0.8559], [0.8609, 0.8609, 0.8567, 0.8583], [0.8660, 0.8660, 0.8584, 0.8605], [0.8682, 0.8682, 0.8615, 0.8628], [0.8714, 0.8714, 0.8631, 0.8647], [0.8739, 0.8739, 0.8663, 0.8672], [0.8754, 0.8754, 0.8679, 0.8695], [0.8784, 0.8784, 0.8712, 0.8719], [0.8820, 0.8820, 0.8728, 0.8736], [0.8861, 0.8861, 0.8744, 0.8761], [0.8894, 0.8894, 0.8769, 0.8785], [0.8906, 0.8906, 0.8793, 0.8810], [0.8938, 0.8938, 0.8824, 0.8827], [0.8970, 0.8970, 0.8837, 0.8851], [0.8997, 0.8997, 0.8860, 0.8876], [0.9052, 0.9052, 0.8885, 0.8901], [0.9071, 0.9071, 0.8910, 0.8927], [0.9089, 0.9089, 0.8935, 0.8951], [0.9118, 0.9118, 0.8961, 0.8970], [0.9159, 0.9159, 0.8978, 0.8995], [0.9167, 0.9169, 0.9003, 0.9020], [0.9210, 0.9210, 0.9029, 0.9046], [0.9254, 0.9254, 0.9055, 0.9072], [0.9277, 0.9277, 0.9080, 0.9089], [0.9312, 0.9312, 0.9098, 0.9115], [0.9346, 0.9346, 0.9124, 0.9141], [0.9358, 0.9358, 0.9150, 0.9167], [0.9390, 0.9390, 0.9176, 0.9193], [0.9434, 0.9434, 0.9202, 0.9220], [0.9468, 0.9468, 0.9228, 0.9237], [0.9494, 0.9494, 0.9246, 0.9263], [0.9509, 0.9509, 0.9273, 0.9291], [0.9536, 0.9536, 0.9300, 0.9317], [0.9572, 0.9572, 0.9326, 0.9344], [0.9620, 0.9622, 0.9353, 0.9362], [0.9651, 0.9651, 0.9372, 0.9391], [0.9672, 0.9672, 0.9399, 0.9420], [0.9697, 0.9697, 0.9427, 0.9441], [0.9750, 0.9750, 0.9453, 0.9471], [0.9752, 0.9752, 0.9481, 0.9498], [0.9771, 0.9771, 0.9505, 0.9517], [0.9823, 0.9823, 0.9527, 0.9545], [0.9845, 0.9845, 0.9555, 0.9572], [0.9870, 0.9870, 0.9582, 0.9601], [0.9920, 0.9920, 0.9610, 0.9628], [0.9946, 0.9946, 0.9638, 0.9647], [0.9979, 0.9979, 0.9657, 0.9676], [1.0002, 1.0002, 0.9685, 0.9704], [1.0024, 1.0024, 0.9713, 0.9732], [1.0059, 1.0059, 0.9741, 0.9754], [1.0070, 1.0070, 0.9766, 0.9781], [1.0135, 1.0135, 0.9790, 0.9810], [1.0160, 1.0160, 0.9818, 0.9838], [1.0195, 1.0195, 0.9847, 0.9866], [1.0201, 1.0201, 0.9876, 0.9894], [1.0220, 1.0220, 0.9905, 0.9925], [1.0257, 1.0257, 0.9934, 0.9944], [1.0309, 1.0309, 0.9954, 0.9974], [1.0338, 1.0338, 0.9983, 1.0003], [1.0353, 1.0353, 1.0012, 1.0031], [1.0386, 1.0386, 1.0041, 1.0062], [1.0421, 1.0421, 1.0069, 1.0085], [1.0442, 1.0442, 1.0093, 1.0111], [1.0471, 1.0471, 1.0122, 1.0142], [1.0498, 1.0498, 1.0151, 1.0171], [1.0537, 1.0537, 1.0182, 1.0202], [1.0571, 1.0571, 1.0212, 1.0232], [1.0620, 1.0620, 1.0243, 1.0254], [1.0635, 1.0636, 1.0263, 1.0315], [1.0687, 1.0687, 1.0324, 1.0345], [1.0715, 1.0715, 1.0355, 1.0365], [1.0732, 1.0732, 1.0376, 1.0396], [1.0778, 1.0778, 1.0407, 1.0427], [1.0819, 1.0820, 1.0439, 1.0458], [1.0853, 1.0853, 1.0469, 1.0490], [1.0874, 1.0874, 1.0501, 1.0522], [1.0885, 1.0885, 1.0531, 1.0541], [1.0919, 1.0919, 1.0552, 1.0574], [1.0949, 1.0949, 1.0584, 1.0598], [1.1004, 1.1004, 1.0612, 1.0637], [1.1014, 1.1014, 1.0648, 1.0670], [1.1039, 1.1039, 1.0680, 1.0698], [1.1073, 1.1073, 1.0701, 1.0722], [1.1101, 1.1101, 1.0733, 1.0755], [1.1112, 1.1112, 1.0765, 1.0787], [1.1168, 1.1168, 1.0798, 1.0819], [1.1199, 1.1199, 1.0830, 1.0852], [1.1230, 1.1230, 1.0863, 1.0873], [1.1240, 1.1240, 1.0885, 1.0906], [1.1298, 1.1298, 1.0917, 1.0939], [1.1326, 1.1326, 1.0951, 1.0972], [1.1356, 1.1356, 1.0983, 1.1005], [1.1390, 1.1395, 1.1020, 1.1061], [1.1414, 1.1414, 1.1071, 1.1096], [1.1458, 1.1458, 1.1106, 1.1128], [1.1519, 1.1519, 1.1138, 1.1161], [1.1529, 1.1529, 1.1172, 1.1193], [1.1549, 1.1549, 1.1206, 1.1217], [1.1605, 1.1605, 1.1228, 1.1251], [1.1632, 1.1632, 1.1261, 1.1284], [1.1642, 1.1642, 1.1296, 1.1319], [1.1669, 1.1669, 1.1330, 1.1354], [1.1702, 1.1702, 1.1365, 1.1376], [1.1737, 1.1737, 1.1387, 1.1416], [1.1788, 1.1788, 1.1428, 1.1442], [1.1794, 1.1794, 1.1456, 1.1479], [1.1826, 1.1826, 1.1490, 1.1513], [1.1857, 1.1857, 1.1526, 1.1549], [1.1888, 1.1888, 1.1560, 1.1572], [1.1894, 1.1894, 1.1584, 1.1607], [1.1949, 1.1949, 1.1619, 1.1642], [1.1979, 1.1979, 1.1653, 1.1677], [1.2013, 1.2013, 1.1689, 1.1713], [1.2017, 1.2017, 1.1715, 1.1741], [1.2061, 1.2061, 1.1751, 1.1771], [1.2089, 1.2089, 1.1784, 1.1807], [1.2142, 1.2142, 1.1818, 1.1843], [1.2190, 1.2190, 1.1855, 1.1879], [1.2207, 1.2207, 1.1890, 1.1903], [1.2228, 1.2228, 1.1916, 1.1939], [1.2273, 1.2273, 1.1951, 1.1975], [1.2294, 1.2294, 1.1987, 1.2011], [1.2325, 1.2325, 1.2023, 1.2047], [1.2360, 1.2360, 1.2061, 1.2072], [1.2414, 1.2414, 1.2085, 1.2107], [1.2444, 1.2444, 1.2120, 1.2145], [1.2477, 1.2477, 1.2156, 1.2182], [1.2504, 1.2504, 1.2194, 1.2220], [1.2536, 1.2536, 1.2234, 1.2247], [1.2569, 1.2569, 1.2261, 1.2290], [1.2622, 1.2622, 1.2292, 1.2325], [1.2651, 1.2651, 1.2333, 1.2355], [1.2685, 1.2685, 1.2366, 1.2391], [1.2713, 1.2713, 1.2402, 1.2425], [1.2750, 1.2750, 1.2434, 1.2450], [1.2750, 1.2801, 1.2465, 1.2469], [1.2801, 1.2801, 1.2479, 1.2490], [1.2829, 1.2829, 1.2503, 1.2533], [1.2861, 1.2861, 1.2541, 1.2566], [1.2884, 1.2884, 1.2572, 1.2604], [1.2937, 1.2937, 1.2616, 1.2641], [1.2970, 1.2970, 1.2647, 1.2668], [1.2999, 1.2999, 1.2679, 1.2703], [1.3028, 1.3028, 1.2713, 1.2747], [1.3063, 1.3063, 1.2759, 1.2779], [1.3075, 1.3075, 1.2789, 1.2819], [1.3136, 1.3136, 1.2824, 1.2845], [1.3165, 1.3165, 1.2857, 1.2882], [1.3204, 1.3204, 1.2893, 1.2925], [1.3220, 1.3220, 1.2936, 1.2959], [1.3265, 1.3265, 1.2971, 1.2998], [1.3296, 1.3296, 1.3009, 1.3034], [1.3327, 1.3327, 1.3048, 1.3072], [1.3357, 1.3357, 1.3076, 1.3102], [1.3390, 1.3390, 1.3112, 1.3135], [1.3419, 1.3419, 1.3150, 1.3180], [1.3462, 1.3462, 1.3191, 1.3212], [1.3492, 1.3492, 1.3223, 1.3246], [1.3524, 1.3524, 1.3258, 1.3287], [1.3569, 1.3569, 1.3299, 1.3324], [1.3601, 1.3601, 1.3336, 1.3364], [1.3633, 1.3633, 1.3376, 1.3403], [1.3664, 1.3664, 1.3416, 1.3440], [1.3698, 1.3698, 1.3442, 1.3470], [1.3739, 1.3739, 1.3481, 1.3514], [1.3768, 1.3768, 1.3521, 1.3548], [1.3792, 1.3792, 1.3558, 1.3579], [1.3830, 1.3830, 1.3591, 1.3627], [1.3860, 1.3860, 1.3630, 1.3662], [1.3888, 1.3888, 1.3671, 1.3698], [1.3931, 1.3931, 1.3707, 1.3734], [1.3969, 1.3969, 1.3746, 1.3772], [1.4008, 1.4008, 1.3784, 1.3814], [1.4037, 1.4037, 1.3819, 1.3843], [1.4073, 1.4073, 1.3854, 1.3886], [1.4106, 1.4106, 1.3895, 1.3927], [1.4129, 1.4129, 1.3939, 1.3965], [1.4161, 1.4161, 1.3976, 1.4002], [1.4188, 1.4188, 1.4014, 1.4040], [1.4232, 1.4232, 1.4056, 1.4074], [1.4260, 1.4260, 1.4084, 1.4112], [1.4288, 1.4288, 1.4121, 1.4152], [1.4329, 1.4329, 1.4165, 1.4192], [1.4362, 1.4362, 1.4196, 1.4225], [1.4412, 1.4412, 1.4237, 1.4264], [1.4432, 1.4432, 1.4273, 1.4302], [1.4461, 1.4461, 1.4314, 1.4348], [1.4497, 1.4497, 1.4355, 1.4382], [1.4531, 1.4531, 1.4397, 1.4425], [1.4564, 1.4564, 1.4437, 1.4454], [1.4598, 1.4598, 1.4464, 1.4473], [1.4598, 1.4626, 1.4486, 1.4492], [1.4626, 1.4626, 1.4502, 1.4540], [1.4654, 1.4654, 1.4547, 1.4576], [1.4681, 1.4681, 1.4589, 1.4616], [1.4713, 1.4713, 1.4629, 1.4645], [1.4744, 1.4744, 1.4656, 1.4686], [1.4788, 1.4788, 1.4699, 1.4724], [1.4818, 1.4818, 1.4735, 1.4770], [1.4841, 1.4841, 1.4780, 1.4849], [1.4878, 1.4878, 1.4853, 1.4883], [1.4894, 1.4894, 1.4896, 1.4925], [1.4921, 1.4921, 1.4932, 1.4959], [1.4960, 1.4960, 1.4969, 1.4995], [1.4988, 1.4988, 1.5007, 1.5042], [1.5019, 1.5019, 1.5047, 1.5071], [1.5055, 1.5055, 1.5084, 1.5120], [1.5073, 1.5073, 1.5125, 1.5159], [1.5104, 1.5104, 1.5173, 1.5188], [1.5133, 1.5133, 1.5200, 1.5236], [1.5163, 1.5163, 1.5247, 1.5270], [1.5198, 1.5198, 1.5283, 1.5308], [1.5232, 1.5232, 1.5319, 1.5354], [1.5256, 1.5256, 1.5369, 1.5382], [1.5288, 1.5288, 1.5396, 1.5430], [1.5322, 1.5322, 1.5438, 1.5464], [1.5354, 1.5354, 1.5475, 1.5504], [1.5378, 1.5378, 1.5514, 1.5549], [1.5408, 1.5408, 1.5559, 1.5581], [1.5443, 1.5443, 1.5597, 1.5625], [1.5472, 1.5472, 1.5631, 1.5666], [1.5497, 1.5497, 1.5670, 1.5708], [1.5549, 1.5549, 1.5721, 1.5746], [1.5586, 1.5586, 1.5750, 1.5785], [1.5615, 1.5615, 1.5791, 1.5819], [1.5634, 1.5634, 1.5835, 1.5857], [1.5667, 1.5667, 1.5867, 1.5902], [1.5695, 1.5695, 1.5912, 1.5940], [1.5729, 1.5729, 1.5952, 1.5978], [1.5749, 1.5749, 1.5986, 1.6020], [1.5777, 1.5777, 1.6034, 1.6047], [1.5801, 1.5801, 1.6062, 1.6097], [1.5837, 1.5837, 1.6108, 1.6133], [1.5870, 1.5870, 1.6146, 1.6169], [1.5903, 1.5903, 1.6180, 1.6216], [1.5934, 1.5934, 1.6228, 1.6243], [1.5962, 1.5962, 1.6257, 1.6291], [1.5991, 1.5991, 1.6296, 1.6332], [1.6020, 1.6020, 1.6345, 1.6369], [1.6047, 1.6047, 1.6374, 1.6409], [1.6078, 1.6078, 1.6421, 1.6447], [1.6102, 1.6102, 1.6457, 1.6484], [1.6141, 1.6141, 1.6491, 1.6520], [1.6172, 1.6172, 1.6533, 1.6563], [1.6202, 1.6202, 1.6567, 1.6601], [1.6218, 1.6218, 1.6615, 1.6636], [1.6251, 1.6251, 1.6646, 1.6680], [1.6312, 1.6312, 1.6692, 1.6717], [1.6325, 1.6325, 1.6730, 1.6760], [1.6349, 1.6349, 1.6771, 1.6787], [1.6378, 1.6378, 1.6799, 1.6827], [1.6389, 1.6389, 1.6839, 1.6869], [1.6426, 1.6426, 1.6876, 1.6914], [1.6465, 1.6465, 1.6924, 1.6952], [1.6492, 1.6492, 1.6962, 1.6979], [1.6519, 1.6519, 1.6991, 1.7019], [1.6546, 1.6546, 1.7033, 1.7061], [1.6583, 1.6583, 1.7068, 1.7102], [1.6597, 1.6597, 1.7114, 1.7142], [1.6629, 1.6629, 1.7152, 1.7179], [1.6662, 1.6662, 1.7191, 1.7220], [1.6694, 1.6694, 1.7224, 1.7251], [1.6722, 1.6722, 1.7264, 1.7295], [1.6757, 1.6757, 1.7303, 1.7332], [1.6794, 1.6794, 1.7342, 1.7359], [1.6822, 1.6822, 1.7376, 1.7402], [1.6849, 1.6849, 1.7413, 1.7440], [1.6875, 1.6875, 1.7455, 1.7480], [1.6899, 1.6899, 1.7489, 1.7521], [1.6924, 1.6924, 1.7534, 1.7561], [1.6971, 1.6971, 1.7573, 1.7600], [1.6994, 1.6994, 1.7602, 1.7635], [1.7035, 1.7035, 1.7644, 1.7671], [1.7039, 1.7039, 1.7682, 1.7709], [1.7067, 1.7067, 1.7714, 1.7738], [1.7102, 1.7102, 1.7752, 1.7778], [1.7135, 1.7135, 1.7789, 1.7819], [1.7165, 1.7165, 1.7832, 1.7856], [1.7192, 1.7192, 1.7868, 1.7895], [1.7217, 1.7217, 1.7906, 1.7929], [1.7256, 1.7256, 1.7938, 1.7974], [1.7284, 1.7284, 1.7980, 1.8000], [1.7309, 1.7309, 1.8012, 1.8040], [1.7346, 1.7346, 1.8052, 1.8083], [1.7367, 1.7367, 1.8094, 1.8113], [1.7389, 1.7389, 1.8127, 1.8158], [1.7426, 1.7426, 1.8167, 1.8186], [1.7449, 1.7449, 1.8198, 1.8222], [1.7488, 1.7488, 1.8234, 1.8264], [1.7510, 1.7510, 1.8275, 1.8301], [1.7557, 1.7557, 1.8314, 1.8342], [1.7586, 1.7586, 1.8353, 1.8375], [1.7626, 1.7626, 1.8384, 1.8406], [1.7652, 1.7652, 1.8417, 1.8445], [1.7680, 1.7680, 1.8457, 1.8485], [1.7693, 1.7693, 1.8495, 1.8520], [1.7740, 1.7740, 1.8526, 1.8550], [1.7775, 1.7775, 1.8561, 1.8589], [1.7810, 1.7810, 1.8597, 1.8625], [1.7833, 1.7833, 1.8635, 1.8662], [1.7887, 1.7887, 1.8669, 1.8699], [1.7913, 1.7913, 1.8706, 1.8731], [1.7938, 1.7938, 1.8743, 1.8773], [1.7966, 1.7966, 1.8775, 1.8810], [1.8008, 1.8008, 1.8823, 1.8844], [1.8053, 1.8053, 1.8850, 1.8875], [1.8071, 1.8071, 1.8887, 1.8912], [1.8105, 1.8105, 1.8925, 1.8950], [1.8123, 1.8123, 1.8963, 1.8975], [1.8166, 1.8166, 1.8987, 1.9019], [1.8189, 1.8189, 1.9025, 1.9050], [1.8232, 1.8232, 1.9059, 1.9083], [1.8265, 1.8265, 1.9091, 1.9124], [1.8295, 1.8295, 1.9138, 1.9154], [1.8331, 1.8331, 1.9169, 1.9182], [1.8376, 1.8376, 1.9196, 1.9222], [1.8401, 1.8401, 1.9234, 1.9259], [1.8436, 1.8436, 1.9270, 1.9296], [1.8467, 1.8467, 1.9307, 1.9329], [1.8507, 1.8507, 1.9339, 1.9360], [1.8540, 1.8540, 1.9369, 1.9398], [1.8575, 1.8575, 1.9407, 1.9429], [1.8590, 1.8590, 1.9441, 1.9465], [1.8622, 1.8622, 1.9477, 1.9500], [1.8648, 1.8648, 1.9513, 1.9526], [1.8700, 1.8700, 1.9537, 1.9561], [1.8729, 1.8729, 1.9573, 1.9598], [1.8758, 1.8758, 1.9608, 1.9632], [1.8785, 1.8785, 1.9645, 1.9669], [1.8839, 1.8839, 1.9680, 1.9690], [1.8869, 1.8869, 1.9703, 1.9727], [1.8893, 1.8893, 1.9739, 1.9763], [1.8925, 1.8925, 1.9774, 1.9797], [1.8957, 1.8957, 1.9809, 1.9832], [1.8985, 1.8985, 1.9844, 1.9856], [1.9030, 1.9030, 1.9867, 1.9890], [1.9045, 1.9045, 1.9903, 1.9926], [1.9073, 1.9073, 1.9937, 1.9960], [1.9111, 1.9111, 1.9966, 1.9994], [1.9155, 1.9155, 2.0006, 2.0029], [1.9185, 1.9185, 2.0040, 2.0051], [1.9222, 1.9222, 2.0063, 2.0086], [1.9254, 1.9254, 2.0097, 2.0120], [1.9303, 1.9303, 2.0132, 2.0155], [1.9336, 1.9336, 2.0165, 2.0188], [1.9370, 1.9370, 2.0197, 2.0215], [1.9402, 1.9402, 2.0222, 2.0251], [1.9420, 1.9420, 2.0255, 2.0279], [1.9437, 1.9437, 2.0288, 2.0308], [1.9471, 1.9471, 2.0319, 2.0344], [1.9490, 1.9490, 2.0357, 2.0377], [1.9582, 1.9582, 2.0386, 2.0404], [1.9597, 1.9597, 2.0411, 2.0437], [1.9641, 1.9641, 2.0444, 2.0467], [1.9664, 1.9664, 2.0477, 2.0499], [1.9669, 1.9669, 2.0503, 2.0525], [1.9702, 1.9702, 2.0533, 2.0560], [1.9728, 1.9728, 2.0564, 2.0591], [1.9753, 1.9753, 2.0599, 2.0620], [1.9789, 1.9789, 2.0629, 2.0651], [1.9821, 1.9821, 2.0657, 2.0678], [1.9844, 1.9844, 2.0689, 2.0715], [1.9881, 1.9881, 2.0722, 2.0744], [1.9926, 1.9930, 2.0752, 2.0800], [1.9959, 1.9959, 2.0808, 2.0832], [2.0010, 2.0010, 2.0839, 2.0863], [2.0035, 2.0035, 2.0873, 2.0889], [2.0055, 2.0055, 2.0899, 2.0917], [2.0085, 2.0085, 2.0924, 2.0950], [2.0129, 2.0129, 2.0960, 2.0979], [2.0150, 2.0150, 2.0989, 2.1010], [2.0171, 2.0171, 2.1020, 2.1036], [2.0217, 2.0217, 2.1045, 2.1062], [2.0242, 2.0242, 2.1069, 2.1093], [2.0270, 2.0270, 2.1102, 2.1122], [2.0311, 2.0311, 2.1130, 2.1153], [2.0330, 2.0330, 2.1160, 2.1176], [2.0364, 2.0364, 2.1185, 2.1212], [2.0385, 2.0385, 2.1214, 2.1234], [2.0435, 2.0435, 2.1241, 2.1267], [2.0455, 2.0455, 2.1274, 2.1294], [2.0480, 2.0480, 2.1299, 2.1323], [2.0511, 2.0511, 2.1331, 2.1347], [2.0542, 2.0542, 2.1354, 2.1375], [2.0566, 2.0566, 2.1386, 2.1396], [2.0603, 2.0603, 2.1408, 2.1433], [2.0638, 2.0638, 2.1445, 2.1459], [2.0660, 2.0660, 2.1472, 2.1484], [2.0694, 2.0694, 2.1491, 2.1512], [2.0738, 2.0738, 2.1519, 2.1542], [2.0746, 2.0746, 2.1549, 2.1570], [2.0794, 2.0794, 2.1578, 2.1598], [2.0824, 2.0824, 2.1606, 2.1626], [2.0844, 2.0844, 2.1635, 2.1650], [2.0862, 2.0862, 2.1659, 2.1680], [2.0919, 2.0919, 2.1684, 2.1702], [2.0937, 2.0937, 2.1708, 2.1731], [2.0974, 2.0974, 2.1738, 2.1759], [2.0997, 2.0997, 2.1763, 2.1778], [2.1033, 2.1033, 2.1791, 2.1803], [2.1055, 2.1055, 2.1815, 2.1837], [2.1098, 2.1098, 2.1846, 2.1859], [2.1125, 2.1125, 2.1871, 2.1889], [2.1144, 2.1144, 2.1892, 2.1910], [2.1168, 2.1168, 2.1919, 2.1935], [2.1195, 2.1195, 2.1945, 2.1963], [2.1232, 2.1232, 2.1968, 2.1988], [2.1250, 2.1250, 2.1996, 2.2017], [2.1291, 2.1291, 2.2022, 2.2042], [2.1333, 2.1333, 2.2050, 2.2064], [2.1347, 2.1347, 2.2071, 2.2091], [2.1391, 2.1391, 2.2104, 2.2116], [2.1413, 2.1413, 2.2125, 2.2143], [2.1452, 2.1452, 2.2157, 2.2169], [2.1477, 2.1478, 2.2177, 2.2194], [2.1506, 2.1507, 2.2196, 2.2219], [2.1530, 2.1532, 2.2228, 2.2236], [2.1562, 2.1563, 2.2246, 2.2268], [2.1586, 2.1588, 2.2279, 2.2290], [2.1616, 2.1618, 2.2299, 2.2318], [2.1654, 2.1654, 2.2326, 2.2340], [2.1681, 2.1682, 2.2348, 2.2362], [2.1701, 2.1701, 2.2370, 2.2391], [2.1731, 2.1731, 2.2397, 2.2404], [2.1779, 2.1779, 2.2417, 2.2439], [2.1811, 2.1811, 2.2448, 2.2460], [2.1835, 2.1835, 2.2470, 2.2485], [2.1871, 2.1871, 2.2489, 2.2509], [2.1878, 2.1878, 2.2517, 2.2531], [2.1910, 2.1910, 2.2539, 2.2556], [2.1948, 2.1948, 2.2565, 2.2576], [2.1983, 2.1983, 2.2582, 2.2602], [2.2012, 2.2012, 2.2606, 2.2624], [2.2018, 2.2018, 2.2634, 2.2644], [2.2069, 2.2069, 2.2655, 2.2672], [2.2102, 2.2102, 2.2680, 2.2695], [2.2113, 2.2113, 2.2703, 2.2711], [2.2171, 2.2171, 2.2721, 2.2738], [2.2182, 2.2182, 2.2746, 2.2761], [2.2210, 2.2210, 2.2769, 2.2785], [2.2271, 2.2271, 2.2794, 2.2810], [2.2304, 2.2304, 2.2817, 2.2832], [2.2319, 2.2319, 2.2833, 2.2849], [2.2347, 2.2347, 2.2857, 2.2873], [2.2366, 2.2366, 2.2881, 2.2896], [2.2397, 2.2397, 2.2901, 2.2918], [2.2428, 2.2429, 2.2928, 2.2941], [2.2458, 2.2459, 2.2943, 2.2960], [2.2485, 2.2485, 2.2967, 2.2981], [2.2521, 2.2522, 2.2988, 2.3005], [2.2552, 2.2554, 2.3013, 2.3025], [2.2580, 2.2580, 2.3036, 2.3051], [2.2615, 2.2616, 2.3054, 2.3071], [2.2646, 2.2647, 2.3078, 2.3086], [2.2671, 2.2672, 2.3097, 2.3112], [2.2695, 2.2695, 2.3118, 2.3137], [2.2725, 2.2726, 2.3143, 2.3158], [2.2750, 2.2751, 2.3162, 2.3173], [2.2782, 2.2783, 2.3182, 2.3192], [2.2820, 2.2820, 2.3201, 2.3217], [2.2863, 2.2863, 2.3222, 2.3239], [2.2879, 2.2879, 2.3247, 2.3262], [2.2909, 2.2910, 2.3268, 2.3276], [2.2937, 2.2937, 2.3287, 2.3299], [2.2956, 2.2956, 2.3306, 2.3320], [2.2985, 2.2985, 2.3326, 2.3342], [2.3044, 2.3044, 2.3349, 2.3364], [2.3066, 2.3066, 2.3370, 2.3378], [2.3097, 2.3097, 2.3387, 2.3406], [2.3126, 2.3126, 2.3407, 2.3425], [2.3141, 2.3141, 2.3435, 2.3444], [2.3168, 2.3168, 2.3450, 2.3464], [2.3202, 2.3202, 2.3467, 2.3478], [2.3253, 2.3253, 2.3487, 2.3497], [2.3281, 2.3281, 2.3506, 2.3520], [2.3294, 2.3294, 2.3533, 2.3534], [2.3321, 2.3321, 2.3546, 2.3562], [2.3346, 2.3346, 2.3576, 2.3578], [2.3371, 2.3371, 2.3590, 2.3603], [2.3400, 2.3400, 2.3604, 2.3618], [2.3431, 2.3431, 2.3626, 2.3637], [2.3450, 2.3450, 2.3647, 2.3657], [2.3497, 2.3497, 2.3669, 2.3680], [2.3543, 2.3543, 2.3689, 2.3703], [2.3551, 2.3553, 2.3709, 2.3718], [2.3584, 2.3585, 2.3729, 2.3737], [2.3615, 2.3615, 2.3746, 2.3760], [2.3632, 2.3632, 2.3764, 2.3782], [2.3680, 2.3680, 2.3789, 2.3804], [2.3712, 2.3712, 2.3806, 2.3815], [2.3744, 2.3744, 2.3825, 2.3837], [2.3768, 2.3768, 2.3848, 2.3865], [2.3801, 2.3801, 2.3874, 2.3884], [2.3817, 2.3818, 2.3892, 2.3907], [2.3851, 2.3851, 2.3913, 2.3923], [2.3897, 2.3897, 2.3932, 2.3942], [2.3928, 2.3928, 2.3951, 2.3966], [2.3959, 2.3959, 2.3973, 2.3989], [2.3975, 2.3975, 2.3996, 2.4012], [2.3998, 2.3998, 2.4016, 2.4027], [2.4033, 2.4033, 2.4038, 2.4053], [2.4068, 2.4069, 2.4057, 2.4072], [2.4115, 2.4115, 2.4083, 2.4099], [2.4132, 2.4142, 2.4103, 2.4134], [2.4142, 2.4142, 2.4136, 2.4136], [2.4204, 2.4204, 2.4150, 2.4164], [2.4211, 2.4211, 2.4165, 2.4181], [2.4235, 2.4237, 2.4192, 2.4206], [2.4262, 2.4262, 2.4212, 2.4228], [2.4279, 2.4279, 2.4234, 2.4251], [2.4317, 2.4317, 2.4258, 2.4267], [2.4368, 2.4368, 2.4275, 2.4291], [2.4390, 2.4390, 2.4301, 2.4315], [2.4421, 2.4421, 2.4323, 2.4330], [2.4447, 2.4447, 2.4345, 2.4360], [2.4460, 2.4460, 2.4368, 2.4387], [2.4492, 2.4492, 2.4403, 2.4403], [2.4528, 2.4528, 2.4411, 2.4427], [2.4569, 2.4569, 2.4436, 2.4452], [2.4602, 2.4602, 2.4460, 2.4477], [2.4614, 2.4614, 2.4485, 2.4501], [2.4646, 2.4646, 2.4509, 2.4518], [2.4678, 2.4678, 2.4527, 2.4542], [2.4705, 2.4705, 2.4551, 2.4568], [2.4760, 2.4760, 2.4575, 2.4593], [2.4779, 2.4779, 2.4601, 2.4618], [2.4797, 2.4797, 2.4626, 2.4635], [2.4826, 2.4826, 2.4643, 2.4659], [2.4867, 2.4867, 2.4669, 2.4685], [2.4875, 2.4876, 2.4693, 2.4711], [2.4918, 2.4918, 2.4720, 2.4737], [2.4962, 2.4962, 2.4745, 2.4754], [2.4985, 2.4985, 2.4763, 2.4780], [2.5020, 2.5020, 2.4788, 2.4805], [2.5053, 2.5053, 2.4815, 2.4832], [2.5066, 2.5066, 2.4840, 2.4858], [2.5098, 2.5098, 2.4866, 2.4884], [2.5142, 2.5142, 2.4893, 2.4901], [2.5176, 2.5176, 2.4910, 2.4928], [2.5202, 2.5202, 2.4936, 2.4954], [2.5217, 2.5217, 2.4962, 2.4981], [2.5243, 2.5243, 2.4995, 2.5008], [2.5279, 2.5280, 2.5017, 2.5034], [2.5328, 2.5330, 2.5045, 2.5060], [2.5359, 2.5359, 2.5070, 2.5082], [2.5380, 2.5380, 2.5088, 2.5107], [2.5405, 2.5405, 2.5116, 2.5136], [2.5458, 2.5458, 2.5143, 2.5161], [2.5460, 2.5460, 2.5167, 2.5179], [2.5479, 2.5479, 2.5189, 2.5213], [2.5530, 2.5531, 2.5216, 2.5238], [2.5553, 2.5553, 2.5246, 2.5265], [2.5578, 2.5578, 2.5271, 2.5290], [2.5628, 2.5628, 2.5294, 2.5317], [2.5654, 2.5654, 2.5324, 2.5338], [2.5687, 2.5687, 2.5346, 2.5365], [2.5710, 2.5710, 2.5375, 2.5393], [2.5732, 2.5732, 2.5402, 2.5421], [2.5767, 2.5767, 2.5432, 2.5449], [2.5778, 2.5778, 2.5459, 2.5468], [2.5843, 2.5843, 2.5478, 2.5498], [2.5868, 2.5868, 2.5506, 2.5525], [2.5903, 2.5903, 2.5536, 2.5555], [2.5909, 2.5909, 2.5565, 2.5584], [2.5928, 2.5928, 2.5594, 2.5604], [2.5965, 2.5965, 2.5613, 2.5633], [2.6016, 2.6016, 2.5642, 2.5662], [2.6046, 2.6046, 2.5672, 2.5691], [2.6061, 2.6061, 2.5700, 2.5720], [2.6094, 2.6094, 2.5731, 2.5750], [2.6129, 2.6129, 2.5761, 2.5770], [2.6150, 2.6150, 2.5779, 2.5801], [2.6179, 2.6179, 2.5810, 2.5830], [2.6206, 2.6206, 2.5841, 2.5859], [2.6245, 2.6245, 2.5870, 2.5890], [2.6279, 2.6279, 2.5899, 2.5910], [2.6328, 2.6328, 2.5920, 2.5940], [2.6343, 2.6344, 2.5951, 2.6003], [2.6395, 2.6395, 2.6012, 2.6032], [2.6423, 2.6423, 2.6043, 2.6053], [2.6440, 2.6440, 2.6063, 2.6084], [2.6486, 2.6486, 2.6094, 2.6114], [2.6527, 2.6528, 2.6126, 2.6146], [2.6561, 2.6561, 2.6156, 2.6177], [2.6582, 2.6582, 2.6188, 2.6198], [2.6593, 2.6593, 2.6210, 2.6237], [2.6627, 2.6627, 2.6239, 2.6260], [2.6657, 2.6657, 2.6271, 2.6292], [2.6712, 2.6712, 2.6303, 2.6324], [2.6722, 2.6722, 2.6334, 2.6345], [2.6747, 2.6747, 2.6356, 2.6378], [2.6781, 2.6781, 2.6387, 2.6415], [2.6809, 2.6809, 2.6422, 2.6441], [2.6820, 2.6820, 2.6452, 2.6473], [2.6876, 2.6876, 2.6484, 2.6506], [2.6907, 2.6907, 2.6516, 2.6527], [2.6938, 2.6938, 2.6538, 2.6560], [2.6948, 2.6948, 2.6571, 2.6591], [2.7006, 2.7006, 2.6602, 2.6625], [2.7034, 2.7034, 2.6636, 2.6659], [2.7064, 2.7064, 2.6669, 2.6691], [2.7098, 2.7103, 2.6700, 2.6747], [2.7122, 2.7122, 2.6757, 2.6779], [2.7166, 2.7166, 2.6792, 2.6814], [2.7227, 2.7227, 2.6824, 2.6846], [2.7237, 2.7237, 2.6858, 2.6869], [2.7257, 2.7257, 2.6880, 2.6901], [2.7313, 2.7313, 2.6914, 2.6936], [2.7340, 2.7340, 2.6948, 2.6969], [2.7350, 2.7350, 2.6981, 2.7004], [2.7377, 2.7377, 2.7014, 2.7038], [2.7409, 2.7409, 2.7050, 2.7061], [2.7445, 2.7445, 2.7072, 2.7095], [2.7496, 2.7496, 2.7106, 2.7130], [2.7502, 2.7502, 2.7141, 2.7164], [2.7534, 2.7534, 2.7176, 2.7198], [2.7565, 2.7565, 2.7211, 2.7221], [2.7596, 2.7596, 2.7234, 2.7257], [2.7602, 2.7602, 2.7268, 2.7292], [2.7657, 2.7657, 2.7303, 2.7327], [2.7687, 2.7687, 2.7340, 2.7361], [2.7721, 2.7721, 2.7374, 2.7385], [2.7725, 2.7725, 2.7397, 2.7421], [2.7769, 2.7769, 2.7434, 2.7457], [2.7797, 2.7797, 2.7468, 2.7492], [2.7850, 2.7850, 2.7504, 2.7526], [2.7898, 2.7898, 2.7539, 2.7563], [2.7915, 2.7915, 2.7574, 2.7587], [2.7936, 2.7936, 2.7598, 2.7624], [2.7981, 2.7981, 2.7635, 2.7659], [2.8002, 2.8002, 2.7670, 2.7695], [2.8033, 2.8033, 2.7707, 2.7731], [2.8068, 2.8068, 2.7744, 2.7769], [2.8122, 2.8122, 2.7780, 2.7793], [2.8152, 2.8152, 2.7804, 2.7828], [2.8185, 2.8185, 2.7841, 2.7864], [2.8212, 2.8212, 2.7871, 2.7901], [2.8244, 2.8244, 2.7913, 2.7928], [2.8277, 2.8277, 2.7940, 2.7963], [2.8330, 2.8330, 2.7975, 2.8000], [2.8359, 2.8359, 2.8012, 2.8037], [2.8393, 2.8393, 2.8049, 2.8074], [2.8421, 2.8421, 2.8087, 2.8110], [2.8458, 2.8458, 2.8124, 2.8135], [2.8509, 2.8509, 2.8148, 2.8173], [2.8537, 2.8537, 2.8185, 2.8212], [2.8569, 2.8569, 2.8223, 2.8249], [2.8592, 2.8592, 2.8258, 2.8283], [2.8645, 2.8645, 2.8296, 2.8319], [2.8678, 2.8678, 2.8324, 2.8357], [2.8707, 2.8707, 2.8364, 2.8390], [2.8736, 2.8736, 2.8396, 2.8425], [2.8771, 2.8771, 2.8435, 2.8462], [2.8783, 2.8783, 2.8474, 2.8495], [2.8844, 2.8844, 2.8501, 2.8532], [2.8873, 2.8873, 2.8540, 2.8572], [2.8911, 2.8911, 2.8578, 2.8604], [2.8928, 2.8928, 2.8611, 2.8643], [2.8973, 2.8973, 2.8649, 2.8681], [2.9004, 2.9004, 2.8686, 2.8712], [2.9034, 2.9034, 2.8724, 2.8748], [2.9065, 2.9065, 2.8758, 2.8788], [2.9097, 2.9097, 2.8799, 2.8823], [2.9127, 2.9127, 2.8830, 2.8862], [2.9170, 2.9170, 2.8875, 2.8899], [2.9200, 2.9200, 2.8911, 2.8923], [2.9232, 2.9232, 2.8936, 2.8966], [2.9277, 2.9277, 2.8978, 2.9005], [2.9309, 2.9309, 2.9016, 2.9045], [2.9341, 2.9341, 2.9053, 2.9078], [2.9372, 2.9372, 2.9093, 2.9117], [2.9406, 2.9406, 2.9124, 2.9154], [2.9447, 2.9447, 2.9166, 2.9189], [2.9476, 2.9476, 2.9203, 2.9229], [2.9500, 2.9500, 2.9237, 2.9268], [2.9538, 2.9538, 2.9275, 2.9305], [2.9568, 2.9568, 2.9309, 2.9341], [2.9596, 2.9596, 2.9353, 2.9376], [2.9639, 2.9639, 2.9389, 2.9415], [2.9677, 2.9677, 2.9426, 2.9454], [2.9716, 2.9716, 2.9467, 2.9492], [2.9745, 2.9745, 2.9495, 2.9527], [2.9781, 2.9781, 2.9540, 2.9562], [2.9814, 2.9814, 2.9573, 2.9605], [2.9837, 2.9837, 2.9617, 2.9640], [2.9869, 2.9869, 2.9651, 2.9683], [2.9896, 2.9896, 2.9690, 2.9722], [2.9940, 2.9940, 2.9734, 2.9748], [2.9968, 2.9968, 2.9764, 2.9798], [2.9996, 2.9996, 2.9805, 2.9829], [3.0037, 3.0037, 2.9836, 2.9873], [3.0070, 3.0070, 2.9875, 2.9910], [3.0120, 3.0120, 2.9918, 2.9945], [3.0140, 3.0140, 2.9954, 2.9983], [3.0169, 3.0169, 2.9990, 3.0022], [3.0205, 3.0205, 3.0032, 3.0063], [3.0239, 3.0239, 3.0068, 3.0098], [3.0272, 3.0272, 3.0105, 3.0133], [3.0306, 3.0306, 3.0145, 3.0172], [3.0334, 3.0334, 3.0181, 3.0210], [3.0362, 3.0362, 3.0222, 3.0255], [3.0389, 3.0389, 3.0258, 3.0284], [3.0421, 3.0421, 3.0297, 3.0324], [3.0452, 3.0452, 3.0337, 3.0367], [3.0496, 3.0496, 3.0374, 3.0407], [3.0526, 3.0526, 3.0419, 3.0447], [3.0549, 3.0549, 3.0455, 3.0523], [3.0586, 3.0586, 3.0529, 3.0561], [3.0602, 3.0602, 3.0569, 3.0604], [3.0629, 3.0629, 3.0612, 3.0640], [3.0667, 3.0667, 3.0648, 3.0683], [3.0696, 3.0696, 3.0690, 3.0715], [3.0727, 3.0727, 3.0723, 3.0755], [3.0763, 3.0763, 3.0767, 3.0792], [3.0781, 3.0781, 3.0804, 3.0833], [3.0812, 3.0812, 3.0840, 3.0874], [3.0841, 3.0841, 3.0881, 3.0916], [3.0871, 3.0871, 3.0925, 3.0955], [3.0906, 3.0906, 3.0967, 3.0991], [3.0940, 3.0940, 3.1000, 3.1032], [3.0964, 3.0964, 3.1039, 3.1069], [3.0996, 3.0996, 3.1077, 3.1110], [3.1030, 3.1030, 3.1118, 3.1146], [3.1062, 3.1062, 3.1160, 3.1183], [3.1086, 3.1086, 3.1194, 3.1227], [3.1115, 3.1115, 3.1234, 3.1267], [3.1151, 3.1151, 3.1275, 3.1305], [3.1180, 3.1180, 3.1313, 3.1339], [3.1205, 3.1205, 3.1346, 3.1382], [3.1230, 3.1230, 3.1388, 3.1416], [3.1257, 3.1257, 3.1429, 3.1458], [3.1294, 3.1294, 3.1468, 3.1503], [3.1323, 3.1323, 3.1511, 3.1543], [3.1342, 3.1342, 3.1555, 3.1583], [3.1375, 3.1375, 3.1591, 3.1620], [3.1403, 3.1403, 3.1626, 3.1660], [3.1437, 3.1437, 3.1666, 3.1694], [3.1457, 3.1457, 3.1702, 3.1735], [3.1485, 3.1485, 3.1742, 3.1777], [3.1508, 3.1508, 3.1786, 3.1816], [3.1545, 3.1545, 3.1828, 3.1854], [3.1578, 3.1578, 3.1860, 3.1892], [3.1611, 3.1611, 3.1899, 3.1924], [3.1642, 3.1642, 3.1936, 3.1971], [3.1670, 3.1670, 3.1979, 3.2003], [3.1699, 3.1699, 3.2015, 3.2047], [3.1728, 3.1728, 3.2053, 3.2082], [3.1755, 3.1755, 3.2091, 3.2117], [3.1786, 3.1786, 3.2129, 3.2165], [3.1810, 3.1810, 3.2169, 3.2206], [3.1849, 3.1849, 3.2214, 3.2240], [3.1880, 3.1880, 3.2247, 3.2283], [3.1910, 3.1910, 3.2296, 3.2323], [3.1926, 3.1926, 3.2330, 3.2358], [3.1959, 3.1959, 3.2365, 3.2388], [3.2020, 3.2020, 3.2400, 3.2438], [3.2033, 3.2033, 3.2440, 3.2468], [3.2057, 3.2057, 3.2479, 3.2514], [3.2086, 3.2086, 3.2522, 3.2550], [3.2097, 3.2097, 3.2560, 3.2584], [3.2134, 3.2134, 3.2597, 3.2629], [3.2173, 3.2173, 3.2632, 3.2670], [3.2200, 3.2200, 3.2678, 3.2706], [3.2227, 3.2227, 3.2713, 3.2741], [3.2254, 3.2254, 3.2752, 3.2776], [3.2290, 3.2290, 3.2787, 3.2823], [3.2305, 3.2305, 3.2835, 3.2872], [3.2337, 3.2337, 3.2878, 3.2899], [3.2370, 3.2370, 3.2905, 3.2932], [3.2402, 3.2402, 3.2942, 3.2972], [3.2430, 3.2430, 3.2979, 3.3013], [3.2465, 3.2465, 3.3020, 3.3050], [3.2502, 3.2502, 3.3058, 3.3083], [3.2530, 3.2530, 3.3094, 3.3123], [3.2557, 3.2557, 3.3135, 3.3163], [3.2583, 3.2583, 3.3175, 3.3202], [3.2606, 3.2606, 3.3214, 3.3240], [3.2631, 3.2631, 3.3252, 3.3278], [3.2679, 3.2679, 3.3283, 3.3316], [3.2702, 3.2702, 3.3328, 3.3352], [3.2742, 3.2742, 3.3363, 3.3390], [3.2747, 3.2747, 3.3404, 3.3429], [3.2775, 3.2775, 3.3443, 3.3467], [3.2810, 3.2810, 3.3470, 3.3496], [3.2843, 3.2843, 3.3506, 3.3533], [3.2873, 3.2873, 3.3545, 3.3576], [3.2900, 3.2900, 3.3581, 3.3609], [3.2925, 3.2925, 3.3621, 3.3645], [3.2964, 3.2964, 3.3655, 3.3684], [3.2992, 3.2992, 3.3697, 3.3723], [3.3017, 3.3017, 3.3735, 3.3761], [3.3054, 3.3054, 3.3771, 3.3797], [3.3075, 3.3075, 3.3808, 3.3837], [3.3097, 3.3097, 3.3840, 3.3866], [3.3134, 3.3134, 3.3878, 3.3903], [3.3157, 3.3157, 3.3916, 3.3944], [3.3196, 3.3196, 3.3953, 3.3977], [3.3218, 3.3218, 3.3989, 3.4022], [3.3265, 3.3265, 3.4028, 3.4059], [3.3294, 3.3294, 3.4066, 3.4095], [3.3334, 3.3334, 3.4100, 3.4125], [3.3360, 3.3360, 3.4134, 3.4158], [3.3388, 3.3388, 3.4170, 3.4203], [3.3401, 3.3401, 3.4208, 3.4234], [3.3448, 3.3448, 3.4247, 3.4269], [3.3483, 3.3483, 3.4279, 3.4309], [3.3518, 3.3518, 3.4320, 3.4348], [3.3541, 3.3541, 3.4356, 3.4381], [3.3595, 3.3595, 3.4387, 3.4414], [3.3621, 3.3621, 3.4425, 3.4449], [3.3646, 3.3646, 3.4457, 3.4490], [3.3674, 3.3674, 3.4502, 3.4524], [3.3716, 3.3716, 3.4533, 3.4558], [3.3761, 3.3761, 3.4570, 3.4595], [3.3779, 3.3779, 3.4608, 3.4620], [3.3813, 3.3813, 3.4633, 3.4658], [3.3831, 3.3831, 3.4671, 3.4695], [3.3874, 3.3874, 3.4708, 3.4733], [3.3897, 3.3897, 3.4745, 3.4769], [3.3940, 3.3940, 3.4783, 3.4807], [3.3973, 3.3973, 3.4820, 3.4832], [3.4003, 3.4003, 3.4846, 3.4868], [3.4039, 3.4039, 3.4881, 3.4906], [3.4084, 3.4084, 3.4919, 3.4941], [3.4109, 3.4109, 3.4955, 3.4979], [3.4144, 3.4144, 3.4990, 3.5004], [3.4175, 3.4175, 3.5017, 3.5039], [3.4215, 3.4215, 3.5052, 3.5076], [3.4247, 3.4247, 3.5088, 3.5113], [3.4283, 3.4283, 3.5125, 3.5149], [3.4298, 3.4298, 3.5162, 3.5173], [3.4330, 3.4330, 3.5185, 3.5208], [3.4356, 3.4356, 3.5221, 3.5245], [3.4408, 3.4408, 3.5258, 3.5281], [3.4437, 3.4437, 3.5293, 3.5316], [3.4466, 3.4466, 3.5328, 3.5340], [3.4493, 3.4493, 3.5353, 3.5377], [3.4547, 3.4547, 3.5387, 3.5411], [3.4577, 3.4577, 3.5424, 3.5447], [3.4601, 3.4601, 3.5458, 3.5482], [3.4633, 3.4633, 3.5492, 3.5517], [3.4665, 3.4665, 3.5528, 3.5540], [3.4693, 3.4693, 3.5552, 3.5575], [3.4737, 3.4738, 3.5586, 3.5611], [3.4753, 3.4753, 3.5621, 3.5644], [3.4781, 3.4781, 3.5655, 3.5668], [3.4818, 3.4818, 3.5682, 3.5702], [3.4863, 3.4863, 3.5714, 3.5736], [3.4893, 3.4893, 3.5748, 3.5771], [3.4930, 3.4930, 3.5782, 3.5805], [3.4962, 3.4962, 3.5817, 3.5840], [3.5011, 3.5011, 3.5850, 3.5873], [3.5044, 3.5044, 3.5884, 3.5896], [3.5078, 3.5078, 3.5907, 3.5930], [3.5110, 3.5110, 3.5941, 3.5963], [3.5128, 3.5128, 3.5974, 3.5996], [3.5145, 3.5145, 3.6008, 3.6030], [3.5179, 3.5179, 3.6040, 3.6052], [3.5198, 3.5198, 3.6065, 3.6087], [3.5290, 3.5290, 3.6097, 3.6119], [3.5305, 3.5305, 3.6131, 3.6152], [3.5349, 3.5349, 3.6163, 3.6185], [3.5372, 3.5372, 3.6196, 3.6218], [3.5377, 3.5377, 3.6229, 3.6239], [3.5410, 3.5410, 3.6250, 3.6272], [3.5436, 3.5436, 3.6282, 3.6304], [3.5461, 3.5461, 3.6315, 3.6337], [3.5497, 3.5497, 3.6348, 3.6369], [3.5529, 3.5529, 3.6380, 3.6391], [3.5552, 3.5552, 3.6402, 3.6423], [3.5589, 3.5589, 3.6437, 3.6458], [3.5634, 3.5638, 3.6465, 3.6516], [3.5667, 3.5667, 3.6529, 3.6540], [3.5718, 3.5718, 3.6550, 3.6571], [3.5743, 3.5743, 3.6583, 3.6602], [3.5763, 3.5763, 3.6613, 3.6634], [3.5792, 3.5792, 3.6644, 3.6666], [3.5837, 3.5837, 3.6676, 3.6697], [3.5858, 3.5858, 3.6712, 3.6717], [3.5879, 3.5879, 3.6726, 3.6749], [3.5925, 3.5925, 3.6759, 3.6779], [3.5950, 3.5950, 3.6789, 3.6809], [3.5978, 3.5978, 3.6820, 3.6841], [3.6019, 3.6019, 3.6851, 3.6861], [3.6038, 3.6038, 3.6870, 3.6892], [3.6072, 3.6072, 3.6901, 3.6922], [3.6093, 3.6093, 3.6932, 3.6953], [3.6143, 3.6143, 3.6962, 3.6982], [3.6163, 3.6163, 3.6991, 3.7002], [3.6188, 3.6188, 3.7013, 3.7031], [3.6219, 3.6219, 3.7042, 3.7062], [3.6250, 3.6250, 3.7071, 3.7093], [3.6274, 3.6274, 3.7101, 3.7121], [3.6311, 3.6311, 3.7132, 3.7150], [3.6346, 3.6346, 3.7160, 3.7170], [3.6368, 3.6368, 3.7180, 3.7199], [3.6402, 3.6402, 3.7209, 3.7228], [3.6446, 3.6446, 3.7238, 3.7257], [3.6454, 3.6454, 3.7267, 3.7286], [3.6502, 3.6502, 3.7296, 3.7311], [3.6532, 3.6532, 3.7315, 3.7336], [3.6552, 3.6552, 3.7346, 3.7358], [3.6570, 3.6570, 3.7370, 3.7391], [3.6627, 3.6627, 3.7400, 3.7420], [3.6645, 3.6645, 3.7429, 3.7439], [3.6682, 3.6682, 3.7448, 3.7467], [3.6705, 3.6705, 3.7477, 3.7496], [3.6741, 3.6741, 3.7505, 3.7523], [3.6763, 3.6763, 3.7533, 3.7551], [3.6806, 3.6806, 3.7560, 3.7579], [3.6833, 3.6833, 3.7588, 3.7597], [3.6852, 3.6852, 3.7607, 3.7626], [3.6876, 3.6876, 3.7634, 3.7652], [3.6903, 3.6903, 3.7662, 3.7680], [3.6940, 3.6940, 3.7689, 3.7707], [3.6958, 3.6958, 3.7716, 3.7725], [3.6999, 3.6999, 3.7734, 3.7752], [3.7041, 3.7041, 3.7761, 3.7779], [3.7055, 3.7055, 3.7788, 3.7807], [3.7099, 3.7099, 3.7815, 3.7833], [3.7121, 3.7121, 3.7841, 3.7851], [3.7160, 3.7160, 3.7861, 3.7877], [3.7185, 3.7185, 3.7886, 3.7904], [3.7214, 3.7215, 3.7912, 3.7930], [3.7238, 3.7238, 3.7939, 3.7957], [3.7270, 3.7271, 3.7966, 3.7983], [3.7294, 3.7296, 3.7992, 3.8000], [3.7324, 3.7324, 3.8009, 3.8026], [3.7361, 3.7362, 3.8035, 3.8051], [3.7389, 3.7389, 3.8061, 3.8078], [3.7409, 3.7409, 3.8087, 3.8104], [3.7439, 3.7439, 3.8112, 3.8121], [3.7487, 3.7487, 3.8129, 3.8146], [3.7519, 3.7519, 3.8154, 3.8173], [3.7543, 3.7543, 3.8180, 3.8197], [3.7579, 3.7579, 3.8206, 3.8223], [3.7586, 3.7586, 3.8231, 3.8247], [3.7618, 3.7618, 3.8256, 3.8264], [3.7656, 3.7656, 3.8273, 3.8289], [3.7691, 3.7691, 3.8297, 3.8314], [3.7720, 3.7720, 3.8323, 3.8339], [3.7726, 3.7726, 3.8347, 3.8363], [3.7777, 3.7777, 3.8372, 3.8380], [3.7810, 3.7810, 3.8388, 3.8404], [3.7821, 3.7821, 3.8412, 3.8429], [3.7879, 3.7879, 3.8445, 3.8452], [3.7889, 3.7889, 3.8461, 3.8469], [3.7918, 3.7918, 3.8477, 3.8493], [3.7979, 3.7979, 3.8509, 3.8517], [3.8012, 3.8012, 3.8525, 3.8541], [3.8027, 3.8027, 3.8550, 3.8557], [3.8055, 3.8055, 3.8569, 3.8588], [3.8074, 3.8074, 3.8593, 3.8604], [3.8105, 3.8105, 3.8613, 3.8629], [3.8136, 3.8137, 3.8636, 3.8651], [3.8166, 3.8167, 3.8658, 3.8675], [3.8192, 3.8192, 3.8682, 3.8698], [3.8229, 3.8230, 3.8706, 3.8721], [3.8262, 3.8262, 3.8729, 3.8737], [3.8287, 3.8287, 3.8744, 3.8759], [3.8322, 3.8324, 3.8767, 3.8782], [3.8354, 3.8354, 3.8790, 3.8805], [3.8379, 3.8380, 3.8813, 3.8828], [3.8401, 3.8403, 3.8835, 3.8843], [3.8433, 3.8433, 3.8850, 3.8866], [3.8458, 3.8459, 3.8874, 3.8888], [3.8490, 3.8490, 3.8895, 3.8910], [3.8528, 3.8528, 3.8917, 3.8933], [3.8571, 3.8571, 3.8940, 3.8955], [3.8587, 3.8587, 3.8962, 3.8970], [3.8616, 3.8618, 3.8978, 3.8992], [3.8645, 3.8645, 3.8999, 3.9014], [3.8664, 3.8664, 3.9021, 3.9035], [3.8693, 3.8693, 3.9043, 3.9057], [3.8752, 3.8752, 3.9064, 3.9072], [3.8774, 3.8774, 3.9079, 3.9093], [3.8805, 3.8805, 3.9100, 3.9115], [3.8834, 3.8834, 3.9122, 3.9137], [3.8849, 3.8849, 3.9143, 3.9158], [3.8875, 3.8877, 3.9165, 3.9178], [3.8910, 3.8910, 3.9186, 3.9192], [3.8961, 3.8961, 3.9200, 3.9214], [3.8989, 3.8989, 3.9221, 3.9235], [3.9002, 3.9002, 3.9242, 3.9256], [3.9029, 3.9029, 3.9270, 3.9270], [3.9054, 3.9054, 3.9284, 3.9291], [3.9079, 3.9079, 3.9298, 3.9312], [3.9108, 3.9108, 3.9319, 3.9333], [3.9139, 3.9139, 3.9340, 3.9354], [3.9158, 3.9158, 3.9362, 3.9375], [3.9205, 3.9205, 3.9382, 3.9393], [3.9251, 3.9251, 3.9396, 3.9411], [3.9259, 3.9261, 3.9418, 3.9432], [3.9293, 3.9293, 3.9439, 3.9454], [3.9323, 3.9323, 3.9461, 3.9476], [3.9340, 3.9340, 3.9483, 3.9490], [3.9387, 3.9387, 3.9497, 3.9512], [3.9419, 3.9419, 3.9519, 3.9533], [3.9452, 3.9452, 3.9541, 3.9556], [3.9476, 3.9476, 3.9562, 3.9578], [3.9509, 3.9509, 3.9585, 3.9600], [3.9525, 3.9526, 3.9607, 3.9615], [3.9559, 3.9559, 3.9623, 3.9636], [3.9605, 3.9605, 3.9644, 3.9659], [3.9635, 3.9635, 3.9666, 3.9682], [3.9667, 3.9667, 3.9689, 3.9704], [3.9683, 3.9683, 3.9712, 3.9720], [3.9706, 3.9706, 3.9727, 3.9746], [3.9741, 3.9741, 3.9750, 3.9765], [3.9775, 3.9777, 3.9773, 3.9788], [3.9823, 3.9823, 3.9796, 3.9811], [3.9840, 3.9850, 3.9822, 3.9846], [3.9912, 3.9912, 3.9857, 3.9873], [3.9919, 3.9919, 3.9881, 3.9897], [3.9945, 3.9945, 3.9904, 3.9920], [3.9970, 3.9970, 3.9928, 3.9944], [3.9987, 3.9987, 3.9951, 3.9958], [4.0025, 4.0025, 3.9967, 3.9983], [4.0076, 4.0076, 3.9990, 4.0007], [4.0098, 4.0098, 4.0015, 4.0031], [4.0129, 4.0129, 4.0047, 4.0055], [4.0155, 4.0155, 4.0063, 4.0071], [4.0170, 4.0170, 4.0079, 4.0095], [4.0200, 4.0200, 4.0104, 4.0119], [4.0236, 4.0236, 4.0128, 4.0144], [4.0277, 4.0277, 4.0152, 4.0168], [4.0310, 4.0310, 4.0177, 4.0185], [4.0322, 4.0322, 4.0193, 4.0209], [4.0354, 4.0354, 4.0217, 4.0235], [4.0386, 4.0386, 4.0242, 4.0259], [4.0412, 4.0413, 4.0267, 4.0283], [4.0468, 4.0468, 4.0292, 4.0309], [4.0487, 4.0487, 4.0317, 4.0326], [4.0505, 4.0505, 4.0334, 4.0351], [4.0534, 4.0534, 4.0360, 4.0376], [4.0575, 4.0575, 4.0386, 4.0401], [4.0584, 4.0584, 4.0410, 4.0428], [4.0625, 4.0626, 4.0436, 4.0445], [4.0670, 4.0670, 4.0453, 4.0471], [4.0693, 4.0693, 4.0479, 4.0496], [4.0728, 4.0728, 4.0504, 4.0523], [4.0761, 4.0761, 4.0531, 4.0548], [4.0774, 4.0774, 4.0557, 4.0574], [4.0806, 4.0806, 4.0583, 4.0592], [4.0849, 4.0849, 4.0601, 4.0618], [4.0884, 4.0884, 4.0628, 4.0644], [4.0910, 4.0910, 4.0653, 4.0671], [4.0925, 4.0925, 4.0679, 4.0698], [4.0951, 4.0951, 4.0707, 4.0716], [4.0988, 4.0988, 4.0725, 4.0742], [4.1036, 4.1038, 4.0752, 4.0769], [4.1067, 4.1067, 4.0778, 4.0796], [4.1088, 4.1088, 4.0805, 4.0824], [4.1113, 4.1113, 4.0833, 4.0851], [4.1166, 4.1166, 4.0859, 4.0869], [4.1168, 4.1168, 4.0879, 4.0897], [4.1187, 4.1187, 4.0906, 4.0924], [4.1238, 4.1239, 4.0933, 4.0952], [4.1261, 4.1261, 4.0961, 4.0979], [4.1286, 4.1286, 4.0988, 4.0998], [4.1336, 4.1336, 4.1007, 4.1026], [4.1362, 4.1362, 4.1035, 4.1054], [4.1395, 4.1395, 4.1063, 4.1083], [4.1418, 4.1418, 4.1092, 4.1110], [4.1440, 4.1440, 4.1119, 4.1129], [4.1475, 4.1475, 4.1140, 4.1157], [4.1486, 4.1486, 4.1167, 4.1186], [4.1551, 4.1551, 4.1195, 4.1215], [4.1576, 4.1576, 4.1225, 4.1244], [4.1610, 4.1611, 4.1254, 4.1273], [4.1617, 4.1617, 4.1282, 4.1292], [4.1636, 4.1636, 4.1302, 4.1321], [4.1673, 4.1673, 4.1331, 4.1349], [4.1724, 4.1724, 4.1360, 4.1380], [4.1754, 4.1754, 4.1389, 4.1408], [4.1769, 4.1769, 4.1419, 4.1428], [4.1802, 4.1802, 4.1439, 4.1458], [4.1837, 4.1837, 4.1469, 4.1487], [4.1857, 4.1857, 4.1498, 4.1518], [4.1887, 4.1887, 4.1527, 4.1548], [4.1914, 4.1914, 4.1558, 4.1567], [4.1953, 4.1953, 4.1578, 4.1598], [4.1987, 4.1987, 4.1607, 4.1628], [4.2036, 4.2036, 4.1638, 4.1659], [4.2051, 4.2052, 4.1670, 4.1720], [4.2103, 4.2103, 4.1731, 4.1740], [4.2131, 4.2131, 4.1751, 4.1771], [4.2148, 4.2148, 4.1781, 4.1802], [4.2194, 4.2194, 4.1812, 4.1834], [4.2236, 4.2236, 4.1843, 4.1864], [4.2269, 4.2269, 4.1874, 4.1885], [4.2290, 4.2290, 4.1896, 4.1917], [4.2301, 4.2301, 4.1926, 4.1947], [4.2335, 4.2335, 4.1957, 4.1979], [4.2365, 4.2365, 4.1989, 4.2011], [4.2420, 4.2420, 4.2022, 4.2032], [4.2430, 4.2430, 4.2042, 4.2064], [4.2455, 4.2455, 4.2074, 4.2095], [4.2489, 4.2489, 4.2106, 4.2130], [4.2517, 4.2517, 4.2138, 4.2160], [4.2528, 4.2528, 4.2171, 4.2192], [4.2584, 4.2584, 4.2203, 4.2214], [4.2615, 4.2615, 4.2224, 4.2246], [4.2646, 4.2646, 4.2258, 4.2279], [4.2656, 4.2656, 4.2289, 4.2311], [4.2656, 4.2811, 4.2322, 4.2465], [4.2830, 4.2830, 4.2474, 4.2499], [4.2874, 4.2874, 4.2508, 4.2532], [4.2935, 4.2935, 4.2535, 4.2558], [4.2945, 4.2945, 4.2565, 4.2591], [4.2965, 4.2965, 4.2599, 4.2622], [4.3021, 4.3021, 4.2633, 4.2655], [4.3048, 4.3048, 4.2663, 4.2689], [4.3058, 4.3058, 4.2693, 4.2721], [4.3085, 4.3085, 4.2728, 4.2746], [4.3117, 4.3117, 4.2758, 4.2780], [4.3153, 4.3153, 4.2792, 4.2814], [4.3204, 4.3204, 4.2826, 4.2849], [4.3210, 4.3210, 4.2858, 4.2872], [4.3242, 4.3242, 4.2884, 4.2906], [4.3273, 4.3273, 4.2918, 4.2942], [4.3304, 4.3304, 4.2953, 4.2975], [4.3310, 4.3310, 4.2988, 4.3011], [4.3365, 4.3365, 4.3023, 4.3035], [4.3395, 4.3395, 4.3048, 4.3069], [4.3429, 4.3429, 4.3082, 4.3105], [4.3433, 4.3433, 4.3116, 4.3141], [4.3477, 4.3477, 4.3152, 4.3176], [4.3505, 4.3505, 4.3187, 4.3212], [4.3558, 4.3558, 4.3223, 4.3234], [4.3606, 4.3606, 4.3247, 4.3271], [4.3623, 4.3623, 4.3282, 4.3306], [4.3644, 4.3644, 4.3319, 4.3343], [4.3689, 4.3689, 4.3355, 4.3378], [4.3710, 4.3710, 4.3391, 4.3403], [4.3741, 4.3741, 4.3415, 4.3439], [4.3776, 4.3776, 4.3452, 4.3477], [4.3830, 4.3830, 4.3488, 4.3512], [4.3860, 4.3860, 4.3523, 4.3549], [4.3893, 4.3893, 4.3561, 4.3585], [4.3920, 4.3920, 4.3591, 4.3609], [4.3952, 4.3952, 4.3621, 4.3648], [4.3985, 4.3985, 4.3659, 4.3683], [4.4038, 4.4038, 4.3694, 4.3717], [4.4067, 4.4067, 4.3725, 4.3757], [4.4101, 4.4101, 4.3764, 4.3782], [4.4129, 4.4129, 4.3795, 4.3818], [4.4165, 4.4165, 4.3832, 4.3856], [4.4217, 4.4217, 4.3869, 4.3893], [4.4245, 4.4245, 4.3899, 4.3931], [4.4277, 4.4277, 4.3944, 4.3956], [4.4300, 4.4300, 4.3970, 4.3995], [4.4353, 4.4353, 4.4007, 4.4035], [4.4386, 4.4386, 4.4047, 4.4074], [4.4415, 4.4415, 4.4082, 4.4108], [4.4444, 4.4444, 4.4115, 4.4139], [4.4479, 4.4479, 4.4150, 4.4177], [4.4491, 4.4491, 4.4184, 4.4204], [4.4551, 4.4551, 4.4219, 4.4243], [4.4581, 4.4581, 4.4256, 4.4286], [4.4619, 4.4619, 4.4293, 4.4319], [4.4636, 4.4636, 4.4327, 4.4355], [4.4681, 4.4681, 4.4363, 4.4397], [4.4712, 4.4712, 4.4406, 4.4425], [4.4742, 4.4742, 4.4438, 4.4467], [4.4772, 4.4772, 4.4479, 4.4503], [4.4805, 4.4805, 4.4511, 4.4538], [4.4835, 4.4835, 4.4544, 4.4570], [4.4878, 4.4878, 4.4580, 4.4607], [4.4908, 4.4908, 4.4619, 4.4652], [4.4940, 4.4940, 4.4662, 4.4685], [4.4985, 4.4985, 4.4695, 4.4726], [4.5017, 4.5017, 4.4732, 4.4764], [4.5049, 4.5049, 4.4774, 4.4792], [4.5080, 4.5080, 4.4805, 4.4832], [4.5114, 4.5114, 4.4843, 4.4871], [4.5155, 4.5155, 4.4884, 4.4911], [4.5184, 4.5184, 4.4921, 4.4950], [4.5208, 4.5208, 4.4957, 4.4976], [4.5246, 4.5246, 4.4988, 4.5017], [4.5276, 4.5276, 4.5026, 4.5054], [4.5304, 4.5304, 4.5066, 4.5097], [4.5347, 4.5347, 4.5106, 4.5129], [4.5385, 4.5385, 4.5142, 4.5171], [4.5424, 4.5424, 4.5177, 4.5207], [4.5453, 4.5453, 4.5220, 4.5246], [4.5489, 4.5489, 4.5257, 4.5284], [4.5522, 4.5522, 4.5291, 4.5325], [4.5545, 4.5545, 4.5338, 4.5352], [4.5577, 4.5577, 4.5364, 4.5398], [4.5604, 4.5604, 4.5405, 4.5430], [4.5648, 4.5648, 4.5442, 4.5472], [4.5676, 4.5676, 4.5482, 4.5513], [4.5704, 4.5704, 4.5520, 4.5554], [4.5745, 4.5745, 4.5560, 4.5590], [4.5778, 4.5828, 4.5597, 4.5628], [4.5828, 4.5828, 4.5635, 4.5668], [4.5848, 4.5848, 4.5679, 4.5705], [4.5877, 4.5877, 4.5717, 4.5744], [4.5913, 4.5913, 4.5753, 4.5776], [4.5947, 4.5947, 4.5787, 4.5813], [4.5980, 4.5980, 4.5826, 4.5854], [4.6014, 4.6014, 4.5862, 4.5889], [4.6042, 4.6042, 4.5902, 4.5935], [4.6070, 4.6070, 4.5943, 4.5966], [4.6097, 4.6097, 4.5979, 4.6005], [4.6129, 4.6129, 4.6017, 4.6047], [4.6160, 4.6160, 4.6054, 4.6089], [4.6204, 4.6204, 4.6100, 4.6127], [4.6234, 4.6234, 4.6139, 4.6163], [4.6256, 4.6257, 4.6174, 4.6244], [4.6294, 4.6294, 4.6257, 4.6284], [4.6310, 4.6310, 4.6292, 4.6320], [4.6337, 4.6337, 4.6326, 4.6356], [4.6375, 4.6375, 4.6363, 4.6398], [4.6404, 4.6404, 4.6403, 4.6435], [4.6435, 4.6435, 4.6442, 4.6475], [4.6471, 4.6471, 4.6486, 4.6514], [4.6489, 4.6489, 4.6525, 4.6555], [4.6520, 4.6520, 4.6561, 4.6589], [4.6549, 4.6549, 4.6597, 4.6632], [4.6579, 4.6579, 4.6640, 4.6663], [4.6614, 4.6614, 4.6675, 4.6712], [4.6648, 4.6648, 4.6724, 4.6747], [4.6672, 4.6672, 4.6754, 4.6791], [4.6704, 4.6704, 4.6798, 4.6825], [4.6738, 4.6738, 4.6838, 4.6868], [4.6770, 4.6770, 4.6874, 4.6907], [4.6794, 4.6794, 4.6913, 4.6942], [4.6823, 4.6823, 4.6948, 4.6985], [4.6859, 4.6859, 4.6997, 4.7021], [4.6888, 4.6888, 4.7029, 4.7063], [4.6913, 4.6913, 4.7068, 4.7101], [4.6938, 4.6938, 4.7111, 4.7137], [4.6965, 4.6965, 4.7147, 4.7179], [4.7002, 4.7002, 4.7185, 4.7219], [4.7031, 4.7031, 4.7227, 4.7250], [4.7050, 4.7050, 4.7263, 4.7299], [4.7083, 4.7083, 4.7306, 4.7334], [4.7111, 4.7111, 4.7341, 4.7374], [4.7145, 4.7145, 4.7380, 4.7410], [4.7165, 4.7165, 4.7422, 4.7450], [4.7193, 4.7193, 4.7457, 4.7494], [4.7216, 4.7216, 4.7501, 4.7524], [4.7253, 4.7253, 4.7536, 4.7573], [4.7286, 4.7286, 4.7585, 4.7607], [4.7319, 4.7319, 4.7615, 4.7651], [4.7350, 4.7350, 4.7659, 4.7687], [4.7378, 4.7378, 4.7693, 4.7723], [4.7407, 4.7407, 4.7734, 4.7762], [4.7436, 4.7436, 4.7772, 4.7806], [4.7463, 4.7463, 4.7812, 4.7845], [4.7494, 4.7494, 4.7850, 4.7884], [4.7518, 4.7518, 4.7892, 4.7922], [4.7557, 4.7557, 4.7928, 4.7955], [4.7588, 4.7588, 4.7964, 4.7991], [4.7618, 4.7618, 4.8004, 4.8038], [4.7634, 4.7634, 4.8041, 4.8073], [4.7667, 4.7667, 4.8085, 4.8108], [4.7728, 4.7728, 4.8121, 4.8148], [4.7741, 4.7741, 4.8159, 4.8194], [4.7765, 4.7765, 4.8201, 4.8230], [4.7794, 4.7794, 4.8243, 4.8268], [4.7805, 4.7805, 4.8281, 4.8305], [4.7842, 4.7842, 4.8313, 4.8346], [4.7881, 4.7881, 4.8359, 4.8367], [4.7908, 4.7908, 4.8378, 4.8422], [4.7935, 4.7935, 4.8435, 4.8460], [4.7962, 4.7962, 4.8472, 4.8495], [4.7998, 4.7998, 4.8504, 4.8531], [4.8013, 4.8013, 4.8543, 4.8568], [4.8044, 4.8044, 4.8580, 4.8613], [4.8078, 4.8078, 4.8622, 4.8650], [4.8110, 4.8110, 4.8658, 4.8687], [4.8138, 4.8138, 4.8694, 4.8728], [4.8173, 4.8173, 4.8735, 4.8766], [4.8210, 4.8210, 4.8775, 4.8806], [4.8238, 4.8238, 4.8818, 4.8843], [4.8265, 4.8265, 4.8850, 4.8883], [4.8291, 4.8291, 4.8896, 4.8910], [4.8314, 4.8314, 4.8922, 4.8957], [4.8339, 4.8339, 4.8963, 4.8991], [4.8387, 4.8387, 4.9002, 4.9028], [4.8410, 4.8410, 4.9040, 4.9071], [4.8450, 4.8450, 4.9075, 4.9103], [4.8455, 4.8455, 4.9116, 4.9142], [4.8483, 4.8483, 4.9151, 4.9182], [4.8518, 4.8518, 4.9194, 4.9222], [4.8551, 4.8551, 4.9231, 4.9259], [4.8581, 4.8581, 4.9272, 4.9291], [4.8608, 4.8608, 4.9298, 4.9326], [4.8633, 4.8633, 4.9337, 4.9364], [4.8672, 4.8672, 4.9377, 4.9405], [4.8700, 4.8700, 4.9416, 4.9443], [4.8725, 4.8725, 4.9456, 4.9475], [4.8762, 4.8762, 4.9484, 4.9510], [4.8783, 4.8783, 4.9521, 4.9548], [4.8805, 4.8805, 4.9559, 4.9588], [4.8842, 4.8842, 4.9600, 4.9628], [4.8865, 4.8865, 4.9641, 4.9668], [4.8904, 4.8904, 4.9678, 4.9704], [4.8926, 4.8926, 4.9710, 4.9737], [4.8973, 4.8973, 4.9745, 4.9769], [4.9002, 4.9002, 4.9781, 4.9810], [4.9042, 4.9042, 4.9822, 4.9845], [4.9068, 4.9068, 4.9859, 4.9885], [4.9096, 4.9096, 4.9887, 4.9917], [4.9109, 4.9109, 4.9929, 4.9955], [4.9156, 4.9156, 4.9962, 4.9991], [4.9191, 4.9191, 5.0004, 5.0029], [4.9226, 4.9226, 5.0038, 5.0064], [4.9226, 4.9303, 5.0071, 5.0133], [4.9329, 4.9329, 5.0140, 5.0165], [4.9354, 4.9354, 5.0174, 5.0201], [4.9382, 4.9382, 5.0213, 5.0241], [4.9423, 4.9423, 5.0253, 5.0275], [4.9469, 4.9469, 5.0284, 5.0309], [4.9487, 4.9487, 5.0316, 5.0341], [4.9521, 4.9521, 5.0355, 5.0379], [4.9539, 4.9539, 5.0391, 5.0416], [4.9582, 4.9582, 5.0429, 5.0453], [4.9605, 4.9605, 5.0466, 5.0484], [4.9648, 4.9648, 5.0491, 5.0515], [4.9681, 4.9681, 5.0528, 5.0554], [4.9711, 4.9711, 5.0565, 5.0589], [4.9747, 4.9747, 5.0600, 5.0627], [4.9792, 4.9792, 5.0638, 5.0650], [4.9817, 4.9817, 5.0663, 5.0687], [4.9852, 4.9852, 5.0698, 5.0722], [4.9883, 4.9883, 5.0732, 5.0766], [4.9923, 4.9923, 5.0776, 5.0796], [4.9955, 4.9955, 5.0805, 5.0833], [4.9991, 4.9991, 5.0841, 5.0859], [5.0006, 5.0006, 5.0867, 5.0896], [5.0038, 5.0038, 5.0904, 5.0929], [5.0064, 5.0064, 5.0941, 5.0961], [5.0116, 5.0116, 5.0970, 5.1001], [5.0144, 5.0144, 5.1007, 5.1033], [5.0174, 5.0174, 5.1041, 5.1064], [5.0201, 5.0201, 5.1072, 5.1095], [5.0255, 5.0255, 5.1103, 5.1135], [5.0285, 5.0285, 5.1136, 5.1166], [5.0309, 5.0309, 5.1173, 5.1200], [5.0341, 5.0341, 5.1209, 5.1229], [5.0373, 5.0373, 5.1236, 5.1264], [5.0401, 5.0401, 5.1272, 5.1293], [5.0445, 5.0446, 5.1306, 5.1329], [5.0461, 5.0461, 5.1336, 5.1358], [5.0489, 5.0489, 5.1370, 5.1390], [5.0526, 5.0526, 5.1399, 5.1427], [5.0571, 5.0571, 5.1435, 5.1456], [5.0601, 5.0601, 5.1463, 5.1490], [5.0638, 5.0638, 5.1499, 5.1522], [5.0669, 5.0669, 5.1531, 5.1540], [5.0719, 5.0719, 5.1550, 5.1581], [5.0752, 5.0752, 5.1592, 5.1607], [5.0786, 5.0786, 5.1621, 5.1652], [5.0818, 5.0818, 5.1660, 5.1675], [5.0836, 5.0836, 5.1685, 5.1710], [5.0853, 5.0853, 5.1716, 5.1738], [5.0887, 5.0887, 5.1748, 5.1772], [5.0906, 5.0906, 5.1782, 5.1810], [5.0998, 5.0998, 5.1818, 5.1836], [5.1013, 5.1013, 5.1842, 5.1871], [5.1057, 5.1057, 5.1876, 5.1897], [5.1080, 5.1080, 5.1904, 5.1926], [5.1085, 5.1085, 5.1935, 5.1958], [5.1118, 5.1118, 5.1969, 5.1993], [5.1144, 5.1144, 5.2002, 5.2023], [5.1169, 5.1169, 5.2032, 5.2052], [5.1205, 5.1205, 5.2063, 5.2075], [5.1237, 5.1237, 5.2088, 5.2110], [5.1260, 5.1260, 5.2117, 5.2140], [5.1297, 5.1297, 5.2152, 5.2174], [5.1342, 5.1346, 5.2177, 5.2233], [5.1375, 5.1375, 5.2237, 5.2263], [5.1426, 5.1426, 5.2272, 5.2289], [5.1451, 5.1451, 5.2297, 5.2321], [5.1471, 5.1471, 5.2325, 5.2348], [5.1500, 5.1500, 5.2357, 5.2376], [5.1545, 5.1545, 5.2384, 5.2405], [5.1566, 5.1566, 5.2416, 5.2436], [5.1587, 5.1587, 5.2445, 5.2470], [5.1633, 5.1633, 5.2478, 5.2493], [5.1658, 5.1658, 5.2500, 5.2518], [5.1686, 5.1686, 5.2528, 5.2548], [5.1727, 5.1727, 5.2559, 5.2580], [5.1746, 5.1746, 5.2589, 5.2609], [5.1780, 5.1780, 5.2619, 5.2640], [5.1801, 5.1801, 5.2650, 5.2670], [5.1851, 5.1851, 5.2681, 5.2690], [5.1871, 5.1871, 5.2699, 5.2721], [5.1896, 5.1896, 5.2730, 5.2750], [5.1927, 5.1927, 5.2761, 5.2779], [5.1958, 5.1958, 5.2789, 5.2809], [5.1982, 5.1982, 5.2820, 5.2829], [5.2018, 5.2018, 5.2840, 5.2858], [5.2054, 5.2054, 5.2868, 5.2888], [5.2076, 5.2076, 5.2898, 5.2917], [5.2110, 5.2110, 5.2927, 5.2946], [5.2154, 5.2154, 5.2956, 5.2974], [5.2162, 5.2162, 5.2983, 5.2992], [5.2210, 5.2210, 5.3004, 5.3023], [5.2240, 5.2240, 5.3029, 5.3051], [5.2260, 5.2260, 5.3059, 5.3080], [5.2278, 5.2278, 5.3090, 5.3104], [5.2335, 5.2335, 5.3112, 5.3128], [5.2353, 5.2353, 5.3137, 5.3156], [5.2390, 5.2390, 5.3165, 5.3184], [5.2413, 5.2413, 5.3194, 5.3212], [5.2449, 5.2449, 5.3220, 5.3231], [5.2471, 5.2471, 5.3245, 5.3262], [5.2514, 5.2514, 5.3268, 5.3287], [5.2541, 5.2541, 5.3294, 5.3316], [5.2559, 5.2559, 5.3324, 5.3342], [5.2584, 5.2584, 5.3351, 5.3361], [5.2611, 5.2611, 5.3373, 5.3384], [5.2648, 5.2648, 5.3397, 5.3415], [5.2666, 5.2666, 5.3424, 5.3438], [5.2707, 5.2707, 5.3451, 5.3469], [5.2749, 5.2749, 5.3480, 5.3495], [5.2763, 5.2763, 5.3505, 5.3523], [5.2807, 5.2807, 5.3532, 5.3544], [5.2829, 5.2829, 5.3559, 5.3573], [5.2868, 5.2868, 5.3577, 5.3596], [5.2893, 5.2894, 5.3607, 5.3618], [5.2922, 5.2923, 5.3628, 5.3647], [5.2946, 5.2948, 5.3652, 5.3672], [5.2978, 5.2979, 5.3682, 5.3695], [5.3002, 5.3004, 5.3700, 5.3715], [5.3034, 5.3034, 5.3724, 5.3742], [5.3069, 5.3070, 5.3748, 5.3769], [5.3097, 5.3098, 5.3778, 5.3793], [5.3117, 5.3117, 5.3803, 5.3807], [5.3147, 5.3147, 5.3820, 5.3837], [5.3195, 5.3195, 5.3846, 5.3864], [5.3227, 5.3227, 5.3871, 5.3888], [5.3251, 5.3251, 5.3901, 5.3909], [5.3287, 5.3287, 5.3918, 5.3933], [5.3294, 5.3294, 5.3939, 5.3956], [5.3326, 5.3326, 5.3964, 5.3981], [5.3364, 5.3364, 5.3989, 5.4005], [5.3399, 5.3399, 5.4018, 5.4028], [5.3428, 5.3428, 5.4038, 5.4055], [5.3434, 5.3434, 5.4060, 5.4071], [5.3485, 5.3485, 5.4085, 5.4098], [5.3518, 5.3518, 5.4104, 5.4123], [5.3529, 5.3529, 5.4135, 5.4146], [5.3587, 5.3587, 5.4153, 5.4169], [5.3597, 5.3597, 5.4182, 5.4185], [5.3626, 5.3626, 5.4193, 5.4206], [5.3687, 5.3687, 5.4217, 5.4233], [5.3720, 5.3720, 5.4242, 5.4254], [5.3735, 5.3735, 5.4265, 5.4281], [5.3763, 5.3763, 5.4289, 5.4297], [5.3782, 5.3782, 5.4306, 5.4325], [5.3813, 5.3813, 5.4328, 5.4344], [5.3844, 5.3845, 5.4348, 5.4361], [5.3875, 5.3875, 5.4375, 5.4390], [5.3901, 5.3901, 5.4397, 5.4406], [5.3937, 5.3938, 5.4417, 5.4429], [5.3968, 5.3970, 5.4437, 5.4457], [5.3995, 5.3996, 5.4467, 5.4478], [5.4032, 5.4032, 5.4483, 5.4498], [5.4061, 5.4063, 5.4502, 5.4513], [5.4087, 5.4088, 5.4524, 5.4534], [5.4109, 5.4111, 5.4543, 5.4561], [5.4140, 5.4142, 5.4570, 5.4578], [5.4166, 5.4167, 5.4588, 5.4603], [5.4198, 5.4199, 5.4608, 5.4618], [5.4236, 5.4236, 5.4627, 5.4647], [5.4278, 5.4278, 5.4648, 5.4665], [5.4295, 5.4295, 5.4675, 5.4684], [5.4324, 5.4324, 5.4692, 5.4707], [5.4353, 5.4353, 5.4715, 5.4725], [5.4372, 5.4372, 5.4734, 5.4751], [5.4401, 5.4401, 5.4758, 5.4765], [5.4460, 5.4460, 5.4776, 5.4786], [5.4482, 5.4482, 5.4794, 5.4811], [5.4513, 5.4513, 5.4822, 5.4831], [5.4542, 5.4542, 5.4837, 5.4851], [5.4556, 5.4556, 5.4860, 5.4870], [5.4583, 5.4585, 5.4880, 5.4883], [5.4618, 5.4618, 5.4892, 5.4908], [5.4669, 5.4669, 5.4913, 5.4926], [5.4697, 5.4697, 5.4936, 5.4950], [5.4710, 5.4710, 5.4962, 5.4964], [5.4737, 5.4737, 5.4978, 5.4978], [5.4762, 5.4762, 5.4992, 5.5006], [5.4787, 5.4787, 5.5019, 5.5020], [5.4816, 5.4816, 5.5030, 5.5048], [5.4847, 5.4847, 5.5053, 5.5063], [5.4866, 5.4866, 5.5073, 5.5082], [5.4913, 5.4913, 5.5090, 5.5106], [5.4959, 5.4959, 5.5115, 5.5125], [5.4967, 5.4969, 5.5133, 5.5147], [5.5000, 5.5001, 5.5153, 5.5162], [5.5031, 5.5031, 5.5170, 5.5180], [5.5048, 5.5048, 5.5191, 5.5205], [5.5095, 5.5095, 5.5214, 5.5222], [5.5127, 5.5127, 5.5231, 5.5249], [5.5160, 5.5160, 5.5253, 5.5264], [5.5184, 5.5184, 5.5272, 5.5290], [5.5217, 5.5217, 5.5293, 5.5309], [5.5233, 5.5234, 5.5318, 5.5329], [5.5267, 5.5267, 5.5337, 5.5352], [5.5313, 5.5313, 5.5357, 5.5367], [5.5343, 5.5343, 5.5378, 5.5397], [5.5375, 5.5375, 5.5403, 5.5412], [5.5391, 5.5391, 5.5422, 5.5432], [5.5414, 5.5414, 5.5443, 5.5458], [5.5449, 5.5449, 5.5465, 5.5477], [5.5483, 5.5483, 5.5488, 5.5504], [5.5531, 5.5531, 5.5513, 5.5523], [5.5548, 5.5558, 5.5534, 5.5565], [5.5620, 5.5620, 5.5577, 5.5589], [5.5627, 5.5627, 5.5597, 5.5612], [5.5651, 5.5653, 5.5615, 5.5629], [5.5678, 5.5678, 5.5636, 5.5652], [5.5695, 5.5695, 5.5659, 5.5675], [5.5733, 5.5733, 5.5683, 5.5698], [5.5784, 5.5784, 5.5707, 5.5723], [5.5806, 5.5806, 5.5739, 5.5739], [5.5837, 5.5837, 5.5755, 5.5755], [5.5863, 5.5863, 5.5770, 5.5787], [5.5876, 5.5878, 5.5796, 5.5803], [5.5908, 5.5908, 5.5819, 5.5835], [5.5944, 5.5944, 5.5843, 5.5860], [5.5984, 5.5984, 5.5868, 5.5876], [5.6018, 5.6018, 5.5884, 5.5901], [5.6030, 5.6030, 5.5909, 5.5925], [5.6062, 5.6062, 5.5934, 5.5950], [5.6094, 5.6094, 5.5961, 5.5975], [5.6120, 5.6120, 5.5984, 5.5991], [5.6176, 5.6176, 5.6000, 5.6017], [5.6195, 5.6195, 5.6025, 5.6042], [5.6213, 5.6213, 5.6051, 5.6068], [5.6242, 5.6242, 5.6074, 5.6093], [5.6283, 5.6283, 5.6101, 5.6118], [5.6291, 5.6292, 5.6129, 5.6141], [5.6333, 5.6333, 5.6153, 5.6155], [5.6378, 5.6378, 5.6170, 5.6187], [5.6401, 5.6401, 5.6196, 5.6210], [5.6436, 5.6436, 5.6221, 5.6239], [5.6469, 5.6469, 5.6249, 5.6261], [5.6482, 5.6482, 5.6271, 5.6284], [5.6514, 5.6514, 5.6291, 5.6311], [5.6557, 5.6557, 5.6321, 5.6330], [5.6592, 5.6592, 5.6338, 5.6361], [5.6618, 5.6618, 5.6367, 5.6386], [5.6633, 5.6633, 5.6397, 5.6411], [5.6659, 5.6659, 5.6415, 5.6436], [5.6695, 5.6696, 5.6449, 5.6461], [5.6744, 5.6746, 5.6468, 5.6486], [5.6775, 5.6775, 5.6489, 5.6512], [5.6796, 5.6796, 5.6521, 5.6532], [5.6821, 5.6821, 5.6541, 5.6559], [5.6874, 5.6874, 5.6567, 5.6585], [5.6876, 5.6876, 5.6595, 5.6614], [5.6895, 5.6895, 5.6621, 5.6632], [5.6946, 5.6947, 5.6644, 5.6657], [5.6969, 5.6969, 5.6669, 5.6694], [5.6994, 5.6994, 5.6706, 5.6710], [5.7044, 5.7044, 5.6725, 5.6743], [5.7070, 5.7070, 5.6749, 5.6762], [5.7103, 5.7103, 5.6776, 5.6800], [5.7126, 5.7126, 5.6809, 5.6823], [5.7148, 5.7148, 5.6837, 5.6848], [5.7183, 5.7183, 5.6856, 5.6875], [5.7194, 5.7194, 5.6884, 5.6903], [5.7259, 5.7259, 5.6913, 5.6933], [5.7284, 5.7284, 5.6941, 5.6952], [5.7318, 5.7319, 5.6962, 5.6987], [5.7325, 5.7325, 5.6990, 5.7010], [5.7344, 5.7344, 5.7015, 5.7029], [5.7380, 5.7380, 5.7045, 5.7068], [5.7432, 5.7432, 5.7074, 5.7088], [5.7462, 5.7462, 5.7097, 5.7118], [5.7477, 5.7477, 5.7127, 5.7147], [5.7510, 5.7510, 5.7155, 5.7175], [5.7545, 5.7545, 5.7186, 5.7206], [5.7565, 5.7565, 5.7217, 5.7235], [5.7595, 5.7595, 5.7246, 5.7256], [5.7622, 5.7622, 5.7266, 5.7286], [5.7661, 5.7661, 5.7295, 5.7315], [5.7695, 5.7695, 5.7326, 5.7346], [5.7744, 5.7744, 5.7356, 5.7375], [5.7759, 5.7760, 5.7387, 5.7428], [5.7811, 5.7811, 5.7437, 5.7459], [5.7839, 5.7839, 5.7469, 5.7489], [5.7856, 5.7856, 5.7499, 5.7520], [5.7902, 5.7902, 5.7530, 5.7539], [5.7944, 5.7944, 5.7551, 5.7572], [5.7977, 5.7977, 5.7581, 5.7604], [5.7997, 5.7997, 5.7614, 5.7634], [5.8009, 5.8009, 5.7646, 5.7665], [5.8043, 5.8043, 5.7676, 5.7697], [5.8073, 5.8073, 5.7708, 5.7719], [5.8128, 5.8128, 5.7730, 5.7750], [5.8138, 5.8138, 5.7761, 5.7782], [5.8163, 5.8163, 5.7794, 5.7814], [5.8197, 5.8197, 5.7825, 5.7846], [5.8225, 5.8225, 5.7857, 5.7868], [5.8236, 5.8236, 5.7879, 5.7900], [5.8292, 5.8292, 5.7911, 5.7932], [5.8323, 5.8323, 5.7945, 5.7957], [5.8354, 5.8354, 5.7972, 5.7997], [5.8364, 5.8364, 5.8001, 5.8023], [5.8422, 5.8422, 5.8032, 5.8048], [5.8450, 5.8450, 5.8063, 5.8091], [5.8480, 5.8480, 5.8098, 5.8116], [5.8514, 5.8519, 5.8125, 5.8181], [5.8538, 5.8538, 5.8195, 5.8208], [5.8582, 5.8582, 5.8218, 5.8240], [5.8643, 5.8643, 5.8249, 5.8274], [5.8653, 5.8653, 5.8285, 5.8307], [5.8673, 5.8673, 5.8317, 5.8342], [5.8729, 5.8729, 5.8352, 5.8368], [5.8756, 5.8756, 5.8375, 5.8397], [5.8766, 5.8766, 5.8408, 5.8424], [5.8793, 5.8793, 5.8439, 5.8466], [5.8825, 5.8825, 5.8478, 5.8492], [5.8861, 5.8861, 5.8508, 5.8534], [5.8912, 5.8912, 5.8544, 5.8566], [5.8918, 5.8918, 5.8573, 5.8592], [5.8950, 5.8950, 5.8603, 5.8626], [5.8981, 5.8981, 5.8637, 5.8661], [5.9012, 5.9012, 5.8673, 5.8696], [5.9018, 5.9018, 5.8701, 5.8719], [5.9073, 5.9073, 5.8731, 5.8756], [5.9103, 5.9103, 5.8766, 5.8795], [5.9137, 5.9137, 5.8805, 5.8817], [5.9141, 5.9141, 5.8829, 5.8860], [5.9185, 5.9185, 5.8871, 5.8884], [5.9213, 5.9213, 5.8899, 5.8923], [5.9266, 5.9266, 5.8931, 5.8959], [5.9314, 5.9314, 5.8968, 5.8995], [5.9330, 5.9330, 5.9003, 5.9027], [5.9352, 5.9352, 5.9036, 5.9059], [5.9397, 5.9397, 5.9067, 5.9097], [5.9418, 5.9418, 5.9099, 5.9123], [5.9449, 5.9449, 5.9133, 5.9160], [5.9484, 5.9484, 5.9168, 5.9196], [5.9538, 5.9538, 5.9206, 5.9231], [5.9568, 5.9568, 5.9244, 5.9257], [5.9601, 5.9601, 5.9269, 5.9293], [5.9628, 5.9628, 5.9306, 5.9331], [5.9660, 5.9660, 5.9342, 5.9366], [5.9693, 5.9693, 5.9379, 5.9402], [5.9746, 5.9746, 5.9409, 5.9428], [5.9775, 5.9775, 5.9440, 5.9472], [5.9809, 5.9809, 5.9479, 5.9503], [5.9837, 5.9837, 5.9515, 5.9540], [5.9873, 5.9873, 5.9553, 5.9575], [5.9925, 5.9925, 5.9587, 5.9614], [5.9953, 5.9953, 5.9627, 5.9646], [5.9985, 5.9985, 5.9655, 5.9681], [6.0008, 6.0009, 5.9690, 5.9716], [6.0061, 6.0061, 5.9730, 5.9755], [6.0093, 6.0093, 5.9765, 5.9792], [6.0123, 6.0123, 5.9807, 5.9827], [6.0152, 6.0152, 5.9834, 5.9858], [6.0187, 6.0187, 5.9866, 5.9892], [6.0199, 6.0199, 5.9900, 5.9933], [6.0259, 6.0259, 5.9943, 5.9967], [6.0289, 6.0289, 5.9979, 6.0001], [6.0327, 6.0327, 6.0014, 6.0039], [6.0344, 6.0344, 6.0045, 6.0071], [6.0389, 6.0389, 6.0083, 6.0107], [6.0419, 6.0419, 6.0116, 6.0148], [6.0450, 6.0450, 6.0156, 6.0180], [6.0480, 6.0480, 6.0188, 6.0219], [6.0513, 6.0513, 6.0226, 6.0259], [6.0543, 6.0543, 6.0267, 6.0295], [6.0586, 6.0586, 6.0303, 6.0332], [6.0616, 6.0616, 6.0342, 6.0370], [6.0648, 6.0648, 6.0382, 6.0408], [6.0693, 6.0693, 6.0411, 6.0437], [6.0725, 6.0725, 6.0449, 6.0476], [6.0757, 6.0757, 6.0487, 6.0513], [6.0788, 6.0788, 6.0521, 6.0549], [6.0822, 6.0822, 6.0558, 6.0592], [6.0863, 6.0863, 6.0597, 6.0627], [6.0892, 6.0892, 6.0636, 6.0657], [6.0916, 6.0916, 6.0668, 6.0698], [6.0954, 6.0954, 6.0706, 6.0735], [6.0984, 6.0984, 6.0750, 6.0778], [6.1012, 6.1012, 6.0788, 6.0814], [6.1055, 6.1055, 6.0822, 6.0846], [6.1093, 6.1093, 6.0858, 6.0892], [6.1132, 6.1132, 6.0905, 6.0920], [6.1161, 6.1161, 6.0932, 6.0967], [6.1197, 6.1197, 6.0981, 6.1004], [6.1230, 6.1230, 6.1013, 6.1036], [6.1253, 6.1253, 6.1044, 6.1072], [6.1285, 6.1285, 6.1085, 6.1113], [6.1312, 6.1312, 6.1125, 6.1153], [6.1356, 6.1356, 6.1164, 6.1190], [6.1384, 6.1384, 6.1198, 6.1228], [6.1412, 6.1412, 6.1234, 6.1268], [6.1453, 6.1453, 6.1276, 6.1305], [6.1486, 6.1486, 6.1316, 6.1343], [6.1536, 6.1536, 6.1349, 6.1376], [6.1556, 6.1556, 6.1387, 6.1413], [6.1585, 6.1585, 6.1425, 6.1461], [6.1621, 6.1621, 6.1472, 6.1495], [6.1655, 6.1655, 6.1506, 6.1535], [6.1688, 6.1688, 6.1549, 6.1562], [6.1722, 6.1722, 6.1578, 6.1616], [6.1750, 6.1750, 6.1618, 6.1651], [6.1778, 6.1778, 6.1664, 6.1687], [6.1805, 6.1805, 6.1698, 6.1725], [6.1837, 6.1837, 6.1740, 6.1769], [6.1868, 6.1868, 6.1780, 6.1808], [6.1912, 6.1912, 6.1810, 6.1847], [6.1942, 6.1942, 6.1859, 6.1882], [6.1964, 6.1965, 6.1890, 6.1952], [6.2002, 6.2002, 6.1964, 6.2000], [6.2018, 6.2018, 6.2007, 6.2034], [6.2045, 6.2045, 6.2049, 6.2079], [6.2083, 6.2083, 6.2083, 6.2119], [6.2112, 6.2112, 6.2131, 6.2157], [6.2143, 6.2143, 6.2166, 6.2194], [6.2179, 6.2179, 6.2208, 6.2233], [6.2197, 6.2197, 6.2244, 6.2269], [6.2228, 6.2228, 6.2277, 6.2311], [6.2257, 6.2257, 6.2324, 6.2348], [6.2287, 6.2287, 6.2356, 6.2388], [6.2322, 6.2322, 6.2394, 6.2420], [6.2356, 6.2356, 6.2432, 6.2462], [6.2380, 6.2380, 6.2471, 6.2506], [6.2412, 6.2412, 6.2513, 6.2546], [6.2446, 6.2446, 6.2554, 6.2582], [6.2478, 6.2478, 6.2588, 6.2621], [6.2502, 6.2502, 6.2628, 6.2656], [6.2531, 6.2531, 6.2665, 6.2693], [6.2567, 6.2567, 6.2705, 6.2737], [6.2595, 6.2595, 6.2745, 6.2779], [6.2621, 6.2621, 6.2790, 6.2819], [6.2646, 6.2646, 0.0000, 0.0028], [6.2673, 6.2673, 0.0034, 0.0069], [6.2710, 6.2710, 0.0077, 0.0103], [6.2739, 6.2739, 0.0111, 0.0141], [6.2758, 6.2758, 0.0149, 0.0175], [6.2791, 6.2791, 0.0189, 0.0222], [6.2819, 6.2819, 0.0233, 0.0263]]
+
+  export type AntialiasingType = "off" | "msaa"
+
+  export const msaa_samples: CalibrationTool.RawSample[] = [
+    {"is_angle": 6.264095602406462, "position": {"x": -1, "y": 0}},
+    {"is_angle": 0.052636062424925245, "position": {"x": -10, "y": -1}},
+    {"is_angle": 0.05945273338138463, "position": {"x": -9, "y": -1}},
+    {"is_angle": 0.07244048936526291, "position": {"x": -8, "y": -1}},
+    {"is_angle": 0.08506413987321405, "position": {"x": -7, "y": -1}},
+    {"is_angle": 0.10025399176119677, "position": {"x": -6, "y": -1}},
+    {"is_angle": 0.12757643510468236, "position": {"x": -5, "y": -1}},
+    {"is_angle": 0.14412495697519462, "position": {"x": -9, "y": -2}},
+    {"is_angle": 0.16663025427907976, "position": {"x": -4, "y": -1}},
+    {"is_angle": 0.19669787960743632, "position": {"x": -7, "y": -2}},
+    {"is_angle": 0.20530922521716147, "position": {"x": -10, "y": -3}},
+    {"is_angle": 0.2359544878000106, "position": {"x": -3, "y": -1}},
+    {"is_angle": 0.2717505238119766, "position": {"x": -8, "y": -3}},
+    {"is_angle": 0.29126879061033445, "position": {"x": -5, "y": -2}},
+    {"is_angle": 0.3125144048963699, "position": {"x": -7, "y": -3}},
+    {"is_angle": 0.3272490490613413, "position": {"x": -9, "y": -4}},
+    {"is_angle": 0.37731025408331625, "position": {"x": -2, "y": -1}},
+    {"is_angle": 0.41970309950836054, "position": {"x": -9, "y": -5}},
+    {"is_angle": 0.4325219688111344, "position": {"x": -7, "y": -4}},
+    {"is_angle": 0.4510274988585719, "position": {"x": -5, "y": -3}},
+    {"is_angle": 0.47263867534241366, "position": {"x": -8, "y": -5}},
+    {"is_angle": 0.5039813418638364, "position": {"x": -3, "y": -2}},
+    {"is_angle": 0.5311764161846482, "position": {"x": -10, "y": -7}},
+    {"is_angle": 0.54294766928719, "position": {"x": -7, "y": -5}},
+    {"is_angle": 0.5691513513888656, "position": {"x": -4, "y": -3}},
+    {"is_angle": 0.5917729152300213, "position": {"x": -9, "y": -7}},
+    {"is_angle": 0.6053110111749453, "position": {"x": -5, "y": -4}},
+    {"is_angle": 0.6334909163947404, "position": {"x": -6, "y": -5}},
+    {"is_angle": 0.6509514221805698, "position": {"x": -7, "y": -6}},
+    {"is_angle": 0.6636149852022135, "position": {"x": -8, "y": -7}},
+    {"is_angle": 0.6749669047492642, "position": {"x": -9, "y": -8}},
+    {"is_angle": 0.6822487010246875, "position": {"x": -10, "y": -9}},
+    {"is_angle": 0.7606397200216568, "position": {"y": -1, "x": -1}},
+    {"is_angle": 0.8350432928504208, "position": {"x": -9, "y": -10}},
+    {"is_angle": 0.843716012640661, "position": {"x": -8, "y": -9}},
+    {"is_angle": 0.8583025966083109, "position": {"x": -7, "y": -8}},
+    {"is_angle": 0.8671578722521031, "position": {"x": -6, "y": -7}},
+    {"is_angle": 0.8860739532457703, "position": {"x": -5, "y": -6}},
+    {"is_angle": 0.9131843327561961, "position": {"x": -4, "y": -5}},
+    {"is_angle": 0.9315609218643481, "position": {"x": -7, "y": -9}},
+    {"is_angle": 0.9534432163189852, "position": {"x": -3, "y": -4}},
+    {"is_angle": 0.976870156147906, "position": {"x": -5, "y": -7}},
+    {"is_angle": 0.9878340969121109, "position": {"x": -7, "y": -10}},
+    {"is_angle": 1.0135193264704312, "position": {"x": -2, "y": -3}},
+    {"is_angle": 1.0474573827360958, "position": {"x": -5, "y": -8}},
+    {"is_angle": 1.0652640126598945, "position": {"x": -3, "y": -5}},
+    {"is_angle": 1.0878333280363803, "position": {"x": -4, "y": -7}},
+    {"is_angle": 1.0975373987297279, "position": {"x": -5, "y": -9}},
+    {"is_angle": 1.144813950817703, "position": {"x": -1, "y": -2}},
+    {"is_angle": 1.185731598681001, "position": {"x": -4, "y": -9}},
+    {"is_angle": 1.1957482799664652, "position": {"x": -3, "y": -7}},
+    {"is_angle": 1.2187931588334282, "position": {"x": -2, "y": -5}},
+    {"is_angle": 1.2439542920160362, "position": {"x": -3, "y": -8}},
+    {"is_angle": 1.2775707268790004, "position": {"x": -1, "y": -3}},
+    {"is_angle": 1.3091304015999707, "position": {"x": -3, "y": -10}},
+    {"is_angle": 1.3200068201143949, "position": {"x": -2, "y": -7}},
+    {"is_angle": 1.3534484464320329, "position": {"x": -1, "y": -4}},
+    {"is_angle": 1.3747934139541356, "position": {"x": -2, "y": -9}},
+    {"is_angle": 1.392555103813608, "position": {"x": -1, "y": -5}},
+    {"is_angle": 1.423141266906519, "position": {"x": -1, "y": -6}},
+    {"is_angle": 1.4434051384272184, "position": {"x": -1, "y": -7}},
+    {"is_angle": 1.4586096902100556, "position": {"x": -1, "y": -8}},
+    {"is_angle": 1.4680799636326807, "position": {"x": -1, "y": -9}},
+    {"is_angle": 1.476911800394118, "position": {"x": -1, "y": -10}},
+    {"is_angle": 1.5489901542160371, "position": {"x": 0, "y": -1}},
+    {"is_angle": 1.6271699080185897, "position": {"x": 1, "y": -10}},
+    {"is_angle": 1.6336532558970707, "position": {"x": 1, "y": -9}},
+    {"is_angle": 1.643664140234925, "position": {"x": 1, "y": -8}},
+    {"is_angle": 1.657895164123655, "position": {"x": 1, "y": -7}},
+    {"is_angle": 1.6747705481316753, "position": {"x": 1, "y": -6}},
+    {"is_angle": 1.7021145362563779, "position": {"x": 1, "y": -5}},
+    {"is_angle": 1.7159502551114336, "position": {"x": 2, "y": -9}},
+    {"is_angle": 1.7383139321484524, "position": {"x": 1, "y": -4}},
+    {"is_angle": 1.7702239793240806, "position": {"x": 2, "y": -7}},
+    {"is_angle": 1.7809309040999537, "position": {"x": 3, "y": -10}},
+    {"is_angle": 1.8090048547833286, "position": {"x": 1, "y": -3}},
+    {"is_angle": 1.8425468506068732, "position": {"x": 3, "y": -8}},
+    {"is_angle": 1.8651245720652503, "position": {"x": 2, "y": -5}},
+    {"is_angle": 1.8875118907464357, "position": {"x": 3, "y": -7}},
+    {"is_angle": 1.901795423693948, "position": {"x": 4, "y": -9}},
+    {"is_angle": 1.948106580878213, "position": {"x": 1, "y": -2}},
+    {"is_angle": 1.9935408232674792, "position": {"x": 5, "y": -9}},
+    {"is_angle": 2.0062066130213516, "position": {"x": 4, "y": -7}},
+    {"is_angle": 2.0250179038206375, "position": {"x": 3, "y": -5}},
+    {"is_angle": 2.0434350021373104, "position": {"x": 5, "y": -8}},
+    {"is_angle": 2.077887396450848, "position": {"x": 2, "y": -3}},
+    {"is_angle": 2.1051456157447963, "position": {"x": 7, "y": -10}},
+    {"is_angle": 2.1137439960820865, "position": {"x": 5, "y": -7}},
+    {"is_angle": 2.139947678183762, "position": {"x": 3, "y": -4}},
+    {"is_angle": 2.1625692420249174, "position": {"x": 7, "y": -9}},
+    {"is_angle": 2.1783435849352886, "position": {"x": 4, "y": -5}},
+    {"is_angle": 2.207230875467201, "position": {"x": 5, "y": -6}},
+    {"is_angle": 2.22524882708073, "position": {"x": 6, "y": -7}},
+    {"is_angle": 2.23441131199711, "position": {"x": 7, "y": -8}},
+    {"is_angle": 2.248484255818788, "position": {"x": 8, "y": -9}},
+    {"is_angle": 2.255759575698362, "position": {"x": 9, "y": -10}},
+    {"is_angle": 2.331436046816553, "position": {"x": 1, "y": -1}},
+    {"is_angle": 2.4087940663778338, "position": {"x": 10, "y": -9}},
+    {"is_angle": 2.417006858721484, "position": {"x": 9, "y": -8}},
+    {"is_angle": 2.429098923403207, "position": {"x": 8, "y": -7}},
+    {"is_angle": 2.4443017736731694, "position": {"x": 7, "y": -6}},
+    {"is_angle": 2.4604978850949144, "position": {"x": 6, "y": -5}},
+    {"is_angle": 2.485866902319734, "position": {"x": 5, "y": -4}},
+    {"is_angle": 2.5023572486592447, "position": {"x": 9, "y": -7}},
+    {"is_angle": 2.5242395431138815, "position": {"x": 4, "y": -3}},
+    {"is_angle": 2.5476664829428026, "position": {"x": 7, "y": -5}},
+    {"is_angle": 2.5606105599682714, "position": {"x": 10, "y": -7}},
+    {"is_angle": 2.5891624661018766, "position": {"x": 3, "y": -2}},
+    {"is_angle": 2.6182537095309923, "position": {"x": 8, "y": -5}},
+    {"is_angle": 2.6375314442976943, "position": {"x": 5, "y": -3}},
+    {"is_angle": 2.6614320650530523, "position": {"x": 7, "y": -4}},
+    {"is_angle": 2.6710201485395877, "position": {"x": 9, "y": -5}},
+    {"is_angle": 2.7156102776126, "position": {"x": 2, "y": -1}},
+    {"is_angle": 2.7595764080260925, "position": {"x": 9, "y": -4}},
+    {"is_angle": 2.769666352952875, "position": {"x": 7, "y": -3}},
+    {"is_angle": 2.7917817605250517, "position": {"x": 5, "y": -2}},
+    {"is_angle": 2.8147506188109324, "position": {"x": 8, "y": -3}},
+    {"is_angle": 2.8515800852538096, "position": {"x": 3, "y": -1}},
+    {"is_angle": 2.88219484700388, "position": {"x": 10, "y": -3}},
+    {"is_angle": 2.8933005302877857, "position": {"x": 7, "y": -2}},
+    {"is_angle": 2.924301697343016, "position": {"x": 4, "y": -1}},
+    {"is_angle": 2.945589740749032, "position": {"x": 9, "y": -2}},
+    {"is_angle": 2.9652376826457907, "position": {"x": 5, "y": -1}},
+    {"is_angle": 2.996805393939533, "position": {"x": 6, "y": -1}},
+    {"is_angle": 3.0185841931854496, "position": {"x": 7, "y": -1}},
+    {"is_angle": 3.028693172726164, "position": {"x": 8, "y": -1}},
+    {"is_angle": 3.0415955358370512, "position": {"x": 9, "y": -1}},
+    {"is_angle": 3.0498670257534872, "position": {"x": 10, "y": -1}},
+    {"is_angle": 3.1219041228046733, "position": {"x": 1, "y": 0}},
+    {"is_angle": 3.197966234813486, "position": {"x": 10, "y": 1}},
+    {"is_angle": 3.2048288738395776, "position": {"x": 9, "y": 1}},
+    {"is_angle": 3.2148666765589597, "position": {"x": 8, "y": 1}},
+    {"is_angle": 3.229219371400356, "position": {"x": 7, "y": 1}},
+    {"is_angle": 3.2455668749265714, "position": {"x": 6, "y": 1}},
+    {"is_angle": 3.269942634395674, "position": {"x": 5, "y": 1}},
+    {"is_angle": 3.2867465819063297, "position": {"x": 9, "y": 2}},
+    {"is_angle": 3.3091102589433485, "position": {"x": 4, "y": 1}},
+    {"is_angle": 3.338290533197229, "position": {"x": 7, "y": 2}},
+    {"is_angle": 3.35172723089485, "position": {"x": 10, "y": 3}},
+    {"is_angle": 3.3798011815782245, "position": {"x": 3, "y": 1}},
+    {"is_angle": 3.4133431774017695, "position": {"x": 8, "y": 3}},
+    {"is_angle": 3.4359208988601457, "position": {"x": 5, "y": 2}},
+    {"is_angle": 3.4583082175413313, "position": {"x": 7, "y": 3}},
+    {"is_angle": 3.4725917504888444, "position": {"x": 9, "y": 4}},
+    {"is_angle": 3.5189029076731093, "position": {"x": 2, "y": 1}},
+    {"is_angle": 3.5612957530981535, "position": {"x": 9, "y": 5}},
+    {"is_angle": 3.574114622400927, "position": {"x": 7, "y": 4}},
+    {"is_angle": 3.5958142306155336, "position": {"x": 5, "y": 3}},
+    {"is_angle": 3.614231328932207, "position": {"x": 8, "y": 5}},
+    {"is_angle": 3.6486837232457447, "position": {"x": 3, "y": 2}},
+    {"is_angle": 3.6727690697744415, "position": {"x": 10, "y": 7}},
+    {"is_angle": 3.684540322876982, "position": {"x": 7, "y": 5}},
+    {"is_angle": 3.7107440049786597, "position": {"x": 4, "y": 3}},
+    {"is_angle": 3.733365568819812, "position": {"x": 9, "y": 7}},
+    {"is_angle": 3.749139911730183, "position": {"x": 5, "y": 4}},
+    {"is_angle": 3.7750835699845338, "position": {"x": 6, "y": 5}},
+    {"is_angle": 3.796045153875625, "position": {"x": 7, "y": 6}},
+    {"is_angle": 3.8052076387920053, "position": {"x": 8, "y": 7}},
+    {"is_angle": 3.8192805826136826, "position": {"x": 9, "y": 8}},
+    {"is_angle": 3.826555902493258, "position": {"x": 10, "y": 9}},
+    {"is_angle": 3.902232373611449, "position": {"y": 1, "x": 1}},
+    {"is_angle": 3.9795903931727294, "position": {"x": 9, "y": 10}},
+    {"is_angle": 3.9878031855163796, "position": {"x": 8, "y": 9}},
+    {"is_angle": 3.9998952501981044, "position": {"x": 7, "y": 8}},
+    {"is_angle": 4.015098100468066, "position": {"x": 6, "y": 7}},
+    {"is_angle": 4.031294211889809, "position": {"x": 5, "y": 6}},
+    {"is_angle": 4.054776986345988, "position": {"x": 4, "y": 5}},
+    {"is_angle": 4.073153575454139, "position": {"x": 7, "y": 9}},
+    {"is_angle": 4.095035869908777, "position": {"x": 3, "y": 4}},
+    {"is_angle": 4.1184628097377, "position": {"x": 5, "y": 7}},
+    {"is_angle": 4.131406886763168, "position": {"x": 7, "y": 10}},
+    {"is_angle": 4.155111980060223, "position": {"x": 2, "y": 3}},
+    {"is_angle": 4.189050036325889, "position": {"x": 5, "y": 8}},
+    {"is_angle": 4.206856666249687, "position": {"x": 3, "y": 5}},
+    {"is_angle": 4.232228391847947, "position": {"x": 4, "y": 7}},
+    {"is_angle": 4.241816475334485, "position": {"x": 5, "y": 9}},
+    {"is_angle": 4.286406604407496, "position": {"x": 1, "y": 2}},
+    {"is_angle": 4.327324252270795, "position": {"x": 4, "y": 9}},
+    {"is_angle": 4.337340933556257, "position": {"x": 3, "y": 7}},
+    {"is_angle": 4.362578087319949, "position": {"x": 2, "y": 5}},
+    {"is_angle": 4.385546945605829, "position": {"x": 3, "y": 8}},
+    {"is_angle": 4.422376412048706, "position": {"x": 1, "y": 3}},
+    {"is_angle": 4.450796841529076, "position": {"x": 3, "y": 10}},
+    {"is_angle": 4.464096857082682, "position": {"x": 2, "y": 7}},
+    {"is_angle": 4.495041100021827, "position": {"x": 1, "y": 4}},
+    {"is_angle": 4.5163860675439285, "position": {"x": 2, "y": 9}},
+    {"is_angle": 4.536034009440687, "position": {"x": 1, "y": 5}},
+    {"is_angle": 4.564733920496312, "position": {"x": 1, "y": 6}},
+    {"is_angle": 4.5844795358093675, "position": {"x": 1, "y": 7}},
+    {"is_angle": 4.599489499521059, "position": {"x": 1, "y": 8}},
+    {"is_angle": 4.612391862631947, "position": {"x": 1, "y": 9}},
+    {"is_angle": 4.618019689761368, "position": {"x": 1, "y": 10}},
+    {"is_angle": 4.692935524937519, "position": {"x": 0, "y": 1}},
+    {"is_angle": 4.768762561608383, "position": {"x": -1, "y": 10}},
+    {"is_angle": 4.772586567277493, "position": {"x": -1, "y": 9}},
+    {"is_angle": 4.785663003353856, "position": {"x": -1, "y": 8}},
+    {"is_angle": 4.800015698195253, "position": {"x": -1, "y": 7}},
+    {"is_angle": 4.816363201721469, "position": {"x": -1, "y": 6}},
+    {"is_angle": 4.840738961190572, "position": {"x": -1, "y": 5}},
+    {"is_angle": 4.857375783017824, "position": {"x": -2, "y": 9}},
+    {"is_angle": 4.8799065857382455, "position": {"x": -1, "y": 4}},
+    {"is_angle": 4.909086859992126, "position": {"x": -2, "y": 7}},
+    {"is_angle": 4.922523557689747, "position": {"x": -3, "y": 10}},
+    {"is_angle": 4.948343468184699, "position": {"x": -1, "y": 3}},
+    {"is_angle": 4.9841395041966665, "position": {"x": -3, "y": 8}},
+    {"is_angle": 5.003657770995023, "position": {"x": -2, "y": 5}},
+    {"is_angle": 5.029104544336229, "position": {"x": -3, "y": 7}},
+    {"is_angle": 5.0433880772837405, "position": {"x": -4, "y": 9}},
+    {"is_angle": 5.089699234468005, "position": {"x": -1, "y": 2}},
+    {"is_angle": 5.13209207989305, "position": {"x": -5, "y": 9}},
+    {"is_angle": 5.144910949195824, "position": {"x": -4, "y": 7}},
+    {"is_angle": 5.166610557410429, "position": {"x": -3, "y": 5}},
+    {"is_angle": 5.185027655727103, "position": {"x": -5, "y": 8}},
+    {"is_angle": 5.219480050040641, "position": {"x": -2, "y": 3}},
+    {"is_angle": 5.243565396569338, "position": {"x": -7, "y": 10}},
+    {"is_angle": 5.255336649671879, "position": {"x": -5, "y": 7}},
+    {"is_angle": 5.281540331773557, "position": {"x": -3, "y": 4}},
+    {"is_angle": 5.304161895614708, "position": {"x": -7, "y": 9}},
+    {"is_angle": 5.31993623852508, "position": {"x": -4, "y": 5}},
+    {"is_angle": 5.34587989677943, "position": {"x": -5, "y": 6}},
+    {"is_angle": 5.363340402565257, "position": {"x": -6, "y": 7}},
+    {"is_angle": 5.376003965586903, "position": {"x": -7, "y": 8}},
+    {"is_angle": 5.387355885133951, "position": {"x": -8, "y": 9}},
+    {"is_angle": 5.394637681409377, "position": {"x": -9, "y": 10}},
+    {"is_angle": 5.4730287004063465, "position": {"x": -1, "y": 1}},
+    {"is_angle": 5.547432273235109, "position": {"x": -10, "y": 9}},
+    {"is_angle": 5.556104993025351, "position": {"x": -9, "y": 8}},
+    {"is_angle": 5.570691576993001, "position": {"x": -8, "y": 7}},
+    {"is_angle": 5.579546852636793, "position": {"x": -7, "y": 6}},
+    {"is_angle": 5.602090538684707, "position": {"x": -6, "y": 5}},
+    {"is_angle": 5.625573313140884, "position": {"x": -5, "y": 4}},
+    {"is_angle": 5.643949902249038, "position": {"x": -9, "y": 7}},
+    {"is_angle": 5.665832196703675, "position": {"x": -4, "y": 3}},
+    {"is_angle": 5.6892591365325975, "position": {"x": -7, "y": 5}},
+    {"is_angle": 5.702203213558066, "position": {"x": -10, "y": 7}},
+    {"is_angle": 5.725908306855122, "position": {"x": -3, "y": 2}},
+    {"is_angle": 5.759846363120785, "position": {"x": -8, "y": 5}},
+    {"is_angle": 5.777652993044584, "position": {"x": -5, "y": 3}},
+    {"is_angle": 5.8030247186428445, "position": {"x": -7, "y": 4}},
+    {"is_angle": 5.81261280212938, "position": {"x": -9, "y": 5}},
+    {"is_angle": 5.857202931202392, "position": {"x": -2, "y": 1}},
+    {"is_angle": 5.898120579065692, "position": {"x": -9, "y": 4}},
+    {"is_angle": 5.908137260351154, "position": {"x": -7, "y": 3}},
+    {"is_angle": 5.9311821392181185, "position": {"x": -5, "y": 2}},
+    {"is_angle": 5.956343272400726, "position": {"x": -8, "y": 3}},
+    {"is_angle": 5.989959707263691, "position": {"x": -3, "y": 1}},
+    {"is_angle": 6.021668664754037, "position": {"x": -10, "y": 3}},
+    {"is_angle": 6.035029687783558, "position": {"x": -7, "y": 2}},
+    {"is_angle": 6.065837426816723, "position": {"x": -4, "y": 1}},
+    {"is_angle": 6.087454405938603, "position": {"x": -9, "y": 2}},
+    {"is_angle": 6.107198109146065, "position": {"x": -5, "y": 1}},
+    {"is_angle": 6.136133851609513, "position": {"x": -6, "y": 1}},
+    {"is_angle": 6.156516347580586, "position": {"x": -7, "y": 1}},
+    {"is_angle": 6.171650573186278, "position": {"x": -8, "y": 1}},
+    {"is_angle": 6.181189700432603, "position": {"x": -9, "y": 1}},
+    {"is_angle": 6.190029403961643, "position": {"x": -10, "y": 1}}
+  ]
+
+  export const calibration_tables: Record<AntialiasingType, CompassCalibrationFunction> = {
+    "off": new FullCompassCalibrationFunction(FullCompassCalibrationFunction.CompressedSample.expand(no_aa_small)),
+    "msaa": AngularKeyframeFunction.fromCalibrationSamples(msaa_samples,
+      "cosine",
+      degreesToRadians(0.5)
     )
   }
 
   export class Service extends Behaviour {
-    private committed_state = observe<Service.State>(null).equality((a, b) => a?.angle == b?.angle && a?.state == b?.state)
+    private committed_state = observe<Service.State>(null).equality(Service.State.equals)
 
     last_read: CompassReader.AngleResult = null
 
@@ -959,10 +623,12 @@ export namespace CompassReader {
     constructor(
       private matched_ui: CapturedCompass,
       private show_overlay: boolean,
-      private disable_calibration: boolean = false,
+      public readonly calibration_functions: (_: AntialiasingType) => CompassCalibrationFunction = typ => CompassReader.calibration_tables[typ],
       private refind_after_close: boolean = false
     ) {
       super();
+
+      this.status_overlay = this.withSub(new Service.StatusOverlay(this))
 
       this.initialization = async_init(async () => {
         return {
@@ -971,7 +637,7 @@ export namespace CompassReader {
       })
     }
 
-    private overlay: LegacyOverlayGeometry = new LegacyOverlayGeometry()
+    private status_overlay: Service.StatusOverlay
 
     private tick_counter = 0
     private last_ticks: Record<AngleResult["type"], number> = {
@@ -981,11 +647,14 @@ export namespace CompassReader {
       likely_concealed: -2,
     }
 
-    protected begin() {
+    getCurrentScreenRectangle(): ScreenRectangle {
+      return this.matched_ui?.body?.screenRectangle()
+    }
 
+    protected begin() {
       this.lifetime_manager.bind(
         Alt1.instance().capturing.subscribe({
-          options: time => {
+          options: () => {
             return {
               interval: CaptureInterval.fromApproximateInterval(50),
               area: this.matched_ui ? this.matched_ui.body.screen_rectangle : null
@@ -998,11 +667,11 @@ export namespace CompassReader {
     }
 
     protected end() {
-      this.overlay?.clear()?.render()
+
     }
 
     private closed() {
-      this.committed_state.set({angle: null, state: "closed"})
+      this.committed_state.set({state: "closed", result: this.buffered_state.state})
 
       if (this.refind_after_close) this.matched_ui = null
     }
@@ -1028,15 +697,18 @@ export namespace CompassReader {
 
       const tick = this.tick_counter++
 
+      const previous_committed_state = this.committed_state.value()
+      let should_rerender = false
+
       if (this.refind_after_close && !this.matched_ui) {
         this.matched_ui = finder.find(img)
+
+        if (this.matched_ui) should_rerender = true
       }
 
       if (!this.matched_ui) return
 
-      const reader = new CompassReader(this.matched_ui.recapture(img), this.disable_calibration)
-
-      this.overlay.clear()
+      const reader = new CompassReader(this.matched_ui.recapture(img), this.calibration_functions)
 
       {
         const read = this.last_read = reader.getAngle()
@@ -1052,13 +724,15 @@ export namespace CompassReader {
             last_confirmed: now,
             state: read
           }
+
+          should_rerender = true
         }
       }
 
       const state = this.buffered_state.state
       const state_active_time = this.buffered_state.last_confirmed - this.buffered_state.since
 
-      if (state.type == "likely_concealed" || state.type == "likely_closed") log().log(`${state.type}: ${state.details}`, "Compass Reader")
+      if (CompassReader.DEBUG_COMPASS_READER && (state.type == "likely_concealed" || state.type == "likely_closed")) log().log(`${state.type}: ${state.details}`, "Compass Reader")
 
       const BUFFER_CONFIRMATION_TIME = 200
 
@@ -1066,36 +740,8 @@ export namespace CompassReader {
 
       if (state.type == "likely_closed" && (state_active_time > BUFFER_CONFIRMATION_TIME || was_ever_solved)) this.closed()
       else if (state.type == "likely_concealed" && (state_active_time > 5000 || was_ever_solved)) this.closed()
-      else if (state.type == "likely_concealed" || state.type == "likely_closed") {
-        this.overlay.text("Concealed",
-          Vector2.add(ScreenRectangle.center(reader.capture.body.screenRectangle()), {x: 5, y: 100}), {
-            shadow: true,
-            centered: true,
-            width: 12,
-            color: Alt1Color.fromHex("#808080")
-          })
-      } else if (state.type == "likely_solved") {
-
-        this.overlay.rect2(
-          ScreenRectangle.move(
-            reader.capture.body.screenRectangle(),
-            {x: 59, y: 172},
-            {x: 55, y: 52}
-          ), {
-            width: 2,
-            color: Alt1Color.green,
-          }
-        )
-
-        this.overlay.text("Solved",
-          Vector2.add(ScreenRectangle.center(reader.capture.body.screenRectangle()), {x: 5, y: 100}), {
-            shadow: true,
-            centered: true,
-            width: 12,
-            color: Alt1Color.green,
-          })
-
-        this.committed_state.set({angle: null, state: "solved"})
+      else if (state.type == "likely_solved") {
+        this.committed_state.set({state: "solved", result: state})
       } else if (state.type == "success") {
         if (state_active_time > 0.1) {
           this.last_stationary_tick = tick
@@ -1106,43 +752,23 @@ export namespace CompassReader {
 
           if (state_active_time > required_stationary_time) {
             this.committed_state.set({
-              angle: state.angle,
+              result: state,
               state: "normal",
             })
           }
         } else if (this.previous_state?.state.type == "success" && tick - this.last_stationary_tick > 2) {
           this.committed_state.set({
-            angle: null,
-            state: "spinning"
+            state: "spinning",
+            result: state
           })
         }
       }
 
       this.last_ticks[state.type] = tick
 
-      if (this.committed_state.value()) {
-        let text: string = null
+      should_rerender ||= previous_committed_state != this.committed_state.value()
 
-        const state = this.committed_state.value()
-
-        if (state.state == "spinning") {
-          text = "Spinning"
-        } else if (state.angle != null) {
-          text = `${radiansToDegrees(state.angle).toFixed(this.disable_calibration ? 3 : 1)}°`
-        }
-
-        if (text) {
-          this.overlay.text(text,
-            Vector2.add(ScreenRectangle.center(reader.capture.body.screenRectangle()), {x: 5, y: 8}), {
-              shadow: true,
-              centered: true,
-              width: 15,
-              color: Alt1Color.white
-            })
-        }
-      }
-
-      if (this.show_overlay) this.overlay.render()
+      if (should_rerender) this.status_overlay?.rerender()
     }
 
     onChange(handler: (new_value: Service.State, old: Service.State) => any, handler_f?: (_: EwentHandler<any>) => void): this {
@@ -1154,329 +780,155 @@ export namespace CompassReader {
     state(): Service.State {
       return this.committed_state.value()
     }
+
+    bufferedState() {
+      return this.buffered_state?.state
+    }
   }
 
   export namespace Service {
-    export type State = {
-      angle: number,
-      state: "normal" | "solved" | "spinning" | "closed"
-    }
-  }
+    import Service = CompassReader.Service;
+    export type State = State.Base &
+      ({
+        state: "solved" | "spinning" | "closed"
+      } | State.Normal)
 
-  export type CalibrationMode = keyof typeof calibration_tables
+    export namespace State {
+      export type Base = { state: string, result: AngleResult }
+      export type Normal = Base & { state: "normal", result: AngleResult.Success }
 
-  export class CalibrationTool extends NisModal {
-    samples: AngularKeyframeFunction.Sample[] = []
-    private reader: Service
-    private layer: CalibrationTool.Layer
+      export function equals(a: State, b: State): boolean {
+        if (!!a != !!b) return false
+        if (a.state != b.state) return false
 
-    handler: Alt1MainHotkeyEvent.Handler
-
-    expected: Widget
-
-    constructor(samples: AngularKeyframeFunction.Sample[] = []) {
-      super({
-        size: "fullscreen",
-        fixed: true,
-        disable_close_button: false
-      });
-
-      this.samples = lodash.cloneDeep(samples)
-
-      this.handler = Alt1.instance().main_hotkey.subscribe(0, (e) => {
-        this.commit()
-      })
-
-      this.hidden.on(() => {
-        this.reader.stop()
-        this.handler.remove()
-      })
-
-      this.reader = new Service(null, true, true, true).start()
-    }
-
-    delete() {
-      const entry_index = this.samples.findIndex(s => Vector2.eq(s.position, this.layer.offset))
-
-      this.samples.splice(entry_index, 1)
-
-      this.layer.updateTileOverlays()
-    }
-
-    commit() {
-      const state = this.reader.state()
-
-      if (state.state == "normal") {
-
-        const entry = this.samples.find(s => Vector2.eq(s.position, this.layer.offset))
-
-        if (entry) {
-          entry.is_angle_degrees = radiansToDegrees(state.angle)
-        } else {
-          this.samples.push({position: this.layer.offset, is_angle_degrees: radiansToDegrees(state.angle)})
-
-          lodash.sortBy(this.samples, s => getExpectedAngle(s.position, {x: 0, y: 0}))
+        if (a.state == "normal" && b.state == "normal") {
+          return Angles.UncertainAngle.equals(a.result.angle, b.result.angle)
         }
-
-        this.autoNextSpot()
-      }
-    }
-
-    autoNextSpot() {
-      const test = (offset: Vector2): boolean => {
-        const gcd = greatestCommonDivisor(offset.x, offset.y)
-
-        if (gcd > 1) return false
-
-        const entry = this.samples.find(s => Vector2.eq(s.position, offset))
-
-        if (entry) return false
-
-        this.layer.setOffset(offset)
 
         return true
       }
-
-      if (test({x: 1, y: 0})) return
-      if (test({x: 0, y: 1})) return
-      if (test({x: -1, y: 0})) return
-      if (test({x: 0, y: -1})) return
-
-      for (let d = 3; d <= 15; d++) {
-        const iterations = Math.pow(2, d)
-
-        const limit = Math.sqrt(iterations)
-
-        for (let i = 1; i < iterations; i++) {
-          const angle = i * (Math.PI * 2) / iterations
-
-          function farey(limit: number, R: number): Vector2 {
-            if (R > 1) {
-              const res = farey(limit, 1 / R)
-
-              return {
-                x: res.y,
-                y: res.x
-              }
-            }
-
-            let lower: Vector2 = {y: 0, x: 1}
-            let higher: Vector2 = {y: 1, x: 1}
-
-            while (true) {
-              let c = Vector2.add(lower, higher) // interestingly c is already in reduced form
-
-              // if the numbers are too big, return the closest of a and b
-              if (c.x > limit || c.y > limit) {
-                if (R - lower.y / lower.x < higher.y / higher.x - R) return lower
-                else return higher
-              }
-
-              // adjust the interval:
-              if (c.y / c.x < R) lower = c
-              else higher = c
-            }
-          }
-
-          const v = farey(limit, Math.abs(Math.sin(angle)) / Math.abs(Math.cos(angle)))
-
-          if (angle > Math.PI / 2 && angle < 3 * Math.PI / 2) v.x *= -1
-          if (angle > Math.PI) v.y *= -1
-
-          if (test(v)) {
-            console.log(`D: ${d}`)
-            return
-          }
-        }
-      }
     }
 
-    render() {
-      super.render();
+    export class StatusOverlay extends Alt1Overlay {
+      private position = observe<ScreenRectangle>(null).equality(ScreenRectangle.equals)
+      private antialiasing_indicator: Alt1Overlay
 
-      this.body.css("display", "flex")
-        .css("flex-direction", "column")
-
-      const map = new GameMapMiniWidget()
-        .css2({
-          "width": "100%",
-          "height": "500px"
-        })
-        .appendTo(this.body)
-
-      setTimeout(() => map.map.invalidateSize(), 1000)
-
-      this.expected = c().appendTo(this.body)
-
-      new ButtonRow().buttons(
-          new LightButton("Auto")
-            .onClick(() => this.autoNextSpot()),
-          new LightButton("Commit")
-            .onClick(() => this.commit()),
-          new LightButton("Delete")
-            .onClick(() => this.delete())
-        )
-        .appendTo(this.body)
-
-      new ButtonRow().buttons(
-        new LightButton("Import").onClick(async () => {
-          this.samples = (await new ImportStringModal(input => {
-            return JSON.parse(input)
-          }).do()).imported
-          this.autoNextSpot()
-        }),
-        new LightButton("Export JSON").onClick(() => {
-          new ExportStringModal(
-            "[\n" +
-            lodash.sortBy(this.samples, s => Vector2.angle(ANGLE_REFERENCE_VECTOR, {x: -s.position.x, y: -s.position.y})).map(s => cleanedJSON(s, undefined)).join(",\n")
-            + "\n]"
-          ).show()
-        }),
-        new LightButton("Export CSV").onClick(() => {
-          new ExportStringModal(AngularKeyframeFunction.fromCalibrationSamples(this.samples, "cosine").getCSV()).show()
-        }),
-      ).appendTo(this.body)
-
-      map.map.addGameLayer(this.layer = new CalibrationTool.Layer(this))
-
-      this.autoNextSpot()
-    }
-  }
-
-  export namespace CalibrationTool {
-    import gielinor_compass = clue_data.gielinor_compass;
-    import Sample = AngularKeyframeFunction.Sample;
-
-    export class KnownMarker extends MapEntity {
-      constructor(public spot: TileCoordinates) {
+      constructor(private service: Service) {
         super()
 
-        this.setInteractive()
-      }
+        const self = this
 
-      private active: boolean = false
+        this.antialiasing_indicator = (new class extends Alt1Overlay {
+          constructor() {
+            super()
 
-      setActive(v: boolean): this {
-        if (v != this.active) {
-          this.active = v
-          this.requestRendering()
-        }
-
-        return this
-      }
-
-      bounds(): Rectangle {
-        return Rectangle.from(this.spot)
-      }
-
-      protected async render_implementation(props: MapEntity.RenderProps): Promise<Element> {
-        const opacity = this.active ? 1 : 0.5
-
-        const scale = (this.active ? 1 : 0.5) * (props.highlight ? 1.5 : 1)
-
-        const marker = leaflet.marker(Vector2.toLatLong(this.spot), {
-          icon: levelIcon(this.spot.level, scale),
-          opacity: opacity,
-          interactive: true,
-          bubblingMouseEvents: true,
-        }).addTo(this)
-
-        return marker.getElement()
-      }
-    }
-
-    export class Layer extends GameLayer {
-      markers: KnownMarker[]
-
-      reference: TileCoordinates
-      offset: Vector2 = {x: -1, y: 1}
-      existing_sample: Sample = null
-
-      constructor(public tool: CalibrationTool) {
-        super()
-
-        this.markers = gielinor_compass.spots.map(spot =>
-          new KnownMarker(spot).addTo(this)
-        )
-
-        this.setReference(gielinor_compass.spots[0])
-      }
-
-      eventClick(event: GameMapMouseEvent) {
-        event.onPost(() => {
-          if (event.active_entity instanceof KnownMarker) {
-            this.setReference(event.active_entity.spot)
-          } else {
-            const off = Vector2.sub(event.tile(), this.reference)
-
-            if (off.x == 0 && off.y == 0) return
-
-            const gcd = greatestCommonDivisor(Math.abs(off.x), Math.abs(off.y))
-
-            this.setOffset(Vector2.scale(1 / gcd, off))
+            this.interactivity().main_hotkey_pressed.on(() => ClueTrainerWiki.openOnPage("compasssolveruncertainty"))
           }
-        })
+
+          protected renderWithBuilder(overlay_geometry: Alt1OverlayDrawCalls.GeometryBuilder) {
+            super.renderWithBuilder(overlay_geometry);
+
+            const state = self.service.state()
+            const rectangle = self.service.getCurrentScreenRectangle()
+
+            if (!rectangle || !state) return
+
+            const center = Vector2.add(ScreenRectangle.center(rectangle), {x: 5, y: -60})
+
+            const is_aa = state.result.fingerprint?.antialiasing
+
+            if (is_aa) {
+              overlay_geometry.text("Antialiasing detected",
+                Vector2.add(ScreenRectangle.center(rectangle), {x: 5, y: -60}), {
+                  shadow: true,
+                  centered: true,
+                  width: 12,
+                  color: Alt1Color.fromHex("#808080")
+                })
+            }
+
+            this.interactivity().setBounds({type: "rectangle", area: ScreenRectangle.centeredOn(center, {x: 90, y: 5})})
+
+            this.interactivity().setTooltip(is_aa ? "Press (Alt+1) to learn why this is relevant." : null)
+          }
+        }).addTo(this, true)
       }
 
-      setOffset(offset: Vector2) {
-        this.offset = offset
 
-        this.existing_sample = this.tool.samples.find(s => Vector2.eq(s.position, offset))
-
-        if (this.existing_sample) {
-          this.tool.expected.text(`Selected: ${offset.x}|${offset.y} Expected: ${radiansToDegrees(normalizeAngle(Math.atan2(-offset.y, -offset.x))).toFixed(3)}°, Sample: ${this.existing_sample.is_angle_degrees.toFixed(3)}°`)
-        } else {
-          this.tool.expected.text(`Selected: ${offset.x}|${offset.y} Expected: ${radiansToDegrees(normalizeAngle(Math.atan2(-offset.y, -offset.x))).toFixed(3)}°`)
-        }
-
-        this.updateTileOverlays()
+      setPosition(rect: ScreenRectangle) {
+        this.position.set(rect)
       }
 
-      setReference(reference: TileCoordinates) {
-        this.reference = reference
+      protected renderWithBuilder(overlay_geometry: Alt1OverlayDrawCalls.GeometryBuilder) {
+        super.renderWithBuilder(overlay_geometry);
 
-        this.markers.forEach(marker => {
-          marker.setActive(TileCoordinates.equals(marker.spot, reference))
-        })
+        const state = this.service.state()
+        const rectangle = this.service.getCurrentScreenRectangle()
 
-        this.updateTileOverlays()
-      }
+        if (!rectangle || !state || state.state == "closed") return
 
-      private overlay: leaflet.FeatureGroup = null
+        const buffered_state = this.service.bufferedState()
 
-      updateTileOverlays() {
-        if (this.overlay) {
-          this.overlay.remove()
-          this.overlay = null
-        }
-
-        this.overlay = leaflet.featureGroup().addTo(this)
-
-        this.tool.samples.forEach((sample, i) => {
-          const polygon = tilePolygon(Vector2.add(this.reference, sample.position)).setStyle({
-            color: "#06ffea",
-            fillOpacity: 0.4,
-            stroke: false
-          }).addTo(this.overlay)
-        })
-
-        leaflet.polygon(this.tool.samples.map(s => Vector2.toLatLong(Vector2.add(this.reference, s.position))))
-          .setStyle({
-            color: "blue"
-          })
-          .addTo(this.overlay)
-
-        for (let i = 1; i <= 100; i++) {
-          const polygon = tilePolygon(Vector2.add(this.reference, Vector2.scale(i, this.offset))).addTo(this.overlay)
-
-          if (this.existing_sample) {
-            polygon.setStyle({
-              color: "orange"
+        if (buffered_state.type == "likely_concealed") {
+          overlay_geometry.text("Concealed",
+            Vector2.add(ScreenRectangle.center(rectangle), {x: 5, y: 100}), {
+              shadow: true,
+              centered: true,
+              width: 12,
+              color: Alt1Color.fromHex("#808080")
             })
+        } else if (buffered_state.type == "likely_solved") {
+
+          overlay_geometry.rectangle(
+            ScreenRectangle.move(
+              rectangle,
+              {x: 59, y: 172},
+              {x: 55, y: 52}
+            ), {
+              width: 2,
+              color: Alt1Color.green,
+            }
+          )
+
+          overlay_geometry.text("Solved",
+            Vector2.add(ScreenRectangle.center(rectangle), {x: 5, y: 100}), {
+              shadow: true,
+              centered: true,
+              width: 12,
+              color: Alt1Color.green,
+            })
+        }
+
+        {
+          const text: string = (() => {
+            if (state.state == "spinning") {
+              return "Spinning"
+            } else if (state.state == "normal") {
+              return `${Angles.toString(state.result.angle.median, this.service.calibration_functions ? 1 : 3)}`
+            }
+          })()
+
+          if (text) {
+            const text_center = Vector2.add(ScreenRectangle.center(rectangle), {x: 5, y: 8})
+
+            overlay_geometry.text(text,
+              text_center, {
+                shadow: true,
+                centered: true,
+                width: 15,
+                color: Alt1Color.white
+              })
+
+            const width = text.length * 12
+
+            this.interactivity().setBounds({type: "rectangle", area: ScreenRectangle.centeredOn(text_center, {x: ~~(width / 2), y: 10})})
+
+            this.interactivity().setTooltip(state.state == "normal" ? Angles.UncertainAngle.toString(state.result.angle, 3) : null)
+          } else {
+            this.interactivity().setBounds(null)
           }
         }
 
-        this.overlay.addTo(this)
       }
     }
   }

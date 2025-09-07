@@ -14,7 +14,7 @@ export namespace C {
   }
 
   export function hgrid(...content: Appendable[]): Widget {
-    return cls("nisl-hgrid").append(...content)
+    return cls("nisl-hgrid").append(...content.map(e => typeof e == "string" ? div(e) : e))
   }
 
   export function hboxl(...content: Appendable[]): Widget {

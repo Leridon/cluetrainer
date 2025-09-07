@@ -21,11 +21,34 @@ export class Alt1 {
   public static instance(): Alt1 {
     return this._instance.get()
   }
+
+  public permissions(): Alt1.Permissions {
+    return {
+      installed: alt1.permissionInstalled,
+      overlays: alt1.permissionOverlay,
+      screen_capture: alt1.permissionPixel,
+      gamestate: alt1.permissionGameState,
+    }
+  }
 }
 
 export namespace Alt1 {
+
+  export type Permissions = {
+    installed: boolean,
+    overlays: boolean,
+    screen_capture: boolean,
+    gamestate: boolean
+  }
+
   export function exists(): boolean {
     return a1lib.hasAlt1
+  }
+
+  export function checkPermission(f: (_: Permissions) => boolean): boolean {
+    if(!Alt1.exists()) return false
+
+    return f(Alt1.instance().permissions())
   }
 
   export function clientSize(): Vector2 {

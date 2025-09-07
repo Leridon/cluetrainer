@@ -2,16 +2,15 @@ import {NeoSolvingSubBehaviour} from "../NeoSolvingSubBehaviour";
 import NeoSolvingBehaviour from "../NeoSolvingBehaviour";
 import {GameLayer} from "../../../../lib/gamemap/GameLayer";
 import {Clues} from "../../../../lib/runescape/clues";
-import {TileCoordinates, TileRectangle} from "../../../../lib/runescape/coordinates";
+import {GieliCoordinates, TileCoordinates, TileRectangle} from "../../../../lib/runescape/coordinates";
 import {GameMapMouseEvent} from "../../../../lib/gamemap/MapEvents";
 import {C} from "../../../../lib/ui/constructors";
 import * as leaflet from "leaflet"
-import {degreesToRadians, normalizeAngle, radiansToDegrees, Rectangle, Transform, Vector2} from "../../../../lib/math";
+import {Rectangle, Transform, Vector2} from "../../../../lib/math";
 import {MapEntity} from "../../../../lib/gamemap/MapEntity";
 import {Compasses} from "../../../../lib/cluetheory/Compasses";
 import {TeleportSpotEntity} from "../../map/entities/TeleportSpotEntity";
-import * as lodash from "lodash";
-import {isArray} from "lodash";
+import lodash, {identity, isArray} from "lodash";
 import {CompassReader} from "../cluereader/CompassReader";
 import {Transportation} from "../../../../lib/runescape/transportation";
 import {TransportData} from "../../../../data/transports";
@@ -30,9 +29,12 @@ import {PathStepEntity} from "../../map/entities/PathStepEntity";
 import {SettingsModal} from "../../settings/SettingsEdit";
 import * as assert from "assert";
 import {Log} from "../../../../lib/util/Log";
-import {angleDifference} from "lib/math";
 import {TextRendering} from "../../TextRendering";
 import {Alt1} from "../../../../lib/alt1/Alt1";
+import {Angles} from "../../../../lib/math/Angles";
+import {ChatReader} from "../../../../lib/alt1/readers/ChatReader";
+import {CaptureInterval} from "../../../../lib/alt1/capture";
+import {MessageBuffer} from "../../../../lib/alt1/readers/chatreader/ChatBuffer";
 import span = C.span;
 import cls = C.cls;
 import TeleportGroup = Transportation.TeleportGroup;
@@ -48,6 +50,9 @@ import digSpotArea = Clues.digSpotArea;
 import vbox = C.vbox;
 import log = Log.log;
 import render_digspot = TextRendering.render_digspot;
+import UncertainAngle = Angles.UncertainAngle;
+import degreesToRadians = Angles.degreesToRadians;
+import {ClueTrainerWiki} from "../../../wiki";
 
 class CompassHandlingLayer extends GameLayer {
   private lines: {
@@ -76,7 +81,7 @@ class CompassHandlingLayer extends GameLayer {
     this.lines = information.map(info => {
       const from = info.origin
 
-      const off = Vector2.transform(Vector2.scale(2000, Compasses.ANGLE_REFERENCE_VECTOR), Transform.rotationRadians(info.angle_radians))
+      const off = Vector2.transform(Vector2.scale(2000, Compasses.ANGLE_REFERENCE_VECTOR), Transform.rotationRadians(info.angle_radians.median))
 
       const to = Vector2.add(from, off)
 
@@ -84,8 +89,10 @@ class CompassHandlingLayer extends GameLayer {
 
       const corner_near_left = Vector2.add(from, Vector2.scale(info.origin_uncertainty, right))
       const corner_near_right = Vector2.add(from, Vector2.scale(-info.origin_uncertainty, right))
-      const corner_far_left = Vector2.add(corner_near_left, Vector2.transform(off, Transform.rotationRadians(CompassReader.EPSILON)))
-      const corner_far_right = Vector2.add(corner_near_right, Vector2.transform(off, Transform.rotationRadians(-CompassReader.EPSILON)))
+
+
+      const corner_far_left = Vector2.add(corner_near_left, Vector2.transform(off, Transform.rotationRadians(info.angle_radians.epsilon)))
+      const corner_far_right = Vector2.add(corner_near_right, Vector2.transform(off, Transform.rotationRadians(-info.angle_radians.epsilon)))
 
       return {
         line:
@@ -229,16 +236,19 @@ class CompassEntryWidget extends Widget {
     return this
   }
 
-  private _preview_angle: number | null = null
+  private _preview_angle: UncertainAngle | null = null
 
-  setPreviewAngle(angle: number | null): this {
+  setPreviewAngle(angle: UncertainAngle | null): this {
     this._preview_angle = angle
 
-    if (this.entry.angle == null) {
+    if (this.entry.information == null) {
       if (angle != null) {
-        this.angle_container?.text(`${radiansToDegrees(angle).toFixed(1)}°`)
+        this.angle_container?.text(UncertainAngle.toAngleString(angle))
+
+        this.angle_container?.tooltip(UncertainAngle.toUncertaintyString(angle))
       } else {
         this.angle_container?.text(`???°`)
+        this.angle_container?.tooltip(null)
       }
     }
 
@@ -271,8 +281,12 @@ class CompassEntryWidget extends Widget {
             PathGraphics.Teleport.asSpan(this.entry.position),
             span(this.entry.position.spot.name)
           )
+
+          position.tooltip(TileArea.toString(this.entry.position.targetArea()))
         } else {
           position.append(span(Vector2.toString(this.entry.position.center())))
+
+          position.tooltip(TileArea.toString(this.entry.position.parent))
         }
       } else {
         position.append(italic("No location selected"))
@@ -280,17 +294,19 @@ class CompassEntryWidget extends Widget {
     }
 
     if (this.entry.position) {
-      const isCommited = this.entry.angle != null
+      const isCommited = this.entry.information != null
 
       const angle = this.angle_container = cls("ctr-compass-solving-angle")
         .toggleClass("committed", isCommited)
         .text(isCommited
-          ? `${radiansToDegrees(this.entry.angle).toFixed(1)}°`
-          : (
-            this._preview_angle != null ? `${radiansToDegrees(this._preview_angle).toFixed(1)}°` : "???°"
-          )
+          ? UncertainAngle.toAngleString(this.entry.information.angle_radians)
+          : (this._preview_angle != null ? UncertainAngle.toAngleString(this._preview_angle) : "???°")
         )
         .appendTo(row)
+
+      if (isCommited) {
+        angle.tooltip(UncertainAngle.toUncertaintyString(this.entry.information.angle_radians))
+      }
 
       const angle_button = cls("ctr-neosolving-compass-entry-button")
         .appendTo(row)
@@ -309,9 +325,9 @@ class CompassEntryWidget extends Widget {
   }
 }
 
-const DEBUG_ANGLE_OVERRIDE: number = null // degreesToRadians(206.87152474371157)
+const DEBUG_ANGLE_OVERRIDE: UncertainAngle = null // degreesToRadians(206.87152474371157)
 const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = undefined //{origin: {x: 3214, y: 3376, level: 0}}
-const DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE: number = undefined // degreesToRadians(112.6)
+const DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE: UncertainAngle = undefined // degreesToRadians(112.6)
 
 /**
  * The {@link NeoSolvingSubBehaviour} for compass clues.
@@ -333,7 +349,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
   constructor(parent: NeoSolvingBehaviour, public clue: Clues.Compass, public reader: CompassReader,
               private spot_selection_callback: (_: TileCoordinates) => Promise<any>
-              ) {
+  ) {
     super(parent, "clue")
 
     this.settings = deps().app.settings.settings.solving.compass
@@ -359,16 +375,22 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
         } else {
           if (was_state && this.settings.auto_commit_on_angle_change && is_state.state == "normal") {
             if (was_state.state == "spinning" ||
-              angleDifference(is_state.angle, was_state.angle) > CompassSolving.ANGLE_CHANGE_COMMIT_THRESHOLD) {
+              was_state.state == "normal" && UncertainAngle.meanDifference(is_state.result.angle, was_state.result.angle) > CompassSolving.ANGLE_CHANGE_COMMIT_THRESHOLD) {
               this.commit()
             }
           }
 
           if (is_state) {
-            this.entries.forEach(e => e.widget.setPreviewAngle(is_state?.state == "normal" ? is_state.angle : null))
+            this.entries.forEach(e => e.widget.setPreviewAngle(is_state?.state == "normal" ? is_state.result.angle : null))
           }
         }
+
+        if (!was_state && this.latest_unhandled_sextant_position) {
+          log().log("Checking backlogged sextant position")
+          this.tryToHandleSextantPosition()
+        }
       }, h => h.bindTo(this.lifetime_manager))
+
     }
   }
 
@@ -388,19 +410,16 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       .append(
         inlineimg("/assets/icons/arrow.png").tooltip("Compass Solver"),
         "Compass Solver",
-        /*inlineimg("/assets/icons/info_nis.png").addClass("ctr-clickable")
-          .css("height", "1em")
-          .css("margin-left", "4px")
-          .on("click", async () => {
-
-          }),*/
         C.spacer(),
-        inlineimg("/assets/icons/reset_nis.png").addClass("ctr-clickable")
+        inlineimg("/assets/icons/reset_nis.png").addClass("ctr-clickable").css("height", "1em").css("margin-top", "2px")
           .on("click", async () => {
             this.reset(true)
           })
           .tooltip("Reset compass solver."),
-        inlineimg("/assets/icons/settings.png").addClass("ctr-clickable")
+        inlineimg("/assets/icons/info_nis.png").css("height", "1em").css("margin-top", "2px").addClass("ctr-clickable")
+          .on("click", () => ClueTrainerWiki.openOnPage("compasssolver"))
+          .tooltip("Learn more about the compass solver."),
+        inlineimg("/assets/icons/settings.png").addClass("ctr-clickable").css("height", "1em").css("margin-top", "2px")
           .on("click", async () => {
             const result = await SettingsModal.openOnPage("compass")
 
@@ -408,6 +427,11 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
           }),
       )
       .appendTo(container)
+
+    inlineimg("/assets/icons/settings.png").addClass("ctr-clickable").css("height", "1em").css("margin-top", "2px")
+      .on("click", async () => {
+        await SettingsModal.openOnPage("scans")
+      }),
 
     this.entry_container = c().css("flex-basis", "100%").appendTo(container)
     //this.spot_selection_container = c().appendTo(container)
@@ -451,7 +475,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
         if (count(this.entries, e => !e.information) > 1) this.deleteEntry(entry)
         else this.setSelection(index)
       } else {
-        entry.angle = null
         entry.information = null
         entry.position = null
         entry.preconfigured = null
@@ -470,7 +493,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       if (!this.entries.some(e => !e.information) && count(this.spots, e => e.isPossible) > 1) {
         this.createEntry({
           position: null,
-          angle: null,
           information: null,
           preconfigured: null,
         })
@@ -486,12 +508,11 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     if (index >= 0) {
       const state = this.process.state()
 
-      entry.angle = null
       entry.information = null
       entry.widget.render()
       entry.widget.setPreviewAngle(
         state.state == "normal"
-          ? state.angle
+          ? state.result.angle
           : undefined
       )
 
@@ -502,48 +523,53 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     }
   }
 
-  async commit(entry: CompassSolving.Entry = undefined, is_manual: boolean = false) {
+  async commit(entry: CompassSolving.Entry = undefined, is_manual: boolean = false): Promise<boolean> {
     entry = entry ?? this.entries[this.entry_selection_index]
 
-    if (!entry || !this.entries.includes(entry)) return
+    if (!entry || !this.entries.includes(entry)) return false
 
-    if (!entry?.position) return
-    if (entry.angle != null) return
+    if (!entry?.position) return false
+    if (entry.information != null) return false
 
-    let angle: number
+    const angle: UncertainAngle = ((): UncertainAngle => {
+      if (DEBUG_ANGLE_OVERRIDE != null) return DEBUG_ANGLE_OVERRIDE
 
-    if (entry.is_solution_of_previous_clue) {
-      if (DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE != undefined) {
-        angle = DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE
+      if (entry.is_solution_of_previous_clue) {
+        if (DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE != undefined) {
+          return DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE
+        } else {
+          const res = this.reader.getAngle()
+          assert(res.type == "success")
+
+          return res.angle
+        }
       } else {
-      const res = this.reader.getAngle()
-      assert(res.type == "success")
+        const state = this.process.state()
 
-      angle = res.angle
+        if (state.state != "normal") return undefined
+
+        return state.result.angle
       }
-    } else {
-      const state = this.process.state()
+    })()
 
-      if (state.state != "normal" && DEBUG_ANGLE_OVERRIDE == null) return
+    if (angle == undefined) {
+      if (is_manual) notification("Cannot commit undefined angle.", "error").show()
 
-      angle = state.angle
+      return false
     }
-
-    if (DEBUG_ANGLE_OVERRIDE != null) angle = DEBUG_ANGLE_OVERRIDE
 
     const info = Compasses.TriangulationPoint.construct(CompassSolving.Spot.coords(entry.position), angle)
 
     if (!this.spots.some(s => Compasses.isPossible([info], s.spot.spot))) {
       if (is_manual) notification("Refusing to lock in impossible angle.", "error").show()
 
-      log().log(`Cowardly refusing to lock in impossible angle ${radiansToDegrees(info.angle_radians)}° from ${info.modified_origin.x} | ${info.modified_origin.y}`, "Compass Solving")
+      log().log(`Cowardly refusing to lock in impossible angle ${UncertainAngle.toString(info.angle_radians, 3)} from ${TileArea.toString(info.position.parent)}`, "Compass Solving")
 
-      return
+      return false
     }
 
-    log().log(`Committing ${radiansToDegrees(info.angle_radians)}° to entry ${this.entries.indexOf(entry)} (${info.modified_origin.x} | ${info.modified_origin.y})`, "Compass Solving")
+    log().log(`Committing ${UncertainAngle.toString(info.angle_radians)} to entry ${this.entries.indexOf(entry)} (${info.modified_origin.x} | ${info.modified_origin.y})`, "Compass Solving")
 
-    entry.angle = angle
     entry.information = info
 
     entry.widget.render()
@@ -572,11 +598,11 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
               spot.center(),
             )
 
-            const COLINEARITY_THRESHOLD = 5 * CompassReader.EPSILON
+            const COLINEARITY_THRESHOLD = degreesToRadians(1.5)
 
             return Math.min(
-              angleDifference(angle, e.information.angle_radians),
-              angleDifference(normalizeAngle(angle + Math.PI), e.information.angle_radians),
+              Angles.angleDifference(angle, e.information.angle_radians.median),
+              Angles.angleDifference(Angles.normalizeAngle(angle + Math.PI), e.information.angle_radians.median),
             ) < COLINEARITY_THRESHOLD
           })
 
@@ -594,7 +620,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       if (index_of_next_free_entry == current_index) {
         this.createEntry({
           position: null,
-          angle: null,
           information: null,
           preconfigured: null,
         })
@@ -604,6 +629,8 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
         this.setSelection(index_of_next_free_entry)
       }
     }
+
+    return true
   }
 
   private async updateMethodPreviews() {
@@ -638,7 +665,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     await this.spot_selection_callback(spot?.spot?.spot)
 
-    if (set_as_solution && set_as_solution) {
+    if (set_as_solution) {
       this.registerSolution(this.clue.single_tile_target ? TileArea.fromTiles([spot.spot.spot]) : digSpotArea(spot.spot.spot))
     }
   }
@@ -667,10 +694,10 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     // Get a list of possible spots, sorted ascendingly by how far they are away from the angle lines. possible[0] is the closest.
     const possible = lodash.sortBy(this.spots.filter(s => s.isPossible), p =>
       Math.max(...information.map(info =>
-          angleDifference(Compasses.getExpectedAngle(
+          UncertainAngle.meanDifference(UncertainAngle.fromAngle(Compasses.getExpectedAngle(
             info.modified_origin,
             p.spot.spot
-          ), info.angle_radians)
+          )), info.angle_radians)
         )
       )
     )
@@ -695,7 +722,9 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     }
 
     if (possible.length > 0 && possible.length <= 5) {
-      const area = TileRectangle.extend(TileRectangle.from(...possible.map(s => s.spot.spot)), 1)
+      let area = TileRectangle.from(...possible.map(s => s.spot.spot))
+
+      if (!this.clue.single_tile_target) area = TileRectangle.extend(area, 1)
 
       this.registerSolution(TileArea.fromRect(area))
     }
@@ -728,7 +757,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     const state = this.process.state()
 
     entry.widget = new CompassEntryWidget(entry)
-      .setPreviewAngle((!state || state.state != "normal") ? null : state.angle)
+      .setPreviewAngle((!state || state.state != "normal") ? null : state.result.angle)
       .appendTo(this.entry_container)
 
 
@@ -753,22 +782,30 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     this.entries.push(entry)
 
     if (!dont_update_selection) {
-    this.setSelection(this.entries.length - 1)
+      this.setSelection(this.entries.length - 1)
+    }
+
+    if (entry.information) {
+      this.updatePossibilities(false)
     }
 
     return entry
   }
 
-  async registerSpot(coords: TileArea.ActiveTileArea | TeleportGroup.Spot, is_compass_solution: boolean): Promise<void> {
+  private latest_unhandled_sextant_position: {
+    trigger_message: MessageBuffer.Message,
+    position: TileCoordinates,
+  } = null
+
+  async registerSpot(coords: TileArea.ActiveTileArea | TeleportGroup.Spot, is_compass_solution: boolean): Promise<CompassSolving.Entry> {
     const entry = this.entries.find((entry, i) => {
       if (i < this.entry_selection_index) return false
-      if (entry.preconfigured && entry.angle == null) return false
-      if (i != this.entry_selection_index && entry.angle != null) return false
+      if (entry.preconfigured && entry.information == null) return false
+      if (i != this.entry_selection_index && entry.information != null) return false
 
       return true
     }) ?? this.createEntry({
       position: null,
-      angle: null,
       information: null,
       preconfigured: null,
     })
@@ -776,7 +813,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     const hadInfo = entry.information
 
     entry.position = coords
-    entry.angle = null
     entry.information = null
     entry.preconfigured = null
 
@@ -787,15 +823,17 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     entry.widget.render()
 
     const state = this.process.state()
-    entry.widget.setPreviewAngle(state?.state != "normal" ? null : state.angle)
+    entry.widget.setPreviewAngle(state?.state != "normal" ? null : state.result.angle)
 
     if (hadInfo) {
       if (entry.is_solution_of_previous_clue && is_compass_solution) {
-        await this.commit(entry)
+        this.commit(entry)
       } else {
         await this.updatePossibilities(false)
       }
     }
+
+    return entry
   }
 
   /**
@@ -839,7 +877,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
         this.createEntry({
           position: TileArea.activate(assumed_position_from_previous_clue),
-          angle: null,
           information: null,
           is_solution_of_previous_clue: true,
         }, true)
@@ -868,7 +905,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
         this.createEntry({
           position: spot,
-          angle: null,
           information: null,
           preconfigured: e,
         }, true)
@@ -878,7 +914,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     if (this.entries.length == 0) {
       this.createEntry({
         position: null,
-        angle: null,
         information: null,
         preconfigured: null,
       })
@@ -893,6 +928,28 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
       this.updatePossibilities(true)
     }
+  }
+
+  private async tryToHandleSextantPosition() {
+    if (!this.latest_unhandled_sextant_position) return
+
+    const reader_state = this.process.state()
+
+    if (!reader_state) return
+
+    if (reader_state.state != "normal") {
+      log().log("Discarding sextant because no valid angle is available.")
+
+      this.latest_unhandled_sextant_position = null
+
+      return
+    }
+
+    const entry = await this.registerSpot(TileArea.activate(TileArea.init(this.latest_unhandled_sextant_position.position)), false)
+
+    await this.commit(entry, true)
+
+    this.latest_unhandled_sextant_position = null
   }
 
   protected async begin() {
@@ -919,6 +976,68 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       this.renderWidget()
 
       await this.reset()
+
+      if (Alt1.exists()) {
+        this.lifetime_manager.bind(
+          ChatReader.instance().subscribe({
+            options: () => ({
+              interval: CaptureInterval.fromApproximateInterval(300), paused: () => {
+                console.log(this.needs_more_info)
+                return !this.needs_more_info
+              }
+            })
+          })
+        )
+
+        if (this.settings.read_chat_for_sextant_message) {
+          ChatReader.instance().new_message_bulk.on(async e => {
+            log().log(`Got ${e.length} new messages`, "Sextant Reading", e)
+
+            const trigger_message = lodash.maxBy(e.filter(m => m.text.includes("The sextant displays")), m => m.timestamp)
+
+            if (!trigger_message) {
+              return
+            }
+
+            if (!trigger_message || (Date.now() - trigger_message.timestamp) > 3000) {
+              return
+            }
+
+            const rest = e.filter(m => m.timestamp == trigger_message.timestamp)
+
+            const latitude_message = rest.map(m => m.text.match(/^(\d\d) degrees, (\d\d) minutes (north|south)/)).find(identity)
+            const longitude_message = rest.map(m => m.text.match(/^(\d\d) degrees, (\d\d) minutes (east|west)/)).find(identity)
+
+            if (!longitude_message || !latitude_message) {
+              return
+            }
+
+            const coords: GieliCoordinates = {
+              longitude: {
+                degrees: Number(longitude_message[1]),
+                minutes: Number(longitude_message[2]),
+                direction: longitude_message[3] as "east" | "west"
+              }, latitude: {
+                degrees: Number(latitude_message[1]),
+                minutes: Number(latitude_message[2]),
+                direction: latitude_message[3] as "north" | "south"
+              }
+            }
+
+            if (!this.latest_unhandled_sextant_position || trigger_message.timestamp > this.latest_unhandled_sextant_position.trigger_message.timestamp) {
+              this.latest_unhandled_sextant_position = {
+                trigger_message: trigger_message,
+                position: GieliCoordinates.toCoords(coords)
+              }
+
+              log().log(GieliCoordinates.toString(coords))
+
+              this.tryToHandleSextantPosition()
+            }
+
+          }).bindTo(this.lifetime_manager)
+        }
+      }
     }
   }
 
@@ -942,7 +1061,6 @@ export namespace CompassSolving {
 
   export type Entry = {
     position: TileArea.ActiveTileArea | TeleportGroup.Spot | null,
-    angle: number | null,
     information: Compasses.TriangulationPoint | null,
     preconfigured?: CompassSolving.TriangulationPreset["sequence"][number],
     is_solution_of_previous_clue?: boolean,
@@ -974,16 +1092,17 @@ export namespace CompassSolving {
         }, {
         expected: "Cast Taverley Teleport",
         teleport_id: {group: "normalspellbook", spot: "taverley"}
-      }, {
-        expected: "Cast Varrock Teleport",
-        teleport_id: {group: "normalspellbook", spot: "varrock"}
-      }, {
-        expected: "Cast Lumbridge Teleport",
-        teleport_id: {group: "normalspellbook", spot: "lumbridge"}
-      }, {
-        expected: "Cast Falador Teleport",
-        teleport_id: {group: "normalspellbook", spot: "falador"}
-      }, {
+      },
+        {expected: "Cast Varrock Teleport", teleport_id: {group: "normalspellbook", spot: "varrock"}},
+        {expected: "Cast Lumbridge Teleport", teleport_id: {group: "normalspellbook", spot: "lumbridge"}},
+        {expected: "Cast North-western Anachronia Teleport", teleport_id: {group: "normalspellbook", spot: "northwesternanachronia"}},
+        {expected: "Cast Eastern Anachronia Teleport", teleport_id: {group: "normalspellbook", spot: "easternanachronia"}},
+        {expected: "Cast Northern Lost Grove Teleport", teleport_id: {group: "normalspellbook", spot: "northlostgrove"}},
+
+        {
+          expected: "Cast Falador Teleport",
+          teleport_id: {group: "normalspellbook", spot: "falador"}
+        }, {
         expected: "Cast Camelot Teleport",
         teleport_id: {group: "normalspellbook", spot: "camelot"}
       }, {
@@ -1035,6 +1154,8 @@ export namespace CompassSolving {
         {expected: "Cast Barbarian Teleport", teleport_id: {group: "lunarspellbook", spot: "barbarian"}},
         {expected: "Cast North Ardougne Teleport", teleport_id: {group: "lunarspellbook", spot: "northardougne"}},
         {expected: "Cast Khazard Teleport", teleport_id: {group: "lunarspellbook", spot: "khazard"}},
+        {expected: "Cast Western Kharazi Jungle Teleport", teleport_id: {group: "lunarspellbook", spot: "westernkharazi"}},
+        {expected: "Cast Mountain Camp Teleport", teleport_id: {group: "lunarspellbook", spot: "mountaincamp"}},
         {expected: "Cast Fishing Guild Teleport", teleport_id: {group: "lunarspellbook", spot: "fishing"}},
         {expected: "Cast Catherby Teleport", teleport_id: {group: "lunarspellbook", spot: "catherby"}},
         {expected: "Cast Ice Plateau Teleport", teleport_id: {group: "lunarspellbook", spot: "iceplateu"}},
@@ -1195,7 +1316,7 @@ export namespace CompassSolving {
     }
   }
 
-  export const ANGLE_CHANGE_COMMIT_THRESHOLD = degreesToRadians(4)
+  export const ANGLE_CHANGE_COMMIT_THRESHOLD = Angles.degreesToRadians(4)
 
   export type Settings = {
     auto_commit_on_angle_change: boolean,
@@ -1210,7 +1331,8 @@ export namespace CompassSolving {
     show_method_preview_of_secondary_solutions: boolean,
     invert_preset_sequence_if_previous_solution_was_used: boolean,
     skip_triangulation_point_if_colinear: boolean,
-    beam_color: string
+    beam_color: string,
+    read_chat_for_sextant_message: boolean
   }
 
   export type TriangulationPreset = {
@@ -1282,7 +1404,7 @@ export namespace CompassSolving {
 
     export const master_whales_maw: TriangulationPreset = {
       compass_id: clue_data.arc_compass.id,
-      id: -6,
+      id: -9,
       name: "{{teleport arctabs whalesmaw}} Whale`s Maw",
       sequence: [
         {teleport: {group: "arctabs", spot: "whalesmaw"}},
@@ -1299,6 +1421,15 @@ export namespace CompassSolving {
       ]
     }
 
+    export const elite_amulet_of_nature: TriangulationPreset = {
+      compass_id: [clue_data.gielinor_compass.id, clue_data.tetracompass.id],
+      id: -8,
+      name: "{{teleport amuletofnature faladortree}} Falador",
+      sequence: [
+        {tile: {"x": 3005, "y": 3375, "level": 0}},
+      ]
+    }
+
     export const builtin: TriangulationPreset[] = [
       elite_moonclan_southfeldiphills,
       elite_moonclan_iceplateu,
@@ -1306,7 +1437,8 @@ export namespace CompassSolving {
       elite_falador,
       master_turtle_island_dock,
       master_whales_maw,
-      elite_menaphos_house_south_feldip_hills
+      elite_menaphos_house_south_feldip_hills,
+      elite_amulet_of_nature
     ]
   }
 
@@ -1321,7 +1453,8 @@ export namespace CompassSolving {
       show_method_preview_of_secondary_solutions: true,
       invert_preset_sequence_if_previous_solution_was_used: false,
       skip_triangulation_point_if_colinear: true,
-      beam_color: '#3388ff'
+      beam_color: '#3388ff',
+      read_chat_for_sextant_message: true
     }
 
     export function normalize(settings: Settings): Settings {
@@ -1337,8 +1470,7 @@ export namespace CompassSolving {
       if (![true, false].includes(settings.invert_preset_sequence_if_previous_solution_was_used)) settings.show_method_preview_of_secondary_solutions = DEFAULT.invert_preset_sequence_if_previous_solution_was_used
       if (![true, false].includes(settings.skip_triangulation_point_if_colinear)) settings.skip_triangulation_point_if_colinear = DEFAULT.skip_triangulation_point_if_colinear
       if (typeof settings.beam_color != "string") settings.beam_color = DEFAULT.beam_color
-
-      //settings.use_previous_solution_as_start = false // Options disabled for now because it doesn't work reliably
+      if (![true, false].includes(settings.read_chat_for_sextant_message)) settings.read_chat_for_sextant_message = DEFAULT.read_chat_for_sextant_message
 
       return settings
     }

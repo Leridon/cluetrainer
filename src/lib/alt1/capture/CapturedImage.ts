@@ -6,6 +6,7 @@ import {LegacyOverlayGeometry} from "../LegacyOverlayGeometry";
 import {NeedleImage} from "./NeedleImage";
 import * as lodash from "lodash";
 import {Alt1Color} from "../Alt1Color";
+import {Alt1OverlayDrawCalls} from "../overlay/Alt1OverlayDrawCalls";
 
 export class CapturedImage {
   private _name: string = undefined
@@ -43,6 +44,10 @@ export class CapturedImage {
       //debugger
       throw new Error("Tried to perform an operation on an expired ImgRefBind")
     }
+  }
+
+  timestamp(): number {
+    return this.capture.timestamp
   }
 
   setName(name: string): this {
@@ -167,6 +172,18 @@ export class CapturedImage {
 
   debugOverlay(overlay: LegacyOverlayGeometry = new LegacyOverlayGeometry()): LegacyOverlayGeometry {
     overlay.rect2(this.screenRectangle())
+
+    if (this._name) {
+      overlay.text(this._name, this.screen_rectangle.origin,
+        {width: 10, centered: false, color: Alt1Color.white}
+      )
+    }
+
+    return overlay
+  }
+
+  debugOverlay2(overlay: Alt1OverlayDrawCalls.GeometryBuilder = new Alt1OverlayDrawCalls.GeometryBuilder): Alt1OverlayDrawCalls.GeometryBuilder {
+    overlay.rectangle(this.screenRectangle())
 
     if (this._name) {
       overlay.text(this._name, this.screen_rectangle.origin,

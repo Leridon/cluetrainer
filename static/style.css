@@ -997,6 +997,11 @@ video {
     grid-row: auto;
 }
 
+.nisl-property-content > .ctr-lightbutton, .ctr-lightbutton.ctr-lightbutton-slim {
+    margin: 0;
+    font-size: 0.9em;
+}
+
 .nisl-property-content > * {
     width: 100%;
 }
@@ -1076,6 +1081,10 @@ video {
 .nisl-textlink {
     cursor: pointer;
     color: #0d65e7;
+}
+
+.nisl-textlink:hover {
+    color: var(--bs-link-hover-color);
 }
 
 /* Context menu */
