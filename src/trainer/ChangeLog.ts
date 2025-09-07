@@ -437,6 +437,7 @@ export namespace Changelog {
             .item("Fixed a bug that caused tetracompass solutions to be 3x3 instead of 1x1 when using the previous solution as a starting point.")
             .item("Fixed a bug that caused an Alt1 function to be called when not in Alt1.")
             .item("Fixed slightly inaccurate locations for several clues.")
+            .item("Refactored how reference images for slider puzzled are loaded to save requests and bandwidth.")
           )
 
           .render(p => p.paragraph("This update has been in a public beta for two months. Lots of issues were found and resolved in that period, thanks to the feedback from the beta testers. Still, this update introduces significant changes, so issues could still be present. Feel free to report any issues or suggest improvements to the new features in the usual places."))
