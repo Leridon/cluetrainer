@@ -386,6 +386,10 @@ export namespace Changelog {
       return this.render(layout => layout.row(tap(new List(), f)))
     }
 
+    header(header: string): this {
+      return this.render(layout => layout.header(header, "left"))
+    }
+
     releaseDate(date: Date): this {
       this.entry.version.release_date = date
       return this
@@ -395,26 +399,45 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-        builder.wip(56, "Compass Changes")
+        builder.wip(56, "A Compass Update")
+          .header("Upgraded Compass Solver")
           .list(l => l
-            .item("Updated the internal compass calibration tool.")
-            .item("Updated the compass calibration for anti aliasing turned off to be much more accurate.")
-            .item("Added the amulet of nature teleport to Falador farm as a builtin triangulation strategy.")
-            .item("Migrated the compass overlay to new library code, so that it will disappear after Clue Trainer is reloaded or closed.")
-            .item("Added an antialiasing indicator to the compass overlay.")
-            .item("Added interactive tooltips to the compass status overlay.")
-            .item("Upgraded the compass reader.", new List()
-              .item("It now produces more precise angles.")
-              .item("It is more resistant against interference from tooltips or infobox popups.")
-              .item("Closed compasses are detected more consistently.")
-              .item("Improved the detection logic for solved compasses. This should improve the behaviour for back to back compasses further.")
+            .item("Significantly improved the accuracy of compass readings when antialiasing is turned off.")
+            .sublist(l => l
+              .item(italic("This will result in narrower triangulation lines and fewer ambiguous solutions, resulting in fewer needed teleports on average."))
+              .item(italic("A huge thanks to Ngis for doing a majority of the manual calibration process. Over 6,500 compass angles were tested in game, resulting in 2000 unique distinguishable angles and an average uncertainty of less than 0.1°. As you can imagine, this is a very time-consuming task, so please show your appreciation to Ngis."))
             )
+            .item("Added a new builtin triangulation strategy for elite compasses using the amulet of nature teleport to Falador park.")
+            .sublist(l => l
+              .item(italic("The improved accuracy buffs static triangulation teleports, which makes the amulet of nature a valid strategy that resolved most compass spots with just a single teleport."))
+              .item("The builtin strategy uses the landing tile that is also used in the Falador scan method. The triangulation is very sensitive to the exact tile you are on, so remember to create a custom triangulation strategy if you use a different tile."))
+            .item("The compass reader is now more resistant against interference from tooltips or infobox popups.")
+            .item("Closed compasses are now detected more consistently, improving the solving flow for back-to-back compasses.")
+            .item("Improved the detection logic for solved compasses. This should improve the behaviour for back to back compasses further.")
+            .item("The compass solver can now read your chat to look for messages produced by using the Sextant item. When one is detected, a triangulation line from that specific tile using the current compass angle will immediately be drawn. This feature is on by default, but can be toggled off.")
+            .sublist(l => l.item(italic("Dev note: Using this feature requires carrying a Sextant, which sacrifices an inventory slot. With the improved accuracy of the compass reader, this can be used to solve compasses without teleporting at all. I am excited to see if and how users will integrate this into their solving-flow.")))
+          )
+          .header("Compass Overlay Improvements")
+          .list(l => l
+            .item("Migrated the compass overlay to new library code, so that it will disappear after Clue Trainer is reloaded or closed.")
+            .item("Added interactive tooltips to the compass status overlay.")
+            .item("The compass overlay will now display a warning when antialiasing is detected. This can be toggled off.")
+          )
+          .header("Cluepedia")
+          .list(l => l
+            .item("Added direct links for Cluepedia pages for easier sharing. They can be copied by a button in the top right corner of the page.")
+            .item("Added pages with detailed explanations of compass clues and the Compass Solver.")
+          )
+          .header("Miscellaneous")
+          .list(l => l
             .item("Fixed that teleports added with the 110 runecrafting update were not detected when hovering them and pressing Alt+1.")
             .item("Updated Clue Chasers recommendations for passage of the abyss setup to include the Delver's anklet.")
             .item("Fixed a bug that caused tetracompass solutions to be 3x3 instead of 1x1 when using the previous solution as a starting point.")
-            .item("Added direct links for Cluepedia pages. They can be copied by a button in the top right corner of the page.")
             .item("Fixed a bug that caused an Alt1 function to be called when not in Alt1.")
+            .item("Fixed slightly inaccurate locations for several clues.")
           )
+
+          .render(p => p.paragraph("This update has been in a public beta for several weeks. Lots of issues were found and resolved in that period, thanks to the feedback from the beta testers. Still, this update introduces significant changes, so issues could still be present. Feel free to report any issues or suggest improvements to the new features in the usual places."))
 
         builder.release(55, "Lost Grove Method and Minor Fixes", new Date(Date.parse("2025-07-12")))
           .list(l => l

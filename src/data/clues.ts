@@ -4702,7 +4702,7 @@ export namespace clue_data {
       "range": 14,
       "scantext": "The Lost Grove"
     },
- {
+ /*{
       "id": 486,
       "type": "scan",
       "tier": "master",
@@ -4710,9 +4710,7 @@ export namespace clue_data {
       "spots": [{"x":1374,"y":5550,"level":0},{"x":1390,"y":5616,"level":0},{"x":1431,"y":5596,"level":0},{"x":1421,"y":5627,"level":0},{"x":1423,"y":5718,"level":0},{"x":1417,"y":5684,"level":0},{"x":1405,"y":5651,"level":0},{"x":1392,"y":5730,"level":0},{"x":1367,"y":5720,"level":0},{"x":1361,"y":5733,"level":0},{"x":1307,"y":5622,"level":0},{"x":1385,"y":5656,"level":0},{"x":1352,"y":5625,"level":0},{"x":1373,"y":5634,"level":0},{"x":1351,"y":5659,"level":0},{"x":1368,"y":5609,"level":0},{"x":1370,"y":5670,"level":0}],
       "range": 14,
       "scantext": "The Lost Grove (TEST VERSION, NOT ACTUALLY INGAME)"
-    },
-
-
+    },*/
   ]
 
   export const skilling: Clues.Skilling[] = [
