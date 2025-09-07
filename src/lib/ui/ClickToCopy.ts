@@ -2,10 +2,10 @@ import Widget from "./Widget";
 import * as jquery from "jquery";
 
 export class ClickToCopy extends Widget {
-  constructor(text: string) {
+  constructor(text: string, displayed_text_override: string = null) {
     super(jquery("<span>"));
 
-    this.text(text).addClass("nisl-click-to-copy")
+    this.text(displayed_text_override ?? text).addClass("nisl-click-to-copy")
 
     this.tooltip("Click to copy")
 
@@ -19,7 +19,7 @@ export class ClickToCopy extends Widget {
       this.text("Copied!")
 
       setTimeout(() => {
-        this.text(text)
+        this.text(displayed_text_override ?? text)
         this.css("width", null)
         this.toggleClass("copied-recently", false)
       }, 3000)

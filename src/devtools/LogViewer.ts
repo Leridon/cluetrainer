@@ -21,8 +21,6 @@ export class LogViewer extends NisModal {
     this.body.empty()
 
     if (this.buffer) {
-
-
       const container = cls("nisl-textinput").appendTo(this.body)
         .css("height", "unset")
         .css("max-height", "100%")

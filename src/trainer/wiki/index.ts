@@ -9,6 +9,11 @@ import {WikiPageMethodEditing} from "./pages/WikiPageMethodEditing";
 import {WikiPageScanTreeEditing} from "./pages/WikiPageScanTreeEditing";
 import {WikiPageInteractiveOverlays} from "./pages/WikiPageInteractiveOverlay";
 import {WikiPageTooFarDifferentLevel} from "./pages/scans/WikiPageTooFarDifferentLevel";
+import {WikiPageCompassClues} from "./pages/compass/WikiPageCompassClues";
+import {WikiPageCompassSolver} from "./pages/compass/WikiPageCompassSolver";
+import {WikiPageCompassAngleUncertainty} from "./pages/compass/WikiPageCompassAngleUncertainty";
+import {QueryLinks} from "../query_functions";
+import {ClueTrainerCommands} from "../ClueTrainer";
 
 export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
   constructor() {
@@ -26,11 +31,20 @@ export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
         {id: "toofardifferentlevel", name: "Try scanning a different level.", short_name: "Different Level", renderer: () => new WikiPageTooFarDifferentLevel()}
       ]
     }, {
-      name: "Miscellaneous",
+      name: "Compasses",
       entries: [
-        {id: "interactiveoverlays", name: "Interactive Overlays", renderer: () => new WikiPageInteractiveOverlays()}
+        {id: "compassclues", name: "Compass Clues", renderer: () => new WikiPageCompassClues()},
+        {id: "compasssolver", name: "Compass Solver", renderer: () => new WikiPageCompassSolver()},
+        {id: "compasssolveruncertainty", name: "Improving Accuracy", renderer: () => new WikiPageCompassAngleUncertainty()},
       ]
     },
+      {
+        name: "Miscellaneous",
+        entries: [
+          {id: "interactiveoverlays", name: "Interactive Overlays", renderer: () => new WikiPageInteractiveOverlays()}
+        ]
+
+      },
       {
         name: "Method Creation",
         entries: [
@@ -38,17 +52,29 @@ export class ClueTrainerWiki extends SectionControl<ClueTrainerWiki.page_id> {
           {id: "scantreeediting", name: "Creating Scan Trees", short_name: "Scan Trees", renderer: () => new WikiPageScanTreeEditing()},
           {id: "scanequivalenceclasses", name: "Scan Tree Equivalence Classes", short_name: "Equivalence Classes", renderer: () => new WikiPageScanEquivalenceClasses()},
         ]
-      }]);
+      }], page => QueryLinks.link(ClueTrainerCommands.wiki_command, {page: page}, false));
   }
 }
 
 export namespace ClueTrainerWiki {
-  export type page_id = "home" | "scantrees" | "scantreecontroloverlay" | "scans" | "scanequivalenceclasses"
-    | "methodediting" | "scantreeediting" | "toofardifferentlevel" | "interactiveoverlays"
+  export type page_id =
+    "home"
+    | "scantrees"
+    | "scantreecontroloverlay"
+    | "scans"
+    | "scanequivalenceclasses"
+    | "methodediting"
+    | "scantreeediting"
+    | "toofardifferentlevel"
+    | "interactiveoverlays"
+    | "compassclues"
+    | "compasssolver"
+    | "compasssolverantialiasing"
+    | "compasssolveruncertainty"
 
   let instance: ClueTrainerWiki = null
 
-  export function openOnPage(page?: page_id) {
+  export function openOnPage(page?: page_id): void {
     if (instance) instance.setActiveSection(page)
     else {
       const modal = new class extends NisModal {

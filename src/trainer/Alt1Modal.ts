@@ -2,9 +2,9 @@ import {NisModal} from "../lib/ui/NisModal";
 import Properties from "./ui/widgets/Properties";
 import {BigNisButton} from "./ui/widgets/BigNisButton";
 import {C} from "../lib/ui/constructors";
+import {ClickToCopy} from "../lib/ui/ClickToCopy";
 import hbox = C.hbox;
 import inlineimg = C.inlineimg;
-import {ClickToCopy} from "../lib/ui/ClickToCopy";
 
 export class Alt1Modal extends NisModal {
 
@@ -18,7 +18,7 @@ export class Alt1Modal extends NisModal {
     if (this.url_override) {
       return `alt1://addapp/${this.url_override}/appconfig.json`
     } else {
-      return `alt1://addapp/${window.location.protocol}//${window.location.host}${window.location.pathname.slice(0, window.location.pathname.lastIndexOf("/") + 1)}appconfig.json`
+      return `alt1://addapp/${window.location.protocol}//${window.location.host}/appconfig.json`
     }
   }
 
@@ -39,7 +39,7 @@ export class Alt1Modal extends NisModal {
     )
 
     layout.paragraph("Alternatively, visit ",
-      new ClickToCopy(this.url_override ?? window.location.toString()),
+      new ClickToCopy(this.url_override ?? `${location.protocol}//${location.host}`),
       " in Alt1's builtin browser to get an installation prompt.")
 
     layout.header("About Alt1")

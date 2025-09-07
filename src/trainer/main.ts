@@ -5,7 +5,7 @@ import {util} from "../lib/util/util";
 import {TileArea} from "../lib/runescape/coordinates/TileArea";
 import {ScanTree} from "../lib/cluetheory/scans/ScanTree";
 import * as lodash from "lodash"
-import {MovementAbilities} from "../lib/runescape/movement";
+import {HostedMapData, MovementAbilities} from "../lib/runescape/movement";
 import cleanedJSON = util.cleanedJSON;
 
 async function fix_path(p: Path): Promise<number> {
@@ -63,6 +63,8 @@ async function fix_tree(tree: ScanTree.ScanTreeNode) {
 }
 
 export async function makeshift_main(): Promise<void> {
+
+  console.log(await HostedMapData.get().isAccessible({x: 2673, y: 2958, level: 0}))
 
   return
 }

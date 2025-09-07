@@ -4,23 +4,23 @@ import {util} from "../../util/util";
 import {ScreenRectangle} from "../ScreenRectangle";
 import {OCR} from "../OCR";
 import {ColortTriplet} from "alt1/ocr";
-import {async_lazy} from "../../Lazy";
+import {async_lazy, lazy} from "../../Lazy";
 import * as a1lib from "alt1";
 import {Log} from "../../util/Log";
 import {ChatboxFinder} from "./chatreader/ChatboxFinder";
 import {ChatAnchors} from "./chatreader/ChatAnchors";
 import {CapturedChatbox} from "./chatreader/CapturedChatbox";
 import {MessageBuffer} from "./chatreader/ChatBuffer";
-import * as lodash from "lodash";
+import lodash from "lodash";
+import {Alt1} from "../Alt1";
+import {Alt1ScreenCaptureService} from "../capture/Alt1ScreenCaptureService";
+import {Alt1Color} from "../Alt1Color";
+import {ewent} from "../../reactive";
 import over = LegacyOverlayGeometry.over;
 import log = Log.log;
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
 import Message = MessageBuffer.Message;
-import {Alt1} from "../Alt1";
-import {lazy} from "../../Lazy";
-import {Alt1ScreenCaptureService} from "../capture/Alt1ScreenCaptureService";
-import {Alt1Color} from "../Alt1Color";
 
 /**
  * A service class to read chat messages. It will search for chat boxes periodically, so it will find the chat
@@ -34,6 +34,9 @@ export class ChatReader extends DerivedCaptureService {
   private buffer = new MessageBuffer()
 
   new_message = this.buffer.new_message
+  new_message_bulk = ewent<Message[]>()
+
+  private collected_unreported_messages: MessageBuffer.Message[] = []
 
   private last_search = Number.NEGATIVE_INFINITY
   private chatboxes: ChatReader.SingleChatboxReader[] = []
@@ -50,9 +53,8 @@ export class ChatReader extends DerivedCaptureService {
     super();
 
     this.new_message.on(msg => {
-      if (!this.debug_mode) return
-
-      console.log(Message.toString(msg))
+      this.collected_unreported_messages.push(msg)
+      if (this.debug_mode) log().log(Message.toString(msg))
     })
 
     this.initialization = async_init(async () => {
@@ -86,6 +88,7 @@ export class ChatReader extends DerivedCaptureService {
 
     try {
       if (notification.time.time - this.search_interval > this.last_search || this.chatboxes.length == 0) {
+
         this.last_search = notification.time.time
 
         const current_boxes = this.initialization.get().finder.find(capture)
@@ -104,7 +107,9 @@ export class ChatReader extends DerivedCaptureService {
 
         this.chatboxes.push(...new_readers)
 
-        this.chatboxes.forEach(box => box.chatbox.identifyFontAndOffset(this.initialization.get().needles))
+        this.chatboxes.forEach((box) =>
+          box.chatbox.identifyFontAndOffset(this.initialization.get().needles)
+        )
         // TODO: If font can't be identified, display some kind of warning
 
       } else {
@@ -126,7 +131,13 @@ export class ChatReader extends DerivedCaptureService {
         this.debug_overlay.render()
       }
 
+
       for (const box of this.chatboxes) box.read()
+
+      if (this.collected_unreported_messages.length > 0) {
+        this.new_message_bulk.trigger(this.collected_unreported_messages)
+        this.collected_unreported_messages = []
+      }
 
     } catch (e) {
       log().log(e)
@@ -163,9 +174,9 @@ export namespace ChatReader {
 
       return [
         {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_broadcast_bronze.data.png"), character: "\u2746"}, //HEAVY CHEVRON SNOWFLAKE
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_broadcast_death.data.png"), character: "\u{1F480}"}, //SKULL
         {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_broadcast_gold.data.png"), character: "\u2746"}, //HEAVY CHEVRON SNOWFLAKE
         {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_broadcast_silver.data.png"), character: "\u2746"}, //HEAVY CHEVRON SNOWFLAKE
-        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_hcimdeath.png"), character: "\u{1F480}"}, //SKULL
         {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badgegim.data.png"), character: "\u3289"}, //CIRCLED IDEOGRAPH TEN
         {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badgehcim.data.png"), character: "\u{1F480}"}, //SKULL
         {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badgeironman.data.png"), character: "\u26AF"}, //UNMARRIED PARTNERSHIP SYMBOL
@@ -189,6 +200,8 @@ export namespace ChatReader {
     buffer = new MessageBuffer()
 
     new_message = this.buffer.new_message
+
+    consecutive_messages = ewent<Message[]>()
 
     constructor(private readonly icons: ChatReader.ChatIcons,
                 public readonly chatbox: CapturedChatbox) {
@@ -270,12 +283,12 @@ export namespace ChatReader {
       return fragments
     }
 
-    private commit(message: { text: string, fragments: Message.Fragment[] }): boolean {
+    private commit(message: { text: string, fragments: Message.Fragment[] }): MessageBuffer.Message | null {
       const now = Date.now()
 
-      let m = message.text.match(/^\[(\d{2}):(\d{2}):(\d{2})]/);
+      const m = message.text.match(/^\[(\d{2}):(\d{2}):(\d{2})]/);
 
-      if (!m) return false // Reject messages without a timestamp
+      if (!m) return null // Reject messages without a timestamp
 
       const hours = +m[1]
       const minutes = +m[2]
@@ -314,6 +327,8 @@ export namespace ChatReader {
 
       const max_rows = this.chatbox.visibleRows()
 
+      const new_messages: MessageBuffer.Message[] = []
+
       while (row < max_rows) {
         const component_lines: Message.Fragment[][] = []
 
@@ -330,6 +345,12 @@ export namespace ChatReader {
         const actually_new_message = this.commit({text: line, fragments: component_lines.flat()})
 
         if (!actually_new_message) break
+
+        new_messages.push(actually_new_message)
+      }
+
+      if (new_messages.length > 0) {
+        this.consecutive_messages.trigger(new_messages.reverse())
       }
     }
   }

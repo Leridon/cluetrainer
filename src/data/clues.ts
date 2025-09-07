@@ -2018,7 +2018,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "hard",
       "text": ["Come to the evil ledge, Yew know yew want to. Try not to get stung.", "Come to the Try not to get stung."],
-      "solution": {"type": "dig", "spot": {"x": 3088, "y": 3469, "level": 0}, "description": "next to the yew tree"}
+      "solution": {"type": "dig", "spot": {"x": 3088, "y": 3468, "level": 0}, "description": "next to the yew tree"}
     }, {
       "id": 178,
       "type": "cryptic",
@@ -2526,7 +2526,7 @@ export namespace clue_data {
       "items": ["Splitbark helmet", "Mud pie", "Rune platebofy"],
       "emotes": ["Blow kiss"],
       "double_agent": true,
-      "area": {"origin": {"x": 2851, "y": 2951, "level": 0}, "size": {"x": 3, "y": 4}},
+      "area": {"origin": {"x": 2851, "y": 2952, "level": 0}, "size": {"x": 3, "y": 3}},
       "hidey_hole": {"name": "Potted plant (hidey-hole)", "location": {"topleft": {"x": 2856, "y": 2954}, "botright": {"x": 2857, "y": 2953}, "level": 0}}
     }, {
       "id": 232,
@@ -4402,7 +4402,7 @@ export namespace clue_data {
         "level": 0
       }, {"x": 3590, "y": 3475, "level": 0}],
       "range": 11,
-      "scantext": "the Haunted Woods"
+      "scantext": "Haunted Woods"
     }, {
       "id": 360,
       "type": "scan",
@@ -4430,7 +4430,7 @@ export namespace clue_data {
         "level": 0
       }, {"x": 2942, "y": 2934, "level": 0}],
       "range": 14,
-      "scantext": "the Kharazi Jungle"
+      "scantext": "Kharazi Jungle"
     }, {
       "id": 361,
       "type": "scan",
@@ -4586,7 +4586,7 @@ export namespace clue_data {
         "level": 0
       }, {"x": 3174, "y": 3705, "level": 0}, {"x": 3152, "y": 3698, "level": 0}, {"x": 3145, "y": 3681, "level": 0}, {"x": 3146, "y": 3698, "level": 0}],
       "range": 11,
-      "scantext": "The crater of the Wilderness volcano"
+      "scantext": "The crater in the Wilderness"
     }, {
       "id": 368,
       "type": "scan",
@@ -4702,8 +4702,15 @@ export namespace clue_data {
       "range": 14,
       "scantext": "The Lost Grove"
     },
-
-
+ /*{
+      "id": 486,
+      "type": "scan",
+      "tier": "master",
+      "text": ["This scroll will work in the Lost Grove. Orb scan range: 14 paces. (TEST VERSION, NOT ACTUALLY INGAME)"],
+      "spots": [{"x":1374,"y":5550,"level":0},{"x":1390,"y":5616,"level":0},{"x":1431,"y":5596,"level":0},{"x":1421,"y":5627,"level":0},{"x":1423,"y":5718,"level":0},{"x":1417,"y":5684,"level":0},{"x":1405,"y":5651,"level":0},{"x":1392,"y":5730,"level":0},{"x":1367,"y":5720,"level":0},{"x":1361,"y":5733,"level":0},{"x":1307,"y":5622,"level":0},{"x":1385,"y":5656,"level":0},{"x":1352,"y":5625,"level":0},{"x":1373,"y":5634,"level":0},{"x":1351,"y":5659,"level":0},{"x":1368,"y":5609,"level":0},{"x":1370,"y":5670,"level":0}],
+      "range": 14,
+      "scantext": "The Lost Grove (TEST VERSION, NOT ACTUALLY INGAME)"
+    },*/
   ]
 
   export const skilling: Clues.Skilling[] = [

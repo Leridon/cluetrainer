@@ -1,5 +1,6 @@
 import {Vector2} from "../math";
 import {util} from "./util";
+import {base64ToBytes, bytesToBase64} from "byte-base64";
 
 export type ImageFingerprint = {
   type: ImageFingerprint.Type,
@@ -191,5 +192,15 @@ export namespace ImageFingerprint {
         return similarity / (data1.data.length / 3);
       }
     }
+  }
+
+  export function toBase64(self: ImageFingerprint): string {
+    return bytesToBase64([self.type, ...self.data])
+  }
+
+  export function fromBase64(base64: string): ImageFingerprint {
+    const [type, ...data] = Array.from(base64ToBytes(base64))
+
+    return {type: type as Type, data}
   }
 }

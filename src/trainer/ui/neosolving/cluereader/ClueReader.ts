@@ -330,7 +330,9 @@ export class ClueReader {
           if (CLUEREADERDEBUG)
             notification(`Scan ${scan_text}`).show()
 
-          const best = findBestMatch(clue_data.scan, scan => stringSimilarity(scan_text, scan.scantext))
+          const best = findBestMatch(clue_data.scan, scan => stringSimilarity(scan_text, scan.scantext), 0.9)
+
+          if (!best) return null
 
           return {type: "scan", step: best.value, scan_interface: scan}
         }
@@ -359,9 +361,6 @@ export class ClueReader {
         }
 
         if (compass_state?.type == "likely_closed" || compass_state?.type == "likely_concealed") {
-          console.error("Compass found, but not parsed properly")
-          console.error(`Broken: ${compass_state.type}, Reason: ${compass_state.details}`)
-
           return null
         }
 

@@ -2,11 +2,12 @@ import {Finder} from "../../capture/Finder";
 import {CapturedImage} from "../../capture";
 import {ScreenRectangle} from "../../ScreenRectangle";
 import {Vector2} from "../../../math";
-import {OCR} from "../../OCR";
 import {async_lazy, lazy} from "../../../Lazy";
 import * as lodash from "lodash";
 import {CapturedChatbox} from "./CapturedChatbox";
 import {ChatAnchors} from "./ChatAnchors";
+import {Log} from "../../../util/Log";
+import log = Log.log;
 
 export class ChatboxFinder implements Finder<CapturedChatbox[]> {
 
@@ -44,12 +45,12 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
 
         // Get a 1 pixel wide, 10 pixel high column of pixels to the right of the chatbubble. This strip should contain exactly to fully white pixels that make up the colon.
         const data = img.getSubSection(ScreenRectangle.move(
-          bubble_location, {x: 14, y: 0}, {x: 1, y: 10}
+          bubble_location, {x: 11, y: 0}, {x: 1, y: 10}
         )).getData()
 
         // To distinguish this colon from the ones in the chat, we need to match for an exact order of pixels instead of just counting white pixels
         // From top to bottom, this array describes whether the respective pixel should or should not be white
-        const colon_signature = [false, false, false, true, false, false, false, true, false]
+        const colon_signature = [false, false, true, false, false, false, true, false, false]
 
         // Sometimes, the bubble is vertically off by 1 pixel. So we need to check 2 possible positions, which we iterate through with this loop
         for (let dy = 0; dy <= 1; dy++) {

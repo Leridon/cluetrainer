@@ -232,4 +232,10 @@ export namespace TileArea {
     if ("x" in input) return TileArea.init(input)
     else return input
   }
+
+  export function toString(self: TileArea): string {
+    const size = TileArea.size(self)
+
+    return `${size.x}x${size.y} @ ${self.origin.x}|${self.origin.y}`
+  }
 }

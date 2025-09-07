@@ -505,7 +505,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
       solution_area: undefined
     }
 
-    log().log(`Changed state ${this.state.state_id} (${NeoSolving.ActiveState.title(this.state)})`, "Solving")
+    log().log(`Created state ${this.state.state_id} (${NeoSolving.ActiveState.title(this.state)})`, "Solving")
 
     this.history.push(this.state)
 
@@ -540,7 +540,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
   setSolutionArea(state: NeoSolving.ActiveState, area: TileArea): void {
     if (!state) return
 
-    log().log(`Setting clue solution (state ${state.state_id}) to ${area.size?.x ?? 1}x${area.size?.y ?? 1} at ${TileCoordinates.toString(area.origin)}`, "Solving")
+    log().log(`Setting clue solution (state ${state.state_id}) to ${TileArea.toString(area)}`, "Solving")
 
     state.solution_area = area
   }

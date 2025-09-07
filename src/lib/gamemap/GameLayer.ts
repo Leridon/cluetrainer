@@ -8,6 +8,8 @@ import {followCursor} from "tippy.js";
 import {QuadTree} from "../QuadTree";
 import {boxPolygon} from "../../trainer/ui/polygon_helpers";
 import {LifetimeManager} from "../lifetime/LifetimeManager";
+import {util} from "../util/util";
+import profile = util.profile;
 
 function childLike(l: leaflet.Layer): l is GameLayer | MapEntity {
   return l instanceof GameLayer || l instanceof MapEntity
@@ -262,7 +264,7 @@ export class GameLayer extends leaflet.FeatureGroup {
       this.rendering.lock()
 
       if (this.quad_tree_debug_rendering) {
-        timeSync("Culling", () => this.entity_quadtree.cull(event.new_view.rect, true))
+        profile(() => this.entity_quadtree.cull(event.new_view.rect, true), "Culling")
       } else {
         this.entity_quadtree.cull(event.new_view.rect, false)
       }
@@ -329,30 +331,4 @@ export namespace GameLayer {
       }
     }
   }
-}
-
-export async function time<T>(name: string, f: () => T, start_message: boolean = true): Promise<T> {
-
-  let timeStart = new Date().getTime()
-
-  if (start_message) console.log(`Starting task ${name}: `)
-
-  try{
-    return await f()
-  } finally {
-    const ms = (new Date().getTime() - timeStart)
-    console.log(`Task ${name} took ${ms}ms\n`)
-  }
-}
-
-export function timeSync<T>(name: string, f: () => T): T {
-
-  let timeStart = new Date().getTime()
-
-  console.log(`Starting task ${name}: `)
-  let res = f()
-  const ms = (new Date().getTime() - timeStart)
-  console.log(`Task ${name} took ${ms}ms\n`)
-
-  return res
 }

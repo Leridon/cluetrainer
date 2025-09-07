@@ -4544,7 +4544,7 @@ name: "Entrana",
     id: "warsbossportal",
     name: "Boss portal",
     menu_ticks: 0,
-    animation_ticks: 3,
+    animation_ticks: 1,
     spots: [
       {id: "gregorovic", name: "Gregorovic", img: {url: "Gregorovic_(boss_portal)_texture.webp", width: 40}, target: {"origin": {"x": 3277, "y": 7053, "level": 1}}},
       {id: "helwyr", name: "Helwyr", img: {url: "Helwyr_(boss_portal)_texture.webp", width: 40}, target: {"origin": {"x": 3270, "y": 6905, "level": 1}}},

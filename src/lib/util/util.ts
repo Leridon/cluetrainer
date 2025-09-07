@@ -143,19 +143,27 @@ export namespace util {
   }
 
   export function profile<T>(f: () => T, name: string = null): T {
-    console.time(name || f.name)
+    let timeStart = window.performance.now()
+
+    console.log(`Starting task ${name}: `)
     let res = f()
-    console.timeEnd(name || f.name)
+    const ms = (window.performance.now() - timeStart)
+    console.log(`Task ${name} took ${ms.toFixed(1)}ms\n`)
 
     return res
   }
 
-  export async function profileAsync<T>(f: () => Promise<T>, name: string = null): Promise<T> {
-    console.time(name || f.name)
-    let res = await f()
-    console.timeEnd(name || f.name)
+  export async function profileAsync<T>(f: () => Promise<T>, name: string = null, start_message: boolean = true): Promise<T> {
+    let timeStart = window.performance.now()
 
-    return res
+    if (start_message) console.log(`Starting task ${name}: `)
+
+    try {
+      return await f()
+    } finally {
+      const ms = (window.performance.now() - timeStart)
+      console.log(`Task ${name} took ${ms.toFixed(1)}ms\n`)
+    }
   }
 
   export function avg(...ns: number[]): number {
@@ -417,5 +425,17 @@ export namespace util {
     const mid = ~~(sorted.length / 2)
 
     return sorted[mid]
+  }
+
+  export function makeCSV<T>(data: T[], separator: string = "\t"): (...columns: {
+    name: string,
+    f: (_: T) => any
+  }[]) => string {
+    return (...cols) => {
+      return [
+        cols.map(c => c.name).join(separator),
+        ...data.map(e => cols.map(c => c.f(e)).join(separator))
+      ].join("\n")
+    }
   }
 }

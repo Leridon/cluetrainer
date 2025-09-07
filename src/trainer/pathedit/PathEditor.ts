@@ -325,7 +325,7 @@ class PathEditorGameLayer extends GameLayer {
 
 export class PathEditor extends Behaviour {
   private control: EditedPathOverview = null
-  private handler_layer: PathEditorGameLayer = null
+  public handler_layer: PathEditorGameLayer = null
   overlay_control: PathEditorToolsControl = null
 
   private you_are_here_marker: leaflet.Layer = null

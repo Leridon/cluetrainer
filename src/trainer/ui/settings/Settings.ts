@@ -83,8 +83,8 @@ export namespace Settings {
                 "access_id": "ring"
               },
               {
-                "group_id": "digsitependant",
-                "access_id": "ring"
+                "group_id": "delversanklet",
+                "access_id": "anklet"
               },
               {
                 "group_id": "ringofslaying",
@@ -119,7 +119,10 @@ export namespace Settings {
                 "group_id": "ringofwealth",
                 "access_id": "ring"
               },
-              null
+              {
+                "group_id": "digsitependant",
+                "access_id": "ring"
+              },
             ]
           }
         ],

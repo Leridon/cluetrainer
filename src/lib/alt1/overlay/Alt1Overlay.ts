@@ -16,6 +16,7 @@ import log = Log.log;
 
 export class Alt1Overlay extends Behaviour {
   private parent: Alt1Overlay | null = null
+  private children_bound_to_rerender: Alt1Overlay[] = []
 
   private group_name: string = uuid()
   private is_frozen = false
@@ -30,6 +31,8 @@ export class Alt1Overlay extends Behaviour {
 
     this.visible.subscribe(() => this.refreshVisibility())
     this.is_actually_visible.subscribe(() => this.refresh())
+
+    this.heartbeater.bindToPageLifetime(this)
   }
 
   private readonly _interactivity = lazy(() => {
@@ -55,7 +58,9 @@ export class Alt1Overlay extends Behaviour {
   }
 
   private refresh() {
-    if (!this.isActive()) return
+    if (!Alt1.checkPermission(p => p.overlays)) return
+
+    if (!this.isActive() && !this.oneshot) return
 
     if (this._interactivity.hasValue()) {
       this._interactivity.get().refreshTooltip()
@@ -66,7 +71,7 @@ export class Alt1Overlay extends Behaviour {
 
     if (this.isVisible()) {
       alt1.overLaySetGroup(this.group_name)
-      this.overlay.playback(this.heartbeater.HEARTBEAT * 1.5)
+      this.overlay.playback(this.oneshot?.alive_time ?? this.heartbeater.HEARTBEAT * 1.5)
       alt1.overLaySetGroup("")
     }
 
@@ -79,6 +84,8 @@ export class Alt1Overlay extends Behaviour {
     ) {
       this.setGeometry(this.render())
     }
+
+    this.children_bound_to_rerender.forEach(c => c.rerender())
   }
 
   protected render(): Alt1OverlayDrawCalls.Buffer {
@@ -97,14 +104,14 @@ export class Alt1Overlay extends Behaviour {
         .bindTo(this.lifetime_manager)
     }
 
-    this.heartbeater.bindToPageLifetime(this)
-
     this.refresh()
   }
 
   protected end() {
-    alt1.overLayClearGroup(this.group_name)
-    alt1.overLayRefreshGroup(this.group_name)
+    if(Alt1.exists()) {
+      alt1.overLayClearGroup(this.group_name)
+      alt1.overLayRefreshGroup(this.group_name)
+    }
   }
 
   private freeze() {
@@ -128,7 +135,7 @@ export class Alt1Overlay extends Behaviour {
     this.is_actually_visible.set(this.visible.value() && (this.parent == null || this.parent.isVisible()))
   }
 
-  public addTo(parent: Alt1Overlay): this {
+  public addTo(parent: Alt1Overlay, bind_rerender: boolean = false): this {
     if (this.parent != null) {
       log().log("ERROR: Overlay already has a parent.", "Overlays")
       return this
@@ -142,6 +149,8 @@ export class Alt1Overlay extends Behaviour {
 
     parent.withSub(this)
 
+    if (bind_rerender) parent.children_bound_to_rerender.push(this)
+
     return this
   }
 
@@ -153,6 +162,10 @@ export class Alt1Overlay extends Behaviour {
     overlay.start()
 
     return overlay
+  }
+
+  static manual(time: number = 3000): Alt1Overlay {
+    return new Alt1Overlay({alive_time: time}).start()
   }
 }
 
@@ -210,6 +223,7 @@ export namespace Alt1Overlay {
     }
 
     protected end() {
+      this.active_tooltip?.remove()
     }
 
     public isHovered(): boolean {

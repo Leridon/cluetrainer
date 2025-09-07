@@ -14,4 +14,13 @@ export class List extends Widget {
 
     return this
   }
+
+  sublist(l: (_: List) => void): this {
+    let list = new List()
+    l(list)
+
+    this.item(list)
+
+    return this
+  }
 }
