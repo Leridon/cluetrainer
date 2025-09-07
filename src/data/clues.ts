@@ -2018,7 +2018,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "hard",
       "text": ["Come to the evil ledge, Yew know yew want to. Try not to get stung.", "Come to the Try not to get stung."],
-      "solution": {"type": "dig", "spot": {"x": 3088, "y": 3469, "level": 0}, "description": "next to the yew tree"}
+      "solution": {"type": "dig", "spot": {"x": 3088, "y": 3468, "level": 0}, "description": "next to the yew tree"}
     }, {
       "id": 178,
       "type": "cryptic",
