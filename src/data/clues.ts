@@ -4646,7 +4646,7 @@ export namespace clue_data {
         "level": 0
       }, {"x": 2275, "y": 11453, "level": 0}, {"x": 2283, "y": 11499, "level": 0}, {"x": 2272, "y": 11428, "level": 0}, {"x": 2286, "y": 11473, "level": 0}],
       "range": 27,
-      "scantext": "Islands That Once Were Turtles"
+      "scantext": "The Islands That Once Were Turtles"
     }, {
       "id": 371,
       "type": "scan",
@@ -4674,7 +4674,7 @@ export namespace clue_data {
         "level": 1
       }, {"x": 3274, "y": 7045, "level": 1}],
       "range": 49,
-      "scantext": "Heart of Gielinor"
+      "scantext": "The Heart of Gielinor"
     }, {
       "id": 485,
       "type": "scan",
