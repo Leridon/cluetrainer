@@ -439,7 +439,7 @@ export namespace Changelog {
             .item("Fixed slightly inaccurate locations for several clues.")
           )
 
-          .render(p => p.paragraph("This update has been in a public beta for several weeks. Lots of issues were found and resolved in that period, thanks to the feedback from the beta testers. Still, this update introduces significant changes, so issues could still be present. Feel free to report any issues or suggest improvements to the new features in the usual places."))
+          .render(p => p.paragraph("This update has been in a public beta for two months. Lots of issues were found and resolved in that period, thanks to the feedback from the beta testers. Still, this update introduces significant changes, so issues could still be present. Feel free to report any issues or suggest improvements to the new features in the usual places."))
 
         builder.release(55, "Lost Grove Method and Minor Fixes", new Date(Date.parse("2025-07-12")))
           .list(l => l
