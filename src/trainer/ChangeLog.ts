@@ -399,7 +399,8 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-        builder.wip(56, "A Compass Update")
+        builder.release(56, "A Compass Update", new Date(Date.parse("2025-09-07")))
+          .notification("The Compass Solver has been upgraded!")
           .header("Upgraded Compass Solver")
           .list(l => l
             .item("Significantly improved the accuracy of compass readings when antialiasing is turned off.")
@@ -416,6 +417,7 @@ export namespace Changelog {
             .item("Improved the detection logic for solved compasses. This should improve the behaviour for back to back compasses further.")
             .item("The compass solver can now read your chat to look for messages produced by using the Sextant item. When one is detected, a triangulation line from that specific tile using the current compass angle will immediately be drawn. This feature is on by default, but can be toggled off.")
             .sublist(l => l.item(italic("Dev note: Using this feature requires carrying a Sextant, which sacrifices an inventory slot. With the improved accuracy of the compass reader, this can be used to solve compasses without teleporting at all. I am excited to see if and how users will integrate this into their solving-flow.")))
+            .item("Holding shift while clicking the reset button will now perform a hard reset, which also removed the triangulation line from the previous clue's solution if present.")
           )
           .header("Compass Overlay Improvements")
           .list(l => l

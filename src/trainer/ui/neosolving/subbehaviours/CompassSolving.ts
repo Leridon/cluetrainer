@@ -35,6 +35,7 @@ import {Angles} from "../../../../lib/math/Angles";
 import {ChatReader} from "../../../../lib/alt1/readers/ChatReader";
 import {CaptureInterval} from "../../../../lib/alt1/capture";
 import {MessageBuffer} from "../../../../lib/alt1/readers/chatreader/ChatBuffer";
+import {ClueTrainerWiki} from "../../../wiki";
 import span = C.span;
 import cls = C.cls;
 import TeleportGroup = Transportation.TeleportGroup;
@@ -52,7 +53,6 @@ import log = Log.log;
 import render_digspot = TextRendering.render_digspot;
 import UncertainAngle = Angles.UncertainAngle;
 import degreesToRadians = Angles.degreesToRadians;
-import {ClueTrainerWiki} from "../../../wiki";
 
 class CompassHandlingLayer extends GameLayer {
   private lines: {
@@ -412,10 +412,10 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
         "Compass Solver",
         C.spacer(),
         inlineimg("/assets/icons/reset_nis.png").addClass("ctr-clickable").css("height", "1em").css("margin-top", "2px")
-          .on("click", async () => {
-            this.reset(true)
+          .on("click", async e => {
+            this.reset(true, e.shiftKey)
           })
-          .tooltip("Reset compass solver."),
+          .tooltip("Reset compass solver. Hold Shift for a hard reset."),
         inlineimg("/assets/icons/info_nis.png").css("height", "1em").css("margin-top", "2px").addClass("ctr-clickable")
           .on("click", () => ClueTrainerWiki.openOnPage("compasssolver"))
           .tooltip("Learn more about the compass solver."),
@@ -433,7 +433,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
         await SettingsModal.openOnPage("scans")
       }),
 
-    this.entry_container = c().css("flex-basis", "100%").appendTo(container)
+      this.entry_container = c().css("flex-basis", "100%").appendTo(container)
     //this.spot_selection_container = c().appendTo(container)
   }
 
@@ -841,7 +841,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
    *
    * @private
    */
-  private async reset(only_use_previous_solution_if_existed_previously: boolean = false) {
+  private async reset(only_use_previous_solution_if_existed_previously: boolean = false, hard_reset: boolean = false) {
     this.settings = deps().app.settings.settings.solving.compass
 
     this.entries.forEach(e => e.widget?.remove())
@@ -850,7 +850,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     this.entries = []
 
-    if (this.settings.use_previous_solution_as_start && (had_previous_solution || !only_use_previous_solution_if_existed_previously)) {
+    if (!hard_reset && this.settings.use_previous_solution_as_start && (had_previous_solution || !only_use_previous_solution_if_existed_previously)) {
       (() => {
         const assumed_position_from_previous_clue = DEBUG_LAST_SOLUTION_OVERRIDE ?? this.parent.getAssumedPlayerPositionByLastClueSolution()
 
