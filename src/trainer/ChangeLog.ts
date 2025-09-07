@@ -399,6 +399,11 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+        builder.release(57, "Scan Reader Fixes", new Date(Date.parse("2025-09-07")))
+          .list(l => l
+            .item("Fixed a bug bug that caused two master scan clues to not be detected.")
+          )
+
         builder.release(56, "A Compass Update", new Date(Date.parse("2025-09-07")))
           .notification("The Compass Solver has been upgraded!")
           .header("Upgraded Compass Solver")
