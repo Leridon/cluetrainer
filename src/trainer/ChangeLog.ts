@@ -401,7 +401,7 @@ export namespace Changelog {
 
         builder.release(57, "Scan Reader Fixes", new Date(Date.parse("2025-09-07")))
           .list(l => l
-            .item("Fixed a bug bug that caused two master scan clues to not be detected.")
+            .item("Fixed a bug that caused two master scan clues to not be detected.")
           )
 
         builder.release(56, "A Compass Update", new Date(Date.parse("2025-09-07")))
