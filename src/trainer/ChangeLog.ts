@@ -399,6 +399,11 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+        builder.release(58, "Compass Reader Bugfix", new Date(Date.parse("2025-09-09")))
+          .list(l => l
+            .item("Fixed a bug that caused compass angles to be wrongly detected or not at all when using antialiasing.")
+          )
+
         builder.release(57, "Scan Reader Fixes", new Date(Date.parse("2025-09-07")))
           .list(l => l
             .item("Fixed a bug that caused two master scan clues to not be detected.")

@@ -217,23 +217,23 @@ export class CompassReader {
 
     if (antialiasing_detected) {
 
-      if (rectangle_samples.length < 2000) return {
+      if (rectangle_samples.length < 1700) return {
         type: "likely_concealed",
         fingerprint: fingerprint,
         details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample. [MSAA]`
       }
-      if (rectangle_samples.length > 2250) return {
+      if (rectangle_samples.length > 2300) return {
         type: "likely_concealed",
         fingerprint: fingerprint,
         details: `Too many pixels (${rectangle_samples.length}) sampled for the rectangle sample. [MSAA]`
       }
     } else {
-      if (rectangle_samples.length < 1900) return {
+      if (rectangle_samples.length < 2175) return {
         type: "likely_concealed",
         fingerprint: fingerprint,
         details: `Not enough pixels (${rectangle_samples.length}) sampled for the rectangle sample.`
       }
-      if (rectangle_samples.length > 2300) return {
+      if (rectangle_samples.length > 2275) return {
         type: "likely_concealed",
         fingerprint: fingerprint,
         details: `Too many pixels (${rectangle_samples.length}) sampled for the rectangle sample.`
