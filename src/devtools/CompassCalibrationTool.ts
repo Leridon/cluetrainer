@@ -975,7 +975,7 @@ export class CompassCalibrationTool extends NisModal {
       this.handler.remove()
     })
 
-    this.reader = new CompassReader.Service(null, true, null, true).start()
+    this.reader = new CompassReader.Service(null, {warn_antialiasing: true}, null, true).start()
 
     this.sample_set.set_changed.on(() => {
       this.updateCurrentPlausibility()

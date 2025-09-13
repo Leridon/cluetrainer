@@ -399,6 +399,12 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+        builder.release(59, "Compass Settings Bugfixes", new Date(Date.parse("2025-09-13")))
+          .list(l => l
+            .item("Added a missing option to disable the antialiasing warning for the compass overlay.")
+            .item("Fixed that the option to disable the compass status overlay was ignored.")
+          )
+
         builder.release(58, "Compass Reader Bugfix", new Date(Date.parse("2025-09-09")))
           .list(l => l
             .item("Fixed a bug that caused compass angles to be wrongly detected or not at all when using antialiasing.")
