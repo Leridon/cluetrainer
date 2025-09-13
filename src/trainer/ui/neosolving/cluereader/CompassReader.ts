@@ -622,13 +622,15 @@ export namespace CompassReader {
 
     constructor(
       private matched_ui: CapturedCompass,
-      private show_overlay: boolean,
+      private overlay_config: Service.StatusOverlay.Config,
       public readonly calibration_functions: (_: AntialiasingType) => CompassCalibrationFunction = typ => CompassReader.calibration_tables[typ],
-      private refind_after_close: boolean = false
+      private refind_after_close: boolean = false,
     ) {
       super();
 
-      this.status_overlay = this.withSub(new Service.StatusOverlay(this))
+      if (overlay_config) {
+        this.status_overlay = this.withSub(new Service.StatusOverlay(this, overlay_config))
+      }
 
       this.initialization = async_init(async () => {
         return {
@@ -813,45 +815,47 @@ export namespace CompassReader {
       private position = observe<ScreenRectangle>(null).equality(ScreenRectangle.equals)
       private antialiasing_indicator: Alt1Overlay
 
-      constructor(private service: Service) {
+      constructor(private service: Service, private config: StatusOverlay.Config) {
         super()
 
         const self = this
 
-        this.antialiasing_indicator = (new class extends Alt1Overlay {
-          constructor() {
-            super()
+        if (this.config.warn_antialiasing) {
+          this.antialiasing_indicator = (new class extends Alt1Overlay {
+            constructor() {
+              super()
 
-            this.interactivity().main_hotkey_pressed.on(() => ClueTrainerWiki.openOnPage("compasssolveruncertainty"))
-          }
-
-          protected renderWithBuilder(overlay_geometry: Alt1OverlayDrawCalls.GeometryBuilder) {
-            super.renderWithBuilder(overlay_geometry);
-
-            const state = self.service.state()
-            const rectangle = self.service.getCurrentScreenRectangle()
-
-            if (!rectangle || !state) return
-
-            const center = Vector2.add(ScreenRectangle.center(rectangle), {x: 5, y: -60})
-
-            const is_aa = state.result.fingerprint?.antialiasing
-
-            if (is_aa) {
-              overlay_geometry.text("Antialiasing detected",
-                Vector2.add(ScreenRectangle.center(rectangle), {x: 5, y: -60}), {
-                  shadow: true,
-                  centered: true,
-                  width: 12,
-                  color: Alt1Color.fromHex("#808080")
-                })
+              this.interactivity().main_hotkey_pressed.on(() => ClueTrainerWiki.openOnPage("compasssolveruncertainty"))
             }
 
-            this.interactivity().setBounds({type: "rectangle", area: ScreenRectangle.centeredOn(center, {x: 90, y: 5})})
+            protected renderWithBuilder(overlay_geometry: Alt1OverlayDrawCalls.GeometryBuilder) {
+              super.renderWithBuilder(overlay_geometry);
 
-            this.interactivity().setTooltip(is_aa ? "Press (Alt+1) to learn why this is relevant." : null)
-          }
-        }).addTo(this, true)
+              const state = self.service.state()
+              const rectangle = self.service.getCurrentScreenRectangle()
+
+              if (!rectangle || !state) return
+
+              const center = Vector2.add(ScreenRectangle.center(rectangle), {x: 5, y: -60})
+
+              const is_aa = state.result.fingerprint?.antialiasing
+
+              if (is_aa) {
+                overlay_geometry.text("Antialiasing detected",
+                  Vector2.add(ScreenRectangle.center(rectangle), {x: 5, y: -60}), {
+                    shadow: true,
+                    centered: true,
+                    width: 12,
+                    color: Alt1Color.fromHex("#808080")
+                  })
+              }
+
+              this.interactivity().setBounds({type: "rectangle", area: ScreenRectangle.centeredOn(center, {x: 90, y: 5})})
+
+              this.interactivity().setTooltip(is_aa ? "Press (Alt+1) to learn why this is relevant." : null)
+            }
+          }).addTo(this, true)
+        }
       }
 
 
@@ -929,6 +933,12 @@ export namespace CompassReader {
           }
         }
 
+      }
+    }
+
+    export namespace StatusOverlay {
+      export type Config = {
+        warn_antialiasing?: boolean,
       }
     }
   }

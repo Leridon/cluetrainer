@@ -366,7 +366,9 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     if (reader) {
       this.process = new CompassReader.Service(
         this.reader.capture,
-        this.settings.enable_status_overlay
+        this.settings.enable_status_overlay ? {
+          warn_antialiasing: this.settings.status_overlay_warn_antialiasing
+        } : null
       )
 
       this.process.onChange((is_state, was_state) => {
@@ -1321,6 +1323,7 @@ export namespace CompassSolving {
   export type Settings = {
     auto_commit_on_angle_change: boolean,
     enable_status_overlay: boolean,
+    status_overlay_warn_antialiasing: boolean
     active_triangulation_presets: {
       compass_id: number,
       preset_id: number | null
@@ -1446,6 +1449,7 @@ export namespace CompassSolving {
     export const DEFAULT: Settings = {
       auto_commit_on_angle_change: true,
       enable_status_overlay: true,
+      status_overlay_warn_antialiasing: true,
       custom_triangulation_presets: [],
       active_triangulation_presets: [],
       manual_tile_inaccuracy: 3,
@@ -1464,6 +1468,7 @@ export namespace CompassSolving {
       if (!isArray(settings.active_triangulation_presets)) settings.active_triangulation_presets = []
       if (![true, false].includes(settings.auto_commit_on_angle_change)) settings.auto_commit_on_angle_change = DEFAULT.auto_commit_on_angle_change
       if (![true, false].includes(settings.enable_status_overlay)) settings.enable_status_overlay = DEFAULT.enable_status_overlay
+      if (![true, false].includes(settings.status_overlay_warn_antialiasing)) settings.status_overlay_warn_antialiasing = DEFAULT.status_overlay_warn_antialiasing
       if (typeof settings.manual_tile_inaccuracy != "number") settings.manual_tile_inaccuracy = DEFAULT.manual_tile_inaccuracy
       if (![true, false].includes(settings.use_previous_solution_as_start)) settings.use_previous_solution_as_start = DEFAULT.use_previous_solution_as_start
       if (![true, false].includes(settings.show_method_preview_of_secondary_solutions)) settings.show_method_preview_of_secondary_solutions = DEFAULT.show_method_preview_of_secondary_solutions

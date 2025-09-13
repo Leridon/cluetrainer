@@ -1264,10 +1264,20 @@ class CompassSettingsEdit extends Widget {
         .setValue(this.value.auto_commit_on_angle_change),
       "When active, the next triangulation line is automatically drawn when the compass angle changes by more than 4° at once. This is the default behaviour in Alt1's built-in clue solver.")
 
+    const aa_warning_checkbox = new Checkbox("Warn about antialiasing status overlay")
+
+      .onCommit(v => this.value.status_overlay_warn_antialiasing = v)
+      .setValue(this.value.status_overlay_warn_antialiasing)
+
     this.layout.setting(new Checkbox("Show status overlay")
         .onCommit(v => this.value.enable_status_overlay = v)
+        .onCommit(v => aa_warning_checkbox.setEnabled(v))
         .setValue(this.value.enable_status_overlay),
       "Shows detected compass angle and other info on top of the compass interface."
+    )
+
+    this.layout.setting(aa_warning_checkbox,
+      "Shows a warning in the status overlay if antialiasing reduces the compass accuracy."
     )
 
     this.layout.setting(new Checkbox("Show method previews")
@@ -1328,7 +1338,7 @@ class CompassSettingsEdit extends Widget {
 
     this.layout.setting("Custom Strategies", "You can create your own triangulation presets if none of the builtin presets fit your needs. Don't forget to activate your custom preset in the section above.")
 
-   // this.layout.row(new LightButton("Manage Custom Strategies"))
+    // this.layout.row(new LightButton("Manage Custom Strategies"))
 
     type T = CompassSolving.TriangulationPreset | "create"
 
