@@ -399,6 +399,11 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+        builder.wip(60, "TBD")
+          .list(l => l
+            .item("Fixed the position of two tetracompass spots.")
+          )
+
         builder.release(59, "Compass Settings Bugfixes", new Date(Date.parse("2025-09-13")))
           .list(l => l
             .item("Added a missing option to disable the antialiasing warning for the compass overlay.")
