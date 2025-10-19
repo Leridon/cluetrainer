@@ -402,6 +402,7 @@ export namespace Changelog {
         builder.wip(60, "TBD")
           .list(l => l
             .item("Fixed the position of two tetracompass spots.")
+            .item("Collision data has been updated to the latest game version.")
           )
 
         builder.release(59, "Compass Settings Bugfixes", new Date(Date.parse("2025-09-13")))
