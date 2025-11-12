@@ -760,7 +760,7 @@ export namespace clue_data {
       {x: 3142, y: 3251, level: 0},
       {x: 3356, y: 3396, level: 0},
       {x: 3200, y: 3200, level: 0},
-      {x: 3731, y: 3165, level: 0},
+      {x: 3731, y: 3164, level: 0},
       {x: 2196, y: 3101, level: 0},
       {x: 2255, y: 3119, level: 0},
       {x: 2207, y: 3156, level: 0},
@@ -771,7 +771,7 @@ export namespace clue_data {
       {x: 3162, y: 3542, level: 0},
       {x: 3430, y: 3649, level: 0},
       {x: 2961, y: 3821, level: 0},
-      {x: 3236, y: 3665, level: 0},
+      {x: 3237, y: 3664, level: 0},
       {x: 2992, y: 3686, level: 0},
       {x: 2965, y: 3746, level: 0}
     ]
