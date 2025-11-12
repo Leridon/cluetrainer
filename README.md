@@ -61,7 +61,6 @@
       <a href="#about-the-project">About The Project</a>
     </li>
     <li><a href="#getting-started">Getting Started</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#support-and-feedback">Support</a></li>
     <li><a href="#license">License</a></li>
@@ -79,7 +78,7 @@
 
 # Clue Trainer – The Ultimate Clue Solver for RuneScape 3
 
-Clue Trainer is a powerful and highly configurable clue-solving plugin for RuneScape 3, designed for both newcomers and veteran clue chasers. Built for use with the **Alt1 Toolkit**, it enhances the clue-solving experience with interactive overlays, optimized movement strategies, and real-time puzzle assistance. Developed by a Clue Chaser for Clue Chasers, Clue Trainer has grown into a trusted tool with over a thousand daily users since its original release as Scan Trainer in 2023.
+Clue Trainer is a powerful and highly configurable clue-solving plugin for RuneScape 3, designed for both newcomers and veteran clue chasers. Built for use with the **Alt1 Toolkit**, it enhances the clue-solving experience with interactive overlays, optimized movement strategies, and real-time puzzle assistance. Developed by a Clue Chaser for Clue Chasers, Clue Trainer has grown into a trusted tool with over a thousand daily users since its original release as *Scan Trainer* in 2023.
 
 ## Key Features
 
@@ -102,7 +101,7 @@ Visit **[cluetrainer.app](https://cluetrainer.app)** to either explore its web f
 <!-- GETTING STARTED -->
 ## Getting Started
 
-### Installation
+### As a User
 
 1. Make sure you have the Alt1 toolkit installed. Alt1 can only be downloaded legitimately from [runeapps.org](https://runeapps.org/).
 2. Visit the [Web Version](https://cluetrainer.app) to access some of Clue Trainer's features or install it using the links provided there.
@@ -110,9 +109,7 @@ Visit **[cluetrainer.app](https://cluetrainer.app)** to either explore its web f
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Development
-
-This section is about getting started with developing Clue Trainer. See [here](#getting-started) for instructions for getting started with using Clue Trainer.
+### As a Developer
 
 Clue Trainer is a static website built using npm and TypeScript. 
 
@@ -132,30 +129,6 @@ Clue Trainer is a static website built using npm and TypeScript.
 4. Visit `127.0.0.1:8000` in your browser to use your local version and install it in your local Alt1 
 
 Please do not enable any crowdsourcing options while using your local development version.
-
-<!-- USAGE EXAMPLES -->
-
-
-<!-- ROADMAP -->
-
-## Roadmap
-
-Clue Trainer is very mature and has more thn a thousand daily  
-
-Clue Trainer is in active development and will continue to receive additional features and improvements to existing features, including but not limited to:
-
-- [ ] Display answers to challenge scrolls directly in the dialogue box.
-- [ ] Track charges of Globetrotter Jacket and Backpack and display them in an overlay and suggest when to use them.
-- [ ] Enter the hotkeys you have bound for teleports in game to have them displayed in Clue Trainer.
-- [ ] Reminder to charge your Totem of Treasure each week.
-- [ ] Improvements to the UI and general workflow for compass clues.
-- [ ] More integrated paths, including non-meta methods.
-
-Learn how to suggest features [here](#support-and-feedback).
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- CONTRIBUTING -->
 ## Contributing
