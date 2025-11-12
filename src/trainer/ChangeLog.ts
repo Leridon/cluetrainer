@@ -399,10 +399,11 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-        builder.wip(60, "TBD")
+        builder.release(60, "Data Fixes", new Date(Date.parse("2025-11-12")))
           .list(l => l
             .item("Fixed the position of two tetracompass spots.")
-            .item("Collision data has been updated to the latest game version.")
+            .item("Updated path for the tetracompass spot at crafting guild.")
+            .item("Collision data has been updated to a more recent game version.")
           )
 
         builder.release(59, "Compass Settings Bugfixes", new Date(Date.parse("2025-09-13")))
