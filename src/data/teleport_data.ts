@@ -2881,7 +2881,7 @@ name: "Guthix Memorial",
       },
       {
         id: "water",
-        target: {"origin": {"x": 3165, "y": 3183, "level": 0}},
+        target: {"origin": {"x": 3183, "y": 3156, "level": 0}},
         name: "Water",
         code: "Water",
       },

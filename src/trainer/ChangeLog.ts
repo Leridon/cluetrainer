@@ -403,6 +403,7 @@ export namespace Changelog {
           .list(l => l
             .item("Updated the exact tiles of the moonclan teleport.")
             .item("Updated the former Nexus teleport on the Enlightened amulet.")
+            .item("Updated the water altar teleport on the Wicked hood.")
           )
 
         builder.release(60, "Data Fixes", new Date(Date.parse("2025-11-12")))
