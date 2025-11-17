@@ -408,6 +408,7 @@ export namespace Changelog {
             .item("Updated the Shattered worlds teleport location.")
             .item("Updated wording for an easy clue in Lumbridge castle.")
             .item("Replaced the medium anagram pointing to Ysondria with the new anagram pointing to Father Urhney.")
+            .item("Updated collision data to the game update from 2025-11-17.")
           )
 
         builder.release(60, "Data Fixes", new Date(Date.parse("2025-11-12")))
