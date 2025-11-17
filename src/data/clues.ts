@@ -3041,17 +3041,17 @@ export namespace clue_data {
       },
       "anagram": ["Goblin Kern"]
     }, {
-      "id": 331,
+      "id": 471,
       "type": "anagram",
       "tier": "medium",
-      "text": ["This anagram reveals who to speak to next: Soy Drain"],
+      "text": ["This anagram reveals who to speak to next: He Any Further"],
       "challenge": [{"type": "challengescroll", "question": "How many ore rocks are there in the nearby copper and tin mine?", "answers": [{"answer": 8}]}],
       "solution": {
         "type": "talkto",
-        "npc": "Ysondria",
-        "spots": [{"range": {"origin": {"x": 3219, "y": 3182, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "at the Nexus"}]
+        "npc": "Father Urhney",
+        "spots": [{"range": {"origin": {"x": 3203, "y": 3147, "level": 0}, "size": {"x": 8, "y": 5}}, "description": "in the Lumbridge swamp"}]
       },
-      "anagram": ["Soy Drain"]
+      "anagram": ["He Any Further"]
     }, {
       "id": 332,
       "type": "anagram",
@@ -4702,15 +4702,15 @@ export namespace clue_data {
       "range": 14,
       "scantext": "The Lost Grove"
     },
- /*{
-      "id": 486,
-      "type": "scan",
-      "tier": "master",
-      "text": ["This scroll will work in the Lost Grove. Orb scan range: 14 paces. (TEST VERSION, NOT ACTUALLY INGAME)"],
-      "spots": [{"x":1374,"y":5550,"level":0},{"x":1390,"y":5616,"level":0},{"x":1431,"y":5596,"level":0},{"x":1421,"y":5627,"level":0},{"x":1423,"y":5718,"level":0},{"x":1417,"y":5684,"level":0},{"x":1405,"y":5651,"level":0},{"x":1392,"y":5730,"level":0},{"x":1367,"y":5720,"level":0},{"x":1361,"y":5733,"level":0},{"x":1307,"y":5622,"level":0},{"x":1385,"y":5656,"level":0},{"x":1352,"y":5625,"level":0},{"x":1373,"y":5634,"level":0},{"x":1351,"y":5659,"level":0},{"x":1368,"y":5609,"level":0},{"x":1370,"y":5670,"level":0}],
-      "range": 14,
-      "scantext": "The Lost Grove (TEST VERSION, NOT ACTUALLY INGAME)"
-    },*/
+    /*{
+         "id": 486,
+         "type": "scan",
+         "tier": "master",
+         "text": ["This scroll will work in the Lost Grove. Orb scan range: 14 paces. (TEST VERSION, NOT ACTUALLY INGAME)"],
+         "spots": [{"x":1374,"y":5550,"level":0},{"x":1390,"y":5616,"level":0},{"x":1431,"y":5596,"level":0},{"x":1421,"y":5627,"level":0},{"x":1423,"y":5718,"level":0},{"x":1417,"y":5684,"level":0},{"x":1405,"y":5651,"level":0},{"x":1392,"y":5730,"level":0},{"x":1367,"y":5720,"level":0},{"x":1361,"y":5733,"level":0},{"x":1307,"y":5622,"level":0},{"x":1385,"y":5656,"level":0},{"x":1352,"y":5625,"level":0},{"x":1373,"y":5634,"level":0},{"x":1351,"y":5659,"level":0},{"x":1368,"y":5609,"level":0},{"x":1370,"y":5670,"level":0}],
+         "range": 14,
+         "scantext": "The Lost Grove (TEST VERSION, NOT ACTUALLY INGAME)"
+       },*/
   ]
 
   export const skilling: Clues.Skilling[] = [
@@ -5031,6 +5031,22 @@ export namespace clue_data {
         {"origin": {"x": 2845, "y": 3424, "level": 0}, "size": {"x": 19, "y": 7}, "data": "wA8A/wD8z+H/j/9//v///x8="}
       ]
     }]
+
+  export const legacy: Clues.Step[] = [
+    {
+      "id": 331,
+      "type": "anagram",
+      "tier": "medium",
+      "text": ["This anagram reveals who to speak to next: Soy Drain"],
+      "challenge": [{"type": "challengescroll", "question": "How many ore rocks are there in the nearby copper and tin mine?", "answers": [{"answer": 8}]}],
+      "solution": {
+        "type": "talkto",
+        "npc": "Ysondria",
+        "spots": [{"range": {"origin": {"x": 3219, "y": 3182, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "at the Nexus"}]
+      },
+      "anagram": ["Soy Drain"]
+    }
+  ]
 
   export const all: Clues.Step[] = [
     ...simple,
