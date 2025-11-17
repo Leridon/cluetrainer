@@ -1928,9 +1928,9 @@ name: "Guthix Memorial",
     spots: [
       {
         id: "nexus",
-        target: {"origin": {"x": 3215, "y": 3180, "level": 0}, "size": {"x": 5, "y": 5}, "data": "//+/AQ=="},
+        target: {"origin": {"x": 3215, "y": 3180, "level": 0}, "size": {"x": 5, "y": 5}, "data": "/38MAQ=="},
         code: "1",
-        name: "Nexus",
+        name: "Lumbridge Swamp",
       },
       {
         id: "graveyard",

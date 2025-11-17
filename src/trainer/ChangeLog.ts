@@ -402,6 +402,7 @@ export namespace Changelog {
         builder.wip(61, "TBD")
           .list(l => l
             .item("Updated the exact tiles of the moonclan teleport.")
+            .item("Updated the former Nexus teleport on the Enlightened amulet.")
           )
 
         builder.release(60, "Data Fixes", new Date(Date.parse("2025-11-12")))
