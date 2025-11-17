@@ -3044,14 +3044,14 @@ export namespace clue_data {
       "id": 471,
       "type": "anagram",
       "tier": "medium",
-      "text": ["This anagram reveals who to speak to next: He Any Further"],
+      "text": ["This anagram reveals who to speak to next: HE ANY FURTHER"],
       "challenge": [{"type": "challengescroll", "question": "How many ore rocks are there in the nearby copper and tin mine?", "answers": [{"answer": 8}]}],
       "solution": {
         "type": "talkto",
         "npc": "Father Urhney",
         "spots": [{"range": {"origin": {"x": 3203, "y": 3147, "level": 0}, "size": {"x": 8, "y": 5}}, "description": "in the Lumbridge swamp"}]
       },
-      "anagram": ["He Any Further"]
+      "anagram": ["HE ANY FURTHER"]
     }, {
       "id": 332,
       "type": "anagram",
