@@ -4615,7 +4615,7 @@ name: "Entrana",
     animation_ticks: default_teleport_ticks,
     menu_ticks: 0,
     spots: [
-      {id: "shatteredworlds", name: "Shattered Worlds", target: {"origin": {"x": 3166, "y": 3161, "level": 0}, "size": {"x": 5, "y": 5}, "data": "/zv/AQ=="}}
+      {id: "shatteredworlds", name: "Shattered Worlds", target: {"origin": {"x": 2675, "y": 2673, "level": 0}, "size": {"x": 5, "y": 5}}}
     ], access: [
       {id: "scroll", type: "item", name: {kind: "item", name: "Shattered Worlds teleport"}, action_name: "Teleport", img: {url: "Shattered_Worlds_teleport_scroll.webp"}}
     ]
