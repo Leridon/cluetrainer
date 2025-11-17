@@ -1122,7 +1122,7 @@ export namespace clue_data {
       "id": 126,
       "type": "simple",
       "tier": "easy",
-      "text": ["Search the crate in the left-hand tower of Lumbridge castle."],
+      "text": ["Search the crate in the southern tower at the entrance to Lumbridge Castle."],
       "solution": {"type": "search", "entity": "Crate", "spot": {"level": 1, "topleft": {"x": 3228, "y": 3212}, "botright": {"x": 3228, "y": 3212}}}
     }, {
       "id": 127,
