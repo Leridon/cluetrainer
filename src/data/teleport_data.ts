@@ -455,7 +455,7 @@ const raw_data: Transportation.TeleportGroup[] = [
     spots: [
       {
         id: "moonclan",
-        target: {"origin": {"x": 2112, "y": 3913, "level": 0}, "size": {"x": 4, "y": 5}, "data": "//8H"},
+        target: {"origin": {"x": 2112, "y": 3913, "level": 0}, "size": {"x": 4, "y": 5}, "data": "/88E"},
         img: {url: "tele-moonclan.png"},
         name: "Moonclan",
       },

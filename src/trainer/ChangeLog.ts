@@ -399,6 +399,11 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+        builder.wip(61, "TBD")
+          .list(l => l
+            .item("Updated the exact tiles of the moonclan teleport.")
+          )
+
         builder.release(60, "Data Fixes", new Date(Date.parse("2025-11-12")))
           .list(l => l
             .item("Fixed the position of two tetracompass spots.")
