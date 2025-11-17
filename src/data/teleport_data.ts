@@ -146,7 +146,7 @@ const raw_data: Transportation.TeleportGroup[] = [
         id: "lunarisle",
         img: {url: "lode_lunar.png", height: 28},
         code: "Alt+L",
-        target: {origin: {x: 2085, y: 3914, level: 0}},
+        target: {"origin": {"x": 2088, "y": 3911, "level": 0}},
         facing: direction.south,
         name: "Lunar Isle",
       },

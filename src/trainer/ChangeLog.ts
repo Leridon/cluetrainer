@@ -402,6 +402,7 @@ export namespace Changelog {
         builder.wip(61, "TBD")
           .list(l => l
             .item("Updated the exact tiles of the moonclan teleport.")
+            .item("Updated the landing tile of the Lunar isle lodestone.")
             .item("Updated the former Nexus teleport on the Enlightened amulet.")
             .item("Updated the water altar teleport on the Wicked hood.")
             .item("Updated the Shattered worlds teleport location.")
