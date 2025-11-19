@@ -409,6 +409,7 @@ export namespace Changelog {
             .item("Updated the former Nexus teleport on the Enlightened amulet.")
             .item("Updated the water altar teleport on the Wicked hood.")
             .item("Updated the Shattered worlds teleport location.")
+            .item("Updated emote area and hidey-hole location for the Lumbridge fishing shop emote clue.")
             .item("Updated collision data to the game update from 2025-11-17.")
           )
           .header("Method Updates")

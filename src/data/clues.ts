@@ -2643,11 +2643,11 @@ export namespace clue_data {
       "type": "emote",
       "tier": "master",
       "text": ["Shrug in the Lumbridge Fishing Supplies shop. Beware of double agents! Equip demon slayer gloves, a boater and the cape of legends."],
-      "area": {"origin": {"x": 3191, "y": 3251, "level": 0}, "size": {"x": 8, "y": 5}},
+      "area": {"origin": {"x": 3194, "y": 3251, "level": 0}, "size": {"x": 5, "y": 8}},
       "items": ["Demon Slayer Gloves", "Any Boater", "Cape of Legends"],
       "emotes": ["Shrug"],
       "double_agent": true,
-      "hidey_hole": {"name": "Barrel (hidey-hole)", "location": {"topleft": {"x": 3198, "y": 3250}, "botright": {"x": 3198, "y": 3250}, "level": 0}}
+      "hidey_hole": {"name": "Barrel (hidey-hole)", "location": {"topleft": {"x": 3198, "y": 3258}, "botright": {"x": 3198, "y": 3258}, "level": 0}}
     }, {
       "id": 244,
       "type": "emote",
