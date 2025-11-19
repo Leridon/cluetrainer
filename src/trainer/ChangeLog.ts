@@ -399,7 +399,7 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-        builder.wip(61, "Lumbridge Area Rework")
+        builder.release(61, "Lumbridge Area Rework", new Date(Date.parse("2025-11-19")))
           .header("Data Fixes")
           .list(l => l
             .item("Updated wording for an easy clue in Lumbridge castle.")
