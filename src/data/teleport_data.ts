@@ -146,7 +146,7 @@ const raw_data: Transportation.TeleportGroup[] = [
         id: "lunarisle",
         img: {url: "lode_lunar.png", height: 28},
         code: "Alt+L",
-        target: {origin: {x: 2085, y: 3914, level: 0}},
+        target: {"origin": {"x": 2088, "y": 3911, "level": 0}},
         facing: direction.south,
         name: "Lunar Isle",
       },
@@ -455,7 +455,7 @@ const raw_data: Transportation.TeleportGroup[] = [
     spots: [
       {
         id: "moonclan",
-        target: {"origin": {"x": 2112, "y": 3913, "level": 0}, "size": {"x": 4, "y": 5}, "data": "//8H"},
+        target: {"origin": {"x": 2112, "y": 3913, "level": 0}, "size": {"x": 4, "y": 5}, "data": "/88E"},
         img: {url: "tele-moonclan.png"},
         name: "Moonclan",
       },
@@ -1928,9 +1928,9 @@ name: "Guthix Memorial",
     spots: [
       {
         id: "nexus",
-        target: {"origin": {"x": 3215, "y": 3180, "level": 0}, "size": {"x": 5, "y": 5}, "data": "//+/AQ=="},
+        target: {"origin": {"x": 3215, "y": 3180, "level": 0}, "size": {"x": 5, "y": 5}, "data": "/38MAQ=="},
         code: "1",
-        name: "Nexus",
+        name: "Lumbridge Swamp",
       },
       {
         id: "graveyard",
@@ -2881,7 +2881,7 @@ name: "Guthix Memorial",
       },
       {
         id: "water",
-        target: {"origin": {"x": 3165, "y": 3183, "level": 0}},
+        target: {"origin": {"x": 3183, "y": 3156, "level": 0}},
         name: "Water",
         code: "Water",
       },
@@ -4615,7 +4615,7 @@ name: "Entrana",
     animation_ticks: default_teleport_ticks,
     menu_ticks: 0,
     spots: [
-      {id: "shatteredworlds", name: "Shattered Worlds", target: {"origin": {"x": 3166, "y": 3161, "level": 0}, "size": {"x": 5, "y": 5}, "data": "/zv/AQ=="}}
+      {id: "shatteredworlds", name: "Shattered Worlds", target: {"origin": {"x": 2675, "y": 2673, "level": 0}, "size": {"x": 5, "y": 5}}}
     ], access: [
       {id: "scroll", type: "item", name: {kind: "item", name: "Shattered Worlds teleport"}, action_name: "Teleport", img: {url: "Shattered_Worlds_teleport_scroll.webp"}}
     ]
