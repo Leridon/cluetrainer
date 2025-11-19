@@ -399,17 +399,31 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-        builder.wip(61, "TBD")
+        builder.wip(61, "Lumbridge Area Rework")
+          .header("Data Fixes")
           .list(l => l
+            .item("Updated wording for an easy clue in Lumbridge castle.")
+            .item("Replaced the medium anagram pointing to Ysondria with the new anagram pointing to Father Urhney.")
             .item("Updated the exact tiles of the moonclan teleport.")
             .item("Updated the landing tile of the Lunar isle lodestone.")
             .item("Updated the former Nexus teleport on the Enlightened amulet.")
             .item("Updated the water altar teleport on the Wicked hood.")
             .item("Updated the Shattered worlds teleport location.")
-            .item("Updated wording for an easy clue in Lumbridge castle.")
-            .item("Replaced the medium anagram pointing to Ysondria with the new anagram pointing to Father Urhney.")
             .item("Updated collision data to the game update from 2025-11-17.")
           )
+          .header("Method Updates")
+          .list(l => l
+            .item("Updated methods for the following clue locations impacted by the area rework.", new List()
+              .item("Tetracompass spot south-west of Lumbridge castle.")
+              .item("Master emote clue in the Lumbridge Fishing shop.")
+              .item("Father Urhney medium anagram (formerly for Ysondria at the Nexus).")
+              .item("Three Elite compass spots using Dave's spellbook teleport to Lumbridge swamp.")
+              .item("Two Medium coordinate clues in the Lumbridge swamp.")
+              .item("Easy emote step in the Zanaris shed.")
+              .item("Three elite compass spots near the northern Lum bridge.")
+            )
+            .item("Added a new method for a medium coordinate spot east of Draynor jail.")
+            .item("Added a new Wicked hood method for a medium coordinate spot south of the Water altar."))
 
         builder.release(60, "Data Fixes", new Date(Date.parse("2025-11-12")))
           .list(l => l
