@@ -398,6 +398,9 @@ export namespace Changelog {
 
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
+        builder.wip(62, "TBD")
+          .list(l => l
+            .item("Restored tetracompass methods that were accidentally removed."))
 
         builder.release(61, "Lumbridge Area Rework", new Date(Date.parse("2025-11-19")))
           .header("Data Fixes")
