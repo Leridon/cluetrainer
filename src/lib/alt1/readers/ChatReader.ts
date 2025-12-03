@@ -186,6 +186,9 @@ export namespace ChatReader {
         {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badgevip.data.png"), character: "\u2730"}, //SHADOWED WHITE STAR
         {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/chat_link.data.png"), character: "\u{1F517}"}, //LINK SYMBOL
         {image: await NeedleImage.fromURL("/alt1anchors/chat/chatbubble.png"), character: "\u{1F5E8}"}, // Left Speech Bubble
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_dragon_trophy.png"), character: "\u{1F409}"}, // Dragon
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_combat_achievements_grandmaster.png"), character: "\u{1F6E1}"}, // Shield
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_combat_achievements_master.png"), character: "\u{2694}"}, // Crossed swords
       ]
     })
 
