@@ -402,6 +402,9 @@ export namespace Changelog {
           .list(l => l
             .item("Restored tetracompass methods that were accidentally removed.")
             .item("Fix crash when exporting method packs.")
+            .item("Fixed two methods for master steps using the wrong location for the Tokkul-Zo teleport.")
+            .item("Separated variants for the master clue step to cook a wild pie into multiple methods.")
+            .item("Separated variants for the master clue step to cut and elder tree into multiple methods.")
           )
 
         builder.release(61, "Lumbridge Area Rework", new Date(Date.parse("2025-11-19")))
