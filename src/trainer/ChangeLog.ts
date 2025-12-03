@@ -400,7 +400,9 @@ export namespace Changelog {
     .tap(builder => {
         builder.wip(62, "TBD")
           .list(l => l
-            .item("Restored tetracompass methods that were accidentally removed."))
+            .item("Restored tetracompass methods that were accidentally removed.")
+            .item("Fix crash when exporting method packs.")
+          )
 
         builder.release(61, "Lumbridge Area Rework", new Date(Date.parse("2025-11-19")))
           .header("Data Fixes")

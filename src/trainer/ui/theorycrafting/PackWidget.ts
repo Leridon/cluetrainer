@@ -153,10 +153,12 @@ export default class PackWidget extends Widget {
         type: "basic",
         text: "Export",
         handler: () => {
+          const date = new Date(pack.timestamp * 1000)
+
           ExportStringModal.do(exp({type: "method-pack", version: 1},
             true,
             true
-          )(pack), "", `${pack_name}.txt`)
+          )(pack), "", `${pack_name}-${date.toLocaleString("en-gb")}.txt`)
         }
       })
 
@@ -164,8 +166,10 @@ export default class PackWidget extends Widget {
         type: "basic",
         text: "Export JSON",
         handler: () => {
+          const date = new Date(pack.timestamp * 1000)
+
           ExportStringModal.do(cleanedJSON(pack), "",
-            `${pack_name}.json`
+            `${pack_name}-${date.toLocaleString("en-gb")}.json`
           )
         }
       })
