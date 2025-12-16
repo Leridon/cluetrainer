@@ -398,7 +398,7 @@ export class BroadcastReaderApp extends Behaviour {
 
         const broadcast: DetectedBroadcast = (() => {
           const item_match = message.text.match("\u2746News: [\u3289\u{1F480}\u26AF\u2655\u328F\u2730\u{1F409}\u{1F6E1}\u{2694}]?([^\u3289\u{1F480}\u26AF\u2655\u328F\u2730\u{1F409}\u{1F6E1}\u{2694}]*) comp[il]eted a Treasure Trai[il] and received(( a)|( an))? (.*)!")
-          const title_match = message.text.match("\u2746News: [\u3289\u{1F480}\u26AF\u2655\u328F\u2730\u{1F409}\u{1F6E1}\u{2694}]?([^\u3289\u{1F480}\u26AF\u2655\u328F\u2730\u{1F409}\u{1F6E1}\u{2694}]*) has accomp[il][il]shed the '(.*)' feat by .*!")
+          const title_match = message.text.match(".*News: [\u3289\u{1F480}\u26AF\u2655\u328F\u2730\u{1F409}\u{1F6E1}\u{2694}]?([^\u3289\u{1F480}\u26AF\u2655\u328F\u2730\u{1F409}\u{1F6E1}\u{2694}]*) has accomp[il][il]shed the '(.*)' feat by.*")
 
           if (!item_match && !title_match) return null
 
@@ -408,6 +408,8 @@ export class BroadcastReaderApp extends Behaviour {
           if (item_match) {
             const player = item_match[1]
             const item = item_match[5]
+
+            console.log(`Got ${item} for ${player}`)
 
             if (!lodash.isEqual([255, 140, 56], color) && !(lodash.isEqual([255, 0, 0], color) && item.includes("Orlando"))) {
               console.log(`Does not match color: ${color.join(", ")}`)
@@ -428,8 +430,10 @@ export class BroadcastReaderApp extends Behaviour {
               message_timestamp: message.timestamp
             };
           } else if (title_match) {
-            const player = item_match[1]
-            const feat = item_match[2]
+            const player = title_match[1]
+            const feat = title_match[2]
+
+            console.log(`Got ${feat} for ${player}`)
 
             if (!lodash.isEqual([255, 140, 56], color)) {
               console.log(`Does not match color: ${color.join(", ")}`)
@@ -441,7 +445,7 @@ export class BroadcastReaderApp extends Behaviour {
             // Discard if matching item could not be found
             if (!best) {
               console.log(`no matching title found for ${feat}`)
-              return;
+              return null;
             }
 
             return {
@@ -454,6 +458,9 @@ export class BroadcastReaderApp extends Behaviour {
 
         if (!broadcast) return
 
+        console.log("Detected broadcast")
+        console.log(broadcast)
+
         // Discard messages outside the event time
         if (!TimeRange.contains(this.buffer.user.event.date, message.timestamp)) {
           const EXTENSION = 5 * 24 * 60 * 60 * 1000
@@ -461,6 +468,7 @@ export class BroadcastReaderApp extends Behaviour {
           if (this.buffer.user.event.rsns_exempt_from_event_time.includes(broadcast.player) && TimeRange.contains(TimeRange.extend(this.buffer.user.event.date, EXTENSION), message.timestamp)) {
             console.log(`Player ${broadcast.player} exempt from event time.`)
           } else {
+            console.log("Discarding because outside event time.")
             return
           }
         }
