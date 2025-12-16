@@ -405,6 +405,7 @@ export namespace Changelog {
             .item("Fixed two methods for master steps using the wrong location for the Tokkul-Zo teleport.")
             .item("Separated variants for the master clue step to cook a wild pie into multiple methods.")
             .item("Separated variants for the master clue step to cut and elder tree into multiple methods.")
+            .item("Updated Lost Grove scan to the new version from 2025-12-15.")
           )
 
         builder.release(61, "Lumbridge Area Rework", new Date(Date.parse("2025-11-19")))
