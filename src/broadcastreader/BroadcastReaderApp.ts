@@ -78,7 +78,20 @@ const item_mapping: {
   {item: "Second-Age staff", broadcast_text: "Second Age staff"},
   {item: "Orlando Smith's hat", broadcast_text: "Orlando Smith's hat"},
   {item: "Golden Compass", broadcast_text: "golden compass"},
+]
 
+const title_mapping: {
+  title: string,
+  feat: string
+}[] = [
+  {title: "Gold Digger", feat: "Got to Pick a Pocket or Two"},
+  {title: "Clueless", feat: "Casket Case"},
+  {title: "Double Agent", feat: "Hard To Resist"},
+  {title: "Clue Chaser", feat: "Knot So Elite After All"},
+  {title: "Master of Clues", feat: "Zaida's Protege"},
+  {title: "Golden Double Agent", feat: "Uri-n for a Treat"},
+  {title: "Golden Clue Chaser", feat: "Third-Age Is all the Rage"},
+  {title: "Golden Master of Clues", feat: "The Clue Addict"},
 ]
 
 namespace Backend {
@@ -170,6 +183,7 @@ type DetectedBroadcast = {
   message_timestamp: number,
   player: string,
   item: string,
+  is_title?: boolean,
   deleted?: boolean
 }
 
@@ -382,53 +396,83 @@ export class BroadcastReaderApp extends Behaviour {
 
         console.log(message.text)
 
-        const match = message.text.match("\u2746News: [\u{1F480}\u26AF\u3289\u328F]?([^\u{1F480}\u26AF\u3289\u328F]*) comp[il]eted a Treasure Trai[il] and received(( a)|( an))? (.*)!")
+        const broadcast: DetectedBroadcast = (() => {
+          const item_match = message.text.match("\u2746News: [\u3289\u{1F480}\u26AF\u2655\u328F\u2730\u{1F409}\u{1F6E1}\u{2694}]?([^\u3289\u{1F480}\u26AF\u2655\u328F\u2730\u{1F409}\u{1F6E1}\u{2694}]*) comp[il]eted a Treasure Trai[il] and received(( a)|( an))? (.*)!")
+          const title_match = message.text.match("\u2746News: [\u3289\u{1F480}\u26AF\u2655\u328F\u2730\u{1F409}\u{1F6E1}\u{2694}]?([^\u3289\u{1F480}\u26AF\u2655\u328F\u2730\u{1F409}\u{1F6E1}\u{2694}]*) has accomp[il][il]shed the '(.*)' feat by .*!")
 
-        // Discard messages not matching any
-        if (!match) {
-          return
-        }
+          if (!item_match && !title_match) return null
 
-        const color = Message.color(message)
-        const player = match[1]
-        const item = match[5]
+          const color = Message.color(message)
 
-        if (!lodash.isEqual([255, 140, 56], color) && !(lodash.isEqual([255, 0, 0], color) && item.includes("Orlando"))) {
-          console.log(`Does not match color: ${color.join(", ")}`)
-          return
-        }
+          // Discard messages not matching any
+          if (item_match) {
+            const player = item_match[1]
+            const item = item_match[5]
 
-        const best = findBestMatch(item_mapping, m => stringSimilarity(m.broadcast_text, item), 0.9)
+            if (!lodash.isEqual([255, 140, 56], color) && !(lodash.isEqual([255, 0, 0], color) && item.includes("Orlando"))) {
+              console.log(`Does not match color: ${color.join(", ")}`)
+              return
+            }
 
-        // Discard if matching item could not be found
-        if (!best) {
-          console.log(`no matching item found for ${item}`)
-          return;
-        }
+            const best = findBestMatch(item_mapping, m => stringSimilarity(m.broadcast_text, item), 0.9)
+
+            // Discard if matching item could not be found
+            if (!best) {
+              console.log(`no matching item found for ${item}`)
+              return;
+            }
+
+            return {
+              item: best.value.item,
+              player: player,
+              message_timestamp: message.timestamp
+            };
+          } else if (title_match) {
+            const player = item_match[1]
+            const feat = item_match[2]
+
+            if (!lodash.isEqual([255, 140, 56], color)) {
+              console.log(`Does not match color: ${color.join(", ")}`)
+              return
+            }
+
+            const best = findBestMatch(title_mapping, m => stringSimilarity(m.feat, feat), 0.9)
+
+            // Discard if matching item could not be found
+            if (!best) {
+              console.log(`no matching title found for ${feat}`)
+              return;
+            }
+
+            return {
+              item: best.value.title,
+              player: player,
+              message_timestamp: message.timestamp
+            };
+          }
+        })();
+
+        if (!broadcast) return
 
         // Discard messages outside the event time
         if (!TimeRange.contains(this.buffer.user.event.date, message.timestamp)) {
           const EXTENSION = 5 * 24 * 60 * 60 * 1000
 
-          if (this.buffer.user.event.rsns_exempt_from_event_time.includes(player) && TimeRange.contains(TimeRange.extend(this.buffer.user.event.date, EXTENSION), message.timestamp)) {
-            console.log(`Player ${player} exempt from event time.`)
+          if (this.buffer.user.event.rsns_exempt_from_event_time.includes(broadcast.player) && TimeRange.contains(TimeRange.extend(this.buffer.user.event.date, EXTENSION), message.timestamp)) {
+            console.log(`Player ${broadcast.player} exempt from event time.`)
           } else {
             return
           }
         }
 
-        const is_new = EventBuffer.add(this.buffer, {
-          item: best.value.item,
-          player: player,
-          message_timestamp: message.timestamp
-        })
+        const is_new = EventBuffer.add(this.buffer, broadcast)
 
         if (is_new) {
-          console.log(`Submitting ${best.value.item} for ${player}`)
+          console.log(`Submitting ${broadcast.item} for ${broadcast.player}`)
 
           this.saveChanges()
         } else {
-          console.log(`Discarding because ${best.value.item} isn't new`)
+          console.log(`Discarding because ${broadcast.item} isn't new`)
         }
       })
 
