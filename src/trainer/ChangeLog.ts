@@ -410,7 +410,7 @@ export namespace Changelog {
           )
           .header("Method Updates (Courtesy of Ngis)")
           .list(l => l
-            .item("3 New Elite Scan methods (Sponsored by th Bank of Elba)", new List()
+            .item("3 New Elite Scan methods (Sponsored by the Bank of Elba)", new List()
               .item("Piscatoris Hunter Area")
               .item("Keldagrim")
               .item("Mod Le'Harmless (Using the Big book o'Piracy)")
