@@ -398,15 +398,29 @@ export namespace Changelog {
 
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
-        builder.wip(62, "TBD")
+        builder.wip(62, "2025 Christmas Patches")
+          .header("Fixes")
           .list(l => l
             .item("Restored tetracompass methods that were accidentally removed.")
             .item("Fix crash when exporting method packs.")
             .item("Fixed two methods for master steps using the wrong location for the Tokkul-Zo teleport.")
-            .item("Separated variants for the master clue step to cook a wild pie into multiple methods.")
-            .item("Separated variants for the master clue step to cut and elder tree into multiple methods.")
-            .item("Updated Lost Grove scan to the new version from 2025-12-15.")
+            .item("Updated the Lost Grove scan to the new version from the 2025-12-15 game update.", new List()
+              .item(italic("Dev note: A new scan tree is still in development, so this scan does not have a builtin method for now."))
+            )
           )
+          .header("Method Updates (Courtesy of Ngis)")
+          .list(l => l
+            .item("3 New Elite Scan methods (Sponsored by th Bank of Elba)", new List()
+              .item("Piscatoris Hunter Area")
+              .item("Keldagrim")
+              .item("Mod Le'Harmless (Using the Big book o'Piracy)")
+            )
+            .item("Separated two Master step methods into multiple methods:", new List()
+              .item("Cook a Wild Pie")
+              .item("Cut an Elder Tree")
+            )
+          )
+          .render(l => l.paragraph("Happy holidays from the Clue Trainer team!"))
 
         builder.release(61, "Lumbridge Area Rework", new Date(Date.parse("2025-11-19")))
           .header("Data Fixes")
