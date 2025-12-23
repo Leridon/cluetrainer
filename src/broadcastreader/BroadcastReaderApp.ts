@@ -95,7 +95,8 @@ namespace Backend {
         date: {
           from: 1728399531613,
           to: 1828399531613
-        }
+        },
+        rsns_exempt_from_event_time: []
       }
     }
     else {
@@ -141,12 +142,28 @@ type User = {
   event: Event
 }
 
+type TimeRange = {
+  from: number,
+  to: number
+}
+
+namespace TimeRange {
+  export function extend(range: TimeRange, by: number): TimeRange {
+    return {
+      from: range.from - by,
+      to: range.to + by
+    }
+  }
+
+  export function contains(self: TimeRange, timestamp: number): boolean {
+    return self.from <= timestamp && timestamp <= self.to
+  }
+}
+
 type Event = {
   name: string,
-  date: {
-    from: number,
-    to: number
-  },
+  date: TimeRange,
+  rsns_exempt_from_event_time: string[]
 }
 
 type DetectedBroadcast = {
@@ -363,9 +380,6 @@ export class BroadcastReaderApp extends Behaviour {
       this.chatreader.new_message.on(message => {
         if (!this.buffer) return
 
-        // Discard messages outside the event time
-        if (message.timestamp < this.buffer.user.event.date.from || message.timestamp > this.buffer.user.event.date.to) return
-
         console.log(message.text)
 
         const match = message.text.match("\u2746News: [\u{1F480}\u26AF\u3289\u328F]?([^\u{1F480}\u26AF\u3289\u328F]*) comp[il]eted a Treasure Trai[il] and received(( a)|( an))? (.*)!")
@@ -390,6 +404,17 @@ export class BroadcastReaderApp extends Behaviour {
         if (!best) {
           console.log(`no matching item found for ${item}`)
           return;
+        }
+
+        // Discard messages outside the event time
+        if (!TimeRange.contains(this.buffer.user.event.date, message.timestamp)) {
+          const EXTENSION = 5 * 24 * 60 * 60 * 1000
+
+          if (this.buffer.user.event.rsns_exempt_from_event_time.includes(player) && TimeRange.contains(TimeRange.extend(this.buffer.user.event.date, EXTENSION), message.timestamp)) {
+            console.log(`Player ${player} exempt from event time.`)
+          } else {
+            return
+          }
         }
 
         const is_new = EventBuffer.add(this.buffer, {

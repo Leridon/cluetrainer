@@ -59,7 +59,7 @@ export namespace ExportImport {
     return (value: T): envelop => {
       let p: envelop = {
         payload_type: "envelop",
-        value: JSON.stringify(value)
+        value: cleanedJSON(value)
       }
 
       if (compress) {

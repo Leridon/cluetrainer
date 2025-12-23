@@ -162,6 +162,8 @@ export class ChatReader extends DerivedCaptureService {
 }
 
 export namespace ChatReader {
+  import findBestMatch = util.findBestMatch;
+  import index = util.index;
   export type ChatIcon = {
     image: NeedleImage,
     character: string
@@ -186,6 +188,9 @@ export namespace ChatReader {
         {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badgevip.data.png"), character: "\u2730"}, //SHADOWED WHITE STAR
         {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/chat_link.data.png"), character: "\u{1F517}"}, //LINK SYMBOL
         {image: await NeedleImage.fromURL("/alt1anchors/chat/chatbubble.png"), character: "\u{1F5E8}"}, // Left Speech Bubble
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_dragon_trophy.png"), character: "\u{1F409}"}, // Dragon
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_combat_achievements_grandmaster.png"), character: "\u{1F6E1}"}, // Shield
+        {image: await NeedleImage.fromURL("/alt1anchors/chat/icons/badge_combat_achievements_master.png"), character: "\u{2694}"}, // Crossed swords
       ]
     })
 
@@ -194,7 +199,6 @@ export namespace ChatReader {
     ]
   }
 
-  import index = util.index;
 
   export class SingleChatboxReader {
     buffer = new MessageBuffer()
@@ -240,20 +244,22 @@ export namespace ChatReader {
       };
 
       const read_icon = (): boolean => {
+        const MAX_AVERAGE_DIFFERENCE = 80
+        const MAX_PIXEL_DIFFERENCE = 120
+
         for (const addspace of [true, false]) {
           const badgeleft = scan_x + (addspace ? fodef.spacewidth : 0)
 
-          const matched_icon = this.icons.find(icon => {
-              return a1lib.ImageDetect.simpleCompare(line_img, icon.image.underlying, badgeleft, baseline + this.chatbox.font.icon_y) < Number.POSITIVE_INFINITY
-            }
-          )
+          const matched_icon = findBestMatch(this.icons, icon =>
+              a1lib.ImageDetect.simpleCompare(line_img, icon.image.underlying, badgeleft, baseline + this.chatbox.font.icon_y, MAX_PIXEL_DIFFERENCE)
+            , MAX_AVERAGE_DIFFERENCE, true)
 
           if (matched_icon) {
             if (addspace) fragments.push({text: " ", color: null})
 
-            fragments.push({text: matched_icon.character, color: null})
+            fragments.push({text: matched_icon.value.character, color: null})
 
-            scan_x = badgeleft + matched_icon.image.underlying.width
+            scan_x = badgeleft + matched_icon.value.image.underlying.width
 
             return true;
           }
