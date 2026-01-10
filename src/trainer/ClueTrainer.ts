@@ -34,6 +34,7 @@ import {SuccessfullInstallationNotice} from "./startup_messages/SuccessfullInsta
 import {lazy} from "../lib/Lazy";
 import {Alt1} from "../lib/alt1/Alt1";
 import {ClueTrainerWiki} from "./wiki";
+import {Alt1GL} from "../lib/alt1gl/Alt1GL";
 import ActiveTeleportCustomization = Transportation.TeleportGroup.ActiveTeleportCustomization;
 import TeleportSettings = Settings.TeleportSettings;
 import inlineimg = C.inlineimg;
@@ -45,6 +46,7 @@ import staticentity = C.staticentity;
 import entity = C.entity;
 import notification = Notification.notification;
 import log = Log.log;
+import {GlClueReader} from "./ui/neosolving/cluereader/ClueReader";
 
 declare global {
   var cluetrainer_build_environment: ClueTrainer.BuildEnvironment
@@ -291,6 +293,10 @@ export class ClueTrainer extends Behaviour {
         }
       }
 
+      if (e.key == "F5") {
+        window.location.reload()
+      }
+
       if (e.key == "F6") {
         log().log("Log exported")
 
@@ -341,6 +347,10 @@ export class ClueTrainer extends Behaviour {
     if (query_function) query_function()
 
     window.history.pushState({}, null, `${location.protocol}//${location.host}`)
+
+    if(Alt1GL.exists()) {
+      this.withSub(new GlClueReader())
+    }
   }
 
   protected end() {

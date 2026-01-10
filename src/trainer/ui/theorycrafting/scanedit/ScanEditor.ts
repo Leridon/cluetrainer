@@ -495,7 +495,7 @@ export default class ScanEditor extends MethodSubEditor {
   public builder: ScanTreeBuilder
   candidates_at_active_node: Observable<TileCoordinates[]>
 
-  layer: ScanEditLayer
+  layer: ScanEditLayer = undefined
   interaction_guard: InteractionGuard
   tree_edit: TreeEdit
   tools: ScanTools

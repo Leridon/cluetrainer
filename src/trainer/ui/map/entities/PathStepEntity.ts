@@ -31,7 +31,7 @@ function offsetTowards(from: Vector2, to: Vector2, scale: number): Vector2 {
 
 export class PathStepEntity extends MapEntity {
 
-  floor_sensitivity_layers: FloorLevels<{ correct_level: boolean }>
+  floor_sensitivity_layers: FloorLevels<{ correct_level: boolean }> = undefined
 
   constructor(public step: Path.Step) {
     super()

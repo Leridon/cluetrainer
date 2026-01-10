@@ -5,7 +5,7 @@ export class OpacityGroup extends leaflet.FeatureGroup {
 
   options: LayerOptions & {
     opacity: number
-  }
+  }  = undefined
 
   constructor() {
     super();

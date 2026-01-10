@@ -22,7 +22,7 @@ import TeleportAccess = Transportation.TeleportAccess;
 export class TeleportSpotEntity extends MapEntity {
 
   zoom_sensitivity_layers = MapEntity.default_zoom_scale_layers
-  floor_sensitivity_layers: FloorLevels<{ correct_level: boolean }>
+  floor_sensitivity_layers: FloorLevels<{ correct_level: boolean }> = undefined
 
   constructor(public teleport: Transportation.TeleportGroup.Spot) {
     super();

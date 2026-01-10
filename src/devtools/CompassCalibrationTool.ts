@@ -318,9 +318,8 @@ class TravellingSalesmanProblem<T> {
   private distance_map: number[][]
   private start_distance: number[]
 
-  private come_from_solution: number[] = this.spots.map((_, i) => i)
-
   private start_position_index: number
+  private come_from_solution: number[]
 
   private spots_with_start: T[]
 
@@ -328,6 +327,7 @@ class TravellingSalesmanProblem<T> {
               private distance: TravellingSalesmanProblem.StatefulDistanceFunction<T>,
               private start_position: T
   ) {
+    this.come_from_solution = this.spots.map((_, i) => i)
     this.spots_with_start = [...spots, start_position]
     this.start_position_index = spots.length
 

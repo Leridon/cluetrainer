@@ -5,10 +5,10 @@
     "module": "ESNext",
     "experimentalDecorators": true,
     "noImplicitThis": true,
-    "target": "es6",
+    "target": "ESNext",
     "strictNullChecks": false,
     "lib": [
-      "es2019",
+      "ESNext",
       "dom"
     ],
     "baseUrl": "./src",

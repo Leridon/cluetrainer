@@ -24,6 +24,12 @@ import {CelticKnots} from "../../../../lib/cluetheory/CelticKnots";
 import {CapturedScan} from "./capture/CapturedScan";
 import {Finder} from "../../../../lib/alt1/capture/Finder";
 import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
+import Behaviour from "../../../../lib/ui/Behaviour";
+import {Alt1GL} from "../../../../lib/alt1gl/Alt1GL";
+import {StreamRenderObject} from "../../../../../../alt1gl/ts/util/patchrs_napi";
+import {BufferCache} from "../../../../lib/alt1gl/ts/programs/filteredstate";
+import {Quaternion, Vector3} from "three";
+import {Angles} from "../../../../lib/math/Angles";
 import stringSimilarity = util.stringSimilarity;
 import notification = Notification.notification;
 import findBestMatch = util.findBestMatch;
@@ -32,6 +38,7 @@ import log = Log.log;
 import cleanedJSON = util.cleanedJSON;
 import async_init = util.async_init;
 import AsyncInitialization = util.AsyncInitialization;
+import radiansToDegrees = Angles.radiansToDegrees;
 
 const CLUEREADERDEBUG = false
 
@@ -496,5 +503,33 @@ export namespace ClueReader {
     }
 
     return lines.join("\n").trim()
+  }
+}
+
+export class GlClueReader extends Behaviour {
+  stream: StreamRenderObject
+
+  protected begin() {
+    const cache = new BufferCache()
+
+    this.stream = Alt1GL.instance().native.streamRenderCalls({
+      vertexObjectId: 1657,
+      features: ["full"]
+    }, (r) => {
+      r.forEach(s => {
+        const mesh = cache.getMeshData(s)
+
+        if (!mesh) return
+
+        // The angle is very accurate but still needs to be calibrated. Seems off by up to multiple degrees
+        const angle = Angles.normalizeAngle(Math.PI / 2 + mesh.position2d.yRotation)
+
+        console.log(`Frame ${s.framenr}, Angle: ${radiansToDegrees(angle)}°`)
+      })
+    })
+  }
+
+  protected end() {
+    this.stream.close()
   }
 }
