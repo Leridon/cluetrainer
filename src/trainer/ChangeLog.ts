@@ -403,7 +403,7 @@ export namespace Changelog {
         .list(l => l
           .item("Added 3 methods for the Lost Grove scan:", new List()
             .item("Using just the Lost Grove teleport (46.7 ticks idealized average).")
-            .item("Using the teleport and the Solak boss portal (31.7 ticks idealized average).")
+            .item("Using the teleport and the Solak boss portal (29.9 ticks idealized average).")
             .item("Using the teleport and the fairy ring (30.3 ticks idealized average).")
             .item(italic("Router's note: Thanks to Jere for helping out with routing the latter two methods."))
           )
