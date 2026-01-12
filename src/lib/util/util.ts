@@ -242,7 +242,7 @@ export namespace util {
   }
 
   export function downloadBinaryFile(filename: string, data: Uint8Array) {
-    download(filename, window.URL.createObjectURL(new Blob([data])))
+    download(filename, window.URL.createObjectURL(new Blob([new Uint8Array(data)])))
   }
 
   export function selectFile(accept: string = undefined): Promise<File> {

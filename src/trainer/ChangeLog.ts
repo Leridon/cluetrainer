@@ -398,7 +398,18 @@ export namespace Changelog {
 
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
-        builder.wip(62, "2025 Christmas Patches")
+
+      builder.release(63, "Lost Grove Scan Methods", new Date(Date.parse("2026-01-12")))
+        .list(l => l
+          .item("Added 3 methods for the Lost Grove scan:", new List()
+            .item("Using just the Lost Grove teleport (46.7 ticks idealized average).")
+            .item("Using the teleport and the Solak boss portal (31.7 ticks idealized average).")
+            .item("Using the teleport and the fairy ring (30.3 ticks idealized average).")
+            .item(italic("Router's note: Thanks to Jere for helping out with routing the latter two methods."))
+          )
+        )
+
+        builder.release(62, "2025 Christmas Patches", new Date(Date.parse("2025-12-23")) )
           .header("Fixes")
           .list(l => l
             .item("Restored tetracompass methods that were accidentally removed.")
