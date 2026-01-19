@@ -399,12 +399,13 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-        builder.wip(64, "WIP")
+        builder.release(64, "UI Update Fixes: First Batch", new Date(Date.parse("2026-01-19")))
           .list(l => l
             .item("Fixed Lockbox puzzle detection.")
             .item("Fixed Knot puzzle detection.")
             .item("Fixed detection of arrow key inversion for slider puzzles.")
             .item("Updated collision data to the latest game version.")
+            .item("Updated the position of one elite compass spot (spot 384 near the Lumbridge cemetery).")
           )
           .render(l => l.paragraph("Today's game update has changed all game interfaces and fonts, breaking most of Clue Trainer and most other Alt 1 apps. This patch is a first stab at getting things back up working, but full functionality will only be restored once the new fonts are properly supported by Alt 1's text readers."))
 
