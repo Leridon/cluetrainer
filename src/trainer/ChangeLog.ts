@@ -399,17 +399,31 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-      builder.release(63, "Lost Grove Scan Methods", new Date(Date.parse("2026-01-12")))
-        .list(l => l
-          .item("Added 3 methods for the Lost Grove scan:", new List()
-            .item("Using just the Lost Grove teleport (46.7 ticks idealized average).")
-            .item("Using the teleport and the Solak boss portal (29.9 ticks idealized average).")
-            .item("Using the teleport and the fairy ring (30.3 ticks idealized average).")
-            .item(italic("Router's note: Thanks to Jere for helping out with routing the latter two methods."))
+        builder.release(64, "UI Update Fixes: First Batch", new Date(Date.parse("2026-01-19")))
+          .notification("A first batch of fixes for the UI update released!")
+          .list(l => l
+            .item("Fixed Lockbox puzzle detection.")
+            .item("Fixed Knot puzzle detection.")
+            .item("Fixed detection of arrow key inversion for slider puzzles.")
+            .item("Updated collision data to the latest game version.")
+            .item("Updated the position of one elite compass spot (spot 384 near the Lumbridge cemetery).")
+            .item("Temporarily moved the teleport to Lowse into the big void.", new List()
+              .item("The Armadyl tower is an instance. The proper location will be found once the map visuals are updated.")
+            )
           )
-        )
+          .render(l => l.paragraph("Today's game update has changed all game interfaces and fonts, breaking most of Clue Trainer and most other Alt 1 apps. This patch is a first stab at getting things back up working, but full functionality will only be restored once the new fonts are properly supported by Alt 1's text readers."))
 
-        builder.release(62, "2025 Christmas Patches", new Date(Date.parse("2025-12-23")) )
+        builder.release(63, "Lost Grove Scan Methods", new Date(Date.parse("2026-01-12")))
+          .list(l => l
+            .item("Added 3 methods for the Lost Grove scan:", new List()
+              .item("Using just the Lost Grove teleport (46.7 ticks idealized average).")
+              .item("Using the teleport and the Solak boss portal (29.9 ticks idealized average).")
+              .item("Using the teleport and the fairy ring (30.3 ticks idealized average).")
+              .item(italic("Router's note: Thanks to Jere for helping out with routing the latter two methods."))
+            )
+          )
+
+        builder.release(62, "2025 Christmas Patches", new Date(Date.parse("2025-12-23")))
           .header("Fixes")
           .list(l => l
             .item("Restored tetracompass methods that were accidentally removed.")

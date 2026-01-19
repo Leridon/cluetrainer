@@ -1,10 +1,9 @@
 import {async_lazy, LazyAsync} from "../../../../../lib/Lazy";
-import {ImageDetect} from "alt1";
 import {CapturedImage, NeedleImage} from "../../../../../lib/alt1/capture";
 import {Vector2} from "../../../../../lib/math";
 import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
 import {util} from "../../../../../lib/util/util";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {SliderReader} from "../SliderReader";
 import {Sliders} from "../../../../../lib/cluetheory/Sliders";
 import rgbSimilarity = util.rgbSimilarity;
@@ -17,7 +16,6 @@ export class CapturedSliderInterface {
   constructor(
     public readonly image: CapturedImage,
     private readonly image_includes_checkbox: boolean,
-    public readonly isLegacy: boolean,
     private readonly reader: SliderReader
   ) {
 
@@ -38,6 +36,8 @@ export class CapturedSliderInterface {
       origin: {x: 0, y: CapturedSliderInterface.INVERTED_CHECKBOX_OFFSET_FROM_TL.y},
       size: {x: 1, y: 1}
     }).getData()
+
+    // log().log("Slider", "", this.image.getData())
 
     return rgbSimilarity(CapturedSliderInterface.CHECKMARK_COLOR,
       pixel.getPixel(0, 0) as any
@@ -63,7 +63,6 @@ export class CapturedSliderInterface {
     return new CapturedSliderInterface(
       image.getScreenSection(this.screenRectangle(include_checkbox)),
       include_checkbox,
-      this.isLegacy,
       this.reader
     )
   }
@@ -85,18 +84,11 @@ export namespace CapturedSliderInterface {
 
   export namespace Finder {
     export const instance = async_lazy(async () => {
-      const anchors: {
-        isLegacy: boolean,
-        anchor: NeedleImage
-      }[] = [
-        {isLegacy: false, anchor: (await CapturedSliderInterface.anchors.get()).eoc_x},
-        {isLegacy: true, anchor: (await CapturedSliderInterface.anchors.get()).legacy_x},
-      ]
+      const anchor: NeedleImage = (await CapturedSliderInterface.anchors.get()).eoc_x
 
       return new class implements Finder {
         find(img: CapturedImage, include_inverted_arrow_checkmark: boolean, reader: SliderReader): CapturedSliderInterface {
-          for (const anchor of anchors) {
-            const positions = img.findNeedle(anchor.anchor)
+            const positions = img.findNeedle(anchor)
 
             if (positions.length > 0) {
               const body_rect: ScreenRectangle = {
@@ -112,11 +104,9 @@ export namespace CapturedSliderInterface {
               return new CapturedSliderInterface(
                 positions[0].parent.getSubSection(body_rect),
                 include_inverted_arrow_checkmark,
-                anchor.isLegacy,
                 reader
               )
             }
-          }
 
           return null
         }
@@ -126,15 +116,14 @@ export namespace CapturedSliderInterface {
   }
 
   export const TL_TILE_FROM_X_OFFSET = {x: -297, y: 15}
-  export const INVERTED_CHECKBOX_OFFSET_FROM_TL = {x: -169, y: 222}
+  export const INVERTED_CHECKBOX_OFFSET_FROM_TL = {x: -169, y: 225}
   export const PUZZLE_SIZE = {x: 273, y: 273}
 
-  export const CHECKMARK_COLOR: [number, number, number] = [239, 175, 63]
+  export const CHECKMARK_COLOR: [number, number, number] = [209, 171, 101]
 
   export const anchors = new LazyAsync(async () => {
     return {
-      eoc_x: await NeedleImage.fromURL("/alt1anchors/slide.png"),
-      legacy_x: await NeedleImage.fromURL("/alt1anchors/slidelegacy.png"),
+      eoc_x: await NeedleImage.fromURL("/alt1anchors/sliders/eoc_x.png"),
     }
   })
 }
