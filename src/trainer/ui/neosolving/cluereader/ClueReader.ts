@@ -148,7 +148,7 @@ export class ClueReader {
             return best.value.type
           })()
 
-          if (modal_type) {
+          const do_modal_type = ((modal_type: ClueReader.ModalType): ClueReader.Result => {
             switch (modal_type) {
               case "textclue":
                 const text = ClueReader.readTextClueModalText(modal)
@@ -270,6 +270,15 @@ export class ClueReader {
                 }
               }
             }
+          });
+
+          if (modal.title()) do_modal_type(modal_type)
+          else {
+            const res =
+              do_modal_type("lockbox")
+              || do_modal_type("knot")
+
+            if (res) return res
           }
 
           return null

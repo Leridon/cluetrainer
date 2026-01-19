@@ -401,8 +401,11 @@ export namespace Changelog {
 
         builder.wip(64, "WIP")
           .list(l => l
-            .item("Fixed detection of arrow key invertion for slider puzzles.")
+            .item("Fixed Lockbox puzzle detection.")
+            .item("Fixed Knot puzzle detection.")
+            .item("Fixed detection of arrow key inversion for slider puzzles.")
           )
+          .render(l => l.paragraph("Today's game update has changed all game interfaces and fonts, breaking most of Clue Trainer and most other Alt 1 apps. This patch is a first stab at getting things back up working, but full functionality will only be restored once the new fonts are properly supported by Alt 1's text readers."))
 
         builder.release(63, "Lost Grove Scan Methods", new Date(Date.parse("2026-01-12")))
           .list(l => l

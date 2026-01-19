@@ -9,6 +9,8 @@ import {Alt1Overlay} from "../../../../../lib/alt1/overlay/Alt1Overlay";
 
 export class CapturedModal {
   private _title: Lazy<string> = lazy(() => {
+    return "";
+
     const TITLE_BAR_OFFSET_FROM_BODY = {x: 0, y: -24}
     const TITLE_BAR_SIZE = {x: 150, y: 20}
 

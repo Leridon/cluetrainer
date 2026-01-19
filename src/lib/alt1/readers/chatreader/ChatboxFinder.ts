@@ -6,10 +6,11 @@ import {async_lazy, lazy} from "../../../Lazy";
 import * as lodash from "lodash";
 import {CapturedChatbox} from "./CapturedChatbox";
 import {ChatAnchors} from "./ChatAnchors";
-import {Log} from "../../../util/Log";
-import log = Log.log;
+import {Alt1Overlay} from "../../overlay/Alt1Overlay";
 
 export class ChatboxFinder implements Finder<CapturedChatbox[]> {
+  debug_overlay = lazy(() => new Alt1Overlay().start())
+  DEBUG_FINDER = false;
 
   private constructor(
     public readonly needles: ChatAnchors.Needles,
@@ -22,35 +23,40 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
    */
   find(img: CapturedImage): CapturedChatbox[] {
 
-    // First, find plus/minus icons that indicate the top right of the chatbox. FIXME Currently, this fails when the button is hovered.
+    // First, find plus/minus icons that indicate the top right of the chatbox.
     const top_rights: { capture: ScreenRectangle, expanded: boolean }[] = [
       ...img.findNeedle(this.needles.tr_minus).map(img => ({capture: img.screen_rectangle, expanded: true})),
+      ...img.findNeedle(this.needles.tr_minus_hover).map(img => ({capture: img.screen_rectangle, expanded: true})),
       ...img.findNeedle(this.needles.tr_plus).map(img => ({capture: img.screen_rectangle, expanded: false})),
+      ...img.findNeedle(this.needles.tr_plus_hover).map(img => ({capture: img.screen_rectangle, expanded: false})),
     ]
+
+    console.log(`Found top_rights ${top_rights.length}`)
 
     if (top_rights.length == 0) return []
 
     // Next, search for quickchat bubbles. We are interested in the ones in the bottom chat line.
     const initial_bubbles = img.findNeedle(this.needles.chatbubble)
 
+    console.log(`Found bubbles ${initial_bubbles.length}`)
+
     function isWhite(pixel: [number, number, number, number]): boolean {
-      return pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255
+      return pixel[0] > 210 && pixel[1] > 210 && pixel[2] > 210
     }
 
     // We need to filter out the quickchat bubbles used for quick responses.
     // To do so, we check for the colon directly to the right of the detected bubble and see if it matches our expected layout.
     const bubbles = initial_bubbles
-      .map(b => b.screen_rectangle)
       .filter(bubble_location => {
 
         // Get a 1 pixel wide, 10 pixel high column of pixels to the right of the chatbubble. This strip should contain exactly to fully white pixels that make up the colon.
         const data = img.getSubSection(ScreenRectangle.move(
-          bubble_location, {x: 11, y: 0}, {x: 1, y: 10}
+          bubble_location.screen_rectangle, {x: 11, y: 0}, {x: 1, y: 12}
         )).getData()
 
         // To distinguish this colon from the ones in the chat, we need to match for an exact order of pixels instead of just counting white pixels
         // From top to bottom, this array describes whether the respective pixel should or should not be white
-        const colon_signature = [false, false, true, false, false, false, true, false, false]
+        const colon_signature = [false, false, true, false, false, false, false, false, true, false, false]
 
         // Sometimes, the bubble is vertically off by 1 pixel. So we need to check 2 possible positions, which we iterate through with this loop
         for (let dy = 0; dy <= 1; dy++) {
@@ -60,7 +66,7 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
             return isWhite(data.getPixel(0, y + dy)) == should_be_white
           })) {
             // If the signature fully matches, we've found a correct chatbox
-            bubble_location.origin.y -= dy;
+            bubble_location.screen_rectangle.origin.y -= dy;
             return true
           }
         }
@@ -79,11 +85,13 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
         return false
       })
 
+    console.log(`Found filtered bubbles ${bubbles.length}`)
+
     if (bubbles.length == 0) return []
 
     type PositionCandidate = { taken: boolean, position: Vector2 }
 
-    const bubble_map: { taken: boolean, position: Vector2 }[] = bubbles.map(b => ({taken: false, position: b.origin}))
+    const bubble_map: { taken: boolean, position: Vector2 }[] = bubbles.map(b => ({taken: false, position: b.screen_rectangle.origin}))
     const tr_map: { taken: boolean, position: { capture: ScreenRectangle, expanded: boolean } }[] = top_rights.map(b => ({taken: false, position: b}))
 
     const viable_pairs: {
@@ -107,35 +115,6 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
     return viable_pairs.map(pair => {
       if (pair.bubble.taken || pair.top_right.taken) return []
 
-      const nameread = null // OCR.readLine(nameline, CapturedChatbox.chatfont, [255, 255, 255], 110, 13, false, true);
-
-      function kind_by_name(name: string): { offset: number; type: CapturedChatbox.Type } {
-        switch (name) {
-          case "Clan Chat":
-            return {type: "cc", offset: 62}
-          case "Friends Chat":
-            return {type: "fc", offset: 76}
-          case "Group Chat":
-            return {type: "gc", offset: 69}
-          case "Guest Clan Chat":
-            return {type: "gcc", offset: 98}
-          default:
-            return null
-        }
-      }
-
-      const kind = kind_by_name(nameread?.text)
-
-      if (kind) {
-        pair.bubble.taken = true
-        pair.top_right.taken = true
-
-        return [new CapturedChatbox(img.getSubSection(ScreenRectangle.fromPixels(
-          Vector2.add(pair.top_right.position.capture.origin, {x: 13, y: 20}),
-          Vector2.add(pair.bubble.position, {x: -kind.offset, y: -10}),
-        )), kind.type)]
-      }
-
       // Check for left boundary by looking for the game chat filter
       if (pair.top_right.position.expanded) {
         const width = Math.max(pair.bubble.position.x, 250)
@@ -147,8 +126,11 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
           }
         );
 
-        const positions = [this.needles.gamefiltered, this.needles.gameall, this.needles.gameoff].map(anchor => lazy(() => area.findNeedle(anchor)))
+        const positions = [this.needles.gamefiltered, this.needles.gameall, this.needles.gameoff]
+          .map(anchor => lazy(() => area.findNeedle(anchor)))
           .find(r => r.get().length > 0)?.get()
+
+        console.log(`Found game filter ${positions?.length ?? 0}`)
 
         if (positions) {
           const left = lodash.maxBy(positions, pos => pos.screen_rectangle.origin.x)
@@ -182,6 +164,9 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
 
           return null
         })()
+
+
+        console.log(`Found anchor ${anchor != null}`)
 
         if (anchor) {
           return [new CapturedChatbox(img.getSubSection(ScreenRectangle.fromPixels(
