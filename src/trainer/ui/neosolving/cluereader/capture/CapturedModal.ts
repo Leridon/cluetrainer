@@ -1,32 +1,30 @@
 import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
 import * as OCR from "alt1/ocr";
 import {Vector2} from "../../../../../lib/math";
-import {async_lazy, lazy, LazyAsync} from "../../../../../lib/Lazy";
+import {async_lazy, Lazy, lazy, LazyAsync} from "../../../../../lib/Lazy";
 import {CapturedImage, NeedleImage} from "../../../../../lib/alt1/capture";
 import {Finder} from "../../../../../lib/alt1/capture/Finder";
 import {Alt1OverlayDrawCalls} from "../../../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
 import {Alt1Overlay} from "../../../../../lib/alt1/overlay/Alt1Overlay";
 
 export class CapturedModal {
-  private _title: string = null
+  private _title: Lazy<string> = lazy(() => {
+    const TITLE_BAR_OFFSET_FROM_BODY = {x: 0, y: -24}
+    const TITLE_BAR_SIZE = {x: 150, y: 20}
+
+    const title_bar = this.body.parent.getSubSection(
+      ScreenRectangle.move(this.body.relativeRectangle(), TITLE_BAR_OFFSET_FROM_BODY, TITLE_BAR_SIZE)
+    ).getData()
+
+    return OCR.readSmallCapsBackwards(title_bar, CapturedModal.title_font, [[255, 203, 5]], 0, 13, title_bar.width, 1).text;
+  })
 
   constructor(
     public readonly body: CapturedImage) {
   }
 
   title(): string {
-    if (!this._title && this.body.parent) {
-      const TITLE_BAR_OFFSET_FROM_BODY = {x: 0, y: -24}
-      const TITLE_BAR_SIZE = {x: 150, y: 20}
-
-      const title_bar = this.body.parent.getSubSection(
-        ScreenRectangle.move(this.body.relativeRectangle(), TITLE_BAR_OFFSET_FROM_BODY, TITLE_BAR_SIZE)
-      ).getData()
-
-      this._title = OCR.readSmallCapsBackwards(title_bar, CapturedModal.title_font, [[255, 203, 5]], 0, 13, title_bar.width, 1).text;
-    }
-
-    return this._title.toString()
+    return this._title.get()
   }
 
   static assumeBody(image: CapturedImage): CapturedModal {
@@ -44,7 +42,6 @@ export namespace CapturedModal {
     return new class implements Finder<CapturedModal> {
       find(img: CapturedImage): CapturedModal {
 
-        console.log("Finding modal")
         const debug_geometry = new Alt1OverlayDrawCalls.GeometryBuilder()
 
         for (let skin of anchor) {
