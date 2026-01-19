@@ -1,5 +1,4 @@
 import {async_lazy, LazyAsync} from "../../../../../lib/Lazy";
-import {ImageDetect} from "alt1";
 import {CapturedImage, NeedleImage} from "../../../../../lib/alt1/capture";
 import {Vector2} from "../../../../../lib/math";
 import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
@@ -9,6 +8,8 @@ import {SliderReader} from "../SliderReader";
 import {Sliders} from "../../../../../lib/cluetheory/Sliders";
 import rgbSimilarity = util.rgbSimilarity;
 import SliderPuzzle = Sliders.SliderPuzzle;
+import {Log} from "../../../../../lib/util/Log";
+import log = Log.log;
 
 export class CapturedSliderInterface {
   public readonly body: CapturedImage
@@ -38,6 +39,8 @@ export class CapturedSliderInterface {
       origin: {x: 0, y: CapturedSliderInterface.INVERTED_CHECKBOX_OFFSET_FROM_TL.y},
       size: {x: 1, y: 1}
     }).getData()
+
+    // log().log("Slider", "", this.image.getData())
 
     return rgbSimilarity(CapturedSliderInterface.CHECKMARK_COLOR,
       pixel.getPixel(0, 0) as any
@@ -126,15 +129,15 @@ export namespace CapturedSliderInterface {
   }
 
   export const TL_TILE_FROM_X_OFFSET = {x: -297, y: 15}
-  export const INVERTED_CHECKBOX_OFFSET_FROM_TL = {x: -169, y: 222}
+  export const INVERTED_CHECKBOX_OFFSET_FROM_TL = {x: -169, y: 225}
   export const PUZZLE_SIZE = {x: 273, y: 273}
 
-  export const CHECKMARK_COLOR: [number, number, number] = [239, 175, 63]
+  export const CHECKMARK_COLOR: [number, number, number] = [209, 171, 101]
 
   export const anchors = new LazyAsync(async () => {
     return {
-      eoc_x: await NeedleImage.fromURL("/alt1anchors/slide.png"),
-      legacy_x: await NeedleImage.fromURL("/alt1anchors/slidelegacy.png"),
+      eoc_x: await NeedleImage.fromURL("/alt1anchors/sliders/eoc_x.png"),
+      legacy_x: await NeedleImage.fromURL("/alt1anchors/sliders/legacy_x.png"),
     }
   })
 }
