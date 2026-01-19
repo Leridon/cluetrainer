@@ -3,13 +3,11 @@ import {CapturedImage, NeedleImage} from "../../../../../lib/alt1/capture";
 import {Vector2} from "../../../../../lib/math";
 import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
 import {util} from "../../../../../lib/util/util";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {SliderReader} from "../SliderReader";
 import {Sliders} from "../../../../../lib/cluetheory/Sliders";
 import rgbSimilarity = util.rgbSimilarity;
 import SliderPuzzle = Sliders.SliderPuzzle;
-import {Log} from "../../../../../lib/util/Log";
-import log = Log.log;
 
 export class CapturedSliderInterface {
   public readonly body: CapturedImage
@@ -18,7 +16,6 @@ export class CapturedSliderInterface {
   constructor(
     public readonly image: CapturedImage,
     private readonly image_includes_checkbox: boolean,
-    public readonly isLegacy: boolean,
     private readonly reader: SliderReader
   ) {
 
@@ -66,7 +63,6 @@ export class CapturedSliderInterface {
     return new CapturedSliderInterface(
       image.getScreenSection(this.screenRectangle(include_checkbox)),
       include_checkbox,
-      this.isLegacy,
       this.reader
     )
   }
@@ -88,18 +84,11 @@ export namespace CapturedSliderInterface {
 
   export namespace Finder {
     export const instance = async_lazy(async () => {
-      const anchors: {
-        isLegacy: boolean,
-        anchor: NeedleImage
-      }[] = [
-        {isLegacy: false, anchor: (await CapturedSliderInterface.anchors.get()).eoc_x},
-        {isLegacy: true, anchor: (await CapturedSliderInterface.anchors.get()).legacy_x},
-      ]
+      const anchor: NeedleImage = (await CapturedSliderInterface.anchors.get()).eoc_x
 
       return new class implements Finder {
         find(img: CapturedImage, include_inverted_arrow_checkmark: boolean, reader: SliderReader): CapturedSliderInterface {
-          for (const anchor of anchors) {
-            const positions = img.findNeedle(anchor.anchor)
+            const positions = img.findNeedle(anchor)
 
             if (positions.length > 0) {
               const body_rect: ScreenRectangle = {
@@ -115,11 +104,9 @@ export namespace CapturedSliderInterface {
               return new CapturedSliderInterface(
                 positions[0].parent.getSubSection(body_rect),
                 include_inverted_arrow_checkmark,
-                anchor.isLegacy,
                 reader
               )
             }
-          }
 
           return null
         }
@@ -137,7 +124,6 @@ export namespace CapturedSliderInterface {
   export const anchors = new LazyAsync(async () => {
     return {
       eoc_x: await NeedleImage.fromURL("/alt1anchors/sliders/eoc_x.png"),
-      legacy_x: await NeedleImage.fromURL("/alt1anchors/sliders/legacy_x.png"),
     }
   })
 }
