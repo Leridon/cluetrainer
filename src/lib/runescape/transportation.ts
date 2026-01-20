@@ -65,7 +65,8 @@ export namespace Transportation {
     img?: ImageUrl,
     menu_ticks?: number
     animation_ticks?: number
-    code?: string
+    code?: string,
+    hidden?: boolean  // This is true when the respective spot should not be shown by default. Useful for legacy teleports that no longer exist
   }
 
   export type TeleportSpot = {
@@ -134,6 +135,7 @@ export namespace Transportation {
           menu_ticks: a?.menu_ticks ?? b?.menu_ticks,
           animation_ticks: a?.animation_ticks ?? b?.animation_ticks,
           code: a?.code ?? b?.code,
+          hidden: a?.hidden ?? b?.hidden
         }), {})
       }
     }

@@ -4626,10 +4626,11 @@ name: "Entrana",
     animation_ticks: 8,
     menu_ticks: 1,
     spots: [
-      {id: "falador", name: "Falador", target: {"origin": {"x": 2964, "y": 3282, "level": 0}, "size": {"x": 5, "y": 5}}, code: "1"}
+      {id: "falador", name: "Falador", target: {"origin": {"x": 2964, "y": 3282, "level": 0}, "size": {"x": 5, "y": 5}}, code: "1", hidden: true},
+      {id: "grandexchange", name: "Grand Exchange", target: {"origin": {"x": 3177, "y": 3470, "level": 0}, "size": {"x": 5, "y": 5}}, code: "1"}
     ],
     access: [
-      {id: "vexillum", type: "item", name: {kind: "item", name: "Clan vexillum"}, action_name: "Teleport", img: {url: "clanvex.webp"}}
+      {id: "vexillum", type: "item", name: {kind: "item", name: "Clan vexillum"}, action_name: "Teleport", img: {url: "clanvex.webp"}},
     ]
   }, {
     type: "teleports",

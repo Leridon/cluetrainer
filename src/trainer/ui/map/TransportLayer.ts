@@ -56,13 +56,18 @@ export default class TransportLayer extends GameLayer {
         case "teleports":
           if (config.teleport_policy == "none") break;
 
-          trans.spots.forEach(spot => {
-            this.teleports.push(
-              new TeleportSpotEntity(new TeleportGroup.Spot(trans, spot, undefined))
-                .setInteractive(interactive)
-                .addTo(this)
-            )
-          })
+          trans.spots
+            .forEach(spot => {
+              const s = new TeleportGroup.Spot(trans, spot, undefined)
+
+              if (s.props.hidden) return
+
+              this.teleports.push(
+                new TeleportSpotEntity(new TeleportGroup.Spot(trans, spot, undefined))
+                  .setInteractive(interactive)
+                  .addTo(this)
+              )
+            })
 
           if (config.teleport_policy != "target_only") {
             trans.access.forEach(access => {
