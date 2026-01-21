@@ -6,19 +6,17 @@ import {CapturedImage, NeedleImage} from "../../../../../lib/alt1/capture";
 import {Finder} from "../../../../../lib/alt1/capture/Finder";
 import {Alt1OverlayDrawCalls} from "../../../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
 import {Alt1Overlay} from "../../../../../lib/alt1/overlay/Alt1Overlay";
+import {FontDefinition} from "alt1/ocr";
 
 export class CapturedModal {
+  title_bar = this.body.parent.getSubSection(
+    ScreenRectangle.move(this.body.relativeRectangle(), CapturedModal.TITLE_BAR_OFFSET_FROM_BODY, {x: this.body.size.x, y: 24})
+  ).setName("Title")
+
   private _title: Lazy<string> = lazy(() => {
-    return "";
+    const title_bar = this.title_bar.getData();
 
-    const TITLE_BAR_OFFSET_FROM_BODY = {x: 0, y: -24}
-    const TITLE_BAR_SIZE = {x: 150, y: 20}
-
-    const title_bar = this.body.parent.getSubSection(
-      ScreenRectangle.move(this.body.relativeRectangle(), TITLE_BAR_OFFSET_FROM_BODY, TITLE_BAR_SIZE)
-    ).getData()
-
-    return OCR.readSmallCapsBackwards(title_bar, CapturedModal.title_font, [[255, 203, 5]], 0, 13, title_bar.width, 1).text;
+    return OCR.readSmallCapsBackwards(title_bar, CapturedModal.title_font, [[240, 190, 121]], title_bar.width / 2, 16, title_bar.width / 2, 1).text;
   })
 
   constructor(
@@ -35,6 +33,8 @@ export class CapturedModal {
 }
 
 export namespace CapturedModal {
+  export const TITLE_BAR_OFFSET_FROM_BODY = {x: 0, y: -27}
+
   const debug_overlay = lazy(() => new Alt1Overlay().start())
   const DEBUG_FINDER = false;
 
@@ -80,9 +80,13 @@ export namespace CapturedModal {
 
           body.setName("body").debugOverlay2(debug_geometry)
 
+          const result = new CapturedModal(body)
+
+          result.title_bar.setName("title").debugOverlay2(debug_geometry)
+
           if (DEBUG_FINDER) debug_overlay.get().setGeometry(debug_geometry.buffer())
 
-          return new CapturedModal(body)
+          return result
         }
 
         if (DEBUG_FINDER) debug_overlay.get().setGeometry(debug_geometry.buffer())
@@ -92,7 +96,7 @@ export namespace CapturedModal {
     }
   })
 
-  export const title_font = require("alt1/fonts/aa_9px_mono_allcaps.js");
+  export const title_font: FontDefinition = require("alt1/fonts/aa_9px_mono_allcaps.js");
 
   type SkinAnchors = {
     close_x: NeedleImage

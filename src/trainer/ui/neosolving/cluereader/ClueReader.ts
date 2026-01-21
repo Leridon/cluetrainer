@@ -272,16 +272,19 @@ export class ClueReader {
             }
           });
 
-          if (modal.title()) do_modal_type(modal_type)
-          else {
-            const res =
-              do_modal_type("lockbox")
-              || do_modal_type("knot")
-
-            if (res) return res
+          if (CLUEREADERDEBUG) {
+            console.log(`Detected modal interface: ${modal_type}`)
           }
 
-          return null
+          if (modal_type) return do_modal_type(modal_type)
+          else {
+            for (const type of ClueReader.ModalType.all) {
+              const res = do_modal_type(type)
+
+              if (res) return res
+            }
+            return null
+          }
         }
       }
 
@@ -389,6 +392,10 @@ export class ClueReader {
 
 export namespace ClueReader {
   export type ModalType = "towers" | "lockbox" | "textclue" | "knot" | "map"
+
+  export namespace ModalType {
+    export const all: ModalType[] = ["towers", "lockbox", "textclue", "knot", "map"]
+  }
 
   export namespace Result {
     export type Kind = "textclue" | "scan" | "compass" | "puzzle"
