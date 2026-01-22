@@ -399,9 +399,10 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-      builder.release(65, "", new Date(Date.parse("2026-01-20")))
+      builder.wip(65, "")
         .list(l => l
           .item("Updated location of Clan Vexillium teleport.")
+          .item("Fixed detection of modal windows at Manor Farm.")
         )
 
         builder.release(64, "UI Update Fixes: First Batch", new Date(Date.parse("2026-01-19")))

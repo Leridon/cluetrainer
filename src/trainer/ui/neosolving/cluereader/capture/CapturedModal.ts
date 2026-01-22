@@ -59,7 +59,10 @@ export namespace CapturedModal {
 
           top_left.setName("tl").debugOverlay2(debug_geometry)
 
-          const bot_left = img.findNeedle(skin.bot_left)[0]
+          const bot_left = img.findNeedle(skin.bot_left)
+            .filter(bl => bl.screen_rectangle.origin.y > top_left.screen_rectangle.origin.y
+              && bl.screen_rectangle.origin.x == top_left.screen_rectangle.origin.x)[0]
+
           if (!bot_left) continue
 
           bot_left.setName("bl").debugOverlay2(debug_geometry)
