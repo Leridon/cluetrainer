@@ -402,7 +402,7 @@ export namespace Changelog {
       builder.wip(65, "")
         .list(l => l
           .item("Updated location of Clan Vexillium teleport.")
-          .item("Fixed detection of modal windows at Manor Farm.")
+          .item("Fixed detection of modal windows at Manor Farm and the Heart of Gielinor.")
         )
 
         builder.release(64, "UI Update Fixes: First Batch", new Date(Date.parse("2026-01-19")))
