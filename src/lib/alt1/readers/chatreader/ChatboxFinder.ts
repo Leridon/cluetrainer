@@ -10,7 +10,7 @@ import {Alt1Overlay} from "../../overlay/Alt1Overlay";
 
 export class ChatboxFinder implements Finder<CapturedChatbox[]> {
   debug_overlay = lazy(() => new Alt1Overlay().start())
-  DEBUG_FINDER = false;
+  debug = false;
 
   private constructor(
     public readonly needles: ChatAnchors.Needles,
@@ -31,14 +31,14 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
       ...img.findNeedle(this.needles.tr_plus_hover).map(img => ({capture: img.screen_rectangle, expanded: false})),
     ]
 
-    console.log(`Found top_rights ${top_rights.length}`)
+    if (this.debug) console.log(`Found top_rights ${top_rights.length}`)
 
     if (top_rights.length == 0) return []
 
     // Next, search for quickchat bubbles. We are interested in the ones in the bottom chat line.
     const initial_bubbles = img.findNeedle(this.needles.chatbubble)
 
-    console.log(`Found bubbles ${initial_bubbles.length}`)
+    if (this.debug) console.log(`Found bubbles ${initial_bubbles.length}`)
 
     function isWhite(pixel: [number, number, number, number]): boolean {
       return pixel[0] > 210 && pixel[1] > 210 && pixel[2] > 210
@@ -85,7 +85,7 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
         return false
       })
 
-    console.log(`Found filtered bubbles ${bubbles.length}`)
+    if (this.debug) console.log(`Found filtered bubbles ${bubbles.length}`)
 
     if (bubbles.length == 0) return []
 
@@ -130,7 +130,7 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
           .map(anchor => lazy(() => area.findNeedle(anchor)))
           .find(r => r.get().length > 0)?.get()
 
-        console.log(`Found game filter ${positions?.length ?? 0}`)
+        if (this.debug) console.log(`Found game filter ${positions?.length ?? 0}`)
 
         if (positions) {
           const left = lodash.maxBy(positions, pos => pos.screen_rectangle.origin.x)
@@ -165,8 +165,7 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
           return null
         })()
 
-
-        console.log(`Found anchor ${anchor != null}`)
+        if (this.debug) console.log(`Found anchor ${anchor != null}`)
 
         if (anchor) {
           return [new CapturedChatbox(img.getSubSection(ScreenRectangle.fromPixels(

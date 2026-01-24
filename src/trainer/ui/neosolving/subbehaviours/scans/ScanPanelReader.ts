@@ -18,6 +18,8 @@ import lodash from "lodash";
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
 import observe_combined = Observable.observe_combined;
+import {Log} from "../../../../../lib/util/Log";
+import log = Log.log;
 
 export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
   private debug: boolean = false
@@ -61,10 +63,6 @@ export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService
     })
   }
 
-  private shouldRefind(): boolean {
-    return this.last_successful_capture == null || this.last_successful_capture.time < (Date.now() - 5000)
-  }
-
   processNotifications(interested_tokens: InterestedToken<ScanCaptureService.Options, CapturedScan>[]): CapturedScan {
     const capture = this.capture_interest.lastNotification()
 
@@ -82,7 +80,18 @@ export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService
     } else {
       const updated = this.last_successful_capture.capture.updated(capture.value)
 
-      if (!updated.isValid()) return null
+      if (this.debug) {
+        console.log(`Updated ${!!updated.isValid()}`)
+      }
+
+      if (!updated.isValid()) {
+        if(this.debug) {
+          log().log("", "Old", this.last_successful_capture.capture.body.getData())
+          log().log("", "New", capture.value.getData())
+        }
+
+        return null
+      }
 
       if (this.debug) {
         console.log(updated.text())
@@ -102,6 +111,7 @@ export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService
       this.state.update2(state => {
         state.triple = updated.isTriple() ?? state.triple
         state.meerkats = updated.hasMeerkats() ?? state.meerkats
+
         state.different_level = updated.isDifferentLevel() ?? state.different_level
       })
 
@@ -167,12 +177,12 @@ export class ScanPanelOverlay extends Alt1Overlay {
 
     this.position_center.subscribe2(center_of_text => {
       if (center_of_text) {
-        this.different_level_indicator.setPosition(Vector2.add(center_of_text, {x: -50, y: 100}))
-        this.triple_indicator.setPosition(Vector2.add(center_of_text, {x: 0, y: 100}))
-        this.meerkat_indicator.setPosition(Vector2.add(center_of_text, {x: 60, y: 100}))
+        this.different_level_indicator.setPosition(Vector2.add(center_of_text, {x: -50, y: 120}))
+        this.triple_indicator.setPosition(Vector2.add(center_of_text, {x: 0, y: 120}))
+        this.meerkat_indicator.setPosition(Vector2.add(center_of_text, {x: 60, y: 120}))
 
-        this.settings_button.setPosition(ScreenRectangle.centeredOn(Vector2.add(center_of_text, {x: 60, y: -77}), 10))
-        this.info_button.setPosition(ScreenRectangle.centeredOn(Vector2.add(center_of_text, {x: -60, y: -77}), 10))
+        this.settings_button.setPosition(ScreenRectangle.centeredOn(Vector2.add(center_of_text, {x: 80, y: -105}), 10))
+        this.info_button.setPosition(ScreenRectangle.centeredOn(Vector2.add(center_of_text, {x: -80, y: -105}), 10))
       }
     })
 
