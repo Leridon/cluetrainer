@@ -399,7 +399,8 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-        builder.wip(65, "UI Update Fixes - Batch 2")
+        builder.release(65, "UI Update Fixes - Batch 2", new Date(Date.parse("2026-01-24")))
+          .notification("Batch 2 of UI update fixes released!")
           .list(l => l
             .item("Updated location of Clan Vexillium teleport.")
             .item("Fixed detection of modal windows at Manor Farm and the Heart of Gielinor.")
@@ -410,6 +411,7 @@ export namespace Changelog {
               .item("The minimap detection is not yet repaired, so that the scan range overlay will not show.")
             )
           )
+          .render(l => l.paragraph("With this update, only standard text clues are not yet recognized. Fixing those proves to be more difficult than anticipated, since the new font is a vector font that is not well supported by the Alt 1 libraries yet."))
 
         builder.release(64, "UI Update Fixes - First Batch", new Date(Date.parse("2026-01-19")))
           .notification("A first batch of fixes for the UI update released!")
