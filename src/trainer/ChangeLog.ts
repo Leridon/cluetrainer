@@ -411,7 +411,7 @@ export namespace Changelog {
               .item("The minimap detection is not yet repaired, so that the scan range overlay will not show.")
             )
           )
-          .render(l => l.paragraph("With this update, only standard text clues are not yet recognized. Fixing those proves to be more difficult than anticipated, since the new font is a vector font that is not well supported by the Alt 1 libraries yet."))
+          .render(l => l.paragraph("With this update, only standard text clues and tower puzzles are not yet recognized. Fixing those proves to be more difficult than anticipated, since the new font is a vector font that is not well supported by the Alt 1 libraries yet."))
 
         builder.release(64, "UI Update Fixes - First Batch", new Date(Date.parse("2026-01-19")))
           .notification("A first batch of fixes for the UI update released!")

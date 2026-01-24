@@ -15,6 +15,8 @@ export class CapturedModal {
   ).setName("Title")
 
   private _title: Lazy<string> = lazy(() => {
+    if(!this.font) return ""
+
     const title_bar = this.title_bar.getData();
 
     return OCR.readSmallCapsBackwards(title_bar, this.font, [[240, 190, 121]], title_bar.width / 2, 16, title_bar.width / 2, 1).text;
@@ -30,7 +32,7 @@ export class CapturedModal {
     return this._title.get()
   }
 
-  static assumeBody(image: CapturedImage, font: FontDefinition): CapturedModal {
+  static assumeBody(image: CapturedImage, font: FontDefinition = null): CapturedModal {
     return new CapturedModal(image, font)
   }
 }
