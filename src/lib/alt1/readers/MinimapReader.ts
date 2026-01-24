@@ -6,16 +6,16 @@ import {ScreenRectangle} from "../ScreenRectangle";
 import lodash from "lodash";
 import {Log} from "../../util/Log";
 import {Finder} from "../capture/Finder";
-import over = LegacyOverlayGeometry.over;
-import log = Log.log;
 import {Alt1ScreenCaptureService} from "../capture/Alt1ScreenCaptureService";
 import {Alt1} from "../Alt1";
 import {Angles} from "../../math/Angles";
+import over = LegacyOverlayGeometry.over;
+import log = Log.log;
 
 export class MinimapReader extends DerivedCaptureService<MinimapReader.Options, MinimapReader.CapturedMinimap> {
 
   private debug_overlay = over()
-  private debug_mode: boolean = false
+  private debug_mode: boolean = true
 
   private capture_interest: AbstractCaptureService.InterestToken<any, CapturedImage>
   private finder: Finder<MinimapReader.CapturedMinimap>
@@ -260,6 +260,8 @@ export namespace MinimapReader {
   }
 
   export namespace CapturedMinimap {
+    const debug_finder: boolean = true
+
     export const finder = async_lazy<Finder<CapturedMinimap>>(async () => {
       const imgs = await CapturedMinimap.anchors.get()
 
@@ -269,9 +271,12 @@ export namespace MinimapReader {
 
           const homeport = img.findNeedle(imgs.homeport)[0];
 
-          if (!homeport) return null
+          if (!homeport) {
+            if (debug_finder) console.log("No homeport found")
+            return null
+          }
 
-          const bottom_left = Vector2.add(homeport.screen_rectangle.origin, {x: -17, y: 32})
+          const bottom_left = Vector2.add(homeport.screen_rectangle.origin, {x: -12, y: 27})
 
           const MINIMAL_DISTANCE = {x: 73, y: 45}
 
@@ -284,10 +289,8 @@ export namespace MinimapReader {
 
           const top_right = (() => {
             const energies: { needle: NeedleImage, offset: Vector2 }[] = [
-              {needle: imgs.botrun, offset: {x: 34, y: -29}},
-              //{needle: imgs.toprun, offset: {x: 34, y: -9}},
-              {needle: imgs.botwalk, offset: {x: 34, y: -29}},
-              //{needle: imgs.topwalk, offset: {x: 34, y: -9}},
+              {needle: imgs.botrun, offset: {x: 35, y: -25}},
+              {needle: imgs.botwalk, offset: {x: 35, y: -25}},
             ];
 
             for (const energy of energies) {
@@ -300,6 +303,7 @@ export namespace MinimapReader {
           })()
 
           if (!top_right) {
+            if (debug_finder) console.log("Minimap: No top right found")
             return null
           }
 
@@ -316,9 +320,7 @@ export namespace MinimapReader {
       return {
         botrun: await NeedleImage.fromURL("/alt1anchors/minimap/botrun.png"),
         botwalk: await NeedleImage.fromURL("/alt1anchors/minimap/botwalk.png"),
-        homeport: await NeedleImage.fromURL("/alt1anchors/minimap/homeport.png"),
-        toprun: await NeedleImage.fromURL("/alt1anchors/minimap/toprun.png"),
-        topwalk: await NeedleImage.fromURL("/alt1anchors/minimap/topwalk.png"),
+        homeport: await NeedleImage.fromURL("/alt1anchors/minimap/homeport.png")
       }
     })
   }

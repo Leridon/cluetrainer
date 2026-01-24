@@ -31,7 +31,6 @@ import log = Log.log;
 import cleanedJSON = util.cleanedJSON;
 import async_init = util.async_init;
 import AsyncInitialization = util.AsyncInitialization;
-import ModalType = ClueReader.ModalType;
 
 const CLUEREADERDEBUG = false
 
@@ -100,7 +99,7 @@ export class ClueReader {
             }).render()
           }
 
-          function findModalTypeByTitle(title: string): ModalType {
+          function findModalTypeByTitle(title: string): ClueReader.ModalType {
             const modal_type_map: {
               type: ClueReader.ModalType,
               possible_titles: string[]
