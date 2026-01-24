@@ -7,6 +7,7 @@ import {Finder} from "../../../../../lib/alt1/capture/Finder";
 import {Alt1OverlayDrawCalls} from "../../../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
 import {Alt1Overlay} from "../../../../../lib/alt1/overlay/Alt1Overlay";
 import {FontDefinition} from "alt1/ocr";
+import {ImageDetect} from "alt1";
 
 export class CapturedModal {
   title_bar = this.body.parent.getSubSection(
@@ -16,19 +17,23 @@ export class CapturedModal {
   private _title: Lazy<string> = lazy(() => {
     const title_bar = this.title_bar.getData();
 
-    return OCR.readSmallCapsBackwards(title_bar, CapturedModal.title_font, [[240, 190, 121]], title_bar.width / 2, 16, title_bar.width / 2, 1).text;
+    return OCR.readSmallCapsBackwards(title_bar, this.font, [[240, 190, 121]], title_bar.width / 2, 16, title_bar.width / 2, 1).text;
   })
 
   constructor(
-    public readonly body: CapturedImage) {
+    public readonly body: CapturedImage,
+    private readonly font: FontDefinition
+    ) {
   }
 
   title(): string {
+    console.log(`title ${this._title.get()}`)
+
     return this._title.get()
   }
 
-  static assumeBody(image: CapturedImage): CapturedModal {
-    return new CapturedModal(image)
+  static assumeBody(image: CapturedImage, font: FontDefinition): CapturedModal {
+    return new CapturedModal(image, font)
   }
 }
 
@@ -36,10 +41,11 @@ export namespace CapturedModal {
   export const TITLE_BAR_OFFSET_FROM_BODY = {x: 0, y: -27}
 
   const debug_overlay = lazy(() => new Alt1Overlay().start())
-  const DEBUG_FINDER = false;
+  const DEBUG_FINDER = true;
 
   export const finder = async_lazy(async () => {
     const anchor = await anchors.get()
+    const title_fo = await font.get()
 
     return new class implements Finder<CapturedModal> {
       find(img: CapturedImage): CapturedModal {
@@ -83,7 +89,7 @@ export namespace CapturedModal {
 
           body.setName("body").debugOverlay2(debug_geometry)
 
-          const result = new CapturedModal(body)
+          const result = new CapturedModal(body, title_fo)
 
           result.title_bar.setName("title").debugOverlay2(debug_geometry)
 
@@ -99,7 +105,27 @@ export namespace CapturedModal {
     }
   })
 
-  export const title_font: FontDefinition = require("alt1/fonts/aa_9px_mono_allcaps.js");
+  export const font = async_lazy(async ()=> {
+    const img = await ImageDetect.imageDataFromUrl("/alt1anchors/modal/titlefont.png")
+
+    return OCR.loadFontImage(img, {
+      "basey": 15,
+      "chars": "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_abcdefghijklmnopqrstuvwxyz{|}~",
+      "color": [
+        255,
+        255,
+        255
+      ],
+      "seconds": ",.-:;\"'|*",
+      "shadow": false,
+      "spacewidth": 5,
+      "spriteid": 5419,
+      "treshold": 0.6,
+      "unblendmode": "raw"
+    })
+  })
+
+  //export const title_font: FontDefinition = require("alt1/fonts/aa_9px_mono_allcaps.js");
 
   type SkinAnchors = {
     close_x: NeedleImage
