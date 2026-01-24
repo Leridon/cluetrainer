@@ -31,6 +31,7 @@ import log = Log.log;
 import cleanedJSON = util.cleanedJSON;
 import async_init = util.async_init;
 import AsyncInitialization = util.AsyncInitialization;
+import ModalType = ClueReader.ModalType;
 
 const CLUEREADERDEBUG = false
 
@@ -99,7 +100,7 @@ export class ClueReader {
             }).render()
           }
 
-          const modal_type = (() => {
+          function findModalTypeByTitle(title: string): ModalType {
             const modal_type_map: {
               type: ClueReader.ModalType,
               possible_titles: string[]
@@ -132,8 +133,6 @@ export class ClueReader {
               }
               ]
 
-            const title = modal.title().toLowerCase()
-
             if (CLUEREADERDEBUG) {
               console.log(`Title: ${title}`)
             }
@@ -146,7 +145,8 @@ export class ClueReader {
             if (!best?.score || best.score < 0.7) return null
 
             return best.value.type
-          })()
+          }
+
 
           const do_modal_type = ((modal_type: ClueReader.ModalType): ClueReader.Result => {
             switch (modal_type) {
@@ -272,19 +272,26 @@ export class ClueReader {
             }
           });
 
-          if (CLUEREADERDEBUG) {
-            console.log(`Detected modal interface: ${modal_type}`)
-          }
+          const title = modal.title()
 
-          if (modal_type) return do_modal_type(modal_type)
-          else {
+          if (title) {
+            const modal_type = findModalTypeByTitle(modal.title())
+
+            if (CLUEREADERDEBUG) {
+              console.log(`Detected modal interface: ${modal_type}`)
+            }
+
+            return do_modal_type(modal_type)
+          } else {
+            // No title could be read. Fall back to trying all types
             for (const type of ClueReader.ModalType.all) {
               const res = do_modal_type(type)
 
               if (res) return res
             }
-            return null
           }
+
+          return null
         }
       }
 

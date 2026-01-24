@@ -27,8 +27,6 @@ export class CapturedModal {
   }
 
   title(): string {
-    console.log(`title ${this._title.get()}`)
-
     return this._title.get()
   }
 
@@ -41,7 +39,7 @@ export namespace CapturedModal {
   export const TITLE_BAR_OFFSET_FROM_BODY = {x: 0, y: -27}
 
   const debug_overlay = lazy(() => new Alt1Overlay().start())
-  const DEBUG_FINDER = true;
+  const DEBUG_FINDER = false;
 
   export const finder = async_lazy(async () => {
     const anchor = await anchors.get()
