@@ -1,6 +1,5 @@
 import {CapturedImage, NeedleImage} from "../../../../../lib/alt1/capture";
 import {Vector2} from "../../../../../lib/math";
-import {ImageDetect} from "alt1";
 import {async_lazy, Lazy, lazy, LazyAsync} from "../../../../../lib/Lazy";
 import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
 import {util} from "../../../../../lib/util/util";
@@ -33,7 +32,7 @@ export class CapturedScan {
     const start = (() => {
       if (!this.first_line_knowledge) return 0
 
-      for (let y = 0; y < this.body.size.y; y += CapturedScan.LINE_HEIGHT / 2) {
+      for (let y = CapturedScan.FONT.basey; y < this.body.size.y; y += CapturedScan.LINE_HEIGHT / 2) {
         const line = OCR.readLine(data, CapturedScan.FONT, COLORS, this.first_line_knowledge.position.x, y, true)
 
         if (!line.text) continue
@@ -46,7 +45,10 @@ export class CapturedScan {
       }
     })()
 
-    if (start == undefined) return []
+
+    if (start == undefined) {
+      return []
+    }
 
     for (let lineindex = 0; lineindex < CapturedScan.MAX_LINE_COUNT; lineindex++) {
       const y = start + lineindex * CapturedScan.LINE_HEIGHT;
@@ -194,7 +196,7 @@ export class CapturedScan {
 
     return Vector2.add(this.body.screen_rectangle.origin, {
       x: ~~(first.x + first.w / 2),
-      y: (first.y + last.y + last_line_color_fix + CapturedScan.LINE_HEIGHT + 6) / 2
+      y: (first.y + last.y + last_line_color_fix + CapturedScan.LINE_HEIGHT) / 2
     })
   })
 
@@ -210,11 +212,13 @@ export class CapturedScan {
   updated(capture: CapturedImage): CapturedScan {
     const relevant_text_area = this.relevantTextAreaForRecapture()
 
-    const relative_text_start = Vector2.add(this._raw_lines.get()[0].debugArea, this.body.screenRectangle().origin)
+    const text_start_absolute = Vector2.add(this._raw_lines.get()[0].debugArea, this.body.screenRectangle().origin)
+    const text_start_relative = Vector2.sub(text_start_absolute, relevant_text_area.origin)
 
-    const translated_text_start = Vector2.sub(relative_text_start, relevant_text_area.origin)
-
-    return new CapturedScan(capture.getScreenSection(relevant_text_area), {text: this._raw_lines.get()[0].text, position: translated_text_start})
+    return new CapturedScan(capture.getScreenSection(relevant_text_area), {
+      text: this._raw_lines.get()[0].text,
+      position: Vector2.add(text_start_relative, {x: 0, y: CapturedScan.FONT.basey})
+    })
   }
 
   isValid(): boolean {
@@ -223,9 +227,11 @@ export class CapturedScan {
 }
 
 export namespace CapturedScan {
+  import FontDefinition = OCR.FontDefinition;
   export const MAX_LINE_COUNT = 13
-  export const LINE_HEIGHT = 12
-  export const FONT = require("alt1/fonts/aa_8px.js")
+  export const LINE_HEIGHT = 16
+  export const FONT: FontDefinition = require("alt1/fonts/chatbox/12pt.js")
+
   export const MAX_TEXT_AREA_SIZE: Vector2 = {
     x: 180,
     y: CapturedScan.MAX_LINE_COUNT * CapturedScan.LINE_HEIGHT
@@ -238,16 +244,20 @@ export namespace CapturedScan {
       find(screen: CapturedImage): CapturedScan {
         const anchors: {
           img: NeedleImage,
+          name: string,
           origin_offset: Vector2
         }[] = [{
           img: anchor_images.scanfartext,
-          origin_offset: {x: -20, y: 5 - 12 * 4}
+          name: "Too Far",
+          origin_offset: {x: -20, y: 8 - LINE_HEIGHT * 4}
         }, {
           img: anchor_images.orbglows,
-          origin_offset: {x: -21, y: 5 - 12 * 4}
+          name: "Orb Glows",
+          origin_offset: {x: -21, y: 9 - LINE_HEIGHT * 4}
         }, {
           img: anchor_images.scanleveltext,
-          origin_offset: {x: -20, y: 7 - 12 * 4}
+          name: "Different Level",
+          origin_offset: {x: -20, y: 9 - LINE_HEIGHT * 4}
         }]
 
         const found_body = ((): CapturedImage => {
@@ -274,9 +284,9 @@ export namespace CapturedScan {
 
   export const anchors = new LazyAsync(async () => {
     return {
-      scanleveltext: await NeedleImage.fromURL("/alt1anchors/differentlevel.png"),
-      scanfartext: await NeedleImage.fromURL("/alt1anchors/youaretofaraway.png"),
-      orbglows: await NeedleImage.fromURL("/alt1anchors/orbglows.png"),
+      scanleveltext: await NeedleImage.fromURL("/alt1anchors/scans/try_scanning_a_different_level.png"),
+      scanfartext: await NeedleImage.fromURL("/alt1anchors/scans/you_are_too_far_away.png"),
+      orbglows: await NeedleImage.fromURL("/alt1anchors/scans/the_orb_glows.png"),
     }
   })
 }

@@ -399,13 +399,19 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-      builder.wip(65, "")
-        .list(l => l
-          .item("Updated location of Clan Vexillium teleport.")
-          .item("Fixed detection of modal windows at Manor Farm and the Heart of Gielinor.")
-        )
+        builder.wip(65, "UI Update Fixes - Batch 2")
+          .list(l => l
+            .item("Updated location of Clan Vexillium teleport.")
+            .item("Fixed detection of modal windows at Manor Farm and the Heart of Gielinor.")
+            .item("Fixed detection of modal titles.", new List()
+              .item("This potentially fixes map clues as well, but is untested.")
+            )
+            .item("Fixed scan clue detection.", new List()
+              .item("The minimap detection is not yet repaired, so that the scan range overlay will not show.")
+            )
+          )
 
-        builder.release(64, "UI Update Fixes: First Batch", new Date(Date.parse("2026-01-19")))
+        builder.release(64, "UI Update Fixes - First Batch", new Date(Date.parse("2026-01-19")))
           .notification("A first batch of fixes for the UI update released!")
           .list(l => l
             .item("Fixed Lockbox puzzle detection.")
