@@ -59,6 +59,13 @@ export namespace Rectangle {
     }
   }
 
+  export function shrink(rect: Rectangle, shrink: { left?: number, top?: number, right?: number, bottom?: number }): Rectangle {
+    return {
+      topleft: Vector2.add(rect.topleft, {x: shrink.left ?? 0, y: shrink.top ?? 0}),
+      botright: Vector2.sub(rect.botright, {x: shrink.right ?? 0, y: shrink.bottom ?? 0}),
+    }
+  }
+
   export function clampInto(pos: Vector2, area: Rectangle): Vector2 {
     return {
       x: clamp(pos.x, area.topleft.x, area.botright.x),

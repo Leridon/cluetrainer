@@ -1,12 +1,11 @@
-import {MethodPackManager} from "./model/MethodPackManager";
 import {Path} from "../lib/runescape/pathing";
-import ExportStringModal from "./ui/widgets/modals/ExportStringModal";
-import {util} from "../lib/util/util";
 import {TileArea} from "../lib/runescape/coordinates/TileArea";
 import {ScanTree} from "../lib/cluetheory/scans/ScanTree";
 import * as lodash from "lodash"
-import {HostedMapData, MovementAbilities} from "../lib/runescape/movement";
-import cleanedJSON = util.cleanedJSON;
+import {MovementAbilities} from "../lib/runescape/movement";
+import {FontSheets} from "../devtools/FontSheets";
+import {ImageDetect} from "alt1";
+import {clue_data} from "../data/clues";
 
 async function fix_path(p: Path): Promise<number> {
   if (!p) return
@@ -64,7 +63,17 @@ async function fix_tree(tree: ScanTree.ScanTreeNode) {
 
 export async function makeshift_main(): Promise<void> {
 
-  console.log(await HostedMapData.get().isAccessible({x: 2673, y: 2958, level: 0}))
+  console.log(Array.from(
+    new Set(
+      clue_data.all
+        .flatMap(c => c.text)
+        .flatMap(t => t.split(""))
+    ).keys()
+  ).sort());
+
+  const sheet = await ImageDetect.imageDataFromUrl("/alt1anchors/fonts/modal_text_font.png")
+
+  FontSheets.getGlyphs(sheet)
 
   return
 }
