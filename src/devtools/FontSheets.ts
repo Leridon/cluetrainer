@@ -1,6 +1,8 @@
 import {Rectangle, Vector2} from "../lib/math";
-import lodash from "lodash";
+import lodash, { set } from "lodash";
 import {Log} from "../lib/util/Log";
+import { cpuUsage } from "process";
+import { GenerateFontMeta } from "alt1/ocr";
 
 export namespace FontSheets {
   import log = Log.log;
@@ -152,56 +154,142 @@ export namespace FontSheets {
     return columns
   }
 
-  export function getGlyphs(image: ImageData) {
-    const view = ImageView.whole(image).trim()
+  type Bearings = Record<string, number>
 
-    log().log("Trimmed", "Fonts", view.getData())
+  namespace Bearings {
+    export function get(self: Bearings, char: string): number {
+      return self[char] ?? 0
+    } 
 
-    const rows = splitRows(view)
-
-    rows.forEach((row, i) => log().log(`Row ${i}`, "Fonts", row.getData()))
-
-    const glyphs = rows.flatMap(splitColumns).map(view => view.trim())
-
-    type Char = {
-      sprite: ImageData
-      char: string
+    export function add(self: Bearings, char: string, bearing: number) {
+      self[char] = get(self, char) + bearing 
     }
 
-    const chars: Char[] = glyphs.map((g, i) => ({
-      sprite: g.getData(),
-      char: String.fromCharCode(i + 2)
-    })).filter(c => c.char.charCodeAt(0) >= 33 && c.char.charCodeAt(0) <= 126)
-
-    chars.forEach(char => log().log(`Char ${char.char}`, "Fonts", char.sprite))
-
-    const hardcoded_descents: Record<string, number> = {
-      "J": 4,
-      "Q": 3,
-      "j": 4, "p": 4, "q": 4, "y": 4, "g": 4
+    export function set(self: Bearings, char: string, bearing: number) {
+      self[char] = bearing 
     }
 
-    const max_ascent = Math.max(...chars.map(c => c.sprite.height - (hardcoded_descents[c.char] ?? 0)))
-    const max_descent = Math.max(...chars.map(c => hardcoded_descents[c.char] ?? 0))
+    export function combine(a: Bearings, b: Bearings): Bearings {
+      const clone = lodash.cloneDeep(a)
 
-    const width = lodash.sum(chars.map(c => c.sprite.width)) + (chars.length - 1) * 2
+      Object.entries(b).forEach(([char, bearing]) => {
+          add(clone, char, bearing)
+      })
+
+      return clone
+    }
+
+    export function parse(input: string): Bearings {
+      const components = input.replace(/\s+/, "").split(/[;]+/)
+
+      const bearings: Bearings = {}
+
+      components.forEach(comp => {
+        const char = comp.charAt(0)
+        const bearing = Number.parseInt(comp.substring(1, comp.length))
+
+        if(!Number.isNaN(bearing)) {
+          Bearings.set(bearings, char, bearing)
+        }
+      })
+      
+      return bearings
+    }
+
+    export function toString(self: Bearings): string {
+      return Object.entries(self).map(([char, bearing]) => {
+        return `${char}${bearing}`
+      }).join(";")
+    }
+  }
+
+  type Settings = {
+    image: ImageData,
+    pre_automatic_bearing: Bearings
+    post_automatic_bearing: Bearings
+  }
+  
+  type GlyphWithCharacter = {
+    sprite: ImageView,
+    char: string
+  }
+
+  type IntermediateResults = {
+    rows: ImageView[]
+    glyphs: GlyphWithCharacter[],
+    without_bearings: ImageData,
+    manual_bearings_1: ImageData,
+    automatic_bearings: ImageData,
+    manual_bearings_2: ImageData,
+    font_meta: GenerateFontMeta
+  }
+
+  export function createSheet(chars: GlyphWithCharacter[], bearings: Bearings): ImageData {
+    const max_ascent = Math.max(...chars.map(c => c.sprite.size.y - (bearings[c.char] ?? 0)))
+    const max_descent = Math.max(...chars.map(c => bearings[c.char] ?? 0))
+
+    const width = lodash.sum(chars.map(c => c.sprite.size.x)) + (chars.length - 1) * 2
     const height = max_ascent + max_descent + 2
 
     const final = new ImageData(width, height)
 
-    const baseline = max_ascent
-
     let x = 0
     for (let glyph of chars) {
-      final.putImageData(glyph.sprite, x, max_ascent - glyph.sprite.height + (hardcoded_descents[glyph.char] ?? 0))
+      final.putImageData(glyph.sprite.getData(), x, max_ascent - glyph.sprite.size.y + (bearings[glyph.char] ?? 0))
 
-      for (let xi = 0; xi < glyph.sprite.width; xi++) {
+      for (let xi = 0; xi < glyph.sprite.size.x; xi++) {
         final.setPixel(x + xi, final.height - 1, [255, 255, 255, 255])
       }
 
-      x += glyph.sprite.width + 2
+      x += glyph.sprite.size.x + 2
     }
 
-    log().log("Final", "Fonts", final)
+    return final
+  }
+
+  export function automaticBearings(chars: GlyphWithCharacter[], existing_bearings: Bearings): Bearings {
+    // Align most lower case characters on the bottom of o
+    // Align lowe case characters with ascend to the top of i
+    // Align upper case characters to the top of O
+    // Center all other characters
+    
+    return {}
+  }
+
+  export function assignGlyphs(ordered_glyphs: ImageView[]): GlyphWithCharacter[] {
+    return ordered_glyphs.map((g, i) => ({
+      sprite: g,
+      char: String.fromCharCode(i + 2)
+    })).filter(c => c.char.charCodeAt(0) >= 33 && c.char.charCodeAt(0) <= 126)
+  }
+
+  export function doFont(settings: Settings): IntermediateResults {
+    const view = ImageView.whole(settings.image).trim()
+
+    const rows = splitRows(view)
+    const glyphs = rows.flatMap(splitColumns).map(view => view.trim())
+    const chars = assignGlyphs(glyphs);
+
+    const without_bearings = createSheet(chars, {})
+    const manual_bearings_1 = createSheet(chars, settings.pre_automatic_bearing)
+    
+    const automatic_bearings = Bearings.combine(settings.pre_automatic_bearing, automaticBearings(chars, settings.pre_automatic_bearing))
+    
+    const with_automatic_bearings = createSheet(chars, automatic_bearings)
+    
+    const full_bearings = Bearings.combine(automatic_bearings, settings.post_automatic_bearing)
+    const with_manual_bearings_2 = createSheet(chars, full_bearings)
+
+    return {
+      rows: rows,      
+      glyphs: chars,
+      without_bearings: without_bearings,
+      manual_bearings_1: manual_bearings_1,
+      automatic_bearings: with_automatic_bearings,
+      manual_bearings_2: with_manual_bearings_2,
+      font_meta: {
+        
+      }
+    }
   }
 }
