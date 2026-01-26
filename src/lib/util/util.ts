@@ -245,6 +245,12 @@ export namespace util {
     download(filename, window.URL.createObjectURL(new Blob([new Uint8Array(data)])))
   }
 
+  /**
+   * Opens a file selection dialog and allows the user to select a file. Optionally, restricts the type of files selectable.
+   *
+   * @param {string} [accept] - A string specifying the accepted file types, for example "image/png"
+   * @return {Promise<File>} A promise that resolves to the selected file. If no file is selected, resolves to undefined.
+   */
   export function selectFile(accept: string = undefined): Promise<File> {
     return new Promise(resolve => {
       // creating input on-the-fly

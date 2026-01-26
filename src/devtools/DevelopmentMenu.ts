@@ -20,14 +20,13 @@ import {CapturedImage} from "../lib/alt1/capture";
 import {CompassCalibrationTool} from "./CompassCalibrationTool";
 import {util} from "../lib/util/util";
 import {SlideReader} from "../trainer/ui/neosolving/cluereader/SliderReader";
+import {FontSheets} from "./FontSheets";
+import {ImageDetect} from "alt1";
 import notification = Notification.notification;
 import cleanedJSON = util.cleanedJSON;
-import lodash from "lodash";
 
 
 export class DevelopmentModal extends NisModal {
-
-
   constructor() {
     super();
 
@@ -146,5 +145,26 @@ export class DevelopmentModal extends NisModal {
       })
     )
 
+    layout.row(new LightButton("Font Creator")
+      .onClick(async () => {
+        const sheet = await ImageDetect.imageDataFromUrl("/alt1anchors/fonts/modal_text_font.png");
+
+        (new class extends NisModal {
+          constructor() {super({size: "fullscreen"});}
+
+          render() {
+            super.render();
+
+            this.title.set("Font Sheet Creator")
+
+            new FontSheets.FontSheetEditor({
+              image: sheet,
+              post_automatic_bearing: {},
+              pre_automatic_bearing: {}
+            }).appendTo(this.body)
+          }
+        }).show()
+      })
+    )
   }
 }
