@@ -346,10 +346,14 @@ export namespace FontSheets {
     return ordered_glyphs.map((g, i) => ({
       sprite: g,
       char: String.fromCharCode(i + 2)
-    })).filter(c => c.char.charCodeAt(0) >= 33 && c.char.charCodeAt(0) <= 126)
+    })).filter(c => c.char.charCodeAt(0) >= 33 && c.char.charCodeAt(0) <= 126 && c.char != "`")
   }
 
   export function doFont(settings: Settings): IntermediateResults {
+    // TODO
+    //  - The correct width of some chars doesn't match the width of the trimmed glyph (T for example)
+    //  - The lineheight isn't calculated properly (should be 25 for the test font)
+
     const view = ImageView.whole(settings.image).trim()
 
     const rows = splitRows(view)
@@ -370,7 +374,7 @@ export namespace FontSheets {
       basey: Glyphs.find(chars, "O").sprite.size.y - 1 + Bearings.get(automatic_bearings, "O"),
       chars: chars.map(c => c.char).join(""),
       color: [255, 255, 255],
-      seconds: "",
+      seconds: ",.-:;\"'`´",
       shadow: false,
       spacewidth: 4,
       treshold: 0.6,
