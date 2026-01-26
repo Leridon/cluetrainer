@@ -424,7 +424,7 @@ export namespace FontSheets {
         .onClick(async () => {
           const file = await selectFile("image/png")
 
-          const image = await ImageDetect.imageDataFromFileBuffer(await file.bytes())
+          const image = await ImageDetect.imageDataFromFileBuffer(new Uint8Array(await file.arrayBuffer()))
 
           this.settings.update(s => s.image = image)
         })
