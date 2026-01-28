@@ -152,6 +152,8 @@ export class ClueReader {
               case "textclue":
                 const text = ClueReader.readTextClueModalText(modal)
 
+                console.log(`Text: ${text}`)
+
                 if (text.length >= 10) {
                   const best = findBestMatch(
                     clue_data.all.flatMap<Clues.StepWithTextIndex>(c => c.text.map((text, text_index) => {
@@ -473,7 +475,32 @@ export namespace ClueReader {
    * @param modal The read modal
    */
   export function readTextClueModalText(modal: CapturedModal): string {
-    let buf = modal.body.getData()
+    const FONT_COLOR: [number, number, number] = [84, 72, 56]
+
+    const buf = modal.body.getData()
+
+    const first = OCR.readLine(buf, ClueFont, [FONT_COLOR], 179, 108, true)
+    const second = OCR.readLine(buf, ClueFont, [FONT_COLOR], 177, 133, true)
+
+    console.log(`Next x: ${second.debugArea.x + second.debugArea.w}`)
+
+    return first.text + "\n" + second.text + "END"
+
+    for (let x = 170; x < 180; x++) {
+
+      {
+        const r = OCR.readLine(buf, ClueFont, [FONT_COLOR], x, 108, true)
+        if (r?.text) console.log(`${x}: ${r.text}`)
+      }
+
+      {
+        const r = OCR.readLine(buf, ClueFont, [FONT_COLOR], x, 133, true)
+        if (r?.text) console.log(`${x}: ${r.text}`)
+      }
+    }
+
+    return ""
+
     let lines: string[] = [];
     let linestart = 0;
 
@@ -483,7 +510,7 @@ export namespace ClueReader {
 
       for (let x = 220; x < 320; x++) {
         let i = 4 * x + 4 * buf.width * y;
-        let a = coldiff(buf.data[i], buf.data[i + 1], buf.data[i + 2], 84, 72, 56);
+        let a = coldiff(buf.data[i], buf.data[i + 1], buf.data[i + 2], ...FONT_COLOR);
         if (a < 80) { linescore++; }
       }
 
@@ -495,8 +522,8 @@ export namespace ClueReader {
         a = Math.abs(linestart - y);
         linestart = 0;
         if (a >= 6 && a <= 18) {
-          let b = OCR.findReadLine(buf, ClueFont, [[84, 72, 56]], 255, y - 4)
-            || OCR.findReadLine(buf, ClueFont, [[84, 72, 56]], 265, y - 4);
+          let b = OCR.findReadLine(buf, ClueFont, [FONT_COLOR], 255, y - 4)
+            || OCR.findReadLine(buf, ClueFont, [FONT_COLOR], 265, y - 4);
           if (b) { lines.push(b.text); }
         }
       }

@@ -255,23 +255,60 @@ export namespace FontSheets {
     font_definition: FontDefinition
   }
 
-  export function createSheet(chars: GlyphWithCharacter[], bearings: Bearings): ImageData {
+  type Paddings = Record<string, { left: number, right: number }>
+
+  export namespace Paddings {
+    export function init(font: GlyphWithCharacter[]) {
+      const paddings: Paddings = {}
+
+      font.forEach(c => paddings[c.char] = {left: 0, right: 0})
+
+      return paddings
+    }
+
+    export function get(self: Paddings, char: string) {
+      return self[char] ?? {left: 0, right: 0}
+    }
+  }
+
+  /**
+   * Create an image sheet for use with OCR.loadFontImage
+   *
+   * @param chars The glyphs of the font.
+   * @param bearings Vertical offsets of each glyph.
+   * @param paddings Left and right paddings to add to or subtract from the character width.
+   */
+  export function createSheet(chars: GlyphWithCharacter[],
+                              bearings: Bearings,
+                              paddings: Paddings
+  ): ImageData {
+    const SPACING = 1
+
     const glyph_height = Math.max(...chars.map(c => c.sprite.size.y + Bearings.get(bearings, c.char)))
 
-    const width = lodash.sum(chars.map(c => c.sprite.size.x)) + (chars.length - 1) * 2
+    const width = lodash.sum(chars.map(c => {
+      const {left, right} = Paddings.get(paddings, c.char)
+
+      return c.sprite.size.x + Math.max(0, left) + Math.max(0, right)
+    })) + (chars.length - 1) * SPACING
     const height = glyph_height + 2
 
     const final = new ImageData(width, height)
 
     let x = 0
-    for (let glyph of chars) {
-      final.putImageData(glyph.sprite.getData(), x, Bearings.get(bearings, glyph.char))
+    for (const glyph of chars) {
+      const {left, right} = Paddings.get(paddings, glyph.char)
 
-      for (let xi = 0; xi < glyph.sprite.size.x; xi++) {
-        final.setPixel(x + xi, final.height - 1, [255, 255, 255, 255])
+      final.putImageData(glyph.sprite.getData(), x + Math.max(0, left), Bearings.get(bearings, glyph.char))
+
+      const char_width = glyph.sprite.size.x + left + right
+
+      const start_xi = -Math.min(left, 0)
+      for (let xi = 0; xi < char_width; xi++) {
+        final.setPixel(x + start_xi + xi, final.height - 1, [255, 255, 255, 255])
       }
 
-      x += glyph.sprite.size.x + 2
+      x += glyph.sprite.size.x + SPACING + Math.max(0, left) + Math.max(0, right)
     }
 
     return final
@@ -360,15 +397,23 @@ export namespace FontSheets {
     const glyphs = rows.flatMap(splitColumns).map(view => view.trim())
     const chars = assignGlyphs(glyphs);
 
-    const without_bearings = createSheet(chars, {})
-    const manual_bearings_1 = createSheet(chars, settings.pre_automatic_bearing)
+    const HARDCODED_PADDINGS: Paddings = {
+      "T": {left: 0, right: 1},
+      "r": {left: 0, right: -1},
+      "v": {left: 0, right: -1},
+      "x": {left: 0, right: -1},
+      "t": {left: -1, right: 0},
+    }
+
+    const without_bearings = createSheet(chars, {}, HARDCODED_PADDINGS)
+    const manual_bearings_1 = createSheet(chars, settings.pre_automatic_bearing, HARDCODED_PADDINGS)
 
     const automatic_bearings = automaticBearings(chars, settings.pre_automatic_bearing)
 
-    const with_automatic_bearings = createSheet(chars, automatic_bearings)
+    const with_automatic_bearings = createSheet(chars, automatic_bearings, HARDCODED_PADDINGS)
 
     const full_bearings = Bearings.combine(automatic_bearings, settings.post_automatic_bearing)
-    const with_manual_bearings_2 = createSheet(chars, full_bearings)
+    const with_manual_bearings_2 = createSheet(chars, full_bearings, HARDCODED_PADDINGS)
 
     const font_meta: GenerateFontMeta = {
       basey: Glyphs.find(chars, "O").sprite.size.y - 1 + Bearings.get(automatic_bearings, "O"),
