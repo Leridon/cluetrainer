@@ -31,6 +31,8 @@ import log = Log.log;
 import cleanedJSON = util.cleanedJSON;
 import async_init = util.async_init;
 import AsyncInitialization = util.AsyncInitialization;
+import {Property} from "csstype";
+import {FontDefinition} from "alt1/ocr";
 
 const CLUEREADERDEBUG = false
 
@@ -468,6 +470,7 @@ export namespace ClueReader {
 
   export type Result = Result.TextClue | Result.ScanClue | Result.CompassClue | Result.Puzzle
 
+  export let CLUE_FONT: FontDefinition = ClueFont
 
   /**
    * Reads the text in the modal from a text clue.
@@ -479,14 +482,14 @@ export namespace ClueReader {
 
     const buf = modal.body.getData()
 
-    const first = OCR.readLine(buf, ClueFont, [FONT_COLOR], 179, 108, true)
-    const second = OCR.readLine(buf, ClueFont, [FONT_COLOR], 177, 133, true)
+    //const first = OCR.readLine(buf, CLUE_FONT, [FONT_COLOR], 179, 108, true)
+    //const second = OCR.readLine(buf, CLUE_FONT, [FONT_COLOR], 177, 133, true)
 
-    console.log(`Next x: ${second.debugArea.x + second.debugArea.w}`)
+    //console.log(`Next x: ${second.debugArea.x + second.debugArea.w}`)
 
-    return first.text + "\n" + second.text + "END"
+    //return first.text + "\n" + second.text + "END"
 
-    for (let x = 170; x < 180; x++) {
+    /*for (let x = 170; x < 180; x++) {
 
       {
         const r = OCR.readLine(buf, ClueFont, [FONT_COLOR], x, 108, true)
@@ -497,9 +500,9 @@ export namespace ClueReader {
         const r = OCR.readLine(buf, ClueFont, [FONT_COLOR], x, 133, true)
         if (r?.text) console.log(`${x}: ${r.text}`)
       }
-    }
+    }*/
 
-    return ""
+    //return ""
 
     let lines: string[] = [];
     let linestart = 0;
@@ -522,13 +525,13 @@ export namespace ClueReader {
         a = Math.abs(linestart - y);
         linestart = 0;
         if (a >= 6 && a <= 18) {
-          let b = OCR.findReadLine(buf, ClueFont, [FONT_COLOR], 255, y - 4)
-            || OCR.findReadLine(buf, ClueFont, [FONT_COLOR], 265, y - 4);
+          let b = OCR.findReadLine(buf, CLUE_FONT, [FONT_COLOR], 255, y - 4)
+            || OCR.findReadLine(buf, CLUE_FONT, [FONT_COLOR], 265, y - 4);
           if (b) { lines.push(b.text); }
         }
       }
     }
 
-    return lines.join(" ");
+    return lines.join("\n");
   }
 }

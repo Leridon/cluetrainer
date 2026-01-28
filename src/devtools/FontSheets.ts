@@ -4,17 +4,23 @@ import {FontDefinition, GenerateFontMeta} from "alt1/ocr";
 import Widget from "../lib/ui/Widget";
 import Properties from "../trainer/ui/widgets/Properties";
 import LightButton from "../trainer/ui/widgets/LightButton";
-import {util} from "../lib/util/util";
 import {ImageDetect} from "alt1";
 import {observe} from "../lib/reactive";
-import {C} from "../lib/ui/constructors";
 import TextArea from "../lib/ui/controls/TextArea";
 import {OCR} from "../lib/alt1/OCR";
+import {util} from "../lib/util/util";
+import {C} from "../lib/ui/constructors";
+import {IssueWidget} from "../trainer/pathedit/EditedPathOverview";
+import {ClueReader} from "../trainer/ui/neosolving/cluereader/ClueReader";
+import {SettingsLayout} from "../trainer/ui/settings/SettingsEdit";
 
 export namespace FontSheets {
+
   import selectFile = util.selectFile;
   import img = C.img;
   import span = C.span;
+  import info = SettingsLayout.info;
+  import hbox = C.hbox;
   type Color = [number, number, number, number]
 
   namespace Color {
@@ -163,70 +169,9 @@ export namespace FontSheets {
     return columns
   }
 
-  type Bearings = Record<string, number>
-
-  namespace Bearings {
-    export function get(self: Bearings, char: string): number {
-      return self[char] ?? 0
-    }
-
-    export function add(self: Bearings, char: string, bearing: number) {
-      self[char] = get(self, char) + bearing
-    }
-
-    export function set(self: Bearings, char: string, bearing: number) {
-      self[char] = bearing
-    }
-
-    export function combine(a: Bearings, b: Bearings): Bearings {
-      const clone = lodash.cloneDeep(a)
-
-      Object.entries(b).forEach(([char, bearing]) => {
-        add(clone, char, bearing)
-      })
-
-      return clone
-    }
-
-    export function normalize(glyphs: Glyphs, bearings: Bearings): Bearings {
-      const min = Math.min(...glyphs.map(g => get(bearings, g.char)))
-
-      const clone = lodash.cloneDeep(bearings)
-
-      glyphs.forEach(g => add(clone, g.char, -min))
-
-      return clone
-    }
-
-    export function parse(input: string): Bearings {
-      const components = input.replace(/\s+/, "").split(" ")
-
-      const bearings: Bearings = {}
-
-      components.forEach(comp => {
-        const char = comp.charAt(0)
-        const bearing = Number.parseInt(comp.substring(1, comp.length))
-
-        if (!Number.isNaN(bearing)) {
-          Bearings.set(bearings, char, bearing)
-        }
-      })
-
-      return bearings
-    }
-
-    export function toString(self: Bearings): string {
-      return Object.entries(self)
-        .filter(([char, bearing]) => bearing != 0)
-        .map(([char, bearing]) => `${char}${bearing}`)
-        .join(" ")
-    }
-  }
-
   type Settings = {
     image: ImageData,
-    pre_automatic_bearing: Bearings
-    post_automatic_bearing: Bearings
+    font_script: FontScript
   }
 
   type GlyphWithCharacter = {
@@ -247,13 +192,28 @@ export namespace FontSheets {
     rows: ImageView[]
     glyphs: GlyphWithCharacter[],
     without_bearings: ImageData,
-    after_manual_bearings_1: ImageData,
-    after_automatic_bearings: ImageData,
-    after_manual_bearings_2: ImageData,
-    automatic_bearings: Bearings,
+    after_fontscript: ImageData,
     font_meta: GenerateFontMeta,
     font_definition: FontDefinition
   }
+
+  export type GlyphPlacement = { bearing: number, padleft: number, padright: number }
+  export type GlyphWithPlacement = GlyphWithCharacter & { placement: GlyphPlacement }
+
+  export type GlyphsWithPlacement = GlyphWithPlacement[]
+
+  export namespace GlyphPlacements {
+    export function init(glyphs: GlyphWithCharacter[]): GlyphsWithPlacement {
+      return glyphs.map(g => ({...g, placement: {bearing: 0, padleft: 0, padright: 0}}))
+    }
+
+    export function normalize(glyphs: GlyphsWithPlacement): void {
+      const min = Math.min(...glyphs.map(g => g.placement.bearing))
+
+      glyphs.forEach(g => g.placement.bearing -= min)
+    }
+  }
+
 
   type Paddings = Record<string, { left: number, right: number }>
 
@@ -275,19 +235,15 @@ export namespace FontSheets {
    * Create an image sheet for use with OCR.loadFontImage
    *
    * @param chars The glyphs of the font.
-   * @param bearings Vertical offsets of each glyph.
-   * @param paddings Left and right paddings to add to or subtract from the character width.
    */
-  export function createSheet(chars: GlyphWithCharacter[],
-                              bearings: Bearings,
-                              paddings: Paddings
-  ): ImageData {
+  export function createSheet2(chars: GlyphsWithPlacement): ImageData {
     const SPACING = 1
 
-    const glyph_height = Math.max(...chars.map(c => c.sprite.size.y + Bearings.get(bearings, c.char)))
+    const glyph_height = Math.max(...chars.map(c => c.sprite.size.y + c.placement.bearing))
 
     const width = lodash.sum(chars.map(c => {
-      const {left, right} = Paddings.get(paddings, c.char)
+      const left = c.placement.padleft
+      const right = c.placement.padright
 
       return c.sprite.size.x + Math.max(0, left) + Math.max(0, right)
     })) + (chars.length - 1) * SPACING
@@ -297,9 +253,10 @@ export namespace FontSheets {
 
     let x = 0
     for (const glyph of chars) {
-      const {left, right} = Paddings.get(paddings, glyph.char)
+      const left = glyph.placement.padleft
+      const right = glyph.placement.padright
 
-      final.putImageData(glyph.sprite.getData(), x + Math.max(0, left), Bearings.get(bearings, glyph.char))
+      final.putImageData(glyph.sprite.getData(), x + Math.max(0, left), glyph.placement.bearing)
 
       const char_width = glyph.sprite.size.x + left + right
 
@@ -312,71 +269,6 @@ export namespace FontSheets {
     }
 
     return final
-  }
-
-  export function automaticBearings(chars: GlyphWithCharacter[], existing_bearings: Bearings): Bearings {
-    const bearings = lodash.clone(existing_bearings)
-
-    function getchars(ref: string): string[] {
-      const results = []
-
-      for (let i = 0; i < ref.length; i++) results.push(ref.charAt(i))
-
-      return results
-    }
-
-    function range(from: string, to: string): string[] {
-      const a = from.charCodeAt(0)
-      const b = to.charCodeAt(0)
-
-      const range: string[] = []
-
-      for (let i = a; i <= b; i++) {
-        range.push(String.fromCharCode(i))
-      }
-
-      return range
-    }
-
-    const align_top = (ref: string) => (char: string) => {
-      const should_top = Bearings.get(bearings, ref)
-      const is_top = Bearings.get(bearings, char)
-
-      const delta = should_top - is_top
-
-      Bearings.add(bearings, char, delta)
-    }
-
-    const align_bot = (ref: string) => (char: string) => {
-      const should_bot = Bearings.get(bearings, ref) + Glyphs.find(chars, ref).sprite.size.y
-      const is_bot = Bearings.get(bearings, char) + Glyphs.find(chars, char).sprite.size.y
-
-      const delta = should_bot - is_bot
-
-      Bearings.add(bearings, char, delta)
-    }
-
-    const center = (ref: string) => (char: string) => {
-      const should_center = Bearings.get(bearings, ref) + ~~(Glyphs.find(chars, ref).sprite.size.y / 2)
-      const is_center = Bearings.get(bearings, char) + ~~(Glyphs.find(chars, char).sprite.size.y / 2)
-
-      const delta = should_center - is_center
-
-      Bearings.add(bearings, char, delta)
-    }
-
-    const all_cahrs = chars.map(c => c.char)
-
-    all_cahrs.forEach(align_bot("O"))
-    getchars("gpqy").forEach(align_top("o"))
-    getchars("j").forEach(align_top("i"))
-    range("A", "Z").forEach(align_top("O"))
-    range("0", "9").forEach(align_top("O"))
-    align_top(":")(";")
-    align_bot(";")(",")
-    getchars("(){}[]+-<=>@#|/\\~").forEach(center("O"))
-
-    return Bearings.normalize(chars, bearings)
   }
 
   export function assignGlyphs(ordered_glyphs: ImageView[]): GlyphWithCharacter[] {
@@ -397,31 +289,20 @@ export namespace FontSheets {
     const glyphs = rows.flatMap(splitColumns).map(view => view.trim())
     const chars = assignGlyphs(glyphs);
 
-    const HARDCODED_PADDINGS: Paddings = {
-      "T": {left: 0, right: 1},
-      "r": {left: 0, right: -1},
-      "v": {left: 0, right: -1},
-      "x": {left: 0, right: -1},
-      "t": {left: -1, right: 0},
-    }
+    const placements = GlyphPlacements.init(chars)
+    const without_bearings = createSheet2(placements)
 
-    const without_bearings = createSheet(chars, {}, HARDCODED_PADDINGS)
-    const manual_bearings_1 = createSheet(chars, settings.pre_automatic_bearing, HARDCODED_PADDINGS)
+    FontScript.evaluate(settings.font_script, placements)
 
-    const automatic_bearings = automaticBearings(chars, settings.pre_automatic_bearing)
-
-    const with_automatic_bearings = createSheet(chars, automatic_bearings, HARDCODED_PADDINGS)
-
-    const full_bearings = Bearings.combine(automatic_bearings, settings.post_automatic_bearing)
-    const with_manual_bearings_2 = createSheet(chars, full_bearings, HARDCODED_PADDINGS)
+    const after_font_script = createSheet2(placements)
 
     const font_meta: GenerateFontMeta = {
-      basey: Glyphs.find(chars, "O").sprite.size.y - 1 + Bearings.get(automatic_bearings, "O"),
+      basey: Glyphs.find(chars, "O").sprite.size.y - 1,
       chars: chars.map(c => c.char).join(""),
       color: [255, 255, 255],
       seconds: ",.-:;\"'`´",
       shadow: false,
-      spacewidth: 4,
+      spacewidth: 5,
       treshold: 0.6,
       unblendmode: "raw"
     }
@@ -431,12 +312,9 @@ export namespace FontSheets {
       rows: rows,
       glyphs: chars,
       without_bearings: without_bearings,
-      after_manual_bearings_1: manual_bearings_1,
-      after_automatic_bearings: with_automatic_bearings,
-      after_manual_bearings_2: with_manual_bearings_2,
-      automatic_bearings: automatic_bearings,
+      after_fontscript: after_font_script,
       font_meta: font_meta,
-      font_definition: OCR.loadFontImage(with_manual_bearings_2, font_meta)
+      font_definition: OCR.loadFontImage(after_font_script, font_meta)
     }
   }
 
@@ -444,21 +322,158 @@ export namespace FontSheets {
     return `data:image/png;base64,${image.toPngBase64()}`
   }
 
+  export type FontScript = FontScript.Instruction[]
+
+  export namespace FontScript {
+    export type Instruction = Pad | Align | Normalize
+    export type Pad = { type: "pad", target: RegExp, left: number, right: number }
+    export type Align = { type: "align", target: RegExp, side: "bottom" | "top" | "center", reference: string }
+    export type Normalize = { type: "normalize" }
+
+    export function parse(script: string): { script: FontScript, errors: { line: number, message: string }[] } {
+      const lines = script.split("\n").map(l => l.trim())
+
+      const instructions: FontScript = []
+      const errors: { line: number, message: string }[] = []
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i]
+
+        if (line.length == 0) continue;
+
+        const [instruction, ...args] = line.split(/\s+/)
+
+        switch (instruction) {
+          case "center":
+          case "aligntop":
+          case "alignbot": {
+            if (args.length != 2) {
+              errors.push({line: i + 1, message: `${instruction} expects 2 arguments: <target:regex> <reference:char>`})
+              break;
+            }
+
+            const [target, reference] = args
+            const side_mapping: Record<string, Align["side"]> = {
+              "aligntop": "top",
+              "alignbot": "bottom",
+              "center": "center"
+            }
+
+            const side: Align["side"] = side_mapping[instruction]
+
+            instructions.push({type: "align", target: new RegExp(target), side: side, reference: reference})
+            break
+          }
+          case "pad": {
+            if (args.length != 3) {
+              errors.push({line: i + 1, message: `${instruction} expects 3 arguments: <target:regex> <left:number> <right:number>`})
+              break;
+            }
+
+            const [target, left, right] = args
+
+            instructions.push({type: "pad", target: new RegExp(target), left: Number(left), right: Number(right)})
+            break;
+          }
+          case "normalize": {
+            if (args.length != 0) {
+              errors.push({line: i + 1, message: `${instruction} does not expect arguments.`})
+              break;
+            }
+
+            instructions.push({type: "normalize"})
+            break;
+          }
+          default: {
+            errors.push({line: i + 1, message: `Unknown instruction: ${instruction}`})
+            break;
+          }
+        }
+      }
+
+      return {script: instructions, errors: errors}
+    }
+
+    export function evaluate(script: FontScript, font: GlyphsWithPlacement) {
+      for (let instruction of script) {
+        switch (instruction.type) {
+          case "pad": {
+            font.forEach(c => {
+              if (instruction.target.test(c.char)) {
+                c.placement.padleft += instruction.left
+                c.placement.padright += instruction.right
+              }
+            })
+            break;
+          }
+          case "align": {
+            function align_top(ref: GlyphWithPlacement, char: GlyphWithPlacement) {
+              char.placement.bearing = ref.placement.bearing
+            }
+
+            function align_bot(ref: GlyphWithPlacement, char: GlyphWithPlacement) {
+              char.placement.bearing = ref.placement.bearing + ref.sprite.size.y - char.sprite.size.y
+            }
+
+            function align_center(ref: GlyphWithPlacement, char: GlyphWithPlacement) {
+              char.placement.bearing = ref.placement.bearing + ~~((ref.sprite.size.y - char.sprite.size.y) / 2)
+            }
+
+            const reference = font.find(c => c.char == instruction.reference)
+
+            font.forEach(c => {
+              if (instruction.target.test(c.char)) {
+                switch (instruction.side) {
+                  case "bottom":
+                    align_bot(reference, c)
+                    break;
+                  case "top":
+                    align_top(reference, c)
+                    break;
+                  case "center":
+                    align_center(reference, c)
+                    break;
+                }
+              }
+            })
+            break;
+          }
+          case "normalize": {
+            GlyphPlacements.normalize(font)
+            break;
+          }
+        }
+      }
+    }
+
+    export function toString(script: FontScript): string {
+      return script.map(s => {
+        switch (s.type) {
+          case "pad":
+            return `pad ${s.target.source} ${s.left} ${s.right}`
+          case "align":
+            if (s.side == "center") return `center ${s.target.source} ${s.reference}`
+
+            return `align${s.side == "top" ? "top" : "bot"} ${s.target.source} ${s.reference}`
+          case "normalize":
+            return `normalize`
+        }
+      }).join("\n")
+    }
+  }
+
   export class FontSheetEditor extends Widget {
     private settings = observe<Settings>({
       image: undefined,
-      pre_automatic_bearing: {},
-      post_automatic_bearing: {}
+      font_script: []
     }).structuralEquality()
 
     private view_sheet: Widget
     private view_rows: Widget
     private view_glyphs: Widget
     private view_before_bearings: Widget
-    private view_after_bearings_1: Widget
-    private view_after_bearings_2: Widget
-    private view_after_bearings_3: Widget
-    private automatic_bearing_view: TextArea
+    private font_script_errors: Widget
+    private view_after_fontscript: Widget
     private font_meta_view: TextArea
     private font_definition_view: TextArea
 
@@ -484,26 +499,37 @@ export namespace FontSheets {
       layout.row(this.view_rows = new Widget())
       layout.header("Glyphs")
       layout.row(this.view_glyphs = new Widget())
-      layout.header("Without Bearings")
+      layout.header("Before Fontscript")
       layout.row(this.view_before_bearings = new Widget())
-      layout.header("Pre-Automatic Manual Bearings")
+      layout.header(hbox("Fontscript", info(new Properties()
+        .header("Available commands")
+        .row(span("aligntop <target:regex> <ref:char>: Aligns top of all character matching 'target' to the top of 'ref'."))
+        .row(span("alignbot <target:regex> <ref:char>: Aligns bottom of all character matching 'target' to the bottom of 'ref'."))
+        .row(span("center <target:regex> <ref:char>: Aligns center of all character matching 'target' to the center of 'ref'."))
+        .row(span("pad <target:regex> <left:number> <right:number>: Sets the left and right padding for all characters matching 'target'."))
+        .row(span("normalize: Normalizes all vertical bearings to be at least 0."))
+      )))
       layout.row(new TextArea()
-        .setValue(Bearings.toString(initial_settings.pre_automatic_bearing))
-        .onChange(t => this.settings.update(s => s.pre_automatic_bearing = Bearings.parse(t.value))))
-      layout.row(this.view_after_bearings_1 = new Widget())
-      layout.header("Automatic Bearings")
-      layout.row(this.automatic_bearing_view = new TextArea({readonly: true}).setEnabled(false))
-      layout.row(this.view_after_bearings_2 = new Widget())
-      layout.header("Post-Automatic Manual Bearings")
-      layout.row(new TextArea()
-        .setValue(Bearings.toString(initial_settings.post_automatic_bearing))
-        .onChange(t => this.settings.update(s => s.post_automatic_bearing = Bearings.parse(t.value))))
-      layout.row(this.view_after_bearings_3 = new Widget())
+        .css("height", "360px")
+        .setValue(FontScript.toString(initial_settings.font_script))
+        .onChange(t => this.settings.update(s => {
+          const results = FontScript.parse(t.value)
+
+          this.font_script_errors.empty()
+
+          results.errors.forEach(e => {
+            this.font_script_errors.append(new IssueWidget({message: `Line ${e.line}: ${e.message}`, level: 0}))
+          })
+
+          s.font_script = results.script
+        })))
+      layout.row(this.font_script_errors = new Widget())
+      layout.row(this.view_after_fontscript = new Widget())
 
       layout.header("Font Meta")
       layout.row(this.font_meta_view = new TextArea({readonly: true})
         .css2({
-          "height": "20em"
+          "height": "10em"
         })
         .on("click", () => this.font_meta_view.raw().select())
       )
@@ -511,16 +537,17 @@ export namespace FontSheets {
       layout.header("Font Definition")
       layout.row(this.font_definition_view = new TextArea({readonly: true})
         .css2({
-          "height": "20em"
+          "height": "10em"
         })
         .on("click", () => this.font_definition_view.raw().select())
       )
-
 
       this.settings.subscribe(s => this.updateResults(doFont(s)), true)
     }
 
     private updateResults(results: IntermediateResults) {
+      ClueReader.CLUE_FONT = results.font_definition
+
       function box(image: ImageData): Widget {
         return img(dataUrl(image))
           .css("border", "1px solid red")
@@ -546,14 +573,11 @@ export namespace FontSheets {
         )
       }
 
-      this.automatic_bearing_view.setValue(Bearings.toString(results.automatic_bearings))
       this.font_meta_view.setValue(JSON.stringify(results.font_meta, null, 2))
       this.font_definition_view.setValue(JSON.stringify(results.font_definition))
 
       this.view_before_bearings.empty().append(box(results.without_bearings))
-      this.view_after_bearings_1.empty().append(box(results.after_manual_bearings_1))
-      this.view_after_bearings_2.empty().append(box(results.after_automatic_bearings))
-      this.view_after_bearings_3.empty().append(box(results.after_manual_bearings_2))
+      this.view_after_fontscript.empty().append(box(results.after_fontscript))
     }
   }
 }

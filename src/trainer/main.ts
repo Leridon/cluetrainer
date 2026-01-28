@@ -71,17 +71,5 @@ export async function makeshift_main(): Promise<void> {
     ).keys()
   ).sort());
 
-  const sheet = await ImageDetect.imageDataFromUrl("/alt1anchors/fonts/modal_text_font.png")
-
-  FontSheets.doFont({
-    image: sheet,
-    pre_automatic_bearing: {
-      "J": 4,
-      "Q": 3,
-      "j": 4, "p": 4, "q": 4, "y": 4, "g": 4
-    },
-    post_automatic_bearing: {}
-  })
-
   return
 }
