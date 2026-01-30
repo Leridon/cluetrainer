@@ -200,14 +200,19 @@ export namespace FontSheets {
   export type GlyphPlacement = { bearing: number, padleft: number, padright: number }
   export type GlyphWithPlacement = GlyphWithCharacter & { placement: GlyphPlacement }
 
-  export type GlyphsWithPlacement = GlyphWithPlacement[]
+  export type Font<GlyphType extends GlyphWithCharacter> = {
+    meta: GenerateFontMeta,
+    glyphs: GlyphType[]
+  }
+
+  export type GlyphsWithPlacement = Font<GlyphWithPlacement>
 
   export namespace GlyphPlacements {
-    export function init(glyphs: GlyphWithCharacter[]): GlyphsWithPlacement {
+    export function init(glyphs: GlyphWithCharacter[]): GlyphWithPlacement[] {
       return glyphs.map(g => ({...g, placement: {bearing: 0, padleft: 0, padright: 0}}))
     }
 
-    export function normalize(glyphs: GlyphsWithPlacement): void {
+    export function normalize(glyphs: GlyphWithPlacement[]): void {
       const min = Math.min(...glyphs.map(g => g.placement.bearing))
 
       glyphs.forEach(g => g.placement.bearing -= min)
@@ -236,23 +241,23 @@ export namespace FontSheets {
    *
    * @param chars The glyphs of the font.
    */
-  export function createSheet2(chars: GlyphsWithPlacement): ImageData {
+  export function createSheet2(font: GlyphsWithPlacement): ImageData {
     const SPACING = 1
 
-    const glyph_height = Math.max(...chars.map(c => c.sprite.size.y + c.placement.bearing))
+    const glyph_height = Math.max(...font.glyphs.map(c => c.sprite.size.y + c.placement.bearing))
 
-    const width = lodash.sum(chars.map(c => {
+    const width = lodash.sum(font.glyphs.map(c => {
       const left = c.placement.padleft
       const right = c.placement.padright
 
       return c.sprite.size.x + Math.max(0, left) + Math.max(0, right)
-    })) + (chars.length - 1) * SPACING
+    })) + (font.glyphs.length - 1) * SPACING
     const height = glyph_height + 2
 
     const final = new ImageData(width, height)
 
     let x = 0
-    for (const glyph of chars) {
+    for (const glyph of font.glyphs) {
       const left = glyph.placement.padleft
       const right = glyph.placement.padright
 
@@ -289,23 +294,25 @@ export namespace FontSheets {
     const glyphs = rows.flatMap(splitColumns).map(view => view.trim())
     const chars = assignGlyphs(glyphs);
 
-    const placements = GlyphPlacements.init(chars)
-    const without_bearings = createSheet2(placements)
-
-    FontScript.evaluate(settings.font_script, placements)
-
-    const after_font_script = createSheet2(placements)
-
-    const font_meta: GenerateFontMeta = {
-      basey: Glyphs.find(chars, "O").sprite.size.y - 1,
-      chars: chars.map(c => c.char).join(""),
-      color: [255, 255, 255],
-      seconds: ",.-:;\"'`´",
-      shadow: false,
-      spacewidth: 5,
-      treshold: 0.6,
-      unblendmode: "raw"
+    const font: GlyphsWithPlacement = {
+      meta: {
+        basey: Glyphs.find(chars, "O").sprite.size.y - 1,
+        chars: chars.map(c => c.char).join(""),
+        color: [255, 255, 255],
+        seconds: ",.-:;\"'`´",
+        shadow: false,
+        spacewidth: 4,
+        treshold: 0.6,
+        unblendmode: "raw"
+      },
+      glyphs: GlyphPlacements.init(chars)
     }
+
+    const without_bearings = createSheet2(font)
+
+    FontScript.evaluate(settings.font_script, font)
+
+    const after_font_script = createSheet2(font)
 
     return {
       settings: settings,
@@ -313,8 +320,8 @@ export namespace FontSheets {
       glyphs: chars,
       without_bearings: without_bearings,
       after_fontscript: after_font_script,
-      font_meta: font_meta,
-      font_definition: OCR.loadFontImage(after_font_script, font_meta)
+      font_meta: font.meta,
+      font_definition: OCR.loadFontImage(after_font_script, font.meta)
     }
   }
 
@@ -325,9 +332,10 @@ export namespace FontSheets {
   export type FontScript = FontScript.Instruction[]
 
   export namespace FontScript {
-    export type Instruction = Pad | Align | Normalize
+    export type Instruction = Pad | Align | Normalize | Space
     export type Pad = { type: "pad", target: RegExp, left: number, right: number }
     export type Align = { type: "align", target: RegExp, side: "bottom" | "top" | "center", reference: string }
+    export type Space = { type: "space", width: number }
     export type Normalize = { type: "normalize" }
 
     export function parse(script: string): { script: FontScript, errors: { line: number, message: string }[] } {
@@ -384,6 +392,15 @@ export namespace FontSheets {
             instructions.push({type: "normalize"})
             break;
           }
+          case "space": {
+            if (args.length != 1) {
+              errors.push({line: i + 1, message: `${instruction} expects 1 argument: <width:number>.`})
+              break;
+            }
+
+            instructions.push({type: "space", width: Number(args[0])})
+            break;
+          }
           default: {
             errors.push({line: i + 1, message: `Unknown instruction: ${instruction}`})
             break;
@@ -395,13 +412,13 @@ export namespace FontSheets {
     }
 
     export function evaluate(script: FontScript, font: GlyphsWithPlacement) {
-      for (let instruction of script) {
+      for (const instruction of script) {
         switch (instruction.type) {
           case "pad": {
-            font.forEach(c => {
+            font.glyphs.forEach(c => {
               if (instruction.target.test(c.char)) {
-                c.placement.padleft += instruction.left
-                c.placement.padright += instruction.right
+                c.placement.padleft = instruction.left
+                c.placement.padright = instruction.right
               }
             })
             break;
@@ -419,9 +436,9 @@ export namespace FontSheets {
               char.placement.bearing = ref.placement.bearing + ~~((ref.sprite.size.y - char.sprite.size.y) / 2)
             }
 
-            const reference = font.find(c => c.char == instruction.reference)
+            const reference = font.glyphs.find(c => c.char == instruction.reference)
 
-            font.forEach(c => {
+            font.glyphs.forEach(c => {
               if (instruction.target.test(c.char)) {
                 switch (instruction.side) {
                   case "bottom":
@@ -439,8 +456,11 @@ export namespace FontSheets {
             break;
           }
           case "normalize": {
-            GlyphPlacements.normalize(font)
+            GlyphPlacements.normalize(font.glyphs)
             break;
+          }
+          case "space": {
+            font.meta.spacewidth = instruction.width
           }
         }
       }
@@ -512,8 +532,8 @@ export namespace FontSheets {
       layout.row(new TextArea()
         .css("height", "360px")
         .setValue(FontScript.toString(initial_settings.font_script))
-        .onChange(t => this.settings.update(s => {
-          const results = FontScript.parse(t.value)
+        .onCommit(t => this.settings.update(s => {
+          const results = FontScript.parse(t)
 
           this.font_script_errors.empty()
 
