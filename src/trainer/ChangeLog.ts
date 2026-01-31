@@ -404,6 +404,11 @@ export namespace Changelog {
               .item("Fixed text clue and tower puzzle reader.", new List()
                 .item(italic("Dev note: Getting the new font to read properly has been a journey."))
               )
+              .item("Fixed that the initial compass angle from the previous clue's position would be drawn even if the compass arrow was spinning.", new List()
+                .item(italic("This happened when backpacking an overworld scan clue into a compass clue from an underground location.")))
+              .item("Fixed automatic floor selection in scan trees for situations where more than 2 floors are at play.", new List()
+                .item("This happened when both branches of the scan tree where on a different level than the previous clue's solution, for example when going from upper level Brimhaven (floor 2) into Dorgesh Khaan (floors 0 and 1).")
+              )
             )
 
         builder.release(65, "UI Update Fixes - Batch 2", new Date(Date.parse("2026-01-24")))
