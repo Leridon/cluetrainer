@@ -399,6 +399,13 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+        builder.wip(66, "")
+          .list(l => l
+              .item("Fixed text clue and tower puzzle reader.", new List()
+                .item(italic("Dev note: Getting the new font to read properly has been a journey."))
+              )
+            )
+
         builder.release(65, "UI Update Fixes - Batch 2", new Date(Date.parse("2026-01-24")))
           .notification("Batch 2 of UI update fixes released!")
           .list(l => l

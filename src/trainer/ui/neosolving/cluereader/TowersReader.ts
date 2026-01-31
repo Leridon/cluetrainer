@@ -84,27 +84,29 @@ export namespace TowersReader {
 
     private readCell(tile: Vector2): Towers.Tower | null {
       const in_grid = tile.x >= 0 && tile.x < SIZE && tile.y >= 0 && tile.y < SIZE;
+
       const cell_origin = Vector2.add(MODAL_BODY_TO_TL_TILE_OFFSET, Vector2.mul(TILE_OFFSET, tile))
 
-      const CENTER_OF_CHAR_BASELINE_FROM_CELL_ORIGIN: Vector2 = {x: 22, y: 26}
+      const CENTER_OF_CHAR_BASELINE_FROM_CELL_ORIGIN: Vector2 = {x: 22, y: 22}
 
       const center_of_char_baseline = Vector2.add(cell_origin, CENTER_OF_CHAR_BASELINE_FROM_CELL_ORIGIN)
 
       // The outer rows (hints at x/y = -1/5) are not aligned with the rest of the grid.
       const OUTER_ROW_INSET = 7
       if (tile.x == -1) center_of_char_baseline.x += OUTER_ROW_INSET
-      else if(tile.x == SIZE) center_of_char_baseline.x -= OUTER_ROW_INSET
+      else if (tile.x == SIZE) center_of_char_baseline.x -= OUTER_ROW_INSET
       if (tile.y == -1) center_of_char_baseline.y += OUTER_ROW_INSET
-      else if(tile.y == SIZE) center_of_char_baseline.y -= OUTER_ROW_INSET
+      else if (tile.y == SIZE) center_of_char_baseline.y -= OUTER_ROW_INSET
 
       const COLOR: OCR.ColortTriplet[] = in_grid
         ? [[255, 255, 255]]
         : [[255, 205, 10], [102, 102, 102]];
 
-      const wiggle_candidates = [-3, -2, -1, -4, 0, -5, -6]
+      const wiggle_candidates = [-4, -5]
 
       for (const col of COLOR) {
         for (const wiggle_x of wiggle_candidates) {
+
           const res = OCR.readChar(this.modal.body.getData(),
             font_with_just_digits,
             col,
@@ -152,8 +154,6 @@ export namespace TowersReader {
     }
 
     getBlocks(): Towers.Blocks {
-      const TL_START = {x: 60, y: 62}
-
       if (!this._tile_cache) {
         const blocks = Towers.Blocks.empty()
 

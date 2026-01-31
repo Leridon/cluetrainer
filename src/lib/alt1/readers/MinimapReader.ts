@@ -30,7 +30,7 @@ export class MinimapReader extends DerivedCaptureService<MinimapReader.Options, 
     this._initialized = (async () => {
       this.finder = await MinimapReader.CapturedMinimap.finder.get()
 
-      return // TODO: Disabled until minimap finder is fixed
+      //return // TODO: Disabled until minimap finder is fixed
 
       this.capture_interest = this.addDataSource(capture_service, (time, child_options) => {
 

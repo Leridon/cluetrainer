@@ -13,6 +13,7 @@ import {C} from "../lib/ui/constructors";
 import {IssueWidget} from "../trainer/pathedit/EditedPathOverview";
 import {ClueReader} from "../trainer/ui/neosolving/cluereader/ClueReader";
 import {SettingsLayout} from "../trainer/ui/settings/SettingsEdit";
+import {storage} from "../lib/util/storage";
 
 export namespace FontSheets {
 
@@ -483,6 +484,8 @@ export namespace FontSheets {
   }
 
   export class FontSheetEditor extends Widget {
+    private font_script = new storage.Variable<string>("devutility/fontscript", () => "")
+
     private settings = observe<Settings>({
       image: undefined,
       font_script: []
@@ -499,6 +502,8 @@ export namespace FontSheets {
 
     constructor(initial_settings: Settings) {
       super();
+
+      initial_settings.font_script = FontScript.parse(this.font_script.get()).script
 
       this.settings.set(initial_settings)
 
@@ -531,9 +536,11 @@ export namespace FontSheets {
       )))
       layout.row(new TextArea()
         .css("height", "360px")
-        .setValue(FontScript.toString(initial_settings.font_script))
+        .setValue(this.font_script.get())
         .onCommit(t => this.settings.update(s => {
           const results = FontScript.parse(t)
+
+          this.font_script.set(t)
 
           this.font_script_errors.empty()
 

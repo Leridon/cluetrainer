@@ -2,8 +2,9 @@ import {Clues} from "../../../../lib/runescape/clues";
 import {Rectangle, Vector2} from "../../../../lib/math";
 import {util} from "../../../../lib/util/util";
 import * as oldlib from "../../../../skillbertssolver/cluesolver/oldlib";
-import {coldiff, comparetiledata} from "../../../../skillbertssolver/cluesolver/oldlib";
+import {comparetiledata} from "../../../../skillbertssolver/cluesolver/oldlib";
 import * as OCR from "alt1/ocr";
+import {FontDefinition} from "alt1/ocr";
 import ClueFont from "./ClueFont";
 import {clue_data} from "../../../../data/clues";
 import {SlideReader, SliderReader} from "./SliderReader";
@@ -31,8 +32,6 @@ import log = Log.log;
 import cleanedJSON = util.cleanedJSON;
 import async_init = util.async_init;
 import AsyncInitialization = util.AsyncInitialization;
-import {Property} from "csstype";
-import {FontDefinition} from "alt1/ocr";
 
 const CLUEREADERDEBUG = false
 
@@ -401,6 +400,7 @@ export class ClueReader {
 }
 
 export namespace ClueReader {
+  import dropWhileBidirectional = util.dropWhileBidirectional;
   export type ModalType = "towers" | "lockbox" | "textclue" | "knot" | "map"
 
   export namespace ModalType {
@@ -479,59 +479,24 @@ export namespace ClueReader {
    */
   export function readTextClueModalText(modal: CapturedModal): string {
     const FONT_COLOR: [number, number, number] = [84, 72, 56]
+    const FIRST_LINE_START_Y = 5
+
+    const lines: string[] = [];
 
     const buf = modal.body.getData()
 
-    //const first = OCR.readLine(buf, CLUE_FONT, [FONT_COLOR], 179, 108, true)
-    //const second = OCR.readLine(buf, CLUE_FONT, [FONT_COLOR], 177, 133, true)
+    const center_x = ~~(buf.width / 2)
 
-    //console.log(`Next x: ${second.debugArea.x + second.debugArea.w}`)
+    for (let y = FIRST_LINE_START_Y; y < buf.height - 5; y += 25) {
+      // Read from two possible x positions in case a space is in the center
+      const line =
+        OCR.findReadLine(buf, CLUE_FONT, [FONT_COLOR], center_x, y)
+        || OCR.findReadLine(buf, CLUE_FONT, [FONT_COLOR], center_x + CLUE_FONT.spacewidth, y)
 
-    //return first.text + "\n" + second.text + "END"
-
-    /*for (let x = 170; x < 180; x++) {
-
-      {
-        const r = OCR.readLine(buf, ClueFont, [FONT_COLOR], x, 108, true)
-        if (r?.text) console.log(`${x}: ${r.text}`)
-      }
-
-      {
-        const r = OCR.readLine(buf, ClueFont, [FONT_COLOR], x, 133, true)
-        if (r?.text) console.log(`${x}: ${r.text}`)
-      }
-    }*/
-
-    //return ""
-
-    let lines: string[] = [];
-    let linestart = 0;
-
-    for (let y = 60; y < 290; y++) {
-      let linescore = 0;
-      let a: number = null
-
-      for (let x = 220; x < 320; x++) {
-        let i = 4 * x + 4 * buf.width * y;
-        let a = coldiff(buf.data[i], buf.data[i + 1], buf.data[i + 2], ...FONT_COLOR);
-        if (a < 80) { linescore++; }
-      }
-
-      if (linescore >= 3) {
-        if (linestart == 0) {
-          linestart = y;
-        }
-      } else if (linestart != 0) {
-        a = Math.abs(linestart - y);
-        linestart = 0;
-        if (a >= 6 && a <= 18) {
-          let b = OCR.findReadLine(buf, CLUE_FONT, [FONT_COLOR], 255, y - 4)
-            || OCR.findReadLine(buf, CLUE_FONT, [FONT_COLOR], 265, y - 4);
-          if (b) { lines.push(b.text); }
-        }
-      }
+      // Always add a line. Empty stretches before and after are trimmed later.
+      lines.push(line?.text ?? "")
     }
 
-    return lines.join("\n");
+    return lines.join("\n").trim()
   }
 }
