@@ -138,8 +138,6 @@ export namespace TowersReader {
           hints.right[i] = this.readCell({x: SIZE, y: i})
         }
 
-        console.log(hints)
-
         this.broken_hint_count = count([
           ...hints.top,
           ...hints.bottom,
