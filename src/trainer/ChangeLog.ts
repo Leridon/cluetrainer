@@ -415,6 +415,7 @@ export namespace Changelog {
           .list(l => l
             .item("Hotfix 1: Fixed scan clue detection after v66 accidentally broke it.")
             .item("Hotfix 2: Fixed detection of more characters in text clues.")
+            .item("Hotfix 3: Fixed detection of more upper case characters.")
           )
 
 
