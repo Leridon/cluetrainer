@@ -411,6 +411,11 @@ export namespace Changelog {
             )
           )
           .render(l => l.paragraph("This batch fixes the remaining issues with the clue reader after the UI update. There are 3 known issues left: Chat reading for sextant messages in compasses and minimap detection for the scan range overlay will be fixed in another update, while context menu reading for manual teleport selection in compasses will require an Alt1 update."))
+          .header("Hotfixes")
+          .list(l => l
+            .item("Hotfix 1: Fixed scan clue detection after v66 accidentally broke it.")
+            .item("Hotfix 2: Fixed detection of more characters in text clues.")
+          )
 
 
         builder.release(65, "UI Update Fixes - Batch 2", new Date(Date.parse("2026-01-24")))
