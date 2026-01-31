@@ -53,7 +53,7 @@ export namespace CapturedModal {
         const debug_geometry = new Alt1OverlayDrawCalls.GeometryBuilder()
 
         for (let skin of anchor) {
-          const x = img.findNeedle(skin.close_x)[0]
+          const x = img.findNeedle(skin.top_right)[0]
 
           if (!x) continue
 
@@ -75,7 +75,7 @@ export namespace CapturedModal {
 
           const body_tl = Vector2.add(top_left.relativeRectangle().origin, skin.BODY_TL_OFFSET_FROM_TL)
           const body_bl = Vector2.add(bot_left.relativeRectangle().origin, skin.BODY_BL_OFFSET_FROM_BL)
-          const body_tr = Vector2.add(x.relativeRectangle().origin, skin.BODY_TR_OFFSET_FROM_X)
+          const body_tr = Vector2.add(x.relativeRectangle().origin, skin.BODY_TR_OFFSET_FROM_TR)
 
           const body_height = body_bl.y - body_tl.y + 1
           const body_width = body_tr.x - body_tl.x + 1
@@ -126,23 +126,23 @@ export namespace CapturedModal {
   })
 
   type SkinAnchors = {
-    close_x: NeedleImage
+    top_right: NeedleImage
     top_left: NeedleImage
     bot_left: NeedleImage,
     BODY_TL_OFFSET_FROM_TL: Vector2
     BODY_BL_OFFSET_FROM_BL: Vector2,
-    BODY_TR_OFFSET_FROM_X: Vector2,
+    BODY_TR_OFFSET_FROM_TR: Vector2,
   }
 
   export const anchors = new LazyAsync<SkinAnchors[]>(async () => {
     return [{
-      close_x: await NeedleImage.fromURL("/alt1anchors/modal/top_right.png"),
+      top_right: await NeedleImage.fromURL("/alt1anchors/modal/top_right.png"),
       top_left: await NeedleImage.fromURL("/alt1anchors/modal/top_left.png"),
       bot_left: await NeedleImage.fromURL("/alt1anchors/modal/bot_left.png"),
 
       BODY_TL_OFFSET_FROM_TL: {x: 5, y: 31},
       BODY_BL_OFFSET_FROM_BL: {x: 4, y: 2},
-      BODY_TR_OFFSET_FROM_X: {x: 11, y: 31},
+      BODY_TR_OFFSET_FROM_TR: {x: 11, y: 31},
     }]
   })
 }

@@ -1,5 +1,4 @@
 import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken, NeedleImage} from "../capture";
-import {LegacyOverlayGeometry} from "../LegacyOverlayGeometry";
 import {util} from "../../util/util";
 import {ScreenRectangle} from "../ScreenRectangle";
 import {OCR} from "../OCR";
@@ -16,11 +15,11 @@ import {Alt1} from "../Alt1";
 import {Alt1ScreenCaptureService} from "../capture/Alt1ScreenCaptureService";
 import {Alt1Color} from "../Alt1Color";
 import {ewent} from "../../reactive";
-import over = LegacyOverlayGeometry.over;
 import log = Log.log;
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
 import Message = MessageBuffer.Message;
+import {Alt1Overlay} from "../overlay/Alt1Overlay";
 
 /**
  * A service class to read chat messages. It will search for chat boxes periodically, so it will find the chat
@@ -29,7 +28,7 @@ import Message = MessageBuffer.Message;
  * and also to buffer messages so that scrolling the chat up and down does not cause messages to be read again.
  */
 export class ChatReader extends DerivedCaptureService {
-  private debug_mode: boolean = false
+  private debug_mode: boolean = true
 
   private buffer = new MessageBuffer()
 
@@ -118,19 +117,14 @@ export class ChatReader extends DerivedCaptureService {
         })
       }
 
-      if (this.debug_mode) {
-        this.debug_overlay.clear()
-
+      Alt1Overlay.debug(() => this.debug_overlay.get(), this.debug_mode, debug_geometry => {
         this.chatboxes.forEach(box => {
-          this.debug_overlay.rect2(box.chatbox.body.screenRectangle(), {
+          debug_geometry.rectangle(box.chatbox.body.screenRectangle(), {
             color: Alt1Color.red,
             width: 1
           })
         })
-
-        this.debug_overlay.render()
-      }
-
+      })
 
       for (const box of this.chatboxes) box.read()
 
@@ -146,7 +140,7 @@ export class ChatReader extends DerivedCaptureService {
     return null
   }
 
-  private debug_overlay: LegacyOverlayGeometry = over()
+  private debug_overlay = lazy(() => new Alt1Overlay().start())
 
   setDebugEnabled(debug: boolean = true): this {
     this.debug_mode = debug

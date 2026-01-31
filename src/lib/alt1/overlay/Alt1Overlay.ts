@@ -108,7 +108,7 @@ export class Alt1Overlay extends Behaviour {
   }
 
   protected end() {
-    if(Alt1.exists()) {
+    if (Alt1.exists()) {
       alt1.overLayClearGroup(this.group_name)
       alt1.overLayRefreshGroup(this.group_name)
     }
@@ -170,6 +170,8 @@ export class Alt1Overlay extends Behaviour {
 }
 
 export namespace Alt1Overlay {
+  import GeometryBuilder = Alt1OverlayDrawCalls.GeometryBuilder;
+
   export class Interactivity extends Behaviour {
     public readonly main_hotkey_pressed = ewent<this>()
     public readonly right_clicked = ewent<this>()
@@ -283,6 +285,18 @@ export namespace Alt1Overlay {
       }
 
       return false
+    }
+  }
+
+  export function debug<T>(overlay: () => Alt1Overlay, enabled: boolean, f: (debug_geometry: GeometryBuilder) => T) {
+    const geometry = new GeometryBuilder()
+
+    try {
+      return f(geometry)
+    } catch (e) {
+      throw e
+    } finally {
+      if (enabled && overlay) overlay().setGeometry(geometry.buffer())
     }
   }
 }
