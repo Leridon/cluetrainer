@@ -348,6 +348,9 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
 
       if (this.settings.value().select_floor_based_on_previous_solution && this.original_interface_capture) {
         const known_position = this.parent.getAssumedPlayerPositionByLastClueSolution()
+
+        // TODO: This doesn't handle the case properly when all alternatives are "different level" from the current position
+
         const floor_distinction = asFloorDistinctionNode(root)
 
         if (known_position && floor_distinction) {

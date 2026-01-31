@@ -20,14 +20,14 @@ import {CapturedImage} from "../lib/alt1/capture";
 import {CompassCalibrationTool} from "./CompassCalibrationTool";
 import {util} from "../lib/util/util";
 import {SlideReader} from "../trainer/ui/neosolving/cluereader/SliderReader";
+import {FontSheets} from "./FontSheets";
+import {ImageDetect} from "alt1";
 import notification = Notification.notification;
 import cleanedJSON = util.cleanedJSON;
-import lodash from "lodash";
+import FontScript = FontSheets.FontScript;
 
 
 export class DevelopmentModal extends NisModal {
-
-
   constructor() {
     super();
 
@@ -146,5 +146,57 @@ export class DevelopmentModal extends NisModal {
       })
     )
 
+    layout.row(new LightButton("Font Creator")
+      .onClick(async () => {
+        const sheet = await ImageDetect.imageDataFromUrl("/alt1anchors/fonts/modal_text_font.png");
+
+        await (new class extends NisModal {
+          constructor() {super({size: "fullscreen"});}
+
+          render() {
+            super.render();
+
+            this.title.set("Font Sheet Creator")
+
+            /*  Default fontscript:
+                all_cahrs.forEach(align_bot("O"))
+                getchars("gpqy").forEach(align_top("o"))
+                getchars("j").forEach(align_top("i"))
+                range("A", "Z").forEach(align_top("O"))
+                range("0", "9").forEach(align_top("O"))
+                align_top(":")(";")
+                align_top(".")(",")
+                align_bot(";")(",")
+                getchars("(){}[]+-<=>@#|/\\~").forEach(center("O"))
+
+             */
+
+            new FontSheets.FontSheetEditor({
+              image: sheet,
+              font_script: FontScript.parse(
+                "alignbot . O\n" +
+                "aligntop [gpgy] o\n" +
+                "aligntop j i\n" +
+                "aligntop [A-Z] O\n" +
+                "aligntop [0-9] O\n" +
+                "aligntop : ;\n" +
+                "aligntop \\. ,\n" +
+                "alignbot ; ,\n" +
+                "center [(){}[\\]+-\\<\\=\\>@#|/\\\\~\"] O\n" +
+                "pad [T] 0 1\n" +
+                "pad [rvxsmk] 0 -1\n" +
+                "pad [tz] -1 0\n" +
+                "pad [p] 1 0\n" +
+                "pad [SHE] 1 0\n" +
+                "pad [N] 1 2\n" +
+                "pad [Z] 0 1\n" +
+                "pad [S] 1 0\n" +
+                "normalize"
+              ).script,
+            }).appendTo(this.body)
+          }
+        }).show()
+      })
+    )
   }
 }

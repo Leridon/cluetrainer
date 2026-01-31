@@ -2,8 +2,9 @@ import {Clues} from "../../../../lib/runescape/clues";
 import {Rectangle, Vector2} from "../../../../lib/math";
 import {util} from "../../../../lib/util/util";
 import * as oldlib from "../../../../skillbertssolver/cluesolver/oldlib";
-import {coldiff, comparetiledata} from "../../../../skillbertssolver/cluesolver/oldlib";
+import {comparetiledata} from "../../../../skillbertssolver/cluesolver/oldlib";
 import * as OCR from "alt1/ocr";
+import {FontDefinition} from "alt1/ocr";
 import ClueFont from "./ClueFont";
 import {clue_data} from "../../../../data/clues";
 import {SlideReader, SliderReader} from "./SliderReader";
@@ -151,6 +152,8 @@ export class ClueReader {
             switch (modal_type) {
               case "textclue":
                 const text = ClueReader.readTextClueModalText(modal)
+
+                console.log(`Text: ${text}`)
 
                 if (text.length >= 10) {
                   const best = findBestMatch(
@@ -397,6 +400,7 @@ export class ClueReader {
 }
 
 export namespace ClueReader {
+  import dropWhileBidirectional = util.dropWhileBidirectional;
   export type ModalType = "towers" | "lockbox" | "textclue" | "knot" | "map"
 
   export namespace ModalType {
@@ -466,6 +470,7 @@ export namespace ClueReader {
 
   export type Result = Result.TextClue | Result.ScanClue | Result.CompassClue | Result.Puzzle
 
+  export let CLUE_FONT: FontDefinition = ClueFont
 
   /**
    * Reads the text in the modal from a text clue.
@@ -473,35 +478,25 @@ export namespace ClueReader {
    * @param modal The read modal
    */
   export function readTextClueModalText(modal: CapturedModal): string {
-    let buf = modal.body.getData()
-    let lines: string[] = [];
-    let linestart = 0;
+    const FONT_COLOR: [number, number, number] = [84, 72, 56]
+    const FIRST_LINE_START_Y = 5
 
-    for (let y = 60; y < 290; y++) {
-      let linescore = 0;
-      let a: number = null
+    const lines: string[] = [];
 
-      for (let x = 220; x < 320; x++) {
-        let i = 4 * x + 4 * buf.width * y;
-        let a = coldiff(buf.data[i], buf.data[i + 1], buf.data[i + 2], 84, 72, 56);
-        if (a < 80) { linescore++; }
-      }
+    const buf = modal.body.getData()
 
-      if (linescore >= 3) {
-        if (linestart == 0) {
-          linestart = y;
-        }
-      } else if (linestart != 0) {
-        a = Math.abs(linestart - y);
-        linestart = 0;
-        if (a >= 6 && a <= 18) {
-          let b = OCR.findReadLine(buf, ClueFont, [[84, 72, 56]], 255, y - 4)
-            || OCR.findReadLine(buf, ClueFont, [[84, 72, 56]], 265, y - 4);
-          if (b) { lines.push(b.text); }
-        }
-      }
+    const center_x = ~~(buf.width / 2)
+
+    for (let y = FIRST_LINE_START_Y; y < buf.height - 5; y += 25) {
+      // Read from two possible x positions in case a space is in the center
+      const line =
+        OCR.findReadLine(buf, CLUE_FONT, [FONT_COLOR], center_x, y)
+        || OCR.findReadLine(buf, CLUE_FONT, [FONT_COLOR], center_x + CLUE_FONT.spacewidth, y)
+
+      // Always add a line. Empty stretches before and after are trimmed later.
+      lines.push(line?.text ?? "")
     }
 
-    return lines.join(" ");
+    return lines.join("\n").trim()
   }
 }

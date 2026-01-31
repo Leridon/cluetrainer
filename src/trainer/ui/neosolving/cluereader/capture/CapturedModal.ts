@@ -125,8 +125,6 @@ export namespace CapturedModal {
     })
   })
 
-  //export const title_font: FontDefinition = require("alt1/fonts/aa_9px_mono_allcaps.js");
-
   type SkinAnchors = {
     close_x: NeedleImage
     top_left: NeedleImage
