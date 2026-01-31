@@ -400,6 +400,7 @@ export namespace Changelog {
     .tap(builder => {
 
         builder.release(66, "UI Update Fixes - Batch 3", new Date(Date.parse("2026-01-31")))
+          .notification("Batch 3 of UI update fixes text clues and towers!")
           .list(l => l
             .item("Fixed text clue and tower puzzle reader.", new List()
               .item("There still is a chance that there are a few clues that cannot be read properly. If you come across one, please report them with a screenshot.")
