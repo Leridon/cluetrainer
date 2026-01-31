@@ -399,17 +399,19 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-        builder.wip(66, "")
+        builder.release(66, "UI Update Fixes - Batch 3", new Date(Date.parse("2026-01-31")))
           .list(l => l
-              .item("Fixed text clue and tower puzzle reader.", new List()
-                .item(italic("Dev note: Getting the new font to read properly has been a journey."))
-              )
-              .item("Fixed that the initial compass angle from the previous clue's position would be drawn even if the compass arrow was spinning.", new List()
-                .item(italic("This happened when backpacking an overworld scan clue into a compass clue from an underground location.")))
-              .item("Fixed automatic floor selection in scan trees for situations where more than 2 floors are at play.", new List()
-                .item("This happened when both branches of the scan tree where on a different level than the previous clue's solution, for example when going from upper level Brimhaven (floor 2) into Dorgesh Khaan (floors 0 and 1).")
-              )
+            .item("Fixed text clue and tower puzzle reader.", new List()
+              .item("There still is a chance that there are a few clues that cannot be read properly. If you come across one, please report them with a screenshot.")
             )
+            .item("Fixed that the initial compass angle from the previous clue's position would be drawn even if the compass arrow was spinning.", new List()
+              .item(italic("This happened when backpacking an overworld scan clue into a compass clue from an underground location.")))
+            .item("Fixed automatic floor selection in scan trees for situations where more than 2 floors are at play.", new List()
+              .item("This happened when both branches of the scan tree where on a different level than the previous clue's solution, for example when going from upper level Brimhaven (floor 2) into Dorgesh Khaan (floors 0 and 1).")
+            )
+          )
+          .render(l => l.paragraph("This batch fixes the remaining issues with the clue reader after the UI update. There are 3 known issues left: Chat reading for sextant messages in compasses and minimap detection for the scan range overlay will be fixed in another update, while context menu reading for manual teleport selection in compasses will require an Alt1 update."))
+
 
         builder.release(65, "UI Update Fixes - Batch 2", new Date(Date.parse("2026-01-24")))
           .notification("Batch 2 of UI update fixes released!")
