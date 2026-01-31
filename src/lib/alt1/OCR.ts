@@ -495,6 +495,8 @@ export namespace OCR {
     const DETECTION_THRESHOLD = 400
 
     y -= font.basey;
+    const shiftx = 0;
+    const shifty = font.basey;
     const shadow = font.shadow;
 
     //===== make sure the full domain is inside the bitmap/buffer ======
@@ -541,7 +543,7 @@ export namespace OCR {
 
     if (!winchr || winchr.score > DETECTION_THRESHOLD) { return null; }
 
-    return {chr: winchr.chr.chr, basechar: winchr.chr, x: x, y: y, score: winchr.score, sizescore: winchr.sizescore};
+    return {chr: winchr.chr.chr, basechar: winchr.chr, x: x + shiftx, y: y + shifty, score: winchr.score, sizescore: winchr.sizescore};
   }
 
   export type ReadCharInfo = { chr: string, basechar: Charinfo, x: number, y: number, score: number, sizescore: number };
