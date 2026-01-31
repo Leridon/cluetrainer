@@ -64,7 +64,7 @@ import greatestCommonDivisor = util.greatestCommonDivisor;
 import Appendable = C.Appendable;
 import notification = Notification.notification;
 
-class SettingsLayout extends Properties {
+export class SettingsLayout extends Properties {
   constructor() {super();}
 
   private separator(): this {
@@ -96,7 +96,7 @@ class SettingsLayout extends Properties {
   }
 }
 
-namespace SettingsLayout {
+export namespace SettingsLayout {
 
   export function info(explanation: Appendable): Widget {
     if (!explanation) return undefined

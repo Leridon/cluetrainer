@@ -27,7 +27,6 @@ import {levelIcon} from "../../../../lib/gamemap/GameMap";
 import {ClueEntities} from "../ClueEntities";
 import {PathStepEntity} from "../../map/entities/PathStepEntity";
 import {SettingsModal} from "../../settings/SettingsEdit";
-import * as assert from "assert";
 import {Log} from "../../../../lib/util/Log";
 import {TextRendering} from "../../TextRendering";
 import {Alt1} from "../../../../lib/alt1/Alt1";
@@ -326,7 +325,7 @@ class CompassEntryWidget extends Widget {
 }
 
 const DEBUG_ANGLE_OVERRIDE: UncertainAngle = null // degreesToRadians(206.87152474371157)
-const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = undefined //{origin: {x: 3214, y: 3376, level: 0}}
+const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = null // {origin: {x: 3214, y: 3376, level: 0}}
 const DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE: UncertainAngle = undefined // degreesToRadians(112.6)
 
 /**
@@ -346,6 +345,8 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
   entry_selection_index: number = 0
   entries: CompassSolving.Entry[] = []
   selected_spot = observe<CompassSolving.SpotData>(null)
+
+  first_confirmed_state: CompassReader.Service.State = undefined
 
   constructor(parent: NeoSolvingBehaviour, public clue: Clues.Compass, public reader: CompassReader,
               private spot_selection_callback: (_: TileCoordinates) => Promise<any>
@@ -372,6 +373,8 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       )
 
       this.process.onChange((is_state, was_state) => {
+        if (is_state) this.maybeSetFirstConfirmedState(is_state)
+
         if (is_state?.state == "closed") {
           this.endClue("Compass Reader reported a closed compass")
         } else {
@@ -382,9 +385,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
             }
           }
 
-          if (is_state) {
-            this.entries.forEach(e => e.widget.setPreviewAngle(is_state?.state == "normal" ? is_state.result.angle : null))
-          }
+          this.entries.forEach(e => e.widget.setPreviewAngle(is_state?.state == "normal" ? is_state.result.angle : null))
         }
 
         if (!was_state && this.latest_unhandled_sextant_position) {
@@ -392,6 +393,29 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
           this.tryToHandleSextantPosition()
         }
       }, h => h.bindTo(this.lifetime_manager))
+
+    }
+  }
+
+  /**
+   * Sets the first confirmed angle. Commits the angle to a previous-solution entry if applicable
+   * @param state The read state
+   * @private
+   */
+  private maybeSetFirstConfirmedState(state: CompassReader.Service.State) {
+    if (this.first_confirmed_state != undefined) return
+
+    this.first_confirmed_state = state
+
+    const previous_solution_entry = this.entries.find(e => e.is_solution_of_previous_clue)
+
+    if (previous_solution_entry) {
+
+      if(state.state == "normal") {
+        this.commit(previous_solution_entry)
+      } else {
+        this.discardPosition(previous_solution_entry)
+      }
 
     }
   }
@@ -539,11 +563,10 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       if (entry.is_solution_of_previous_clue) {
         if (DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE != undefined) {
           return DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE
+        } else if (this.first_confirmed_state?.state == "normal") {
+          return this.first_confirmed_state.result.angle
         } else {
-          const res = this.reader.getAngle()
-          assert(res.type == "success")
-
-          return res.angle
+          return undefined
         }
       } else {
         const state = this.process.state()

@@ -62,7 +62,7 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
         const should = solution.blocks.rows[y][x]
         const is = currentState.blocks.rows[y][x] ?? 0
 
-        const origin = reader.tileOrigin({x, y}, true)
+        const origin = reader.tileOriginScreenCoordinates({x, y})
 
         const TR = Vector2.add(origin, TR_OVERLAY_OFFSET)
         const TL = Vector2.add(origin, TL_OVERLAY_OFFSET)
@@ -145,7 +145,7 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
     if (isSolved) {
       geometry.text(
         "Solved",
-        Vector2.add(reader.tileOrigin({x: 2, y: 2}, true), {x: 21, y: 21}), {
+        Vector2.add(reader.tileOriginScreenCoordinates({x: 2, y: 2}), {x: 21, y: 21}), {
           color: Alt1Color.green,
           width: 20
         }

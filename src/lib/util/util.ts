@@ -245,6 +245,12 @@ export namespace util {
     download(filename, window.URL.createObjectURL(new Blob([new Uint8Array(data)])))
   }
 
+  /**
+   * Opens a file selection dialog and allows the user to select a file. Optionally, restricts the type of files selectable.
+   *
+   * @param {string} [accept] - A string specifying the accepted file types, for example "image/png"
+   * @return {Promise<File>} A promise that resolves to the selected file. If no file is selected, resolves to undefined.
+   */
   export function selectFile(accept: string = undefined): Promise<File> {
     return new Promise(resolve => {
       // creating input on-the-fly
@@ -437,5 +443,21 @@ export namespace util {
         ...data.map(e => cols.map(c => c.f(e)).join(separator))
       ].join("\n")
     }
+  }
+
+  /**
+   * Removes elements from both ends of an array as long as they satisfy the given predicate.
+   *
+   * @param {T[]} arr - The array to process.
+   * @param {(item: T) => boolean} predicate - A function that tests each element of the array.
+   * @return {T[]} A new array with elements removed from the beginning and end that satisfy the predicate.
+   */
+  export function dropWhileBidirectional<T>(arr: T[], predicate: (_: T) => boolean): T[] {
+    let start = 0, end = arr.length - 1;
+
+    while (start <= end && predicate(arr[start])) start++;
+    while (end >= start && predicate(arr[end])) end--;
+
+    return arr.slice(start, end + 1);
   }
 }

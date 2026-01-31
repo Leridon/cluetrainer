@@ -6,6 +6,7 @@ import * as OCR from "alt1/ocr";
 import {util} from "../../../../lib/util/util";
 import {async_lazy, Lazy} from "../../../../lib/Lazy";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
+import ClueFont from "./ClueFont";
 
 export class TowersReader {
   constructor(private context_menu_anchor: NeedleImage) {
@@ -37,7 +38,7 @@ export namespace TowersReader {
   const context_menu_anchor = new Lazy(() => NeedleImage.fromURL("/alt1anchors/contextborder.png"))
 
   import count = util.count;
-  const font: OCR.FontDefinition = require("alt1/fonts/aa_10px_mono.js");
+  const font: OCR.FontDefinition = ClueFont;
   const font_with_just_digits = {...font, chars: font.chars.filter(c => !isNaN(+c.chr))};
 
   export const TILE_SIZE = {x: 42, y: 42}
@@ -77,33 +78,44 @@ export namespace TowersReader {
       )
     }
 
-    public tileOrigin(tile: Vector2, on_screen: boolean = false): Vector2 {
-      if (on_screen) {
-        return Vector2.add(Vector2.mul(TILE_OFFSET, tile), this.tile_area.screenRectangle().origin)
-      } else {
-        return Vector2.add(Vector2.mul(TILE_OFFSET, tile))
-      }
+    public tileOriginScreenCoordinates(tile: Vector2): Vector2 {
+      return Vector2.add(Vector2.mul(TILE_OFFSET, tile), this.tile_area.screenRectangle().origin)
     }
 
-    private readCharacter(pos: Vector2, in_grid: boolean = true): Towers.Tower | null {
+    private readCell(tile: Vector2): Towers.Tower | null {
+      const in_grid = tile.x >= 0 && tile.x < SIZE && tile.y >= 0 && tile.y < SIZE;
+
+      const cell_origin = Vector2.add(MODAL_BODY_TO_TL_TILE_OFFSET, Vector2.mul(TILE_OFFSET, tile))
+
+      const CENTER_OF_CHAR_BASELINE_FROM_CELL_ORIGIN: Vector2 = {x: 22, y: 22}
+
+      const center_of_char_baseline = Vector2.add(cell_origin, CENTER_OF_CHAR_BASELINE_FROM_CELL_ORIGIN)
+
+      // The outer rows (hints at x/y = -1/5) are not aligned with the rest of the grid.
+      const OUTER_ROW_INSET = 7
+      if (tile.x == -1) center_of_char_baseline.x += OUTER_ROW_INSET
+      else if (tile.x == SIZE) center_of_char_baseline.x -= OUTER_ROW_INSET
+      if (tile.y == -1) center_of_char_baseline.y += OUTER_ROW_INSET
+      else if (tile.y == SIZE) center_of_char_baseline.y -= OUTER_ROW_INSET
+
       const COLOR: OCR.ColortTriplet[] = in_grid
         ? [[255, 255, 255]]
         : [[255, 205, 10], [102, 102, 102]];
 
-      const wiggle_candidates = [-3, -2, -1, -4, 0]
+      const wiggle_candidates = [-4, -5]
 
-      for (let col of COLOR) {
+      for (const col of COLOR) {
         for (const wiggle_x of wiggle_candidates) {
+
           const res = OCR.readChar(this.modal.body.getData(),
             font_with_just_digits,
             col,
-            pos.x + wiggle_x,
-            pos.y,
+            center_of_char_baseline.x + wiggle_x,
+            center_of_char_baseline.y,
             false,
             true);
 
           if (res) {
-            //console.log(`${wiggle_x} | 0`)
             const num = Number(res.chr);
 
             if (Number.isNaN(num) || num < 1 || num > 5) return null
@@ -119,19 +131,14 @@ export namespace TowersReader {
       if (!this._hint_cache) {
         const hints = Towers.Hints.empty()
 
-        const start = {
-          top: {x: 60, y: 25},
-          bottom: {x: 60, y: 275},
-          left: {x: 23, y: 62},
-          right: {x: 274, y: 62},
+        for (let i = 0; i < SIZE; i++) {
+          hints.top[i] = this.readCell({x: i, y: -1})
+          hints.bottom[i] = this.readCell({x: i, y: SIZE})
+          hints.left[i] = this.readCell({x: -1, y: i})
+          hints.right[i] = this.readCell({x: SIZE, y: i})
         }
 
-        for (let i = 0; i < SIZE; i++) {
-          hints.top[i] = this.readCharacter(Vector2.add(start.top, Vector2.mul({x: i, y: 0}, TILE_OFFSET)), false)
-          hints.bottom[i] = this.readCharacter(Vector2.add(start.bottom, Vector2.mul({x: i, y: 0}, TILE_OFFSET)), false)
-          hints.left[i] = this.readCharacter(Vector2.add(start.left, Vector2.mul({x: 0, y: i}, TILE_OFFSET)), false)
-          hints.right[i] = this.readCharacter(Vector2.add(start.right, Vector2.mul({x: 0, y: i}, TILE_OFFSET)), false)
-        }
+        console.log(hints)
 
         this.broken_hint_count = count([
           ...hints.top,
@@ -147,15 +154,12 @@ export namespace TowersReader {
     }
 
     getBlocks(): Towers.Blocks {
-      const TL_START = {x: 60, y: 62}
-
-
       if (!this._tile_cache) {
         const blocks = Towers.Blocks.empty()
 
         for (let y = 0; y < SIZE; y++) {
           for (let x = 0; x < SIZE; x++) {
-            blocks.rows[y][x] = this.readCharacter(Vector2.add(TL_START, Vector2.mul({x, y}, TILE_OFFSET)), true) as Towers.Tower
+            blocks.rows[y][x] = this.readCell({x, y})
           }
         }
 

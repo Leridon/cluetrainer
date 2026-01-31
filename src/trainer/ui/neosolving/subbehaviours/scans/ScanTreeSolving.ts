@@ -348,17 +348,23 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
 
       if (this.settings.value().select_floor_based_on_previous_solution && this.original_interface_capture) {
         const known_position = this.parent.getAssumedPlayerPositionByLastClueSolution()
+
         const floor_distinction = asFloorDistinctionNode(root)
 
         if (known_position && floor_distinction) {
 
           const known_level = known_position.origin.level
 
-          const dl = this.original_interface_capture.isDifferentLevel()
+          const is_dl = this.original_interface_capture.isDifferentLevel()
 
-          const selection = floor_distinction.find(e => dl ? e.level != known_level : e.level == known_level)
+          const compatible_nodes = floor_distinction.filter(e => {
+              const node_is_dl = e.level != known_level;
+              return is_dl == node_is_dl
+            }
+          )
 
-          if (selection) return selection.node
+          // When exactly one node matches the current state of the "different level" state, select it.
+          if (compatible_nodes.length == 1) return compatible_nodes[0].node
         }
       }
 
