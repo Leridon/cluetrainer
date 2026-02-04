@@ -1,5 +1,5 @@
 import {lazy} from "../Lazy";
-import * as patch from "../../../../alt1gl/ts/util/patchrs_napi";
+import * as patch from "../alt1gl/ts/util/patchrs_napi";
 
 declare global {
   interface Window {

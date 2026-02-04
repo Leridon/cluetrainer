@@ -2,7 +2,7 @@ import { RenderRect } from "./reflect2d";
 import { RectLike } from "alt1";
 import { KnownSpriteSheet, SpriteInfo } from "./spritecache";
 import { renderGameUI } from "./render";
-import * as patchrs from "../../../../../../alt1gl/ts/util/patchrs_napi";
+import * as patchrs from "../util/patchrs_napi";
 
 
 export class UIRenderTextureCache {
