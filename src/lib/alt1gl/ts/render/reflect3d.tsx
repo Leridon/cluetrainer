@@ -7,10 +7,14 @@ export const tilesize = 512;
 export const mapsquaretiles = 64;
 export const maprendergrouptiles = 16;
 
-export var defaultBufferCache = new BufferCache();
+let _defaultBufferCache: BufferCache = null
+
+export function getDefaultBufferCache() {
+	return _defaultBufferCache ?? (_defaultBufferCache = new BufferCache());
+}
 
 setTimeout(() => loadAllBuffers().then(q => {
-	for (let buf of q) { defaultBufferCache.addKnown(buf); }
+	for (let buf of q) { getDefaultBufferCache().addKnown(buf); }
 	// defaultBufferCache.loadFromFiles();
 }), 1);
 

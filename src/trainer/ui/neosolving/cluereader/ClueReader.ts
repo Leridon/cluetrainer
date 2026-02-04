@@ -518,7 +518,7 @@ export class GlClueReader extends Behaviour {
       //todo: set the value from settings ? or experiment to see what is proper for us
       framecooldown: 600,
     }, async renders => {
-      const playerPosition = playerPositionReader.getPosition();
+      const playerPosition = await playerPositionReader.getPosition();
       console.log(`Player position: ${playerPosition}`)
     });
 
