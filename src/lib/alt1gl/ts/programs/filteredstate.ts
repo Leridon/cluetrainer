@@ -587,7 +587,7 @@ export class FilteredGameState extends TypedEmitter<{ update: void }> {
 		if (!this.npcsstream) {
 			let settings: patchrs.RecordRenderOptions = {
 				features: ["vertexarray", "uniforms"],
-				framecooldown: 50,//50
+				framecooldown: 300,//50
 				...(sparse ? this.sparseFilters : {})
 			};
 			let raw = patchrs.native.streamRenderCalls(settings, this.updateRenders);

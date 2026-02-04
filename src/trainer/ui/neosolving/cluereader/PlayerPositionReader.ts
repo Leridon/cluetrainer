@@ -1,4 +1,4 @@
-import {FilteredGameState} from "lib/alt1gl/ts/programs/filteredstate";
+import { FilteredGameState } from "lib/alt1gl/ts/programs/filteredstate";
 
 export type PlayerPosition = { x: number, y: number, z: number };
 
@@ -15,13 +15,6 @@ export class PlayerPositionReader {
 
   public async getPosition(): Promise<PlayerPosition | null> {
     try {
-      //return {x: this.state.player.char.x, y: this.state.player.char.z, z: 0}
-      return {
-        x: this.state.player.meshpos.xnew,
-        y: this.state.player.meshpos.ynew,
-        z: this.state.player.meshpos.znew,
-      }
-
       const pos = this.state.lastreflect?.playergroup?.master?.position2d;
 
       if (pos) {

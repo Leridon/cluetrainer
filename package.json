@@ -6,7 +6,8 @@
     "build-beta": "npm run build-libs && node -r ts-node/register ./node_modules/webpack/bin/webpack.js --node-env beta",
     "build-production": "npm run build-libs && node -r ts-node/register ./node_modules/webpack/bin/webpack.js",
     "watch": "npm run build -- --watch",
-    "runlocal": "electron dist/electron.bundle.js"
+    "runlocal": "electron dist/electron.bundle.js",
+    "proxy": "node proxy-server.js"
   },
   "workspaces": [
     "lib/*"

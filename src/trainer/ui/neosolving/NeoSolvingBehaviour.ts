@@ -1,59 +1,59 @@
-import Behaviour, {SingleBehaviour} from "../../../lib/ui/Behaviour";
-import {ClueTrainer} from "../../ClueTrainer";
-import {GameLayer} from "../../../lib/gamemap/GameLayer";
-import {GameMapControl} from "../../../lib/gamemap/GameMapControl";
-import {C} from "../../../lib/ui/constructors";
+import * as lodash from "lodash";
+import { capitalize } from "lodash";
+import { clue_data } from "../../../data/clues";
+import { Alt1 } from "../../../lib/alt1/Alt1";
+import { AbstractCaptureService, CapturedImage, CaptureInterval } from "../../../lib/alt1/capture";
+import { Alt1GL } from "../../../lib/alt1gl/Alt1GL";
+import { ScanTree } from "../../../lib/cluetheory/scans/ScanTree";
+import BoundsBuilder from "../../../lib/gamemap/BoundsBuilder";
+import { GameLayer } from "../../../lib/gamemap/GameLayer";
+import { GameMapControl } from "../../../lib/gamemap/GameMapControl";
+import { Rectangle, Vector2 } from "../../../lib/math";
+import { CursorType } from "../../../lib/runescape/CursorType";
+import { Clues } from "../../../lib/runescape/clues";
+import { TileCoordinates, TileRectangle } from "../../../lib/runescape/coordinates";
+import { TileArea } from "../../../lib/runescape/coordinates/TileArea";
+import { Path } from "../../../lib/runescape/pathing";
+import { Transportation } from "../../../lib/runescape/transportation";
+import Behaviour, { SingleBehaviour } from "../../../lib/ui/Behaviour";
+import { ExpansionBehaviour } from "../../../lib/ui/ExpansionBehaviour";
 import Widget from "../../../lib/ui/Widget";
+import { C } from "../../../lib/ui/constructors";
 import Button from "../../../lib/ui/controls/Button";
 import TextField from "../../../lib/ui/controls/TextField";
-import {ExpansionBehaviour} from "../../../lib/ui/ExpansionBehaviour";
-import {AbstractDropdownSelection} from "../widgets/AbstractDropdownSelection";
-import {Clues} from "../../../lib/runescape/clues";
-import {clue_data} from "../../../data/clues";
+import { Log } from "../../../lib/util/Log";
 import PreparedSearchIndex from "../../../lib/util/PreparedSearchIndex";
-import {TileCoordinates, TileRectangle} from "../../../lib/runescape/coordinates";
-import * as lodash from "lodash";
-import {capitalize} from "lodash";
-import {Path} from "../../../lib/runescape/pathing";
-import {AugmentedMethod, MethodPackManager} from "../../model/MethodPackManager";
-import {SolvingMethods} from "../../model/methods";
-import BoundsBuilder from "../../../lib/gamemap/BoundsBuilder";
-import {RenderingUtility} from "../map/RenderingUtility";
-import MethodSelector from "./MethodSelector";
-import PathControl from "./PathControl";
-import {CursorType} from "../../../lib/runescape/CursorType";
-import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
-import {ScanEditLayer} from "../theorycrafting/scanedit/ScanEditor";
-import {ClueReader} from "./cluereader/ClueReader";
-import {deps} from "../../dependencies";
-import {storage} from "../../../lib/util/storage";
-import {SettingsModal} from "../settings/SettingsEdit";
-import {ClueEntities} from "./ClueEntities";
-import {NislIcon} from "../nisl";
-import {ClueProperties} from "../theorycrafting/ClueProperties";
-import {SlideGuider, SliderSolving} from "./subbehaviours/SliderSolving";
-import {Notification} from "../NotificationBar";
+import { SettingsNormalization } from "../../../lib/util/SettingsNormalization";
+import { storage } from "../../../lib/util/storage";
+import { util } from "../../../lib/util/util";
+import { Alt1Modal } from "../../Alt1Modal";
+import { ClueTrainer } from "../../ClueTrainer";
+import { deps } from "../../dependencies";
+import { AugmentedMethod, MethodPackManager } from "../../model/MethodPackManager";
+import { SolvingMethods } from "../../model/methods";
+import { TileMarkersOverlay } from "../../tile_markers/TileMarkersOverlay";
+import { Notification } from "../NotificationBar";
+import { RenderingUtility } from "../map/RenderingUtility";
 import TransportLayer from "../map/TransportLayer";
-import {NeoSolvingSubBehaviour} from "./NeoSolvingSubBehaviour";
-import {CompassSolving} from "./subbehaviours/CompassSolving";
-import {ScanTreeSolving} from "./subbehaviours/scans/ScanTreeSolving";
-import {KnotSolving} from "./subbehaviours/KnotSolving";
-import {Alt1Modal} from "../../Alt1Modal";
-import {LockboxSolving} from "./subbehaviours/LockboxSolving";
-import {TowersSolving} from "./subbehaviours/TowersSolving";
-import {Log} from "../../../lib/util/Log";
-import {CapturedScan} from "./cluereader/capture/CapturedScan";
-import {AbstractCaptureService, CapturedImage, CaptureInterval} from "../../../lib/alt1/capture";
-import {SimpleScanSolving} from "./subbehaviours/scans/SimpleScanSolving";
-import {ScanSolving} from "./subbehaviours/scans/ScanSolving";
-import {Transportation} from "../../../lib/runescape/transportation";
-import {Rectangle, Vector2} from "../../../lib/math";
-import {SettingsNormalization} from "../../../lib/util/SettingsNormalization";
-import {util} from "../../../lib/util/util";
-import {Alt1} from "../../../lib/alt1/Alt1";
-import {GlOverlay} from "../../../lib/alt1gl/ts/util/patchrs_napi";
-import {Alt1GL} from "../../../lib/alt1gl/Alt1GL";
-import {ScanTree} from "../../../lib/cluetheory/scans/ScanTree";
+import { NislIcon } from "../nisl";
+import { SettingsModal } from "../settings/SettingsEdit";
+import { ClueProperties } from "../theorycrafting/ClueProperties";
+import { ScanEditLayer } from "../theorycrafting/scanedit/ScanEditor";
+import { AbstractDropdownSelection } from "../widgets/AbstractDropdownSelection";
+import { ClueEntities } from "./ClueEntities";
+import MethodSelector from "./MethodSelector";
+import { NeoSolvingSubBehaviour } from "./NeoSolvingSubBehaviour";
+import PathControl from "./PathControl";
+import { ClueReader } from "./cluereader/ClueReader";
+import { CapturedScan } from "./cluereader/capture/CapturedScan";
+import { CompassSolving } from "./subbehaviours/CompassSolving";
+import { KnotSolving } from "./subbehaviours/KnotSolving";
+import { LockboxSolving } from "./subbehaviours/LockboxSolving";
+import { SlideGuider, SliderSolving } from "./subbehaviours/SliderSolving";
+import { TowersSolving } from "./subbehaviours/TowersSolving";
+import { ScanSolving } from "./subbehaviours/scans/ScanSolving";
+import { ScanTreeSolving } from "./subbehaviours/scans/ScanTreeSolving";
+import { SimpleScanSolving } from "./subbehaviours/scans/SimpleScanSolving";
 import span = C.span;
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import interactionMarker = RenderingUtility.interactionMarker;
@@ -93,7 +93,7 @@ class NeoSolvingLayer extends GameLayer {
   constructor(private behaviour: NeoSolvingBehaviour) {
     super();
 
-    this.transport_layer = new TransportLayer(true, {transport_policy: "none", teleport_policy: "target_only"}).addTo(this)
+    this.transport_layer = new TransportLayer(true, { transport_policy: "none", teleport_policy: "target_only" }).addTo(this)
 
     this.sidebar = new GameMapControl({
       position: "top-left",
@@ -236,7 +236,7 @@ namespace NeoSolvingLayer {
       this.addClass("ctr-neosolving-main-bar")
 
       this.prepared_search_index = new PreparedSearchIndex<{ step: Clues.Step, text_index: number }>(
-        clue_data.all.flatMap(step => step.text.map((_, i) => ({step: step, text_index: i}))),
+        clue_data.all.flatMap(step => step.text.map((_, i) => ({ step: step, text_index: i }))),
         (step) => step.step.text[step.text_index]
         , {
           all: true,
@@ -246,9 +246,9 @@ namespace NeoSolvingLayer {
 
       this.append(
         this.parent.tetracompass_only
-          ? new MainControlButton({icon: "/assets/icons/tetracompass.png"})
+          ? new MainControlButton({ icon: "/assets/icons/tetracompass.png" })
             .css("cursor", "default")
-          : new MainControlButton({icon: "/assets/icons/glass.png"})
+          : new MainControlButton({ icon: "/assets/icons/glass.png" })
             .append(
               this.search_bar = new TextField()
                 .css("flex-grow", "1")
@@ -278,16 +278,16 @@ namespace NeoSolvingLayer {
         this.rest = hbox(
           deps().app.in_alt1
             ? undefined
-            : new MainControlButton({icon: "/assets/icons/Alt1.png", text: "Solving available in Alt1", centered: true})
+            : new MainControlButton({ icon: "/assets/icons/Alt1.png", text: "Solving available in Alt1", centered: true })
               .tooltip("More available in Alt1")
               .onClick(() => new Alt1Modal().show()),
           !deps().app.in_alt1 ? undefined :
-            new MainControlButton({icon: "/assets/icons/activeclue.png", text: "Solve", centered: true})
+            new MainControlButton({ icon: "/assets/icons/activeclue.png", text: "Solve", centered: true })
               .onClick(() => this.parent.screen_reading.solveManuallyTriggered())
               .tooltip("Read a clue from screen")
               .setEnabled(deps().app.in_alt1),
           !deps().app.in_alt1 ? undefined :
-            new MainControlButton({icon: "/assets/icons/lock.png", text: "Auto-Solve", centered: true})
+            new MainControlButton({ icon: "/assets/icons/lock.png", text: "Auto-Solve", centered: true })
               .setToggleable(true)
               .tooltip("Continuously read clues from screen")
               .setEnabled(deps().app.in_alt1)
@@ -297,7 +297,7 @@ namespace NeoSolvingLayer {
               })
               .setToggled(this.autosolve_preference.get())
           ,
-          new MainControlButton({icon: "/assets/icons/fullscreen.png", centered: true})
+          new MainControlButton({ icon: "/assets/icons/fullscreen.png", centered: true })
             .tooltip("Hide the menu bar")
             .setToggleable(true)
             .onToggle(t => {
@@ -307,7 +307,7 @@ namespace NeoSolvingLayer {
               this.parent.app.map.invalidateSize()
             })
             .setToggled(this.fullscreen_preference.get()),
-          new MainControlButton({icon: "/assets/icons/settings.png", centered: true})
+          new MainControlButton({ icon: "/assets/icons/settings.png", centered: true })
             .tooltip("Open settings")
             .onClick(() => SettingsModal.openOnPage("solving_general"))
         ).css("flex-grow", "1"),
@@ -327,7 +327,7 @@ namespace NeoSolvingLayer {
         })
         .setItems([])
 
-      this.search_bar_collapsible = ExpansionBehaviour.horizontal({target: this.search_bar, starts_collapsed: true, duration: 100})
+      this.search_bar_collapsible = ExpansionBehaviour.horizontal({ target: this.search_bar, starts_collapsed: true, duration: 100 })
         .onChange(v => {
           if (v) this.dropdown?.close()
           else {
@@ -338,7 +338,7 @@ namespace NeoSolvingLayer {
           this.rest_collapsible.setCollapsed(!v)
         })
 
-      this.rest_collapsible = ExpansionBehaviour.horizontal({target: this.rest, starts_collapsed: false})
+      this.rest_collapsible = ExpansionBehaviour.horizontal({ target: this.rest, starts_collapsed: false })
     }
   }
 }
@@ -358,7 +358,7 @@ class ClueSolvingReadingBehaviour extends Behaviour {
     const interval = CaptureInterval.fromApproximateInterval(300)
 
     this.lifetime_manager.bind(Alt1.instance().capturing.subscribe({
-      options: (time: AbstractCaptureService.CaptureTime) => ({interval: interval, area: null}),
+      options: (time: AbstractCaptureService.CaptureTime) => ({ interval: interval, area: null }),
       paused: () => (!this.autoSolve || this.parent.active_behaviour.get()?.pausesClueReader()),
       handle: (img) => this.solve(img.value, true)
     }))
@@ -378,7 +378,7 @@ class ClueSolvingReadingBehaviour extends Behaviour {
           break;
         case "scan":
         case "compass":
-          this.parent.setClueWithAutomaticMethod({step: res.step, text_index: 0}, res)
+          this.parent.setClueWithAutomaticMethod({ step: res.step, text_index: 0 }, res)
           break;
         case "puzzle":
           const is_new_one = this.parent.setPuzzle(res.puzzle)
@@ -405,7 +405,7 @@ class ClueSolvingReadingBehaviour extends Behaviour {
     }
 
     try {
-      const img = await Alt1.instance().capturing.captureOnce({options: {area: null, interval: null}})
+      const img = await Alt1.instance().capturing.captureOnce({ options: { area: null, interval: null } })
 
       const found = this.solve(img.value, false)
 
@@ -524,7 +524,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
 
     this.reset(this.state)
 
-    this.pushState({type: "puzzle", puzzle: puzzle}, undefined)
+    this.pushState({ type: "puzzle", puzzle: puzzle }, undefined)
 
     if (puzzle) {
       this.activateSubBehaviour((() => {
@@ -611,7 +611,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
 
     this.reset(this.state)
 
-    const state = this.pushState({type: "clue", clue: step}, read_result)
+    const state = this.pushState({ type: "clue", clue: step }, read_result)
 
     switch (step.step.solution?.type) {
       case "search":
@@ -905,7 +905,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
       const behaviour = new CompassSolving(this, clue, read_result?.type == "compass" ? read_result.reader : undefined,
         async spot => {
           if (spot) {
-            const method = await this.getAutomaticMethod({clue: clue.id, spot: spot})
+            const method = await this.getAutomaticMethod({ clue: clue.id, spot: spot })
 
             this.setMethod(method)
           } else {
@@ -928,7 +928,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
    * @param method
    * @param read_result
    */
-  setMethod(method: AugmentedMethod, read_result: ClueReader.Result = null): void {
+  async setMethod(method: AugmentedMethod, read_result: ClueReader.Result = null): Promise<void> {
     log().log(`Setting method ${method ? method.method.name : "null"}`)
 
     if (!read_result && this.state?.read_result) read_result = this.state.read_result
@@ -1009,8 +1009,8 @@ export default class NeoSolvingBehaviour extends Behaviour {
     if ((this.state.step?.clue?.step?.type != "compass") || (active_behaviour instanceof CompassSolving && active_behaviour.selected_spot.value())) {
 
       const clue: ClueSpot.Id = active_behaviour instanceof CompassSolving
-        ? {clue: this.state.step.clue.step.id, spot: active_behaviour.selected_spot.value().spot.spot}
-        : {clue: this.state.step.clue.step.id}
+        ? { clue: this.state.step.clue.step.id, spot: active_behaviour.selected_spot.value().spot.spot }
+        : { clue: this.state.step.clue.step.id }
 
       this.default_method_selector = new MethodSelector(this, clue)
         .addClass("ctr-neosolving-solution-row")
@@ -1034,7 +1034,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
       return
     }
 
-    let m = await this.getAutomaticMethod({clue: step.step.id})
+    let m = await this.getAutomaticMethod({ clue: step.step.id })
 
     this.setClue(step, !m, read_result)
     this.setMethod(m, read_result)
@@ -1260,32 +1260,29 @@ export namespace NeoSolving {
 }
 
 class PathOverlayControl extends Behaviour {
-  private _active_overlays: GlOverlay[] = [];
+  private _overlay: TileMarkersOverlay | null = null;
 
   public setIngameOverlays(paths: Path[]): void {
-    if (!Alt1GL.exists()) return // Ignore everything if Alt1Gl is not available
+    if (!Alt1GL.exists()) return;
 
-    paths = paths.filter(p => !!p)
+    paths = paths.filter(p => !!p && p.length > 0);
+    if (paths.length === 0) return;
 
-    function render(p: Path): GlOverlay {
-      // TODO: Actually integrate with the rest
-
-      return null
-    }
-
-    this._active_overlays = paths.map(render)
+    this._overlay = new TileMarkersOverlay();
+    this._overlay.draw(paths);
   }
 
   protected begin() {
   }
 
   public reset() {
-    this._active_overlays.forEach(o => o.stop())
-    this._active_overlays = []
+    if (this._overlay) {
+      this._overlay.stop();
+      this._overlay = null;
+    }
   }
 
   protected end() {
-    // Make sure to remove rendered overlays when ending
-    this.reset()
+    this.reset();
   }
 }
