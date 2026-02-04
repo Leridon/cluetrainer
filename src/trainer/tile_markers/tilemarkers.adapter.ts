@@ -1,4 +1,3 @@
-import { delay } from "lib/alt1gl/ts/util/util";
 import NeoSolvingBehaviour from "../ui/neosolving/NeoSolvingBehaviour";
 
 export class TileMarkersAdapter {
@@ -19,14 +18,5 @@ export class TileMarkersAdapter {
      */
     setBehaviour(behaviour: NeoSolvingBehaviour): void {
         this.behaviour = behaviour;
-    }
-
-    private async loop(): Promise<void> {
-        while(true) {
-            const state = this.behaviour.active_method;
-
-            console.log(state)
-            await delay(600);
-        }
     }
 }
