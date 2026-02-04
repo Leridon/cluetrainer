@@ -2,6 +2,7 @@ import * as OCR from "alt1/ocr";
 import { FontDefinition } from "alt1/ocr";
 import { Alt1GL } from "lib/alt1gl/Alt1GL";
 import { BufferCache } from "lib/alt1gl/ts/programs/filteredstate";
+import { delay } from "lib/alt1gl/ts/util/util";
 import { StreamRenderObject } from "../../../../../../alt1gl/ts/util/patchrs_napi";
 import { clue_data } from "../../../../data/clues";
 import { Alt1Color } from "../../../../lib/alt1/Alt1Color";
@@ -509,7 +510,7 @@ export namespace ClueReader {
 export class GlClueReader extends Behaviour {
   stream: StreamRenderObject
 
-  protected begin() {
+  protected async begin() {
     const cache = new BufferCache();
     const playerPositionReader = new PlayerPositionReader(cache);
 
@@ -518,13 +519,19 @@ export class GlClueReader extends Behaviour {
       //todo: set the value from settings ? or experiment to see what is proper for us
       framecooldown: 600,
     }, async renders => {
+     
+    });
+
+    // the filtered state is using internal renderer stream
+    while(true) {
       const playerPosition = await playerPositionReader.getPosition();
-      if(playerPosition) {
+      if (playerPosition) {
         console.log(`Player position: ${playerPosition.x}:${playerPosition.z}:${playerPosition.y}`)
       } else {
         console.log("Player position not found.");
       }
-    });
+      await delay(600)
+    }
 
     //todo: extract to a class eg CompassReader
     // const cache = new BufferCache();
