@@ -60,7 +60,7 @@ module.exports = {
     // library means that the exports from the entry file can be accessed from outside, in this case from the global scope as window.vos
     library: {type: 'umd', name: 'vos'},
   },
-  devtool: false,
+  devtool: development_mode ? "source-map" : false,
   mode: development_mode ? "development" : "production",
   // prevent webpack from bundling these imports (alt1 libs can use them when running in nodejs)
   externals: ['sharp', 'canvas', 'electron/common'],

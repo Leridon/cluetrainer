@@ -1,5 +1,4 @@
 import { crc32 } from "../util/crc32";
-import { AtlasSnapshotFragment } from "./reflect2d";
 
 // sprite hash files generated using runeapps model viewer https://runeapps.org/modelviewer
 // scripts->cli->run
@@ -25,7 +24,7 @@ export type FontCharacterJson = {
 
 export type ParsedFontJson = {
     fontid: number,
-    spriteid: number,
+    id: number,
     characters: (FontCharacterJson | null)[],
     median: number,
     baseline: number,
@@ -42,7 +41,7 @@ type CustomJsonFont = {
     sheetwidth: number,
     sheetheight: number,
     sheethash: number,
-    spriteid: number,
+    id: number,
     characters: FontCharacterJson[],
     unknownchars: UknownFontChar[]
 }
@@ -85,7 +84,7 @@ type UknownFontChar = {
 }
 
 export class KnownSpriteSheet {
-    spriteid: number;
+    id: number;
     subs = new Set<SpriteInfo>();
     unknownsubs: UknownFontChar[] = [];
     fontfile: ParsedFontJson | null = null;
@@ -93,9 +92,9 @@ export class KnownSpriteSheet {
     basesprite: SpriteInfo;
     sheetwidth: number;
     sheetheight: number;
-    constructor(spriteid: number, width: number, height: number, sheethash: number) {
-        this.spriteid = spriteid
-        this.basesprite = new SpriteInfo(spriteid, 0, sheethash);
+    constructor(id: number, width: number, height: number, sheethash: number) {
+        this.id = id
+        this.basesprite = new SpriteInfo(id, 0, sheethash);
         this.basesprite.font = this;
         this.sheetwidth = width;
         this.sheetheight = height;
@@ -105,7 +104,7 @@ export class KnownSpriteSheet {
         this.fontfile = fontfile;
         for (let chr of fontfile.characters) {
             if (!chr) { continue; }
-            let sub = new SpriteInfo(fontfile.spriteid, chr.charcode, chr.hash);
+            let sub = new SpriteInfo(fontfile.id, chr.charcode, chr.hash);
             this.subs.add(sub);
             sub.font = this;
             sub.fontchr = chr;
@@ -117,7 +116,7 @@ export class KnownSpriteSheet {
     }
 
     addCharSprite(charcode: number, dx: number, dy: number, width: number, height: number, hash: number) {
-        let known = new SpriteInfo(this.spriteid, charcode, hash);
+        let known = new SpriteInfo(this.id, charcode, hash);
         known.font = this;
         known.fontchr = {
             chr: String.fromCharCode(charcode),
@@ -136,7 +135,7 @@ export class KnownSpriteSheet {
     identifyMissingCharacter(charcode: number, dx: number, dy: number, width: number, height: number, hash: number) {
         let known = this.addCharSprite(charcode, dx, dy, width, height, hash);
         this.unknownsubs = this.unknownsubs.filter(c => c.charcode != charcode);
-        console.log(`font char "${String.fromCharCode(charcode)}" matched by containment in font ${this.spriteid}`);
+        console.log(`font char "${String.fromCharCode(charcode)}" matched by containment in font ${this.id}`);
         return known;
     }
 
@@ -170,7 +169,7 @@ export class KnownSpriteSheet {
             sheetwidth: this.sheetwidth,
             sheetheight: this.sheetheight,
             sheethash: this.basesprite.hash,
-            spriteid: this.spriteid,
+            id: this.id,
             characters: [...this.subs].map(s => s.fontchr).filter(c => c != null),
             unknownchars: [...this.unknownsubs],
         };
@@ -208,14 +207,14 @@ export class SpriteCache {
 
     loadCacheFontFile(fonts: ParsedFontJson[]) {
         for (let fontjson of fonts) {
-            let font = new KnownSpriteSheet(fontjson.spriteid, fontjson.sheetwidth, fontjson.sheetheight, fontjson.sheethash);
+            let font = new KnownSpriteSheet(fontjson.id, fontjson.sheetwidth, fontjson.sheetheight, fontjson.sheethash);
             font.addFontFile(fontjson);
-            this.fonts.set(font.spriteid, font);
+            this.fonts.set(font.id, font);
             font.subs.forEach(sub => this.addSprite(sub));
         }
     }
     loadCustomFontFile(fontjson: CustomJsonFont) {
-        let font = new KnownSpriteSheet(fontjson.spriteid, fontjson.sheetwidth, fontjson.sheetheight, fontjson.sheethash);
+        let font = new KnownSpriteSheet(fontjson.id, fontjson.sheetwidth, fontjson.sheetheight, fontjson.sheethash);
         for (let chr of fontjson.characters) {
             font.addCharSprite(chr.charcode, chr.x, chr.y, chr.width, chr.height, chr.hash);
         }
@@ -223,7 +222,7 @@ export class SpriteCache {
             font.addUknownSub(unk.x, unk.y, unk.charcode);
         }
         // TODO need unique id
-        this.fonts.set(font.spriteid, font);
+        this.fonts.set(font.id, font);
         font.subs.forEach(sub => this.addSprite(sub));
     }
 

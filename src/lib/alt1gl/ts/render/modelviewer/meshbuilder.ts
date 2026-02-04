@@ -793,7 +793,6 @@ export async function convertRendersToGLTF(renderfuncs: RenderFunc[], getanimati
         let t = new Date();
         let timestamp = `${t.toLocaleDateString()} ${t.toLocaleTimeString()}`.replace(/\W/g, "_");
         let target = path.resolve(`rundata/downloads/model_${timestamp}.${glb ? "glb" : "gltf"}`);
-        fs.mkdir(path.dirname(target), {recursive:true}); 
         await fs.writeFile(target, (await file).mainfile, "binary");
         return target;
     }

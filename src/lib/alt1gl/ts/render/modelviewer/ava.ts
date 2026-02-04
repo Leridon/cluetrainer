@@ -348,8 +348,8 @@ export class AvaViewer {
 			//fix uniforms
 			var subview = mat4.clone(modeltr);
 			mat4.mul(subview, subview, model.model.modeltransform);
-			this.gl.uniformMatrix4fv(this.uniforms.uModelMatrix, false, subview as number[]);
-			this.gl.uniformMatrix4fv(this.uniforms.uViewMatrix, false, viewtr as number[]);
+			this.gl.uniformMatrix4fv(this.uniforms.uModelMatrix, false, subview);
+			this.gl.uniformMatrix4fv(this.uniforms.uViewMatrix, false, viewtr);
 
 			//update vertex attribs
 			this.gl.bindBuffer(this.gl.ARRAY_BUFFER, model.glboundVertexBuffer);

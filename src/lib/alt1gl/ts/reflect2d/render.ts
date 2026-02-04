@@ -1,5 +1,5 @@
 import { AtlasSnapshotFragment, AtlasTracker, RenderRect } from "./reflect2d";
-import {UIRenderTextureCache} from "./uiparser";
+import { UIRenderTextureCache } from "./uitexturecache";
 
 export function renderGameUITextureUsage(ctx: CanvasRenderingContext2D, atlas: AtlasTracker, texturecache: UIRenderTextureCache, elements: RenderRect[], startindex: number, endindex: number, showBorders: boolean, selectedSprite: AtlasSnapshotFragment) {
     let texture = texturecache.getTexture(selectedSprite.basetex);

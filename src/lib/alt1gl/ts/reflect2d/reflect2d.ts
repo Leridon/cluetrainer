@@ -1,8 +1,8 @@
-import * as patchrs from "../util/patchrs_napi";
-import { getProgramMeta, getRenderFunc } from "../render/renderprogram";
-import { emptySpriteInfo, imgcrc, KnownSpriteSheet, SpriteCache, SpriteInfo } from "./spritecache";
-import { RectLike } from "alt1";
 import * as a1lib from "alt1";
+import { RectLike } from "alt1";
+import { getProgramMeta, getRenderFunc } from "../render/renderprogram";
+import * as patchrs from "../util/patchrs_napi";
+import { emptySpriteInfo, imgcrc, KnownSpriteSheet, SpriteCache, SpriteInfo } from "./spritecache";
 
 export type GameUIState = ReturnType<typeof getUIState>;
 
@@ -191,7 +191,7 @@ class AtlasTextureSnapshotCache {
 			if (hash == font.basesprite.hash) {
 				let basefrag = this.makeFragment(fontx, fonty, fontw, fonth, font.basesprite);
 				this.fontsheets.push({ font: font, frag: basefrag });
-				console.log(`font ${font.spriteid} base matched by char ${fontchr.charcode}`);
+				console.log(`font ${font.id} base matched by char ${fontchr.charcode}`);
 				// detect fragments that belong to this font
 				for (let chr of font.subs.values()) {
 					let fontchr = chr.fontchr!

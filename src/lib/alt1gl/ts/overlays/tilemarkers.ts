@@ -1,4 +1,4 @@
-import { findFloorRender, fragshader, GL_FLOAT, GL_FLOAT_MAT4, GL_FLOAT_VEC2, GL_FLOAT_VEC3, GL_FLOAT_VEC4, GL_UNSIGNED_BYTE, positionMatrix, UniformSnapshotBuilder, uniformTypes, vertshader } from ".";
+import { GL_FLOAT, GL_UNSIGNED_BYTE, positionMatrix, UniformSnapshotBuilder } from ".";
 import { getUniformValue } from "../render/renderprogram";
 import * as patchrs from "../util/patchrs_napi";
 import { getOrInsert } from "../util/util";
@@ -58,6 +58,23 @@ export const vertshadermouse = `
         // float value = max(0.0,min(0.02,(0.3-dist/0.6)));
         // ourColor = vec4(vec3(value),1.0);
         ourColor = vec4(aColor,1.0);
+    }`;
+
+// Vertex shader with alpha support (vec4 color input)
+export const vertshadermousealpha = `
+    #version 330 core
+    layout (location = 0) in vec3 aPos;
+    layout (location = 6) in vec4 aColor;
+    uniform highp mat4 uModelMatrix;
+    uniform highp mat4 uViewProjMatrix;
+    uniform highp vec2 uMouse;
+    out vec4 ourColor;
+    out vec3 FragPos;
+    void main() {
+        vec4 worldpos = uModelMatrix * vec4(aPos, 1.);
+        gl_Position = uViewProjMatrix * worldpos;
+        FragPos = worldpos.xyz/worldpos.w;
+        ourColor = aColor;
     }`;
 
 export const fragshadermouse = `

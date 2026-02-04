@@ -1,35 +1,34 @@
-import {Clues} from "../../../../lib/runescape/clues";
-import {Rectangle, Vector2} from "../../../../lib/math";
-import {util} from "../../../../lib/util/util";
-import * as oldlib from "../../../../skillbertssolver/cluesolver/oldlib";
-import {comparetiledata} from "../../../../skillbertssolver/cluesolver/oldlib";
 import * as OCR from "alt1/ocr";
-import {FontDefinition} from "alt1/ocr";
-import ClueFont from "./ClueFont";
-import {clue_data} from "../../../../data/clues";
-import {SlideReader, SliderReader} from "./SliderReader";
-import {Notification} from "../../NotificationBar";
-import {CompassReader} from "./CompassReader";
-import {KnotReader} from "./KnotReader";
-import {CapturedImage} from "../../../../lib/alt1/capture";
-import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
-import {Sliders} from "../../../../lib/cluetheory/Sliders";
-import {LockBoxReader} from "./LockBoxReader";
-import {CapturedModal} from "./capture/CapturedModal";
-import {CapturedSliderInterface} from "./capture/CapturedSlider";
-import {TowersReader} from "./TowersReader";
-import {CapturedCompass} from "./capture/CapturedCompass";
-import {Log} from "../../../../lib/util/Log";
-import {CelticKnots} from "../../../../lib/cluetheory/CelticKnots";
-import {CapturedScan} from "./capture/CapturedScan";
-import {Finder} from "../../../../lib/alt1/capture/Finder";
-import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
+import { FontDefinition } from "alt1/ocr";
+import { Alt1GL } from "lib/alt1gl/Alt1GL";
+import { BufferCache } from "lib/alt1gl/ts/programs/filteredstate";
+import { StreamRenderObject } from "../../../../../../alt1gl/ts/util/patchrs_napi";
+import { clue_data } from "../../../../data/clues";
+import { Alt1Color } from "../../../../lib/alt1/Alt1Color";
+import { CapturedImage } from "../../../../lib/alt1/capture";
+import { Finder } from "../../../../lib/alt1/capture/Finder";
+import { LegacyOverlayGeometry } from "../../../../lib/alt1/LegacyOverlayGeometry";
+import { CelticKnots } from "../../../../lib/cluetheory/CelticKnots";
+import { Sliders } from "../../../../lib/cluetheory/Sliders";
+import { Rectangle, Vector2 } from "../../../../lib/math";
+import { Angles } from "../../../../lib/math/Angles";
+import { Clues } from "../../../../lib/runescape/clues";
 import Behaviour from "../../../../lib/ui/Behaviour";
-import {Alt1GL} from "../../../../lib/alt1gl/Alt1GL";
-import {StreamRenderObject} from "../../../../../../alt1gl/ts/util/patchrs_napi";
-import {BufferCache} from "../../../../lib/alt1gl/ts/programs/filteredstate";
-import {Quaternion, Vector3} from "three";
-import {Angles} from "../../../../lib/math/Angles";
+import { Log } from "../../../../lib/util/Log";
+import { util } from "../../../../lib/util/util";
+import * as oldlib from "../../../../skillbertssolver/cluesolver/oldlib";
+import { comparetiledata } from "../../../../skillbertssolver/cluesolver/oldlib";
+import { Notification } from "../../NotificationBar";
+import { CapturedCompass } from "./capture/CapturedCompass";
+import { CapturedModal } from "./capture/CapturedModal";
+import { CapturedScan } from "./capture/CapturedScan";
+import { CapturedSliderInterface } from "./capture/CapturedSlider";
+import ClueFont from "./ClueFont";
+import { CompassReader } from "./CompassReader";
+import { KnotReader } from "./KnotReader";
+import { LockBoxReader } from "./LockBoxReader";
+import { SlideReader, SliderReader } from "./SliderReader";
+import { TowersReader } from "./TowersReader";
 import stringSimilarity = util.stringSimilarity;
 import notification = Notification.notification;
 import findBestMatch = util.findBestMatch;
@@ -510,8 +509,20 @@ export class GlClueReader extends Behaviour {
   stream: StreamRenderObject
 
   protected begin() {
-    const cache = new BufferCache()
+    //const playerPositionReader = new PlayerPositionReader();
 
+    // this.stream = window.alt1gl.streamRenderCalls({
+    //   features: ["uniforms"],
+    //   framecooldown: 600,
+    // }, async renders => {
+    //   const playerPosition = playerPositionReader.getPosition();
+    //   console.log(`Player position: ${playerPosition}`)
+    // });
+
+
+
+    //todo: commented out
+    const cache = new BufferCache();
     this.stream = Alt1GL.instance().native.streamRenderCalls({
       vertexObjectId: 1657,
       features: ["full"]

@@ -1,18 +1,20 @@
-import {ScreenRectangle} from "../../../../../lib/alt1/ScreenRectangle";
+import { ImageDetect } from "alt1";
 import * as OCR from "alt1/ocr";
-import {Vector2} from "../../../../../lib/math";
-import {async_lazy, Lazy, lazy, LazyAsync} from "../../../../../lib/Lazy";
-import {CapturedImage, NeedleImage} from "../../../../../lib/alt1/capture";
-import {Finder} from "../../../../../lib/alt1/capture/Finder";
-import {Alt1OverlayDrawCalls} from "../../../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
-import {Alt1Overlay} from "../../../../../lib/alt1/overlay/Alt1Overlay";
-import {FontDefinition} from "alt1/ocr";
-import {ImageDetect} from "alt1";
+import { FontDefinition } from "alt1/ocr";
+import { async_lazy, Lazy, lazy, LazyAsync } from "../../../../../lib/Lazy";
+import { ScreenRectangle } from "../../../../../lib/alt1/ScreenRectangle";
+import { CapturedImage, NeedleImage } from "../../../../../lib/alt1/capture";
+import { Finder } from "../../../../../lib/alt1/capture/Finder";
+import { Alt1Overlay } from "../../../../../lib/alt1/overlay/Alt1Overlay";
+import { Alt1OverlayDrawCalls } from "../../../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
+import { Vector2 } from "../../../../../lib/math";
 
 export class CapturedModal {
-  title_bar = this.body.parent.getSubSection(
-    ScreenRectangle.move(this.body.relativeRectangle(), CapturedModal.TITLE_BAR_OFFSET_FROM_BODY, {x: this.body.size.x, y: 24})
-  ).setName("Title")
+  get title_bar() {
+    return this.body.parent.getSubSection(
+      ScreenRectangle.move(this.body.relativeRectangle(), CapturedModal.TITLE_BAR_OFFSET_FROM_BODY, {x: this.body.size.x, y: 24})
+    ).setName("Title")
+  }
 
   private _title: Lazy<string> = lazy(() => {
     if(!this.font) return ""
