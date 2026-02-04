@@ -428,9 +428,9 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
   private spot_selection_container: Widget
 
   renderWidget() {
-    this.parent.layer.compass_container.empty()
+    this.parent.map_layer.compass_container.empty()
 
-    const container = vbox().appendTo(this.parent.layer.compass_container)
+    const container = vbox().appendTo(this.parent.map_layer.compass_container)
 
     cls("ctr-neosolving-compass-solving-header")
       .append(
@@ -761,7 +761,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
     if (maybe_fit) {
       if (!this.parent.active_method && (information.length > 0 || possible.length < 50)
         && (possible.length > 1 || (possible.length == 1 && !this.parent.active_method))) {
-        this.parent.layer.fit(TileRectangle.from(...possible.map(s => s.spot.spot)), "setting")
+        this.parent.map_layer.fit(TileRectangle.from(...possible.map(s => s.spot.spot)), "setting")
       }
     }
 
@@ -979,7 +979,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
   protected async begin() {
     this.layer = new CompassHandlingLayer(this)
-    this.parent.layer.add(this.layer)
+    this.parent.map_layer.add(this.layer)
 
     if (this.reader) {
       this.process?.start()

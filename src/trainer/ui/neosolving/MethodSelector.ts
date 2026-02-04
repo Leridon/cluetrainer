@@ -1,36 +1,40 @@
 import Widget from "../../../lib/ui/Widget";
 import {FavouriteIcon, NislIcon} from "../nisl";
-import NeoSolvingBehaviour from "./NeoSolvingBehaviour";
-import {Observable, observe} from "../../../lib/reactive";
+import {ewent} from "../../../lib/reactive";
 import {AugmentedMethod, MethodPackManager} from "../../model/MethodPackManager";
 import {C} from "../../../lib/ui/constructors";
 import {AbstractDropdownSelection} from "../widgets/AbstractDropdownSelection";
 import {Clues} from "../../../lib/runescape/clues";
 import {MethodProperties} from "../MethodProperties";
-import {util} from "../../../lib/util/util";
+import {FavoriteIndex} from "../../favorites";
 import spacer = C.spacer;
 import span = C.span;
 import hbox = C.hbox;
 import ClueSpot = Clues.ClueSpot;
-import async_init = util.async_init;
 
 export default class MethodSelector extends Widget {
-  public method: Observable<AugmentedMethod>
-
+  private clue: ClueSpot.Id
+  private method: AugmentedMethod
   private methods: AugmentedMethod[]
+
+  public readonly method_selected = ewent<{
+    clue: ClueSpot.Id,
+    method: AugmentedMethod
+  }>()
 
   private row: Widget
 
-  constructor(private parent: NeoSolvingBehaviour, private clue: ClueSpot.Id) {
+  constructor(private favourite_index: FavoriteIndex) {
     super()
+  }
 
-    this.method = observe(parent.active_method)
+  public async setClue(clue: ClueSpot.Id, method: AugmentedMethod) {
+    this.clue = clue
+    this.method = method
 
-    async_init(async () => {
-      this.methods = (await MethodPackManager.instance().getForClue(this.clue))
+    this.methods = (await MethodPackManager.instance().getForClue(this.clue))
 
-      this.method.subscribe(m => this.render(m), true)
-    })
+    this.render()
   }
 
   private renderName(method: AugmentedMethod): Widget {
@@ -63,7 +67,11 @@ export default class MethodSelector extends Widget {
     return div
   }
 
-  private render(method: AugmentedMethod) {
+  private render() {
+    this.empty()
+
+    if (!this.clue) return
+
     const icon = NislIcon.dropdown()
       .css("margin-right", "3px")
       .css("margin-left", "3px")
@@ -81,8 +89,8 @@ export default class MethodSelector extends Widget {
     icon.img.css("width", "12px")
 
     this.row = hbox(
-      method
-        ? this.renderName(method)
+      this.method
+        ? this.renderName(this.method)
         : c("<span style='font-style: italic; color: gray'> No method selected</span>"),
       spacer(),
       //`(${this.methods.length})`,
@@ -100,7 +108,7 @@ export default class MethodSelector extends Widget {
 
   private async openMethodSelection() {
     if (!this.dropdown) {
-      const favourite = await this.parent.app.favourites.getMethod(this.clue, false)
+      const favourite = await this.favourite_index.getMethod(this.clue, false)
 
       this.dropdown = new AbstractDropdownSelection.DropDown<AugmentedMethod>({
         dropdownClass: "ctr-neosolving-favourite-dropdown",
@@ -122,9 +130,11 @@ export default class MethodSelector extends Widget {
       })
         .setItems((await MethodPackManager.instance().getForClue(this.clue)).concat([null]))
         .onSelected(m => {
-          this.parent.app.favourites.setMethod(this.clue, m)
-          this.parent.setMethod(m)
-          if (!m) this.parent.fitToClue()
+          if (m != this.method) {
+            this.method = m
+            this.render()
+            this.method_selected.trigger({clue: this.clue, method: m})
+          }
         })
         .onClosed(() => {
           this.dropdown = null

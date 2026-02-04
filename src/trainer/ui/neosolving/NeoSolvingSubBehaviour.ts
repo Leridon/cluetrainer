@@ -12,7 +12,7 @@ import {TileCoordinates} from "../../../lib/runescape/coordinates";
  * They are instantiated when a clue of the respective type is solved.
  * Subbehaviours typically instantiate internal reading processes, for example for active puzzles, and self-terminate if the step is completed.
  */
-export abstract class NeoSolvingSubBehaviour<State extends NeoSolving.ActiveState = NeoSolving.ActiveState> extends Behaviour {
+export abstract class NeoSolvingSubBehaviour<State extends NeoSolving.ClueState = NeoSolving.ClueState> extends Behaviour {
   protected _state: State = undefined
 
   protected constructor(public readonly parent: NeoSolvingBehaviour, public readonly type: "clue" | "method") {

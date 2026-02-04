@@ -239,7 +239,7 @@ export default class PathControl extends Behaviour {
   }
 
   protected begin() {
-    this.path_layer.addTo(this.parent.layer)
+    this.path_layer.addTo(this.parent.map_layer)
   }
 
   protected end() {
@@ -383,7 +383,7 @@ export default class PathControl extends Behaviour {
 
     if (w.container.is(":empty")) return
 
-    this.widget = w.appendTo(this.parent.layer.path_container)
+    this.widget = w.appendTo(this.parent.map_layer.path_container)
 
   }
 }

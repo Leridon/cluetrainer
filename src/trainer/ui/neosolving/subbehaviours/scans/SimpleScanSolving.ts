@@ -53,7 +53,7 @@ export class SimpleScanSolving extends NeoSolvingSubBehaviour {
 
     const self = this
 
-    this.parent.layer.scan_layer.marker.add(new class extends GameLayer {
+    this.parent.map_layer.scan_layer.marker.add(new class extends GameLayer {
       eventClick(event: GameMapMouseEvent) {
         event.onPre(() => {
           if (event.active_entity instanceof ScanEditLayer.SpotMarker) {
@@ -62,7 +62,7 @@ export class SimpleScanSolving extends NeoSolvingSubBehaviour {
             if (TileCoordinates.equals(self.selected_solution, event.active_entity.spot)) {
               self.selected_solution = null
 
-              self.parent.layer.scan_layer.setActiveCandidates(self.clue.spots)
+              self.parent.map_layer.scan_layer.setActiveCandidates(self.clue.spots)
 
               self.registerSolution(
                 TileArea.fromRect(
@@ -72,7 +72,7 @@ export class SimpleScanSolving extends NeoSolvingSubBehaviour {
             } else {
               self.selected_solution = event.active_entity.spot
 
-              self.parent.layer.scan_layer.setActiveCandidates([event.active_entity.spot])
+              self.parent.map_layer.scan_layer.setActiveCandidates([event.active_entity.spot])
 
               self.registerSolution(digSpotArea(event.active_entity.spot))
             }

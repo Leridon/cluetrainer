@@ -2,7 +2,7 @@ import * as leaflet from "leaflet"
 import {Layer} from "leaflet"
 
 export class OpacityGroup extends leaflet.FeatureGroup {
-  private opacity: number = 1
+  protected opacity: number = 1
 
   constructor() {
     super();

@@ -1,59 +1,42 @@
-import * as lodash from "lodash";
-import { capitalize } from "lodash";
-import { clue_data } from "../../../data/clues";
-import { Alt1 } from "../../../lib/alt1/Alt1";
-import { AbstractCaptureService, CapturedImage, CaptureInterval } from "../../../lib/alt1/capture";
-import { Alt1GL } from "../../../lib/alt1gl/Alt1GL";
-import { ScanTree } from "../../../lib/cluetheory/scans/ScanTree";
-import BoundsBuilder from "../../../lib/gamemap/BoundsBuilder";
-import { GameLayer } from "../../../lib/gamemap/GameLayer";
-import { GameMapControl } from "../../../lib/gamemap/GameMapControl";
-import { Rectangle, Vector2 } from "../../../lib/math";
-import { CursorType } from "../../../lib/runescape/CursorType";
-import { Clues } from "../../../lib/runescape/clues";
-import { TileCoordinates, TileRectangle } from "../../../lib/runescape/coordinates";
-import { TileArea } from "../../../lib/runescape/coordinates/TileArea";
-import { Path } from "../../../lib/runescape/pathing";
-import { Transportation } from "../../../lib/runescape/transportation";
-import Behaviour, { SingleBehaviour } from "../../../lib/ui/Behaviour";
-import { ExpansionBehaviour } from "../../../lib/ui/ExpansionBehaviour";
+import Behaviour, {SingleBehaviour} from "../../../lib/ui/Behaviour";
+import {ClueTrainer} from "../../ClueTrainer";
+import {C} from "../../../lib/ui/constructors";
 import Widget from "../../../lib/ui/Widget";
-import { C } from "../../../lib/ui/constructors";
-import Button from "../../../lib/ui/controls/Button";
-import TextField from "../../../lib/ui/controls/TextField";
-import { Log } from "../../../lib/util/Log";
-import PreparedSearchIndex from "../../../lib/util/PreparedSearchIndex";
-import { SettingsNormalization } from "../../../lib/util/SettingsNormalization";
-import { storage } from "../../../lib/util/storage";
-import { util } from "../../../lib/util/util";
-import { Alt1Modal } from "../../Alt1Modal";
-import { ClueTrainer } from "../../ClueTrainer";
-import { deps } from "../../dependencies";
-import { AugmentedMethod, MethodPackManager } from "../../model/MethodPackManager";
-import { SolvingMethods } from "../../model/methods";
-import { TileMarkersOverlay } from "../../tile_markers/TileMarkersOverlay";
-import { Notification } from "../NotificationBar";
-import { RenderingUtility } from "../map/RenderingUtility";
-import TransportLayer from "../map/TransportLayer";
-import { NislIcon } from "../nisl";
-import { SettingsModal } from "../settings/SettingsEdit";
-import { ClueProperties } from "../theorycrafting/ClueProperties";
-import { ScanEditLayer } from "../theorycrafting/scanedit/ScanEditor";
-import { AbstractDropdownSelection } from "../widgets/AbstractDropdownSelection";
-import { ClueEntities } from "./ClueEntities";
+import {AbstractDropdownSelection} from "../widgets/AbstractDropdownSelection";
+import {Clues} from "../../../lib/runescape/clues";
+import {TileCoordinates, TileRectangle} from "../../../lib/runescape/coordinates";
+import lodash, {capitalize} from "lodash";
+import {Path} from "../../../lib/runescape/pathing";
+import {AugmentedMethod, MethodPackManager} from "../../model/MethodPackManager";
+import {SolvingMethods} from "../../model/methods";
+import BoundsBuilder from "../../../lib/gamemap/BoundsBuilder";
+import {RenderingUtility} from "../map/RenderingUtility";
 import MethodSelector from "./MethodSelector";
-import { NeoSolvingSubBehaviour } from "./NeoSolvingSubBehaviour";
 import PathControl from "./PathControl";
-import { ClueReader } from "./cluereader/ClueReader";
-import { CapturedScan } from "./cluereader/capture/CapturedScan";
-import { CompassSolving } from "./subbehaviours/CompassSolving";
-import { KnotSolving } from "./subbehaviours/KnotSolving";
-import { LockboxSolving } from "./subbehaviours/LockboxSolving";
-import { SlideGuider, SliderSolving } from "./subbehaviours/SliderSolving";
-import { TowersSolving } from "./subbehaviours/TowersSolving";
-import { ScanSolving } from "./subbehaviours/scans/ScanSolving";
-import { ScanTreeSolving } from "./subbehaviours/scans/ScanTreeSolving";
-import { SimpleScanSolving } from "./subbehaviours/scans/SimpleScanSolving";
+import {CursorType} from "../../../lib/runescape/CursorType";
+import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
+import {ClueReader} from "./cluereader/ClueReader";
+import {ClueEntities} from "./ClueEntities";
+import {NislIcon} from "../nisl";
+import {ClueProperties} from "../theorycrafting/ClueProperties";
+import {SlideGuider, SliderSolving} from "./subbehaviours/SliderSolving";
+import {NeoSolvingSubBehaviour} from "./NeoSolvingSubBehaviour";
+import {CompassSolving} from "./subbehaviours/CompassSolving";
+import {ScanTreeSolving} from "./subbehaviours/scans/ScanTreeSolving";
+import {KnotSolving} from "./subbehaviours/KnotSolving";
+import {LockboxSolving} from "./subbehaviours/LockboxSolving";
+import {TowersSolving} from "./subbehaviours/TowersSolving";
+import {Log} from "../../../lib/util/Log";
+import {CapturedScan} from "./cluereader/capture/CapturedScan";
+import {SimpleScanSolving} from "./subbehaviours/scans/SimpleScanSolving";
+import {ScanSolving} from "./subbehaviours/scans/ScanSolving";
+import {Transportation} from "../../../lib/runescape/transportation";
+import {SettingsNormalization} from "../../../lib/util/SettingsNormalization";
+import {util} from "../../../lib/util/util";
+import {ScanTree} from "../../../lib/cluetheory/scans/ScanTree";
+import {PathOverlayControl} from "../../overlay3d/PathOverlayControl";
+import {NeoSolvingMapLayer} from "./NeoSolvingMapLayer";
+import {ClueReadingBehaviour} from "./ClueReadingBehaviour";
 import span = C.span;
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import interactionMarker = RenderingUtility.interactionMarker;
@@ -66,390 +49,54 @@ import bold = C.bold;
 import spacer = C.spacer;
 import space = C.space;
 import hboxl = C.hboxl;
-import notification = Notification.notification;
+
 import activate = TileArea.activate;
 import ClueSpot = Clues.ClueSpot;
 import log = Log.log;
 import default_interactive_area = Transportation.EntityTransportation.default_interactive_area;
 import digSpotArea = Clues.digSpotArea;
-import findBestMatch = util.findBestMatch;
 
-class NeoSolvingLayer extends GameLayer {
-  public clue_container: Widget
-  public solution_container: Widget
-  public method_selection_container: Widget
-  public compass_container: Widget
-  public scantree_container: Widget
-  public path_container: Widget
-
-  public scan_layer: ScanEditLayer
-  public generic_solution_layer: GameLayer
-  public overlay_control: PathOverlayControl
-
-  private sidebar: GameMapControl
-
-  public transport_layer: TransportLayer
-
-  constructor(private behaviour: NeoSolvingBehaviour) {
-    super();
-
-    this.transport_layer = new TransportLayer(true, { transport_policy: "none", teleport_policy: "target_only" }).addTo(this)
-
-    this.sidebar = new GameMapControl({
-      position: "top-left",
-      type: "floating",
-      no_default_styling: true
-    }, cls("ctr-neosolving-sidebar")).addTo(this)
-
-    this.sidebar.content.append(
-      new NeoSolvingLayer.MainControlBar(behaviour),
-      this.clue_container = c(),
-      this.solution_container = c(),
-      this.compass_container = c(),
-      this.method_selection_container = c(),
-      this.scantree_container = c(),
-      this.path_container = c(),
-    )
-
-    this.scan_layer = new ScanEditLayer([]).addTo(this)
-    this.generic_solution_layer = new GameLayer().addTo(this)
-  }
-
-  fit(view: TileRectangle, extend_to_closest_teleport: boolean | "setting" = false): this {
-    if (!view) return this
-
-    if (extend_to_closest_teleport == true || (extend_to_closest_teleport == "setting" && this.behaviour.app.settings.settings.solving.general.include_closest_teleport)) {
-      view = (() => {
-        const bounds = new BoundsBuilder()
-
-        bounds.addRectangle(view)
-
-        bounds.fixCenter().fixLevel()
-
-        const spots = this.transport_layer.getTeleportSpots()
-
-        const current_center = Rectangle.center(bounds.get())
-
-        const close_enough = spots.filter(e => Vector2.max_axis(Vector2.sub(e.centerOfTarget(), current_center)) < 32)
-
-        close_enough.forEach(s => bounds.addArea(s.targetArea()))
-
-        if (close_enough.length == 0) {
-          const closest = findBestMatch(spots, e => Vector2.max_axis(Vector2.sub(e.centerOfTarget(), current_center)), undefined, true)
-
-          if (closest.score < 320) bounds.addArea(closest.value.targetArea())
-        }
-
-        return bounds.get()
-      })()
-    }
-
-    let copy = lodash.cloneDeep(view)
-
-    let padding: [number, number] = null
-
-    const mapSize = this.getMap().getSize()
-
-    function score(w: number, h: number) {
-      return (w * w) * (h * h)
-    }
-
-    const wideScore = score(mapSize.x - this.sidebar.content.raw().clientWidth, mapSize.y)
-    const highScore = score(mapSize.x, mapSize.y - this.sidebar.content.raw().clientHeight)
-
-    if (wideScore > highScore) {
-      padding = [this.sidebar.content.raw().offsetWidth, 0]
-    } else {
-      padding = [0, this.sidebar.content.raw().offsetHeight]
-    }
-
-    // Minimum size the fit bounds should have, expand if necessary.
-    const min = this.behaviour.app.settings.settings.solving.general.minimum_view_size
-
-    const size = Rectangle.size(copy)
-
-    copy = TileRectangle.extend(copy, [Math.max(0, (min - size.x) / 2), Math.max(0, (min - size.y) / 2)])
-
-    this.map.fitView(copy, {
-      maxZoom: this.behaviour.app.settings.settings.solving.general.global_max_zoom,
-      paddingTopLeft: padding
-    })
-
-    return this
-  }
-
-  reset(): void {
-    this.clue_container.empty()
-    this.solution_container.empty()
-    this.compass_container.empty()
-
-    this.scan_layer.marker.setClickable(false)
-    this.scan_layer.marker.setFixedSpot(null)
-    this.scan_layer.setSpots([])
-
-    this.generic_solution_layer.clearLayers()
-  }
-}
-
-namespace NeoSolvingLayer {
-  import hbox = C.hbox;
-  import Step = Clues.Step;
-
-  class MainControlButton extends Button {
-    constructor(options: { icon?: string, text?: string, centered?: boolean }) {
-      super();
-
-      if (options.icon) {
-        this.append(c(`<img src="${options.icon}" class="ctr-neosolving-main-bar-icon">`))
-      }
-
-      if (options.centered) this.css("justify-content", "center")
-
-      if (options.text) {
-        this.append(c().text(options.text))
-
-        this.css("flex-grow", "1")
-      }
-
-      this.addClass("ctr-neosolving-main-bar-button")
-        .addClass("ctr-neosolving-main-bar-section")
-    }
-  }
-
-  export class MainControlBar extends Widget {
-    fullscreen_preference = new storage.Variable<boolean>("preferences/solve/fullscreen", () => false)
-    autosolve_preference = new storage.Variable<boolean>("preferences/solve/autosolve", () => deps().app.in_alt1)
-
-    search_bar: TextField
-    rest: Widget
-
-    search_bar_collapsible: ExpansionBehaviour
-    rest_collapsible: ExpansionBehaviour
-
-    dropdown: AbstractDropdownSelection.DropDown<{ step: Clues.Step, text_index: number }> = null
-
-    prepared_search_index: PreparedSearchIndex<{ step: Clues.Step, text_index: number }>
-
-    constructor(private parent: NeoSolvingBehaviour) {
-      super();
-
-      this.addClass("ctr-neosolving-main-bar")
-
-      this.prepared_search_index = new PreparedSearchIndex<{ step: Clues.Step, text_index: number }>(
-        clue_data.all.flatMap(step => step.text.map((_, i) => ({ step: step, text_index: i }))),
-        (step) => step.step.text[step.text_index]
-        , {
-          all: true,
-          threshold: -10000
-        }
-      )
-
-      this.append(
-        this.parent.tetracompass_only
-          ? new MainControlButton({ icon: "/assets/icons/tetracompass.png" })
-            .css("cursor", "default")
-          : new MainControlButton({ icon: "/assets/icons/glass.png" })
-            .append(
-              this.search_bar = new TextField()
-                .css("flex-grow", "1")
-                .css("font-weight", "normal")
-                .setPlaceholder("Enter Search Term...")
-                .toggleClass("nisl-textinput", false)
-                .addClass("ctr-neosolving-main-bar-search")
-                .setVisible(false)
-                .onPreview((value) => {
-                  let results = this.prepared_search_index.search(value)
-
-                  this.dropdown.setItems(results)
-                })
-            )
-            .tooltip("Search Clues")
-            .onClick((e) => {
-              e.stopPropagation()
-
-              if (this.search_bar_collapsible.isExpanded()) {
-                e.preventDefault()
-              } else {
-                this.search_bar_collapsible.expand()
-                this.search_bar.container.focus()
-                this.search_bar.setValue("")
-              }
-            }),
-        this.rest = hbox(
-          deps().app.in_alt1
-            ? undefined
-            : new MainControlButton({ icon: "/assets/icons/Alt1.png", text: "Solving available in Alt1", centered: true })
-              .tooltip("More available in Alt1")
-              .onClick(() => new Alt1Modal().show()),
-          !deps().app.in_alt1 ? undefined :
-            new MainControlButton({ icon: "/assets/icons/activeclue.png", text: "Solve", centered: true })
-              .onClick(() => this.parent.screen_reading.solveManuallyTriggered())
-              .tooltip("Read a clue from screen")
-              .setEnabled(deps().app.in_alt1),
-          !deps().app.in_alt1 ? undefined :
-            new MainControlButton({ icon: "/assets/icons/lock.png", text: "Auto-Solve", centered: true })
-              .setToggleable(true)
-              .tooltip("Continuously read clues from screen")
-              .setEnabled(deps().app.in_alt1)
-              .onToggle(v => {
-                this.parent.screen_reading.setAutoSolve(v)
-                this.autosolve_preference.set(v)
-              })
-              .setToggled(this.autosolve_preference.get())
-          ,
-          new MainControlButton({ icon: "/assets/icons/fullscreen.png", centered: true })
-            .tooltip("Hide the menu bar")
-            .setToggleable(true)
-            .onToggle(t => {
-              deps().app.menu_bar.setCollapsed(t)
-              this.fullscreen_preference.set(t)
-
-              this.parent.app.map.invalidateSize()
-            })
-            .setToggled(this.fullscreen_preference.get()),
-          new MainControlButton({ icon: "/assets/icons/settings.png", centered: true })
-            .tooltip("Open settings")
-            .onClick(() => SettingsModal.openOnPage("solving_general"))
-        ).css("flex-grow", "1"),
-      )
-
-      this.dropdown = new AbstractDropdownSelection.DropDown<{ step: Clues.Step, text_index: number }>({
-        dropdownClass: "ctr-neosolving-favourite-dropdown",
-        renderItem: e => {
-          return c().text(Step.shortString(e.step, e.text_index))
-        }
-      })
-        .onSelected(async clue => {
-          this.parent.setClueWithAutomaticMethod(clue, null)
-        })
-        .onClosed(() => {
-          this.search_bar_collapsible.collapse()
-        })
-        .setItems([])
-
-      this.search_bar_collapsible = ExpansionBehaviour.horizontal({ target: this.search_bar, starts_collapsed: true, duration: 100 })
-        .onChange(v => {
-          if (v) this.dropdown?.close()
-          else {
-            this.dropdown.setItems(this.prepared_search_index.items())
-            this.dropdown?.open(this, this.search_bar)
-          }
-
-          this.rest_collapsible.setCollapsed(!v)
-        })
-
-      this.rest_collapsible = ExpansionBehaviour.horizontal({ target: this.rest, starts_collapsed: false })
-    }
-  }
-}
-
-class ClueSolvingReadingBehaviour extends Behaviour {
-  reader: ClueReader
-
-  private autoSolve: boolean = false
-
-  constructor(private parent: NeoSolvingBehaviour) {
-    super();
-
-    this.reader = new ClueReader(this.parent.tetracompass_only)
-  }
-
-  protected begin() {
-    const interval = CaptureInterval.fromApproximateInterval(300)
-
-    this.lifetime_manager.bind(Alt1.instance().capturing.subscribe({
-      options: (time: AbstractCaptureService.CaptureTime) => ({ interval: interval, area: null }),
-      paused: () => (!this.autoSolve || this.parent.active_behaviour.get()?.pausesClueReader()),
-      handle: (img) => this.solve(img.value, true)
-    }))
-  }
-
-  protected end() {
-    this.setAutoSolve(false)
-  }
-
-  private solve(img: CapturedImage, is_autosolve: boolean): ClueReader.Result {
-    const res = this.reader.read(img)
-
-    if (res) {
-      switch (res.type) {
-        case "textclue":
-          this.parent.setClueWithAutomaticMethod(res.step, res)
-          break;
-        case "scan":
-        case "compass":
-          this.parent.setClueWithAutomaticMethod({ step: res.step, text_index: 0 }, res)
-          break;
-        case "puzzle":
-          const is_new_one = this.parent.setPuzzle(res.puzzle)
-
-          if (is_autosolve && res.puzzle.type == "slider" && is_new_one) {
-            deps().app.crowdsourcing.pushSlider(res.puzzle.puzzle)
-          }
-
-          break;
-      }
-    }
-
-    return res
-  }
-
-  setAutoSolve(v: boolean) {
-    this.autoSolve = v
-  }
-
-  async solveManuallyTriggered() {
-    if (!this.reader.initialization.isInitialized()) {
-      notification("Clue reader is not fully initialized yet.", "error").show()
-      return
-    }
-
-    try {
-      const img = await Alt1.instance().capturing.captureOnce({ options: { area: null, interval: null } })
-
-      const found = this.solve(img.value, false)
-
-      if (!found) {
-        notification("No clue found on screen.", "error").show()
-      }
-    } catch (e) {
-      notification("Error while looking for a clue. See the log (F6) for details.", "error").show()
-
-      if (e instanceof Error) {
-        log().log(e.toString())
-        log().log(e.stack)
-      } else {
-        console.error(e.toString())
-      }
-    }
-
-
-  }
-}
-
+/**
+ * NeoSolvingBehaviour is the central coordinator for clue solving.
+ * It controls the map, the {@link ClueReader}, (automatic) method selection, puzzle solvers, and more.
+ *
+ * Logic specific to different types of clues and puzzles is outsourced in subclasses of {@link NeoSolvingSubBehaviour}.
+ */
 export default class NeoSolvingBehaviour extends Behaviour {
-  layer: NeoSolvingLayer
+  public map_layer: NeoSolvingMapLayer
 
-  state: NeoSolving.ActiveState = null
-  history: NeoSolving.ActiveState[] = []
-  overlay_control: PathOverlayControl
+  // Active clue step and step history
+  private state: NeoSolving.ClueState = null
+  private history: NeoSolving.ClueState[] = []
 
   active_method: AugmentedMethod = null
   active_behaviour: SingleBehaviour<NeoSolvingSubBehaviour> = this.withSub(new SingleBehaviour<NeoSolvingSubBehaviour>())
 
-  private activateSubBehaviour(behaviour: NeoSolvingSubBehaviour) {
-    if (behaviour) {
-      behaviour.setRelatedState(this.state)
-      log().log(`Activating subbehaviour: ${behaviour.constructor.name}`, "Solving")
-    }
+  // Clue Reader that reads the game screen with Alt1 to detect clues
+  clue_reader: ClueReadingBehaviour = this.withSub(new ClueReadingBehaviour(this))
 
-    this.active_behaviour.set(behaviour)
-  }
-
-  screen_reading: ClueSolvingReadingBehaviour = this.withSub(new ClueSolvingReadingBehaviour(this))
-
+  // Controller for path display on the map, including an ui component
   public path_control = this.withSub(new PathControl(this))
-  private default_method_selector: MethodSelector = null
+
+  // Method dropdown ui component
+  private method_selector: MethodSelector = null
+
+  // Component responsible for drawing and managing ingame path overlays using Alt1Gl
+  private overlay_control: PathOverlayControl
+
+  constructor(public app: ClueTrainer, public tetracompass_only: boolean) {
+    super();
+
+    this.path_control.section_selected.on(p => {
+      if (this.active_method?.method?.type != "scantree") this.map_layer.fit(Path.bounds(p))
+      else {
+        const behaviour = this.active_behaviour.get()
+        if (behaviour instanceof ScanTreeSolving) behaviour.onSectionSelectedInPathControl(p)
+      }
+    })
+
+    this.overlay_control = new PathOverlayControl()
+  }
 
   /**
    * Get an estimate for the player's current position based on the solution of the previous clue.
@@ -476,21 +123,16 @@ export default class NeoSolvingBehaviour extends Behaviour {
     return null
   }
 
-  constructor(public app: ClueTrainer, public tetracompass_only: boolean) {
-    super();
+  private activateSubBehaviour(behaviour: NeoSolvingSubBehaviour) {
+    if (behaviour) {
+      behaviour.setRelatedState(this.state)
+      log().log(`Activating subbehaviour: ${behaviour.constructor.name}`, "Solving")
+    }
 
-    this.path_control.section_selected.on(p => {
-      if (this.active_method?.method?.type != "scantree") this.layer.fit(Path.bounds(p))
-      else {
-        const behaviour = this.active_behaviour.get()
-        if (behaviour instanceof ScanTreeSolving) behaviour.onSectionSelectedInPathControl(p)
-      }
-    })
-
-    this.overlay_control = new PathOverlayControl()
+    this.active_behaviour.set(behaviour)
   }
 
-  private pushState(state: NeoSolving.ActiveState["step"], read_result: ClueReader.Result | undefined): NeoSolving.ActiveState {
+  private pushState(state: NeoSolving.ClueState["step"], read_result: ClueReader.Result | undefined): NeoSolving.ClueState {
     const now = Date.now()
 
     if (this.state) {
@@ -512,7 +154,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
       solution_area: undefined
     }
 
-    log().log(`Created state ${this.state.state_id} (${NeoSolving.ActiveState.title(this.state)})`, "Solving")
+    log().log(`Created state ${this.state.state_id} (${NeoSolving.ClueState.title(this.state)})`, "Solving")
 
     this.history.push(this.state)
 
@@ -544,7 +186,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
     return true
   }
 
-  setSolutionArea(state: NeoSolving.ActiveState, area: TileArea): void {
+  setSolutionArea(state: NeoSolving.ClueState, area: TileArea): void {
     if (!state) return
 
     log().log(`Setting clue solution (state ${state.state_id}) to ${TileArea.toString(area)}`, "Solving")
@@ -588,7 +230,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
         break;
     }
 
-    this.layer.fit(bounds.get(), "setting")
+    this.map_layer.fit(bounds.get(), "setting")
   }
 
   /**
@@ -681,7 +323,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
                   C.npc(sol.npc, true)
                     .tooltip("Click to center")
                     .on("click", () => {
-                      this.layer.fit(TileArea.toRect(spot.range))
+                      this.map_layer.fit(TileArea.toRect(spot.range))
                     }),
                   spot.description
                     ? span(" " + spot.description)
@@ -693,7 +335,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
               const spot = sol.spots[i]
 
               new ClueEntities.TalkSolutionNpcEntity(sol.npc, spot)
-                .addTo(this.layer.generic_solution_layer)
+                .addTo(this.map_layer.generic_solution_layer)
             }
 
             break;
@@ -703,7 +345,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
                 inlineimg("/assets/icons/key.png"),
                 " ",
                 span(sol.key.answer).addClass("ctr-clickable").on("click", () => {
-                  this.layer.fit(TileArea.toRect(sol.key.area))
+                  this.map_layer.fit(TileArea.toRect(sol.key.area))
                 }),
               ))
             }
@@ -716,13 +358,13 @@ export default class NeoSolvingBehaviour extends Behaviour {
                 C.staticentity(sol.entity, true)
                   .tooltip("Click to center")
                   .on("click", () => {
-                    this.layer.fit(sol.spot)
+                    this.map_layer.fit(sol.spot)
                   })
               ))
             }
 
             new ClueEntities.SearchSolutionEntity(sol)
-              .addTo(this.layer.generic_solution_layer)
+              .addTo(this.map_layer.generic_solution_layer)
 
             break;
           case "dig":
@@ -737,7 +379,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
               ))
             }
             new ClueEntities.DigSolutionEntity(sol)
-              .addTo(this.layer.generic_solution_layer)
+              .addTo(this.map_layer.generic_solution_layer)
 
             break;
         }
@@ -753,7 +395,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
               .tooltip("Click to center")
               .addClass("ctr-clickable")
               .on("click", () => {
-                this.layer.fit(clue.hidey_hole.location)
+                this.map_layer.fit(clue.hidey_hole.location)
               })
           ))
         }
@@ -803,10 +445,10 @@ export default class NeoSolvingBehaviour extends Behaviour {
           ))
         }
 
-        new ClueEntities.EmoteAreaEntity(clue).addTo(this.layer.generic_solution_layer)
+        new ClueEntities.EmoteAreaEntity(clue).addTo(this.map_layer.generic_solution_layer)
 
         if (clue.hidey_hole) {
-          new ClueEntities.HideyHoleEntity(clue, false).addTo(this.layer.generic_solution_layer)
+          new ClueEntities.HideyHoleEntity(clue, false).addTo(this.map_layer.generic_solution_layer)
         }
       } else if (clue.type == "skilling") {
         w.append(cls("ctr-neosolving-solution-row").append(
@@ -816,11 +458,11 @@ export default class NeoSolvingBehaviour extends Behaviour {
         ))
 
         interactionMarker(activate(clue.areas[0]).center(), clue.cursor)
-          .addTo(this.layer.generic_solution_layer)
+          .addTo(this.map_layer.generic_solution_layer)
       } else if (clue.type == "scan") {
-        this.layer.scan_layer.marker.setClickable(true)
-        this.layer.scan_layer.setSpots(clue.spots)
-        this.layer.scan_layer.marker.setRadius(clue.range + 5, true)
+        this.map_layer.scan_layer.marker.setClickable(true)
+        this.map_layer.scan_layer.setSpots(clue.spots)
+        this.map_layer.scan_layer.marker.setRadius(clue.range + 5, true)
       } else if (clue.type == "compass") {
         // bounds.addTile(...clue.spots)
       }
@@ -888,7 +530,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
       }
 
       if (!w.container.is(":empty"))
-        this.layer.solution_container.append(w)
+        this.map_layer.solution_container.append(w)
     }
 
     if (fit_target) this.fitToClue()
@@ -914,7 +556,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
         }
       )
 
-      if (!read_result) this.layer.fit(TileRectangle.from(...clue.spots))
+      if (!read_result) this.map_layer.fit(TileRectangle.from(...clue.spots))
 
       this.activateSubBehaviour(behaviour)
     }
@@ -957,7 +599,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
     }
 
     this.path_control.reset()
-    this.default_method_selector?.remove()
+    this.method_selector.hide()
 
     this.active_method = null
 
@@ -998,7 +640,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
     } else {
       if (clue.type == "scan") {
         // When deselecting the active scan tree, zoom to the spots
-        if (active_behaviour instanceof ScanTreeSolving) this.layer.fit(TileRectangle.from(...clue.spots))
+        if (active_behaviour instanceof ScanTreeSolving) this.map_layer.fit(TileRectangle.from(...clue.spots))
 
         const behaviour = new SimpleScanSolving(this, clue, read_result?.type == "scan" ? read_result.scan_interface : null)
 
@@ -1012,9 +654,8 @@ export default class NeoSolvingBehaviour extends Behaviour {
         ? { clue: this.state.step.clue.step.id, spot: active_behaviour.selected_spot.value().spot.spot }
         : { clue: this.state.step.clue.step.id }
 
-      this.default_method_selector = new MethodSelector(this, clue)
-        .addClass("ctr-neosolving-solution-row")
-        .appendTo(this.layer.method_selection_container)
+      this.method_selector.setClue(clue, method)
+        .then(() => this.method_selector.show())
     }
   }
 
@@ -1043,14 +684,15 @@ export default class NeoSolvingBehaviour extends Behaviour {
   /**
    * Resets both the active clue and method, resets all displayed pathing.
    */
-  reset(state: NeoSolving.ActiveState): boolean {
+  reset(state: NeoSolving.ClueState): boolean {
     if (state != this.state) return false // The caller needs to provide the active state as a token to prevent potential timing issues
 
-    this.layer.reset()
+    this.map_layer.reset()
 
     this.path_control.reset()
     this.activateSubBehaviour(null)
-    this.default_method_selector?.remove()
+    this.overlay_control.reset()
+    this.method_selector.hide()
     this.state = null
     this.active_method = null
 
@@ -1060,16 +702,27 @@ export default class NeoSolvingBehaviour extends Behaviour {
   }
 
   protected begin() {
-    this.app.map.addGameLayer(this.layer = new NeoSolvingLayer(this))
+    this.app.map.addGameLayer(this.map_layer = new NeoSolvingMapLayer(this))
+
+    this.method_selector = new MethodSelector(this.app.favourites)
+      .addClass("ctr-neosolving-solution-row")
+      .appendTo(this.map_layer.method_selection_container)
+
+    this.method_selector.method_selected.on(m => {
+      this.app.favourites.setMethod(m.clue, m.method)
+      this.setMethod(m.method)
+      if (!m) this.fitToClue()
+    })
   }
 
   protected end() {
-    this.layer.remove()
+    this.map_layer.remove()
   }
 }
 
 export namespace NeoSolving {
-  export type ActiveState = {
+
+  export type ClueState = {
     state_id: number,
     step: {
       type: "puzzle",
@@ -1084,8 +737,8 @@ export namespace NeoSolving {
     solution_area: TileArea,
   }
 
-  export namespace ActiveState {
-    export function title(state: ActiveState): string {
+  export namespace ClueState {
+    export function title(state: ClueState): string {
       switch (state.step.type) {
         case "puzzle":
           switch (state.step.puzzle.type) {
@@ -1259,30 +912,3 @@ export namespace NeoSolving {
   }
 }
 
-class PathOverlayControl extends Behaviour {
-  private _overlay: TileMarkersOverlay | null = null;
-
-  public setIngameOverlays(paths: Path[]): void {
-    if (!Alt1GL.exists()) return;
-
-    paths = paths.filter(p => !!p && p.length > 0);
-    if (paths.length === 0) return;
-
-    this._overlay = new TileMarkersOverlay();
-    this._overlay.draw(paths);
-  }
-
-  protected begin() {
-  }
-
-  public reset() {
-    if (this._overlay) {
-      this._overlay.stop();
-      this._overlay = null;
-    }
-  }
-
-  protected end() {
-    this.reset();
-  }
-}

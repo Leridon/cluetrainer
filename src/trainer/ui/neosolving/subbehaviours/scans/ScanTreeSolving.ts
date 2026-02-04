@@ -10,7 +10,7 @@ import {TileArea} from "../../../../../lib/runescape/coordinates/TileArea";
 import {ScanRegionPolygon} from "../../ScanLayer";
 import {PathStepEntity} from "../../../map/entities/PathStepEntity";
 import {Scans} from "../../../../../lib/runescape/clues/scans";
-import PulseButton from "../../PulseButton";
+import PulseButton from "./PulseButton";
 import NeoSolvingBehaviour from "../../NeoSolvingBehaviour";
 import {TemplateResolver} from "../../../../../lib/util/TemplateResolver";
 import {util} from "../../../../../lib/util/util";
@@ -165,7 +165,7 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
         .forEach(s => bounds.addTile(s))
     }
 
-    this.parent.layer.fit(bounds.get())
+    this.parent.map_layer.fit(bounds.get())
   }
 
   private renderLayer(): void {
@@ -178,19 +178,19 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
       : Path.ends_up(node.raw.path)
 
     if (pos) {
-      this.parent.layer.getMap().floor.set(pos.level)
+      this.parent.map_layer.getMap().floor.set(pos.level)
     } else {
-      this.parent.layer.getMap().floor.set(Math.min(...node.remaining_candidates.map((c) => c.level)) as floor_t)
+      this.parent.map_layer.getMap().floor.set(Math.min(...node.remaining_candidates.map((c) => c.level)) as floor_t)
     }
 
     if (pos && node.remaining_candidates.length > 1
       && !(node.region && node.region.area && Rectangle.width(TileArea.toRect(node.region.area)) > this.method.method.tree.assumed_range * 2)) {
-      this.parent.layer.scan_layer.marker.setFixedSpot(pos)
+      this.parent.map_layer.scan_layer.marker.setFixedSpot(pos)
     } else {
-      this.parent.layer.scan_layer.marker.setFixedSpot(null)
+      this.parent.map_layer.scan_layer.marker.setFixedSpot(null)
     }
 
-    this.parent.layer.scan_layer.setActiveCandidates(node.remaining_candidates)
+    this.parent.map_layer.scan_layer.setActiveCandidates(node.remaining_candidates)
 
     new ScanRegionPolygon(ScanTree.getTargetRegion(node)).setOpacity(1).addTo(this.layer)
 
@@ -300,8 +300,8 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
 
     if (this.scan_input_control) this.scan_input_control.setActiveNode(node)
 
-    if (node.children.some(c => c.key.pulse != 3) || node.remaining_candidates.length <= 1) this.parent.layer.scan_layer.setSpotOrder(null)
-    else this.parent.layer.scan_layer.setSpotOrder(this.method.method.tree.ordered_spots)
+    if (node.children.some(c => c.key.pulse != 3) || node.remaining_candidates.length <= 1) this.parent.map_layer.scan_layer.setSpotOrder(null)
+    else this.parent.map_layer.scan_layer.setSpotOrder(this.method.method.tree.ordered_spots)
 
     this.registerSolution(
       TileArea.fromRect(
@@ -321,16 +321,16 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
   private handling_layer: GameLayer = null
 
   protected begin() {
-    this.parent.layer.scan_layer.setSpots(this.method.method.tree.ordered_spots)
-    this.parent.layer.scan_layer.marker.setRadius(this.method.method.tree.assumed_range, this.method.method.assumptions.meerkats_active)
+    this.parent.map_layer.scan_layer.setSpots(this.method.method.tree.ordered_spots)
+    this.parent.map_layer.scan_layer.marker.setRadius(this.method.method.tree.assumed_range, this.method.method.assumptions.meerkats_active)
 
-    this.tree_widget = c().appendTo(this.parent.layer.scantree_container)
+    this.tree_widget = c().appendTo(this.parent.map_layer.scantree_container)
 
-    this.layer = new GameLayer().addTo(this.parent.layer.scan_layer)
+    this.layer = new GameLayer().addTo(this.parent.map_layer.scan_layer)
 
     const self = this
 
-    this.parent.layer.scan_layer.marker.add(this.handling_layer = new class extends GameLayer {
+    this.parent.map_layer.scan_layer.marker.add(this.handling_layer = new class extends GameLayer {
       eventClick(event: GameMapMouseEvent) {
         event.onPre(() => {
           if (event.active_entity instanceof ScanEditLayer.SpotMarker) {
@@ -378,9 +378,9 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
     this.tree_widget.remove()
     this.tree_widget = null
 
-    this.parent.layer.scan_layer.marker.setFixedSpot(null)
-    this.parent.layer.scan_layer.marker.clearManualMarker()
-    this.parent.layer.scan_layer.setSpotOrder(null)
+    this.parent.map_layer.scan_layer.marker.setFixedSpot(null)
+    this.parent.map_layer.scan_layer.marker.clearManualMarker()
+    this.parent.map_layer.scan_layer.setSpotOrder(null)
 
     this.handling_layer?.remove()
 
