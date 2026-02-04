@@ -346,18 +346,21 @@ if (globalThis.alt1gl) {
 } else if (typeof __non_webpack_require__ != "undefined") {
   reloadDll();
 }
-native.debug.setLogCb(e => {
-	let m = e.match(/bufferdata (\d+)\->(\d+)/);
-	if (m) {
-		let dif = +m[1] - +m[2];
-		if (dif > 1e6) {
-			console.log("large alloc: " + dif);
-		}
-	} else {
-		if (e.match(/purged pogram (\d+)/)) { return }
-		console.info(e)
-	}
-});
+
+if (native) {
+  native.debug.setLogCb(e => {
+    let m = e.match(/bufferdata (\d+)\->(\d+)/);
+    if (m) {
+      let dif = +m[1] - +m[2];
+      if (dif > 1e6) {
+        console.log("large alloc: " + dif);
+      }
+    } else {
+      if (e.match(/purged pogram (\d+)/)) { return }
+      console.info(e)
+    }
+  });
+}
 
 export function hookFirstClient() {
 	var pids = native.debug.getExePids("rs2client.exe");
