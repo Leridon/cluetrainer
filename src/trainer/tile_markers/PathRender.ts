@@ -122,6 +122,23 @@ export function buildPathMesh(
     const rootZ = -CHUNK_SIZE / 2 * TILE_SIZE;
     const heightScaling = TILE_SIZE / 32;
 
+    const getTerrainHeight = (x: number, z: number): number => {
+        const tile_x = Math.floor(x);
+        const tile_z = Math.floor(z)
+
+        const dx = x - tile_x;
+        const dz = z - tile_z;
+
+        const tileIndex = (tile_x + tile_z * CHUNK_SIZE) * 5;
+
+        const y00 = heightData[tileIndex + 0] * heightScaling * (1 - dx) * (1 - dz);
+        const y01 = heightData[tileIndex + 1] * heightScaling * dx * (1 - dz);
+        const y10 = heightData[tileIndex + 2] * heightScaling * (1 - dx) * dz;
+        const y11 = heightData[tileIndex + 3] * heightScaling * dx * dz;
+
+        return y00 + y01 + y10 + y11
+    }
+
     const writeVertex = (
         tileX: number,
         tileZ: number,
@@ -163,7 +180,6 @@ export function buildPathMesh(
             mesh.index.push(v0, v2, v1);
         }
     };
-
 
     const drawLine = (
         from: TileCoordinates,
@@ -213,15 +229,68 @@ export function buildPathMesh(
             ? Math.max(0, effectiveLen - ARROW_HEAD_LENGTH)
             : (endHasTile ? Math.max(0, effectiveLen) : len);
 
-        const segments = Math.max(1, Math.ceil(bodyLen));
-        for (let seg = 0; seg < segments; seg++) {
-            const t0 = (seg / segments) * (bodyLen / len);
-            const t1 = ((seg + 1) / segments) * (bodyLen / len);
+        const segments = Math.max(1, Math.ceil(2 * bodyLen));
 
-            const sx = fx + dx * t0;
-            const sz = fz + dz * t0;
-            const ex = fx + dx * t1;
-            const ez = fz + dz * t1;
+        type Point = { x: number; z: number; y: number }
+
+        let control_points: { x: number; z: number; y: number }[] = [];
+
+        // Get all control points along the line
+        for (let seg = 0; seg <= segments; seg++) {
+            const t0 = (seg / segments) * (bodyLen / len);
+
+            const x = fx + dx * t0;
+            const z = fz + dz * t0;
+            const y = getTerrainHeight(x, z)
+
+            control_points.push({ x, y, z });
+        }
+
+        function convexHull(points: Point[]): Point[] {
+            // TODO: I don't think this is the most efficient algorithm.
+            //       It's O(n^2), but there should be an O(n) solution.
+            const hull: Point[] = [];
+            hull.push(points[0]);
+
+            let next_unhandled = 1;
+
+            while(next_unhandled < points.length) {
+                const last_control = hull[hull.length - 1];
+
+                let highest_inclination = Number.MIN_VALUE
+                let best_next_spot: number = -1;
+
+                for(let j = next_unhandled + 1; j < points.length; j++) {
+                    const inclination = (points[j].y - last_control.y) / Math.sqrt((points[j].x - last_control.x) ** 2 + (points[j].z - last_control.z) ** 2);
+
+                    if(inclination > highest_inclination) {
+                        highest_inclination = inclination;
+                        best_next_spot = j;
+                    }
+                }
+                if(best_next_spot != -1) {
+                    hull.push(points[best_next_spot]);
+                    next_unhandled = best_next_spot + 1;
+                } else {
+                    break;
+                }
+            }
+
+            hull.push(points[points.length - 1]);
+
+            return hull;
+        }
+
+        control_points = convexHull(control_points);
+
+        for (let i = 1; i < control_points.length; i++) {
+            const segment_start = control_points[i - 1];
+            const segment_end = control_points[i];
+
+            const sx = segment_start.x;
+            const sz = segment_start.z;
+            const ex = segment_end.x;
+            const ez = segment_end.z;
 
             const v0 = writeVertex(Math.floor(sx), Math.floor(sz), sx - Math.floor(sx) - perpX, LINE_HEIGHT, sz - Math.floor(sz) - perpZ, color);
             const v1 = writeVertex(Math.floor(sx), Math.floor(sz), sx - Math.floor(sx) + perpX, LINE_HEIGHT, sz - Math.floor(sz) + perpZ, color);
