@@ -519,10 +519,12 @@ export class GlClueReader extends Behaviour {
       framecooldown: 600,
     }, async renders => {
       const playerPosition = await playerPositionReader.getPosition();
-      console.log(`Player position: ${playerPosition.x}:${playerPosition.z}:${playerPosition.y}`)
+      if(playerPosition) {
+        console.log(`Player position: ${playerPosition.x}:${playerPosition.z}:${playerPosition.y}`)
+      } else {
+        console.log("Player position not found.");
+      }
     });
-
-
 
     //todo: extract to a class eg CompassReader
     // const cache = new BufferCache();
