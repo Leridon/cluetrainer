@@ -1,8 +1,8 @@
 
-import { mat4 } from "gl-matrix";
-import { Submodel } from "./avautils";
 import { boundMethod } from "autobind-decorator";
+import { mat4 } from "gl-matrix";
 import { newDragHandler } from "../../util/util";
+import { Submodel } from "./avautils";
 
 export type ModelInfo = {
 	enabled: boolean,
@@ -348,8 +348,8 @@ export class AvaViewer {
 			//fix uniforms
 			var subview = mat4.clone(modeltr);
 			mat4.mul(subview, subview, model.model.modeltransform);
-			this.gl.uniformMatrix4fv(this.uniforms.uModelMatrix, false, subview);
-			this.gl.uniformMatrix4fv(this.uniforms.uViewMatrix, false, viewtr);
+			this.gl.uniformMatrix4fv(this.uniforms.uModelMatrix, false, subview as Float32Array);
+			this.gl.uniformMatrix4fv(this.uniforms.uViewMatrix, false, viewtr as Float32Array);
 
 			//update vertex attribs
 			this.gl.bindBuffer(this.gl.ARRAY_BUFFER, model.glboundVertexBuffer);

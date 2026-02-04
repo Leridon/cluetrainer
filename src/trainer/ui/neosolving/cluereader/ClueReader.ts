@@ -27,6 +27,7 @@ import ClueFont from "./ClueFont";
 import { CompassReader } from "./CompassReader";
 import { KnotReader } from "./KnotReader";
 import { LockBoxReader } from "./LockBoxReader";
+import { PlayerPositionReader } from "./PlayerPositionReader";
 import { SlideReader, SliderReader } from "./SliderReader";
 import { TowersReader } from "./TowersReader";
 import stringSimilarity = util.stringSimilarity;
@@ -509,35 +510,37 @@ export class GlClueReader extends Behaviour {
   stream: StreamRenderObject
 
   protected begin() {
-    //const playerPositionReader = new PlayerPositionReader();
-
-    // this.stream = window.alt1gl.streamRenderCalls({
-    //   features: ["uniforms"],
-    //   framecooldown: 600,
-    // }, async renders => {
-    //   const playerPosition = playerPositionReader.getPosition();
-    //   console.log(`Player position: ${playerPosition}`)
-    // });
-
-
-
-    //todo: commented out
     const cache = new BufferCache();
+    const playerPositionReader = new PlayerPositionReader(cache);
+
     this.stream = Alt1GL.instance().native.streamRenderCalls({
-      vertexObjectId: 1657,
-      features: ["full"]
-    }, (r) => {
-      r.forEach(s => {
-        const mesh = cache.getMeshData(s)
+      features: ["uniforms"],
+      //todo: set the value from settings ? or experiment to see what is proper for us
+      framecooldown: 600,
+    }, async renders => {
+      const playerPosition = playerPositionReader.getPosition();
+      console.log(`Player position: ${playerPosition}`)
+    });
 
-        if (!mesh) return
 
-        // The angle is very accurate but still needs to be calibrated. Seems off by up to multiple degrees
-        const angle = Angles.normalizeAngle(Math.PI / 2 + mesh.position2d.yRotation)
 
-        console.log(`Frame ${s.framenr}, Angle: ${radiansToDegrees(angle)}°`)
-      })
-    })
+    //todo: extract to a class eg CompassReader
+    // const cache = new BufferCache();
+    // this.stream = Alt1GL.instance().native.streamRenderCalls({
+    //   vertexObjectId: 1657,
+    //   features: ["full"]
+    // }, (r) => {
+    //   r.forEach(s => {
+    //     const mesh = cache.getMeshData(s)
+
+    //     if (!mesh) return
+
+    //     // The angle is very accurate but still needs to be calibrated. Seems off by up to multiple degrees
+    //     const angle = Angles.normalizeAngle(Math.PI / 2 + mesh.position2d.yRotation)
+
+    //     console.log(`Frame ${s.framenr}, Angle: ${radiansToDegrees(angle)}°`)
+    //   })
+    // })
   }
 
   protected end() {

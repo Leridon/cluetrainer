@@ -1,8 +1,8 @@
 import { ImageDetect } from "alt1";
 import * as OCR from "alt1/ocr";
 import { FontDefinition } from "alt1/ocr";
+import { ScreenRectangle } from "lib/alt1/ScreenRectangle";
 import { async_lazy, Lazy, lazy, LazyAsync } from "../../../../../lib/Lazy";
-import { ScreenRectangle } from "../../../../../lib/alt1/ScreenRectangle";
 import { CapturedImage, NeedleImage } from "../../../../../lib/alt1/capture";
 import { Finder } from "../../../../../lib/alt1/capture/Finder";
 import { Alt1Overlay } from "../../../../../lib/alt1/overlay/Alt1Overlay";
@@ -10,24 +10,22 @@ import { Alt1OverlayDrawCalls } from "../../../../../lib/alt1/overlay/Alt1Overla
 import { Vector2 } from "../../../../../lib/math";
 
 export class CapturedModal {
-  get title_bar() {
-    return this.body.parent.getSubSection(
-      ScreenRectangle.move(this.body.relativeRectangle(), CapturedModal.TITLE_BAR_OFFSET_FROM_BODY, {x: this.body.size.x, y: 24})
-    ).setName("Title")
-  }
+  title_bar: CapturedImage
 
   private _title: Lazy<string> = lazy(() => {
-    if(!this.font) return ""
+    if (!this.font) return ""
 
     const title_bar = this.title_bar.getData();
 
     return OCR.readSmallCapsBackwards(title_bar, this.font, [[240, 190, 121]], title_bar.width / 2, 16, title_bar.width / 2, 1).text;
   })
-
   constructor(
     public readonly body: CapturedImage,
     private readonly font: FontDefinition
-    ) {
+  ) {
+    this.title_bar = this.body.parent.getSubSection(
+      ScreenRectangle.move(this.body.relativeRectangle(), CapturedModal.TITLE_BAR_OFFSET_FROM_BODY, {x: this.body.size.x, y: 24})
+    ).setName("Title")
   }
 
   title(): string {
@@ -107,7 +105,7 @@ export namespace CapturedModal {
     }
   })
 
-  export const font = async_lazy(async ()=> {
+  export const font = async_lazy(async () => {
     const img = await ImageDetect.imageDataFromUrl("/alt1anchors/modal/titlefont.png")
 
     return OCR.loadFontImage(img, {

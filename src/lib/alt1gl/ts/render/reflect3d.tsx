@@ -112,7 +112,7 @@ export function mapFloorVertices(renders: RenderFunc[]) {
 }
 
 export function parseGameState(renders: patchrs.RenderInvocation[], cache: BufferCache) {
-	return renders.map(q => cache.getMeshData(q)).filter((q): q is WorldMesh => !!q);
+	return renders.map(q => cache.getMeshData(q)).filter((q): q is WorldMesh => q !== null);
 }
 
 export function parseGameStateStructure(renders: patchrs.RenderInvocation[], cache: BufferCache) {
