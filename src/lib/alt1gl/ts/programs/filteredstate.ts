@@ -661,6 +661,8 @@ export class FilteredGameState extends TypedEmitter<{ update: void }> {
 
 	@boundMethod
 	updateRenders(renders: patchrs.RenderInvocation[]) {
+		this.lastreflect = getGameState(renders, this.cachedBuffers);
+
 		console.log("updaterenders", renders.length, renders.filter(q => !this.isRenderSkipped(q)).length);
 		let foundview = false;
 		for (let render of renders) {
