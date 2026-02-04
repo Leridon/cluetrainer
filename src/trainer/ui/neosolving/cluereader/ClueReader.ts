@@ -1,36 +1,33 @@
 import * as OCR from "alt1/ocr";
-import { FontDefinition } from "alt1/ocr";
-import { Alt1GL } from "lib/alt1gl/Alt1GL";
-import { BufferCache } from "lib/alt1gl/ts/programs/filteredstate";
-import { delay } from "lib/alt1gl/ts/util/util";
-import { StreamRenderObject } from "../../../../../../alt1gl/ts/util/patchrs_napi";
-import { clue_data } from "../../../../data/clues";
-import { Alt1Color } from "../../../../lib/alt1/Alt1Color";
-import { CapturedImage } from "../../../../lib/alt1/capture";
-import { Finder } from "../../../../lib/alt1/capture/Finder";
-import { LegacyOverlayGeometry } from "../../../../lib/alt1/LegacyOverlayGeometry";
-import { CelticKnots } from "../../../../lib/cluetheory/CelticKnots";
-import { Sliders } from "../../../../lib/cluetheory/Sliders";
-import { Rectangle, Vector2 } from "../../../../lib/math";
-import { Angles } from "../../../../lib/math/Angles";
-import { Clues } from "../../../../lib/runescape/clues";
+import {FontDefinition} from "alt1/ocr";
+import {BufferCache, FilteredGameState} from "lib/alt1gl/ts/programs/filteredstate";
+import {StreamRenderObject} from "../../../../../../alt1gl/ts/util/patchrs_napi";
+import {clue_data} from "../../../../data/clues";
+import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
+import {CapturedImage} from "../../../../lib/alt1/capture";
+import {Finder} from "../../../../lib/alt1/capture/Finder";
+import {LegacyOverlayGeometry} from "../../../../lib/alt1/LegacyOverlayGeometry";
+import {CelticKnots} from "../../../../lib/cluetheory/CelticKnots";
+import {Sliders} from "../../../../lib/cluetheory/Sliders";
+import {Rectangle, Vector2} from "../../../../lib/math";
+import {Clues} from "../../../../lib/runescape/clues";
 import Behaviour from "../../../../lib/ui/Behaviour";
-import { Log } from "../../../../lib/util/Log";
-import { util } from "../../../../lib/util/util";
+import {Log} from "../../../../lib/util/Log";
+import {util} from "../../../../lib/util/util";
 import * as oldlib from "../../../../skillbertssolver/cluesolver/oldlib";
-import { comparetiledata } from "../../../../skillbertssolver/cluesolver/oldlib";
-import { Notification } from "../../NotificationBar";
-import { CapturedCompass } from "./capture/CapturedCompass";
-import { CapturedModal } from "./capture/CapturedModal";
-import { CapturedScan } from "./capture/CapturedScan";
-import { CapturedSliderInterface } from "./capture/CapturedSlider";
+import {comparetiledata} from "../../../../skillbertssolver/cluesolver/oldlib";
+import {Notification} from "../../NotificationBar";
+import {CapturedCompass} from "./capture/CapturedCompass";
+import {CapturedModal} from "./capture/CapturedModal";
+import {CapturedScan} from "./capture/CapturedScan";
+import {CapturedSliderInterface} from "./capture/CapturedSlider";
 import ClueFont from "./ClueFont";
-import { CompassReader } from "./CompassReader";
-import { KnotReader } from "./KnotReader";
-import { LockBoxReader } from "./LockBoxReader";
-import { PlayerPositionReader } from "./PlayerPositionReader";
-import { SlideReader, SliderReader } from "./SliderReader";
-import { TowersReader } from "./TowersReader";
+import {CompassReader} from "./CompassReader";
+import {KnotReader} from "./KnotReader";
+import {LockBoxReader} from "./LockBoxReader";
+import {PlayerPositionReader} from "./PlayerPositionReader";
+import {SlideReader, SliderReader} from "./SliderReader";
+import {TowersReader} from "./TowersReader";
 import stringSimilarity = util.stringSimilarity;
 import notification = Notification.notification;
 import findBestMatch = util.findBestMatch;
@@ -39,7 +36,6 @@ import log = Log.log;
 import cleanedJSON = util.cleanedJSON;
 import async_init = util.async_init;
 import AsyncInitialization = util.AsyncInitialization;
-import radiansToDegrees = Angles.radiansToDegrees;
 
 const CLUEREADERDEBUG = false
 
@@ -406,7 +402,7 @@ export class ClueReader {
 }
 
 export namespace ClueReader {
-  import dropWhileBidirectional = util.dropWhileBidirectional;
+
   export type ModalType = "towers" | "lockbox" | "textclue" | "knot" | "map"
 
   export namespace ModalType {
@@ -509,29 +505,20 @@ export namespace ClueReader {
 
 export class GlClueReader extends Behaviour {
   stream: StreamRenderObject
+  private state: FilteredGameState;
+  private position_reader: PlayerPositionReader
 
   protected async begin() {
     const cache = new BufferCache();
-    const playerPositionReader = new PlayerPositionReader(cache);
+    this.state = new FilteredGameState(cache);
+    this.position_reader = new PlayerPositionReader(this.state)
 
-    this.stream = Alt1GL.instance().native.streamRenderCalls({
-      features: ["uniforms"],
-      //todo: set the value from settings ? or experiment to see what is proper for us
-      framecooldown: 600,
-    }, async renders => {
-     
-    });
+    // Start tracking game state. At the moment, this is the "main loop" for capturing. Should probably replace with our own.
+    this.state.track()
 
-    // the filtered state is using internal renderer stream
-    while(true) {
-      const playerPosition = await playerPositionReader.getPosition();
-      if (playerPosition) {
-        console.log(`Player position: ${playerPosition.x}:${playerPosition.z}:${playerPosition.y}`)
-      } else {
-        console.log("Player position not found.");
-      }
-      await delay(600)
-    }
+    this.state.on("update", () => {
+      console.log("State updated")
+    })
 
     //todo: extract to a class eg CompassReader
     // const cache = new BufferCache();
