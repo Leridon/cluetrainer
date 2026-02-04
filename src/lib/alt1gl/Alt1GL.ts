@@ -1,28 +1,23 @@
 import {lazy} from "../Lazy";
-import * as patch from "../alt1gl/ts/util/patchrs_napi";
+import {type Alt1GlClient} from "./ts/util/patchrs_napi";
 
 declare global {
   interface Window {
-    alt1gl: typeof patch.native;
+    alt1gl: Alt1GlClient;
   }
 }
 
 export class Alt1GL {
 
-  constructor(public readonly native: patch.Alt1GlClient) {
+  constructor(public readonly native: Alt1GlClient) {
     console.log("Height: " + native.getRsHeight())
     console.log("Width: " + native.getRsWidth())
   }
 
   static _instance = lazy(() => {
-    function getApi() {
-
-      //this will probably be something like window.alt1.openGlClient() in the future
-      patch.hookFirstClient();
-      return patch.native;
+    if(!window.alt1gl) {
+      throw new Error("Alt1GL is not available. Make sure Clue Trainer runs within an alt1gl environment.")
     }
-
-    globalThis.alt1gl = getApi();
 
     return new Alt1GL(globalThis.alt1gl)
   })
