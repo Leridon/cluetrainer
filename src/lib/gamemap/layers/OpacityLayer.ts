@@ -1,20 +1,15 @@
 import * as leaflet from "leaflet"
-import {Layer, LayerOptions} from "leaflet"
+import {Layer} from "leaflet"
 
 export class OpacityGroup extends leaflet.FeatureGroup {
-
-  options: LayerOptions & {
-    opacity: number
-  }  = undefined
+  private opacity: number = 1
 
   constructor() {
     super();
-
-    this.options.opacity = 1
   }
 
   setOpacity(opacity: number): this {
-    this.options.opacity = opacity
+    this.opacity = opacity
 
     this.getTooltip()?.setOpacity(opacity)
 
@@ -60,10 +55,14 @@ export class OpacityGroup extends leaflet.FeatureGroup {
       stroke: number,
       fill?: number
     } {
-      if (layer instanceof OpacityGroup
-        || layer instanceof leaflet.Marker
+      if (layer instanceof leaflet.Marker
         || layer instanceof leaflet.Tooltip
-      ) return {stroke: layer.options.opacity}
+      ) return {
+        stroke: layer.options.opacity
+      }
+      else if (layer instanceof OpacityGroup) return {
+        stroke: layer.opacity
+      }
       else if (layer instanceof leaflet.Polyline) return {
         stroke: layer.options.opacity,
         fill: layer.options.fillOpacity
