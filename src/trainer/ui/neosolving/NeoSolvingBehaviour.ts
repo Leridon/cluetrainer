@@ -51,6 +51,9 @@ import {Rectangle, Vector2} from "../../../lib/math";
 import {SettingsNormalization} from "../../../lib/util/SettingsNormalization";
 import {util} from "../../../lib/util/util";
 import {Alt1} from "../../../lib/alt1/Alt1";
+import {GlOverlay} from "../../../lib/alt1gl/ts/util/patchrs_napi";
+import {Alt1GL} from "../../../lib/alt1gl/Alt1GL";
+import {ScanTree} from "../../../lib/cluetheory/scans/ScanTree";
 import span = C.span;
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import interactionMarker = RenderingUtility.interactionMarker;
@@ -81,6 +84,7 @@ class NeoSolvingLayer extends GameLayer {
 
   public scan_layer: ScanEditLayer
   public generic_solution_layer: GameLayer
+  public overlay_control: PathOverlayControl
 
   private sidebar: GameMapControl
 
@@ -428,6 +432,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
 
   state: NeoSolving.ActiveState = null
   history: NeoSolving.ActiveState[] = []
+  overlay_control: PathOverlayControl
 
   active_method: AugmentedMethod = null
   active_behaviour: SingleBehaviour<NeoSolvingSubBehaviour> = this.withSub(new SingleBehaviour<NeoSolvingSubBehaviour>())
@@ -481,6 +486,8 @@ export default class NeoSolvingBehaviour extends Behaviour {
         if (behaviour instanceof ScanTreeSolving) behaviour.onSectionSelectedInPathControl(p)
       }
     })
+
+    this.overlay_control = new PathOverlayControl()
   }
 
   private pushState(state: NeoSolving.ActiveState["step"], read_result: ClueReader.Result | undefined): NeoSolving.ActiveState {
@@ -975,8 +982,18 @@ export default class NeoSolvingBehaviour extends Behaviour {
         this.activateSubBehaviour(
           new ScanTreeSolving(this, method as AugmentedMethod<ScanTreeMethod, Clues.Scan>, scan_interface, this.app.settings.observable.scans)
         )
+
+        const paths: Path[] = []
+        ScanTree.traverse(method.method.tree.root, n => paths.push(n.path))
+
+        this.overlay_control.setIngameOverlays(paths)
       } else if (method.method.type == "general_path") {
         this.path_control.setMethod(method as AugmentedMethod<GenericPathMethod>)
+        this.overlay_control.setIngameOverlays([
+          method.method.pre_path,
+          method.method.main_path,
+          method.method.post_path,
+        ])
       }
     } else {
       if (clue.type == "scan") {
@@ -1239,5 +1256,36 @@ export namespace NeoSolving {
       compass: CompassSolving.Settings.normalize,
       scans: ScanSolving.Settings.normalize
     })
+  }
+}
+
+class PathOverlayControl extends Behaviour {
+  private _active_overlays: GlOverlay[] = [];
+
+  public setIngameOverlays(paths: Path[]): void {
+    if (!Alt1GL.exists()) return // Ignore everything if Alt1Gl is not available
+
+    paths = paths.filter(p => !!p)
+
+    function render(p: Path): GlOverlay {
+      // TODO: Actually integrate with the rest
+
+      return null
+    }
+
+    this._active_overlays = paths.map(render)
+  }
+
+  protected begin() {
+  }
+
+  public reset() {
+    this._active_overlays.forEach(o => o.stop())
+    this._active_overlays = []
+  }
+
+  protected end() {
+    // Make sure to remove rendered overlays when ending
+    this.reset()
   }
 }
