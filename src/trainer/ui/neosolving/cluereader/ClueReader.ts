@@ -26,7 +26,7 @@ import {Finder} from "../../../../lib/alt1/capture/Finder";
 import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
 import Behaviour from "../../../../lib/ui/Behaviour";
 import {Alt1GL} from "../../../../lib/alt1gl/Alt1GL";
-import {StreamRenderObject} from "../../../../../../alt1gl/ts/util/patchrs_napi";
+import {StreamRenderObject} from "../../../../lib/alt1gl/ts/util/patchrs_napi";
 import {BufferCache} from "../../../../lib/alt1gl/ts/programs/filteredstate";
 import {Quaternion, Vector3} from "three";
 import {Angles} from "../../../../lib/math/Angles";
