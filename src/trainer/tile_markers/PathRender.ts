@@ -1,7 +1,8 @@
 import { chunksize } from "../../lib/alt1gl/ts/overlays/tilemarkers";
 import { tilesize } from "../../lib/alt1gl/ts/render/reflect3d";
-import { TileCoordinates } from "../../lib/runescape/coordinates";
+import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
 import { Path } from "../../lib/runescape/pathing";
+import {TileHeightData} from "./TileHeightData";
 
 type AbilityName = "surge" | "escape" | "dive" | "barge" | "run" | "teleport" | "transport" | "powerburst" | "redclick";
 type ColorRGBA = [number, number, number, number];
@@ -42,8 +43,8 @@ function stepHasCoordinates(step: Path.Step | undefined): boolean {
     }
 }
 
-export function getPathLevels(path: Path): Set<number> {
-    const levels = new Set<number>();
+export function getPathLevels(path: Path): Set<floor_t> {
+    const levels = new Set<floor_t>();
 
     for (const step of path) {
         switch (step.type) {
@@ -106,13 +107,14 @@ interface MeshBuilder {
     vertexIndex: number;
 }
 
-export function buildPathMesh(
+export async function buildPathMesh(
     path: Path,
     heightData: Uint16Array,
     chunkX: number,
     chunkZ: number,
-    level: number = 0
-): MeshData | null {
+    level: floor_t,
+    tileHeightData: TileHeightData
+): Promise<MeshData | null> {
     if (!path || path.length === 0) return null;
 
     const mesh: MeshBuilder = { pos: [], color: [], index: [], vertexIndex: 0 };
@@ -120,44 +122,64 @@ export function buildPathMesh(
     const rootZ = -CHUNK_SIZE / 2 * TILE_SIZE;
     const heightScaling = TILE_SIZE / 32;
 
-    const getTerrainHeight = (x: number, z: number): number => {
-        const tile_x = Math.floor(x);
-        const tile_z = Math.floor(z)
+    const getTerrainHeight = async (local_x: number, local_z: number): Promise<number> => {
+        const tile_x = Math.floor(local_x);
+        const tile_z = Math.floor(local_z)
 
-        const dx = x - tile_x;
-        const dz = z - tile_z;
+        const dx = local_x - tile_x;
+        const dz = local_z - tile_z;
+
+        const tile: TileCoordinates = {
+          x: tile_x + CHUNK_SIZE * chunkX,
+          y: tile_z + CHUNK_SIZE * chunkZ,
+          level: level
+        }
 
         const tileIndex = (tile_x + tile_z * CHUNK_SIZE) * 5;
 
-        const y00 = heightData[tileIndex + 0] * heightScaling * (1 - dx) * (1 - dz);
-        const y01 = heightData[tileIndex + 1] * heightScaling * dx * (1 - dz);
-        const y10 = heightData[tileIndex + 2] * heightScaling * (1 - dx) * dz;
-        const y11 = heightData[tileIndex + 3] * heightScaling * dx * dz;
+        const center_from_class = await tileHeightData.getTile(tile, "center")
 
-        return y00 + y01 + y10 + y11
+        if(center_from_class != heightData[tileIndex]) {
+          console.log(`Difference ${center_from_class} vs ${heightData[tileIndex]}`)
+        } else {
+          console.log("Same")
+        }
+
+        return await tileHeightData.getTile(tile, "center") * heightScaling
+
+        return (
+          await tileHeightData.getTile(tile, "sw") * (1 - dx) * (1 - dz) +
+          heightData[tileIndex + 1] * dx * (1 - dz) +
+          heightData[tileIndex + 2] * (1 - dx) * dz +
+          heightData[tileIndex + 3] * dx * dz
+        ) * heightScaling
+
+
+        const y00 = heightData[tileIndex + 0] * (1 - dx) * (1 - dz);
+        const y01 = heightData[tileIndex + 1] * dx * (1 - dz);
+        const y10 = heightData[tileIndex + 2] * (1 - dx) * dz;
+        const y11 = heightData[tileIndex + 3] * dx * dz;
+
+        return (y00 + y01 + y10 + y11)
     }
 
-    const writeVertex = (
+    const writeVertex = async (
         tileX: number,
         tileZ: number,
         dx: number,
         dy: number,
         dz: number,
         color: ColorRGBA | number[]
-    ): number => {
+    ): Promise<number> => {
         if (tileX < 0 || tileZ < 0 || tileX >= CHUNK_SIZE || tileZ >= CHUNK_SIZE) {
             return -1;
         }
 
-        const tileIndex = (tileX + tileZ * CHUNK_SIZE) * 5;
-        const y00 = heightData[tileIndex + 0] * heightScaling * (1 - dx) * (1 - dz);
-        const y01 = heightData[tileIndex + 1] * heightScaling * dx * (1 - dz);
-        const y10 = heightData[tileIndex + 2] * heightScaling * (1 - dx) * dz;
-        const y11 = heightData[tileIndex + 3] * heightScaling * dx * dz;
+        const height = await getTerrainHeight(tileX + dx, tileZ + dz);
 
         mesh.pos.push(
             (tileX + dx) * TILE_SIZE + rootX,
-            y00 + y01 + y10 + y11 + dy * TILE_SIZE,
+            height + dy * TILE_SIZE,
             (tileZ + dz) * TILE_SIZE + rootZ
         );
         mesh.color.push(...color);
@@ -179,7 +201,7 @@ export function buildPathMesh(
         }
     };
 
-    const drawLine = (
+    const drawLine = async (
         from: TileCoordinates,
         to: TileCoordinates,
         color: ColorRGBA,
@@ -187,7 +209,7 @@ export function buildPathMesh(
         showArrow: boolean,
         startHasTile: boolean,
         endHasTile: boolean
-    ): void => {
+    ): Promise<void> => {
         if (from.level !== level || to.level !== level) return;
 
         let fx = from.x - chunkX * CHUNK_SIZE + 0.5;
@@ -239,7 +261,7 @@ export function buildPathMesh(
 
             const x = fx + dx * t0;
             const z = fz + dz * t0;
-            const y = getTerrainHeight(x, z)
+            const y = await getTerrainHeight(x, z)
 
             control_points.push({ x, y, z });
         }
@@ -290,10 +312,10 @@ export function buildPathMesh(
             const ex = segment_end.x;
             const ez = segment_end.z;
 
-            const v0 = writeVertex(Math.floor(sx), Math.floor(sz), sx - Math.floor(sx) - perpX, LINE_HEIGHT, sz - Math.floor(sz) - perpZ, color);
-            const v1 = writeVertex(Math.floor(sx), Math.floor(sz), sx - Math.floor(sx) + perpX, LINE_HEIGHT, sz - Math.floor(sz) + perpZ, color);
-            const v2 = writeVertex(Math.floor(ex), Math.floor(ez), ex - Math.floor(ex) + perpX, LINE_HEIGHT, ez - Math.floor(ez) + perpZ, color);
-            const v3 = writeVertex(Math.floor(ex), Math.floor(ez), ex - Math.floor(ex) - perpX, LINE_HEIGHT, ez - Math.floor(ez) - perpZ, color);
+            const v0 = await writeVertex(Math.floor(sx), Math.floor(sz), sx - Math.floor(sx) - perpX, LINE_HEIGHT, sz - Math.floor(sz) - perpZ, color);
+            const v1 = await writeVertex(Math.floor(sx), Math.floor(sz), sx - Math.floor(sx) + perpX, LINE_HEIGHT, sz - Math.floor(sz) + perpZ, color);
+            const v2 = await writeVertex(Math.floor(ex), Math.floor(ez), ex - Math.floor(ex) + perpX, LINE_HEIGHT, ez - Math.floor(ez) + perpZ, color);
+            const v3 = await writeVertex(Math.floor(ex), Math.floor(ez), ex - Math.floor(ex) - perpX, LINE_HEIGHT, ez - Math.floor(ez) - perpZ, color);
 
             pushQuad(v0, v1, v2, v3);
         }
@@ -314,16 +336,16 @@ export function buildPathMesh(
             const tipX = fx + dirX * effectiveLen;
             const tipZ = fz + dirZ * effectiveLen;
 
-            const v0 = writeVertex(Math.floor(base1x), Math.floor(base1z), base1x - Math.floor(base1x), ARROW_HEAD_HEIGHT, base1z - Math.floor(base1z), color);
-            const v1 = writeVertex(Math.floor(base2x), Math.floor(base2z), base2x - Math.floor(base2x), ARROW_HEAD_HEIGHT, base2z - Math.floor(base2z), color);
-            const v2 = writeVertex(Math.floor(tipX), Math.floor(tipZ), tipX - Math.floor(tipX), ARROW_HEAD_HEIGHT, tipZ - Math.floor(tipZ), color);
+            const v0 = await writeVertex(Math.floor(base1x), Math.floor(base1z), base1x - Math.floor(base1x), ARROW_HEAD_HEIGHT, base1z - Math.floor(base1z), color);
+            const v1 = await writeVertex(Math.floor(base2x), Math.floor(base2z), base2x - Math.floor(base2x), ARROW_HEAD_HEIGHT, base2z - Math.floor(base2z), color);
+            const v2 = await writeVertex(Math.floor(tipX), Math.floor(tipZ), tipX - Math.floor(tipX), ARROW_HEAD_HEIGHT, tipZ - Math.floor(tipZ), color);
 
             pushTriangle(v0, v1, v2);
         }
     };
 
 
-    const drawTileMarker = (tile: TileCoordinates, color: ColorRGBA): void => {
+    const drawTileMarker = async (tile: TileCoordinates, color: ColorRGBA): Promise<void> => {
         if (tile.level !== level) return;
 
         const lx = tile.x - chunkX * CHUNK_SIZE;
@@ -331,23 +353,23 @@ export function buildPathMesh(
 
         if (lx < 0 || lz < 0 || lx >= CHUNK_SIZE || lz >= CHUNK_SIZE) return;
 
-        const drawBorderQuad = (x0: number, z0: number, x1: number, z1: number): void => {
-            const v0 = writeVertex(lx, lz, x0, TILE_MARKER_HEIGHT, z0, color);
-            const v1 = writeVertex(lx, lz, x1, TILE_MARKER_HEIGHT, z0, color);
-            const v2 = writeVertex(lx, lz, x1, TILE_MARKER_HEIGHT, z1, color);
-            const v3 = writeVertex(lx, lz, x0, TILE_MARKER_HEIGHT, z1, color);
+        const drawBorderQuad = async (x0: number, z0: number, x1: number, z1: number): Promise<void> => {
+            const v0 = await writeVertex(lx, lz, x0, TILE_MARKER_HEIGHT, z0, color);
+            const v1 = await writeVertex(lx, lz, x1, TILE_MARKER_HEIGHT, z0, color);
+            const v2 = await writeVertex(lx, lz, x1, TILE_MARKER_HEIGHT, z1, color);
+            const v3 = await writeVertex(lx, lz, x0, TILE_MARKER_HEIGHT, z1, color);
             pushQuad(v0, v1, v2, v3);
         };
 
         const t = TILE_MARKER_BORDER;
-        drawBorderQuad(0, 0, 1, t);
-        drawBorderQuad(0, 1 - t, 1, 1);
-        drawBorderQuad(0, 0, t, 1);
-        drawBorderQuad(1 - t, 0, 1, 1);
+        await drawBorderQuad(0, 0, 1, t);
+        await drawBorderQuad(0, 1 - t, 1, 1);
+        await drawBorderQuad(0, 0, t, 1);
+        await drawBorderQuad(1 - t, 0, 1, 1);
     };
 
 
-    const drawBeamMarker = (tile: TileCoordinates, color: ColorRGBA): void => {
+    const drawBeamMarker = async (tile: TileCoordinates, color: ColorRGBA): Promise<void> => {
         if (tile.level !== level) return;
 
         const lx = tile.x - chunkX * CHUNK_SIZE;
@@ -380,8 +402,8 @@ export function buildPathMesh(
             const cos = Math.cos(angle);
             const sin = Math.sin(angle);
 
-            const bottomV = writeVertex(lx, lz, centerX + cos * bottomRadius, 0, centerZ + sin * bottomRadius, bottomColor);
-            const topV = writeVertex(lx, lz, topCenterX + cos * topRadius, beamHeight, topCenterZ + sin * topRadius, topColor);
+            const bottomV = await writeVertex(lx, lz, centerX + cos * bottomRadius, 0, centerZ + sin * bottomRadius, bottomColor);
+            const topV = await writeVertex(lx, lz, topCenterX + cos * topRadius, beamHeight, topCenterZ + sin * topRadius, topColor);
 
             bottomVerts.push(bottomV);
             topVerts.push(topV);
@@ -392,7 +414,7 @@ export function buildPathMesh(
             pushQuad(bottomVerts[i], bottomVerts[next], topVerts[next], topVerts[i]);
         }
 
-        const bottomCenter = writeVertex(lx, lz, centerX, 0, centerZ, [255, 0, 0, 100]);
+        const bottomCenter = await writeVertex(lx, lz, centerX, 0, centerZ, [255, 0, 0, 100]);
         for (let i = 0; i < segments; i++) {
             const next = (i + 1) % segments;
             if (bottomCenter >= 0 && bottomVerts[i] >= 0 && bottomVerts[next] >= 0) {
@@ -451,18 +473,18 @@ export function buildPathMesh(
 
                 const startHasTile = isSurge ? true : true;
 
-                drawLine(step.from, step.to, color, 0.05, true, startHasTile, endHasTile);
+                await drawLine(step.from, step.to, color, 0.05, true, startHasTile, endHasTile);
 
                 if (isSurge) {
                     if (!prevStepDrewStartTile) {
-                        drawTileMarker(step.from, color);
+                        await drawTileMarker(step.from, color);
                     }
                     if (endHasTile) {
-                        drawTileMarker(step.to, color);
+                        await drawTileMarker(step.to, color);
                     }
                 } else {
-                    drawTileMarker(step.from, color);
-                    drawTileMarker(step.to, color);
+                    await drawTileMarker(step.from, color);
+                    await drawTileMarker(step.to, color);
                 }
                 break;
             }
@@ -475,28 +497,28 @@ export function buildPathMesh(
 
                 for (let j = 0; j < step.waypoints.length - 2; j++) {
                     const segStartHasTile = j === 0 && !prevWasSurge;
-                    drawLine(step.waypoints[j], step.waypoints[j + 1], ABILITY_COLORS.run, 0.04, false, segStartHasTile, false);
+                    await drawLine(step.waypoints[j], step.waypoints[j + 1], ABILITY_COLORS.run, 0.04, false, segStartHasTile, false);
                 }
 
                 const lastSegStart = step.waypoints.length === 2 && !prevWasSurge;
-                drawLine(
+                await drawLine(
                     step.waypoints[step.waypoints.length - 2],
                     step.waypoints[step.waypoints.length - 1],
                     ABILITY_COLORS.run, 0.04, true, lastSegStart, true
                 );
 
                 if (!prevWasSurge) {
-                    drawTileMarker(step.waypoints[0], ABILITY_COLORS.run);
+                    await drawTileMarker(step.waypoints[0], ABILITY_COLORS.run);
                 }
 
                 const endColor = nextIsSurge ? ABILITY_COLORS.surge : ABILITY_COLORS.run;
-                drawTileMarker(step.waypoints[step.waypoints.length - 1], endColor);
+                await drawTileMarker(step.waypoints[step.waypoints.length - 1], endColor);
                 break;
             }
 
             case "teleport": {
                 if (step.spot) {
-                    drawTileMarker(step.spot, ABILITY_COLORS.teleport);
+                    await drawTileMarker(step.spot, ABILITY_COLORS.teleport);
                 }
                 break;
             }
@@ -504,7 +526,7 @@ export function buildPathMesh(
             case "transport": {
                 if (!step.assumed_start) break;
 
-                drawTileMarker(step.assumed_start, ABILITY_COLORS.transport);
+                await drawTileMarker(step.assumed_start, ABILITY_COLORS.transport);
 
                 const action = step.internal?.actions?.[0];
                 const movement = action?.movement?.[0];
@@ -514,22 +536,22 @@ export function buildPathMesh(
                         y: step.assumed_start.y + movement.offset.y,
                         level: (step.assumed_start.level + (movement.offset.level ?? 0)) as TileCoordinates["level"]
                     };
-                    drawLine(step.assumed_start, dest, ABILITY_COLORS.transport, 0.05, true, true, true);
-                    drawTileMarker(dest, ABILITY_COLORS.transport);
+                    await drawLine(step.assumed_start, dest, ABILITY_COLORS.transport, 0.05, true, true, true);
+                    await drawTileMarker(dest, ABILITY_COLORS.transport);
                 }
                 break;
             }
 
             case "powerburst": {
                 if (step.where) {
-                    drawTileMarker(step.where, ABILITY_COLORS.powerburst);
+                    await drawTileMarker(step.where, ABILITY_COLORS.powerburst);
                 }
                 break;
             }
 
             case "redclick": {
                 if (step.where) {
-                    drawBeamMarker(step.where, ABILITY_COLORS.redclick);
+                    await drawBeamMarker(step.where, ABILITY_COLORS.redclick);
                 }
                 break;
             }

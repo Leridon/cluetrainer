@@ -3,9 +3,10 @@ import { chunksize, fragshadermouse, tilesize, vertshadermousealpha } from "../.
 import { getUniformValue } from "../../lib/alt1gl/ts/render/renderprogram";
 import * as patchrs from "../../lib/alt1gl/ts/util/patchrs_napi";
 import { GlOverlay } from "../../lib/alt1gl/ts/util/patchrs_napi";
-import { TileCoordinates } from "../../lib/runescape/coordinates";
+import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
 import { Path } from "../../lib/runescape/pathing";
 import { buildPathMesh, getPathLevels } from "./PathRender";
+import {TileHeightData} from "./TileHeightData";
 
 const CHUNK_SIZE = chunksize;
 const TILE_SIZE = tilesize;
@@ -27,7 +28,7 @@ class PathOverlayChunk {
         private targetVertexObject: number,
         chunkX: number,
         chunkZ: number,
-        private levels: Set<number>,
+        private levels: Set<floor_t>,
         private paths: Path[],
         private program: patchrs.GlProgram,
         private uniformSources: patchrs.OverlayUniformSource[]
@@ -42,11 +43,11 @@ class PathOverlayChunk {
 
         // Build meshes for all levels needed
         for (const level of this.levels) {
-            const heightData = await getChunkHeightData(this.chunkX, this.chunkZ, level);
-            if (!heightData) continue;
+          const heightData = await getChunkHeightData(this.chunkX, this.chunkZ, level);
+          if (!heightData) continue;
 
             for (const path of this.paths) {
-                const mesh = buildPathMesh(path, heightData, this.chunkX, this.chunkZ, level);
+                const mesh = await buildPathMesh(path, heightData, this.chunkX, this.chunkZ, level, TileHeightData.instance());
                 if (mesh && mesh.pos.length > 0) {
                     meshes.push(mesh);
                 }
@@ -107,7 +108,7 @@ export class TileMarkersOverlay {
     private chunks = new Map<string, Map<number, PathOverlayChunk>>();  // Key: "chunkX,chunkZ" -> vertexObjectId -> chunk
     private stream: patchrs.StreamRenderObject | null = null;
     private paths: Path[] = [];
-    private pathChunkLevels = new Map<string, Set<number>>();   // Key: "chunkX,chunkZ" -> Set of levels needed
+    private pathChunkLevels = new Map<string, Set<floor_t>>();   // Key: "chunkX,chunkZ" -> Set of levels needed
     private stopped = false;
 
     constructor() {
