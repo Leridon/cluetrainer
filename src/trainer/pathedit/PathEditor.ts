@@ -57,6 +57,7 @@ import notification = Notification.notification;
 import arrow = PathGraphics.arrow;
 import findAsync = util.findAsync;
 import {ConfirmBeforeUnload} from "../../lib/util/ConfirmBeforeUnload";
+import {PathOverlayControl} from "../overlay3d/PathOverlayControl";
 
 function needRepairing(state: movement_state, shortcut: Path.step_transportation): boolean {
   return state.position.tile
@@ -338,6 +339,8 @@ export class PathEditor extends Behaviour {
 
   bookmarks = new BookmarkStorage()
 
+  private ingame_overlay_control: PathOverlayControl
+
   constructor(public game_layer: GameLayer,
               public template_resolver: TemplateResolver,
               public options: PathEditor.options_t,
@@ -392,6 +395,12 @@ export class PathEditor extends Behaviour {
     this.action_bar = new PathEditActionBar(this, this.interaction_guard).addTo(this.handler_layer)
 
     this.lifetime_manager.bind(ConfirmBeforeUnload.instance().register())
+
+    this.ingame_overlay_control = this.withSub(new PathOverlayControl())
+
+    this.value.committed_value.subscribe(v => {
+      this.ingame_overlay_control.setIngameOverlays([v.path.raw])
+    })
   }
 
   protected begin() {

@@ -9,6 +9,8 @@ export class PathOverlayControl extends Behaviour {
   public setIngameOverlays(paths: Path[]): void {
     if (!Alt1GL.exists()) return;
 
+    this.reset()
+
     paths = paths.filter(p => !!p && p.length > 0);
     if (paths.length === 0) return;
 

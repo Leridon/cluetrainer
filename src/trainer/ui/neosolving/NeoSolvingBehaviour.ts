@@ -95,7 +95,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
       }
     })
 
-    this.overlay_control = new PathOverlayControl()
+    this.overlay_control = this.withSub(new PathOverlayControl())
   }
 
   /**
