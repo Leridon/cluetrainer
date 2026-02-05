@@ -1,7 +1,5 @@
-import { GL_FLOAT, GL_UNSIGNED_BYTE, UniformSnapshotBuilder } from "../../lib/alt1gl/ts/overlays";
-import { chunksize, fragshadermouse, vertshadermousealpha } from "../../lib/alt1gl/ts/overlays/tilemarkers";
+import { chunksize } from "../../lib/alt1gl/ts/overlays/tilemarkers";
 import { tilesize } from "../../lib/alt1gl/ts/render/reflect3d";
-import * as patchrs from "../../lib/alt1gl/ts/util/patchrs_napi";
 import { TileCoordinates } from "../../lib/runescape/coordinates";
 import { Path } from "../../lib/runescape/pathing";
 
@@ -550,22 +548,4 @@ export function buildPathMesh(
         color: new Uint8Array(Uint8Array.from(mesh.color).buffer),
         index: new Uint8Array(Uint16Array.from(mesh.index).buffer)
     };
-}
-
-export function createPathRenderProgram() {
-    const uniforms = new UniformSnapshotBuilder({
-        uModelMatrix: "mat4",
-        uViewProjMatrix: "mat4"
-    });
-
-    const uniformSources: patchrs.OverlayUniformSource[] = [
-        { type: "program", name: "uViewProjMatrix", sourceName: "uViewProjMatrix" }
-    ];
-
-    const program = patchrs.native.createProgram(vertshadermousealpha, fragshadermouse, [
-        { location: 0, name: "aPos", type: GL_FLOAT, length: 3 },
-        { location: 6, name: "aColor", type: GL_UNSIGNED_BYTE, length: 4 }
-    ], uniforms.args);
-
-    return { uniforms, program, uniformSources };
 }
