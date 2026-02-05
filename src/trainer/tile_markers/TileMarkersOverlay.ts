@@ -104,7 +104,7 @@ export class TileMarkersOverlay {
     private program: patchrs.GlProgram | null = null;
     private uniformSources: patchrs.OverlayUniformSource[] = [];
     private knownProgs = new WeakMap<patchrs.GlProgram, {}>();
-    private chunks = new Map<string, PathOverlayChunk>();  // Key: "chunkX,chunkZ"
+    private chunks = new Map<string, Map<number, PathOverlayChunk>>();  // Key: "chunkX,chunkZ" -> vertexObjectId -> chunk
     private stream: patchrs.StreamRenderObject | null = null;
     private paths: Path[] = [];
     private pathChunkLevels = new Map<string, Set<number>>();   // Key: "chunkX,chunkZ" -> Set of levels needed
@@ -143,7 +143,7 @@ export class TileMarkersOverlay {
     stop(): void {
         this.stopped = true;
         this.stream?.close();
-        this.chunks.forEach(chunk => chunk.stop());
+        this.chunks.forEach(vaoMap => vaoMap.forEach(chunk => chunk.stop()));
         this.chunks.clear();
     }
 
@@ -198,9 +198,13 @@ export class TileMarkersOverlay {
                 const levelsNeeded = this.pathChunkLevels.get(chunkKey);
                 if (!levelsNeeded || levelsNeeded.size === 0) continue;
 
-                // Only create one overlay per chunk (using first VAO we see)
+                // Create overlay for each VAO seen for this chunk
                 if (!this.chunks.has(chunkKey)) {
-                    this.chunks.set(chunkKey,
+                    this.chunks.set(chunkKey, new Map());
+                }
+                const vaoMap = this.chunks.get(chunkKey)!;
+                if (!vaoMap.has(render.vertexObjectId)) {
+                    vaoMap.set(render.vertexObjectId,
                         new PathOverlayChunk(
                             render.vertexObjectId,
                             chunkX, chunkZ, levelsNeeded,
