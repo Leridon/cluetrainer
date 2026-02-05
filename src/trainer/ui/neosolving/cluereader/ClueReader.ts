@@ -1,7 +1,5 @@
 import * as OCR from "alt1/ocr";
 import { FontDefinition } from "alt1/ocr";
-import { BufferCache, FilteredGameState } from "lib/alt1gl/ts/programs/filteredstate";
-import { StreamRenderObject } from "../../../../../../alt1gl/ts/util/patchrs_napi";
 import { clue_data } from "../../../../data/clues";
 import { Alt1Color } from "../../../../lib/alt1/Alt1Color";
 import { CapturedImage } from "../../../../lib/alt1/capture";
@@ -504,17 +502,18 @@ export namespace ClueReader {
 }
 
 export class GlClueReader extends Behaviour {
-  stream: StreamRenderObject
-  private state: FilteredGameState;
   private position_reader: PlayerPositionReader
 
   protected async begin() {
-    const cache = new BufferCache();
-    this.state = new FilteredGameState(cache);
-    this.position_reader = new PlayerPositionReader(this.state)
+    this.position_reader = new PlayerPositionReader((position) => {
+      if (position) {
+        console.log("Player at:", position);
+      } else {
+        console.log("Player not found,");
+      }
+    });
 
-    // Start tracking game state. At the moment, this is the "main loop" for capturing. Should probably replace with our own.
-    this.state.track()
+
 
     //todo: extract to a class eg CompassReader
     // const cache = new BufferCache();
@@ -536,6 +535,6 @@ export class GlClueReader extends Behaviour {
   }
 
   protected end() {
-    this.stream.close()
+    this.position_reader.stop();
   }
 }
