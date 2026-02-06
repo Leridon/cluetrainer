@@ -3,7 +3,7 @@ import { chunksize, fragshadermouse, tilesize, vertshadermousealpha } from "../.
 import { getUniformValue } from "../../lib/alt1gl/ts/render/renderprogram";
 import * as patchrs from "../../lib/alt1gl/ts/util/patchrs_napi";
 import { GlOverlay } from "../../lib/alt1gl/ts/util/patchrs_napi";
-import { TileCoordinates } from "../../lib/runescape/coordinates";
+import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
 import { Path } from "../../lib/runescape/pathing";
 import { buildPathMesh, getPathLevels } from "./PathRender";
 
@@ -11,10 +11,6 @@ const CHUNK_SIZE = chunksize;
 const TILE_SIZE = tilesize;
 const SKIP_PROGRAM_MASK = 1 << 5;
 const KNOWN_CHUNK_MASK = 1 << 6;
-//TODO: fix this, for now use npm run proxy to run the terrain data proxy for runeapps, to avoid cors
-const HEIGHT_ENDPOINT = "http://localhost:3001/maps/mapheightrender/";
-
-const terrainCache = new Map<string, Promise<Uint16Array | null>>();
 
 class PathOverlayChunk {
     overlayHandle: GlOverlay | null = null;
@@ -27,7 +23,7 @@ class PathOverlayChunk {
         private targetVertexObject: number,
         chunkX: number,
         chunkZ: number,
-        private levels: Set<number>,
+        private levels: Set<floor_t>,
         private paths: Path[],
         private program: patchrs.GlProgram,
         private uniformSources: patchrs.OverlayUniformSource[]
@@ -42,11 +38,8 @@ class PathOverlayChunk {
 
         // Build meshes for all levels needed
         for (const level of this.levels) {
-            const heightData = await getChunkHeightData(this.chunkX, this.chunkZ, level);
-            if (!heightData) continue;
-
             for (const path of this.paths) {
-                const mesh = buildPathMesh(path, heightData, this.chunkX, this.chunkZ, level);
+                const mesh = await buildPathMesh(path, this.chunkX, this.chunkZ, level);
                 if (mesh && mesh.pos.length > 0) {
                     meshes.push(mesh);
                 }
@@ -107,7 +100,7 @@ export class TileMarkersOverlay {
     private chunks = new Map<string, Map<number, PathOverlayChunk>>();  // Key: "chunkX,chunkZ" -> vertexObjectId -> chunk
     private stream: patchrs.StreamRenderObject | null = null;
     private paths: Path[] = [];
-    private pathChunkLevels = new Map<string, Set<number>>();   // Key: "chunkX,chunkZ" -> Set of levels needed
+    private pathChunkLevels = new Map<string, Set<floor_t>>();   // Key: "chunkX,chunkZ" -> Set of levels needed
     private stopped = false;
 
     constructor() {
@@ -248,28 +241,6 @@ function combineMeshes(meshes: { pos: Uint8Array, color: Uint8Array, index: Uint
     }
 
     return { pos, color, index };
-}
-
-async function getChunkHeightData(chunkX: number, chunkZ: number, level: number): Promise<Uint16Array | null> {
-    const key = `${level}/${chunkX}-${chunkZ}`;
-    const cached = terrainCache.get(key);
-    if (cached) return cached;
-
-    const promise = (async () => {
-        try {
-            const url = `${HEIGHT_ENDPOINT}height-${level}/${chunkX}-${chunkZ}.bin.gz`;
-            const res = await fetch(url);
-            if (!res.ok) return null;
-            const buffer = await res.arrayBuffer();
-            if (buffer.byteLength === 0 || buffer.byteLength % 2 !== 0) return null;
-            return new Uint16Array(buffer);
-        } catch {
-            return null;
-        }
-    })();
-
-    terrainCache.set(key, promise);
-    return promise;
 }
 
 function extractPathTiles(path: Path, level: number): TileCoordinates[] {
