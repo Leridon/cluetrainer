@@ -109,11 +109,9 @@ interface MeshBuilder {
 
 export async function buildPathMesh(
     path: Path,
-    heightData: Uint16Array,
     chunkX: number,
     chunkZ: number,
-    level: floor_t,
-    tileHeightData: TileHeightData
+    level: floor_t
 ): Promise<MeshData | null> {
     if (!path || path.length === 0) return null;
 
@@ -135,32 +133,12 @@ export async function buildPathMesh(
           level: level
         }
 
-        const tileIndex = (tile_x + tile_z * CHUNK_SIZE) * 5;
-
-        const center_from_class = await tileHeightData.getTile(tile, "center")
-
-        if(center_from_class != heightData[tileIndex]) {
-          console.log(`Difference ${center_from_class} vs ${heightData[tileIndex]}`)
-        } else {
-          console.log("Same")
-        }
-
-        return await tileHeightData.getTile(tile, "center") * heightScaling
-
         return (
-          await tileHeightData.getTile(tile, "sw") * (1 - dx) * (1 - dz) +
-          heightData[tileIndex + 1] * dx * (1 - dz) +
-          heightData[tileIndex + 2] * (1 - dx) * dz +
-          heightData[tileIndex + 3] * dx * dz
+          await TileHeightData.instance().getTile(tile, "sw") * (1 - dx) * (1 - dz) +
+          await TileHeightData.instance().getTile(tile, "se") * dx * (1 - dz) +
+          await TileHeightData.instance().getTile(tile, "nw") * (1 - dx) * dz +
+          await TileHeightData.instance().getTile(tile, "ne") * dx * dz
         ) * heightScaling
-
-
-        const y00 = heightData[tileIndex + 0] * (1 - dx) * (1 - dz);
-        const y01 = heightData[tileIndex + 1] * dx * (1 - dz);
-        const y10 = heightData[tileIndex + 2] * (1 - dx) * dz;
-        const y11 = heightData[tileIndex + 3] * dx * dz;
-
-        return (y00 + y01 + y10 + y11)
     }
 
     const writeVertex = async (

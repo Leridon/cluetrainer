@@ -6,16 +6,11 @@ import { GlOverlay } from "../../lib/alt1gl/ts/util/patchrs_napi";
 import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
 import { Path } from "../../lib/runescape/pathing";
 import { buildPathMesh, getPathLevels } from "./PathRender";
-import {TileHeightData} from "./TileHeightData";
 
 const CHUNK_SIZE = chunksize;
 const TILE_SIZE = tilesize;
 const SKIP_PROGRAM_MASK = 1 << 5;
 const KNOWN_CHUNK_MASK = 1 << 6;
-//TODO: fix this, for now use npm run proxy to run the terrain data proxy for runeapps, to avoid cors
-const HEIGHT_ENDPOINT = "http://localhost:3001/maps/mapheightrender/";
-
-const terrainCache = new Map<string, Promise<Uint16Array | null>>();
 
 class PathOverlayChunk {
     overlayHandle: GlOverlay | null = null;
@@ -43,11 +38,8 @@ class PathOverlayChunk {
 
         // Build meshes for all levels needed
         for (const level of this.levels) {
-          const heightData = await getChunkHeightData(this.chunkX, this.chunkZ, level);
-          if (!heightData) continue;
-
             for (const path of this.paths) {
-                const mesh = await buildPathMesh(path, heightData, this.chunkX, this.chunkZ, level, TileHeightData.instance());
+                const mesh = await buildPathMesh(path, this.chunkX, this.chunkZ, level);
                 if (mesh && mesh.pos.length > 0) {
                     meshes.push(mesh);
                 }
@@ -249,28 +241,6 @@ function combineMeshes(meshes: { pos: Uint8Array, color: Uint8Array, index: Uint
     }
 
     return { pos, color, index };
-}
-
-async function getChunkHeightData(chunkX: number, chunkZ: number, level: number): Promise<Uint16Array | null> {
-    const key = `${level}/${chunkX}-${chunkZ}`;
-    const cached = terrainCache.get(key);
-    if (cached) return cached;
-
-    const promise = (async () => {
-        try {
-            const url = `${HEIGHT_ENDPOINT}height-${level}/${chunkX}-${chunkZ}.bin.gz`;
-            const res = await fetch(url);
-            if (!res.ok) return null;
-            const buffer = await res.arrayBuffer();
-            if (buffer.byteLength === 0 || buffer.byteLength % 2 !== 0) return null;
-            return new Uint16Array(buffer);
-        } catch {
-            return null;
-        }
-    })();
-
-    terrainCache.set(key, promise);
-    return promise;
 }
 
 function extractPathTiles(path: Path, level: number): TileCoordinates[] {
