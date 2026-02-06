@@ -10,22 +10,21 @@ import { Sliders } from "../../../../lib/cluetheory/Sliders";
 import { Rectangle, Vector2 } from "../../../../lib/math";
 import { Clues } from "../../../../lib/runescape/clues";
 import Behaviour from "../../../../lib/ui/Behaviour";
-import { Log } from "../../../../lib/util/Log";
-import { util } from "../../../../lib/util/util";
+import {Log} from "../../../../lib/util/Log";
+import {util} from "../../../../lib/util/util";
 import * as oldlib from "../../../../skillbertssolver/cluesolver/oldlib";
-import { comparetiledata } from "../../../../skillbertssolver/cluesolver/oldlib";
-import { Notification } from "../../NotificationBar";
-import { CapturedCompass } from "./capture/CapturedCompass";
-import { CapturedModal } from "./capture/CapturedModal";
-import { CapturedScan } from "./capture/CapturedScan";
-import { CapturedSliderInterface } from "./capture/CapturedSlider";
+import {comparetiledata} from "../../../../skillbertssolver/cluesolver/oldlib";
+import {Notification} from "../../NotificationBar";
+import {CapturedCompass} from "./capture/CapturedCompass";
+import {CapturedModal} from "./capture/CapturedModal";
+import {CapturedScan} from "./capture/CapturedScan";
+import {CapturedSliderInterface} from "./capture/CapturedSlider";
 import ClueFont from "./ClueFont";
-import { CompassReader } from "./CompassReader";
-import { KnotReader } from "./KnotReader";
-import { LockBoxReader } from "./LockBoxReader";
-import { PlayerPositionReader } from "./PlayerPositionReader";
-import { SlideReader, SliderReader } from "./SliderReader";
-import { TowersReader } from "./TowersReader";
+import {CompassReader} from "./CompassReader";
+import {KnotReader} from "./KnotReader";
+import {LockBoxReader} from "./LockBoxReader";
+import {SlideReader, SliderReader} from "./SliderReader";
+import {TowersReader} from "./TowersReader";
 import stringSimilarity = util.stringSimilarity;
 import notification = Notification.notification;
 import findBestMatch = util.findBestMatch;
@@ -34,6 +33,7 @@ import log = Log.log;
 import cleanedJSON = util.cleanedJSON;
 import async_init = util.async_init;
 import AsyncInitialization = util.AsyncInitialization;
+import {PlayerState} from "./PlayerPositionReader";
 
 const CLUEREADERDEBUG = false
 
@@ -502,10 +502,10 @@ export namespace ClueReader {
 }
 
 export class GlClueReader extends Behaviour {
-  private position_reader: PlayerPositionReader
+  private position_reader: PlayerState
 
   protected async begin() {
-    this.position_reader = new PlayerPositionReader((position) => {
+    this.position_reader = new PlayerState((position) => {
       if (position) {
         console.log("Player at:", position);
       } else {
