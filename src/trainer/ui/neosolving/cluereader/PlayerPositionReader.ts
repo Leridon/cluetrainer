@@ -36,7 +36,7 @@ export class PlayerState {
     for (const render of renders) {
       if (!render.program || !render.uniformState) continue;
 
-      let progmeta;
+      let progmeta: ReturnType<typeof getProgramMeta>;
       try {
         progmeta = getProgramMeta(render.program);
       } catch {
@@ -68,9 +68,7 @@ export class PlayerState {
     return { position, pulseRing };
   }
 
-  // unfortunetly there's no type for progmeta
-  // Todo: create type
-  private detectPlayerPosition(render: patchrs.RenderInvocation, progmeta: any): PlayerPosition {
+  private detectPlayerPosition(render: patchrs.RenderInvocation, progmeta: ReturnType<typeof getProgramMeta>): PlayerPosition {
     const TILESIZE = 512;
 
     const hasFrag = typeof render.program.fragmentShader?.source === 'string';
@@ -102,7 +100,7 @@ export class PlayerState {
     return null;
   }
 
-  private detectPulseRing(render: patchrs.RenderInvocation, progmeta: any): RingType {
+  private detectPulseRing(render: patchrs.RenderInvocation, progmeta: ReturnType<typeof getProgramMeta>): RingType {
     try {
       // get vertex count from render ranges
       const vertexCount = render.renderRanges?.reduce((sum: number, r: patchrs.RenderRange) => sum + r.length, 0) || 0;
