@@ -1,11 +1,11 @@
-import { GL_FLOAT, GL_UNSIGNED_BYTE, positionMatrix, UniformSnapshotBuilder } from "../../lib/alt1gl/ts/overlays";
-import { chunksize, fragshadermouse, tilesize, vertshadermousealpha } from "../../lib/alt1gl/ts/overlays/tilemarkers";
-import { getUniformValue } from "../../lib/alt1gl/ts/render/renderprogram";
+import {GL_FLOAT, GL_UNSIGNED_BYTE, positionMatrix, UniformSnapshotBuilder} from "../../lib/alt1gl/ts/overlays";
+import {chunksize, fragshadermouse, tilesize, vertshadermousealpha} from "../../lib/alt1gl/ts/overlays/tilemarkers";
+import {getUniformValue} from "../../lib/alt1gl/ts/render/renderprogram";
 import * as patchrs from "../../lib/alt1gl/ts/util/patchrs_napi";
-import { GlOverlay } from "../../lib/alt1gl/ts/util/patchrs_napi";
+import {GlOverlay} from "../../lib/alt1gl/ts/util/patchrs_napi";
 import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
-import { Path } from "../../lib/runescape/pathing";
-import { buildPathMesh, getPathLevels } from "./PathRender";
+import {Path} from "../../lib/runescape/pathing";
+import {buildPathMesh, getPathLevels} from "./PathRender";
 
 const CHUNK_SIZE = chunksize;
 const TILE_SIZE = tilesize;

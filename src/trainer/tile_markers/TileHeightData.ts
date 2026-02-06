@@ -92,7 +92,7 @@ export namespace TileHeightData {
 
       const i = tileIndex + SAMPLE_POINT_TRANSLATION[what];
 
-      if(i < 0 || i >= this.height_data.length) {
+      if (i < 0 || i >= this.height_data.length) {
         console.log(`(${relative_x} + ${relative_z} * ${tiles_per_file}) * ${BYTES_PER_TILE}`)
         debugger
       }
