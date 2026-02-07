@@ -109,13 +109,10 @@ function tilesMatch(a: TileCoordinates, b: TileCoordinates): boolean {
 
 
 export async function buildPathMesh(
+  builder: MeshBuilder,
   path: Path
-): Promise<MeshBuilder> {
-  if (!path || path.length === 0) return null;
-
+): Promise<void> {
   const height_data = TileHeightData.instance();
-
-  const builder = new MeshBuilder();
 
   const drawLine = async (
     from: TileCoordinates,
@@ -465,6 +462,4 @@ export async function buildPathMesh(
         break;
     }
   }
-
-  return builder
 }

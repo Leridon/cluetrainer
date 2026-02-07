@@ -1,4 +1,4 @@
-import {GL_FLOAT, GL_UNSIGNED_BYTE, positionMatrix, UniformSnapshotBuilder} from "../../lib/alt1gl/ts/overlays";
+import {GL_FLOAT, GL_UNSIGNED_BYTE, UniformSnapshotBuilder} from "../../lib/alt1gl/ts/overlays";
 import {chunksize, fragshadermouse, tilesize, vertshadermousealpha} from "../../lib/alt1gl/ts/overlays/tilemarkers";
 import {getUniformValue} from "../../lib/alt1gl/ts/render/renderprogram";
 import * as patchrs from "../../lib/alt1gl/ts/util/patchrs_napi";
@@ -7,6 +7,7 @@ import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
 import {Path} from "../../lib/runescape/pathing";
 import {buildPathMesh, getPathLevels} from "./PathRender";
 import {mat4} from "gl-matrix";
+import {MeshBuilder} from "./MeshBuilder";
 
 const CHUNK_SIZE = chunksize;
 const TILE_SIZE = tilesize;
@@ -17,50 +18,30 @@ class PathOverlayChunk {
   overlayHandle: GlOverlay | null = null;
   stopped = false;
   loaded = false;
-  chunkX: number;
-  chunkZ: number;
 
   constructor(
     private targetVertexObject: number,
-    chunkX: number,
-    chunkZ: number,
     private paths: Path[],
     private program: patchrs.GlProgram,
     private uniformSources: patchrs.OverlayUniformSource[]
   ) {
-    this.chunkX = chunkX;
-    this.chunkZ = chunkZ;
     this.load();
   }
 
   async load() {
-    const meshes: { pos: Uint8Array, color: Uint8Array, index: Uint8Array }[] = [];
+    const builder = new MeshBuilder();
 
     // Build meshes for all levels needed
     for (const path of this.paths) {
-      const mesh = await buildPathMesh(path);
-
-      if (mesh) {
-        // Move mesh to be relative to chunk origin
-        //mesh.move({x: -this.chunkX * CHUNK_SIZE - CHUNK_SIZE / 2, z: -this.chunkZ * CHUNK_SIZE - CHUNK_SIZE / 2, y: 0})
-
-        // Scale from tile coordinate system to rendering coordinate system
-        mesh.scale(TILE_SIZE)
-
-        if (mesh.triangleCount() > 0) {
-          meshes.push(mesh.finalize())
-        }
-      } else {
-        console.log("buildPathMesh returned null")
-      }
+      await buildPathMesh(builder, path);
     }
 
-    if (meshes.length === 0) {
+    if (builder.triangleCount() === 0) {
       this.loaded = true;
       return;
     }
 
-    const combined = combineMeshes(meshes);
+    const combined = builder.finalize();
 
     const vertex = patchrs.native.createVertexArray(combined.index, [
       {location: 0, buffer: combined.pos, enabled: true, normalized: false, offset: 0, scalartype: GL_FLOAT, stride: 3 * 4, vectorlength: 3},
@@ -72,12 +53,12 @@ class PathOverlayChunk {
       uViewProjMatrix: "mat4"
     });
 
+    const world_matrix = mat4.create();
+
+    mat4.fromScaling(world_matrix, [TILE_SIZE, TILE_SIZE, TILE_SIZE])
+
     uniforms.mappings.uModelMatrix.write(
-      positionMatrix(
-        0,
-        0,
-        0
-      )
+      world_matrix as number[]
     );
 
     this.overlayHandle = patchrs.native.beginOverlay(
@@ -209,7 +190,6 @@ export class TileMarkersOverlay {
           vaoMap.set(render.vertexObjectId,
             new PathOverlayChunk(
               render.vertexObjectId,
-              chunkX, chunkZ,
               this.paths, this.program!, this.uniformSources
             )
           );
@@ -217,39 +197,6 @@ export class TileMarkersOverlay {
       }
     });
   }
-}
-
-function combineMeshes(meshes: { pos: Uint8Array, color: Uint8Array, index: Uint8Array }[]): { pos: Uint8Array, color: Uint8Array, index: Uint8Array } {
-  if (meshes.length === 1) return meshes[0];
-
-  let totalPos = 0, totalColor = 0, totalIndex = 0;
-  for (const m of meshes) {
-    totalPos += m.pos.length;
-    totalColor += m.color.length;
-    totalIndex += m.index.length;
-  }
-
-  const pos = new Uint8Array(totalPos);
-  const color = new Uint8Array(totalColor);
-  const index = new Uint8Array(totalIndex);
-
-  let posOff = 0, colorOff = 0, indexOff = 0, vertexOff = 0;
-  for (const m of meshes) {
-    pos.set(m.pos, posOff);
-    color.set(m.color, colorOff);
-
-    const indices = new Uint16Array(m.index.buffer, m.index.byteOffset, m.index.length / 2);
-    const adjusted = new Uint16Array(indices.length);
-    for (let i = 0; i < indices.length; i++) adjusted[i] = indices[i] + vertexOff;
-    index.set(new Uint8Array(adjusted.buffer), indexOff);
-
-    posOff += m.pos.length;
-    colorOff += m.color.length;
-    indexOff += m.index.length;
-    vertexOff += m.pos.length / 12;
-  }
-
-  return {pos, color, index};
 }
 
 function extractPathTiles(path: Path, level: number): TileCoordinates[] {
