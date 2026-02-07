@@ -4,10 +4,10 @@ import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
 import {Path} from "../../lib/runescape/pathing";
 import {TileHeightData} from "./TileHeightData";
 import {MeshBuilder} from "./MeshBuilder";
+import {MovementAbilities} from "../../lib/runescape/movement";
 import ColorRGBA = MeshBuilder.ColorRGBA;
 import Vector3 = MeshBuilder.Vector3;
 import Vertex = MeshBuilder.Vertex;
-import {MovementAbilities} from "../../lib/runescape/movement";
 
 const CHUNK_SIZE = chunksize;
 const TILE_SIZE = tilesize;
@@ -28,7 +28,7 @@ const ABILITY_COLORS: Record<MovementAbilities.movement_ability, MeshBuilder.Col
   barge: [150, 0, 255, 255],
 }
 
-const COLORS : Record<Path.Step["type"], MeshBuilder.ColorRGBA> = {
+const COLORS: Record<Path.Step["type"], MeshBuilder.ColorRGBA> = {
   run: [100, 255, 100, 255],
   teleport: [255, 0, 255, 255],
   transport: [0, 255, 200, 255],
@@ -38,28 +38,6 @@ const COLORS : Record<Path.Step["type"], MeshBuilder.ColorRGBA> = {
   cheat: [0, 255, 200, 255],
   cosmetic: [0, 0, 0, 0],
   orientation: [0, 0, 0, 0],
-}
-
-function stepHasCoordinates(step: Path.Step | undefined): boolean {
-  if (!step) return false;
-  switch (step.type) {
-    case "teleport":
-      return !!step.spot;
-    case "ability":
-      return !!(step.from || step.to);
-    case "run":
-      return !!(step.waypoints && step.waypoints.length > 0);
-    case "transport":
-      return !!step.assumed_start;
-    case "powerburst":
-      return !!step.where;
-    case "redclick":
-      return !!step.where;
-    case "cheat":
-      return !!(step.assumed_start || step.target);
-    default:
-      return false;
-  }
 }
 
 export function getPathLevels(path: Path): Set<floor_t> {
@@ -95,22 +73,6 @@ export function getPathLevels(path: Path): Set<floor_t> {
     }
   }
   return levels;
-}
-
-function isRunStep(step: Path.Step | undefined): step is Path.step_run {
-  return !!step && step.type === "run";
-}
-
-function isAbilityStep(step: Path.Step | undefined): step is Path.step_ability {
-  return !!step && step.type === "ability";
-}
-
-function isTeleportStep(step: Path.Step | undefined): step is Path.step_teleport {
-  return !!step && step.type === "teleport";
-}
-
-function tilesMatch(a: TileCoordinates, b: TileCoordinates): boolean {
-  return a.x === b.x && a.y === b.y;
 }
 
 async function drawTileMarker(builder: MeshBuilder,
@@ -237,9 +199,9 @@ async function drawLine(
     const segment_end = control_points[i];
 
     const v0 = builder.createVertex(Vector3.add(segment_start, {x: -perpX, y: 0, z: -perpZ}), color);
-    const v1 = builder.createVertex(Vector3.add(segment_start, {x: +perpX, y: 0, z: +perpZ}), color);
-    const v2 = builder.createVertex(Vector3.add(segment_end, {x: -perpX, y: 0, z: -perpZ}), color);
-    const v3 = builder.createVertex(Vector3.add(segment_end, {x: +perpX, y: 0, z: +perpZ}), color);
+    const v1 = builder.createVertex(Vector3.add(segment_end, {x: -perpX, y: 0, z: -perpZ}), color);
+    const v2 = builder.createVertex(Vector3.add(segment_end, {x: +perpX, y: 0, z: +perpZ}), color);
+    const v3 = builder.createVertex(Vector3.add(segment_start, {x: +perpX, y: 0, z: +perpZ}), color);
 
     builder.quad(v0, v1, v2, v3);
   }
@@ -335,8 +297,7 @@ export async function buildPathMesh(
   builder: MeshBuilder,
   path: Path
 ): Promise<void> {
-  const height_data = TileHeightData.instance();
-
+  console.log("Building path mesh");
 
   let current_position_has_marker = false;
 
@@ -347,7 +308,7 @@ export async function buildPathMesh(
       case "ability": {
         const color = ABILITY_COLORS[step.ability];
 
-        const draw_target_tile = !step.is_far_dive
+        const draw_target_tile = step.ability == "dive" && !step.is_far_dive
 
         await drawLine(builder, step.from, step.to, color, 0.05, true, current_position_has_marker, draw_target_tile);
 
@@ -384,6 +345,8 @@ export async function buildPathMesh(
       }
 
       case "transport": {
+        current_position_has_marker = step.is_arrival_only
+
         if (!step.is_arrival_only) break;
 
         await drawTileMarker(builder, step.assumed_start, COLORS.transport);
@@ -393,8 +356,6 @@ export async function buildPathMesh(
         // TODO: Highlight the thing that needs to be clicked.
 
         await drawLine(builder, step.assumed_start, dest, COLORS.transport, 0.05, true, true, true);
-
-        current_position_has_marker = false
 
         break;
       }

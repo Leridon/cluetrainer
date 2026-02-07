@@ -90,7 +90,6 @@ export class TileMarkersOverlay {
   private chunks = new Map<string, Map<number, PathOverlayChunk>>();  // Key: "chunkX,chunkZ" -> vertexObjectId -> chunk
   private stream: patchrs.StreamRenderObject | null = null;
   private paths: Path[] = [];
-  private pathChunkLevels = new Map<string, Set<floor_t>>();   // Key: "chunkX,chunkZ" -> Set of levels needed
   private stopped = false;
 
   constructor() {
@@ -132,22 +131,6 @@ export class TileMarkersOverlay {
 
   private setPaths(paths: Path[]): void {
     this.paths = paths.filter(p => p && p.length > 0);
-    this.pathChunkLevels.clear();
-
-    // Build map of chunks -> levels needed
-    for (const path of this.paths) {
-      for (const level of getPathLevels(path)) {
-        for (const tile of extractPathTiles(path, level)) {
-          const chunkX = Math.floor(tile.x / CHUNK_SIZE);
-          const chunkZ = Math.floor(tile.y / CHUNK_SIZE);
-          const key = `${chunkX},${chunkZ}`;
-          if (!this.pathChunkLevels.has(key)) {
-            this.pathChunkLevels.set(key, new Set());
-          }
-          this.pathChunkLevels.get(key)!.add(level);
-        }
-      }
-    }
   }
 
   private start(): void {
@@ -178,8 +161,6 @@ export class TileMarkersOverlay {
         const chunkZ = Math.floor(uniform[0][14] / CHUNK_SIZE / TILE_SIZE);
 
         const chunkKey = `${chunkX},${chunkZ}`;
-        const levelsNeeded = this.pathChunkLevels.get(chunkKey);
-        if (!levelsNeeded || levelsNeeded.size === 0) continue;
 
         // Create overlay for each VAO seen for this chunk
         if (!this.chunks.has(chunkKey)) {
@@ -197,34 +178,4 @@ export class TileMarkersOverlay {
       }
     });
   }
-}
-
-function extractPathTiles(path: Path, level: number): TileCoordinates[] {
-  const tiles: TileCoordinates[] = [];
-
-  for (const step of path) {
-    switch (step.type) {
-      case "ability":
-        if (step.from?.level === level) tiles.push(step.from);
-        if (step.to?.level === level) tiles.push(step.to);
-        break;
-      case "run":
-        if (step.waypoints) tiles.push(...step.waypoints.filter(wp => wp.level === level));
-        break;
-      case "teleport":
-        if (step.spot?.level === level) tiles.push(step.spot);
-        break;
-      case "transport":
-        if (step.assumed_start?.level === level) tiles.push(step.assumed_start);
-        break;
-      case "powerburst":
-        if (step.where?.level === level) tiles.push(step.where);
-        break;
-      case "redclick":
-        if (step.where?.level === level) tiles.push(step.where);
-        break;
-    }
-  }
-
-  return tiles;
 }
