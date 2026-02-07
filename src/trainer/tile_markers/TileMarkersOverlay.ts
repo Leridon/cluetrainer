@@ -2,94 +2,59 @@ import {GL_FLOAT, GL_UNSIGNED_BYTE, UniformSnapshotBuilder} from "../../lib/alt1
 import {chunksize, fragshadermouse, tilesize, vertshadermousealpha} from "../../lib/alt1gl/ts/overlays/tilemarkers";
 import {getUniformValue} from "../../lib/alt1gl/ts/render/renderprogram";
 import * as patchrs from "../../lib/alt1gl/ts/util/patchrs_napi";
-import {GlOverlay} from "../../lib/alt1gl/ts/util/patchrs_napi";
-import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
 import {Path} from "../../lib/runescape/pathing";
-import {buildPathMesh, getPathLevels} from "./PathRender";
 import {mat4} from "gl-matrix";
+import {Alt1GLVertexArray} from "../../lib/alt1gl/overlay/Alt1GLVertexArray";
+import {buildPathMesh} from "./PathRender";
 import {MeshBuilder} from "./MeshBuilder";
+import {Alt1GLOverlay} from "../../lib/alt1gl/overlay/Alt1GLOverlay";
 
 const CHUNK_SIZE = chunksize;
 const TILE_SIZE = tilesize;
 const SKIP_PROGRAM_MASK = 1 << 5;
 const KNOWN_CHUNK_MASK = 1 << 6;
 
-class PathOverlayChunk {
-  overlayHandle: GlOverlay | null = null;
-  stopped = false;
-  loaded = false;
+function createPathOverlay(
+  targetVertexObject: number,
+  vertexArray: Alt1GLVertexArray,
+  program: patchrs.GlProgram,
+  uniformSources: patchrs.OverlayUniformSource[]
+): Alt1GLOverlay {
+  // TODO: This is a temporary function to use while refactoring. Probably won't exist in the final version
 
-  constructor(
-    private targetVertexObject: number,
-    private paths: Path[],
-    private program: patchrs.GlProgram,
-    private uniformSources: patchrs.OverlayUniformSource[]
-  ) {
-    this.load();
-  }
+  const uniforms = new UniformSnapshotBuilder({
+    uModelMatrix: "mat4",
+    uViewProjMatrix: "mat4"
+  });
 
-  async load() {
-    const builder = new MeshBuilder();
+  const world_matrix = mat4.create();
 
-    // Build meshes for all levels needed
-    for (const path of this.paths) {
-      await buildPathMesh(builder, path);
+  mat4.fromScaling(world_matrix, [TILE_SIZE, TILE_SIZE, TILE_SIZE])
+
+  uniforms.mappings.uModelMatrix.write(
+    world_matrix as number[]
+  );
+
+  return new Alt1GLOverlay(
+    {skipProgramMask: SKIP_PROGRAM_MASK, vertexObjectId: targetVertexObject},
+    program,
+    vertexArray,
+    {
+      uniformSources: uniformSources,
+      uniformBuffer: uniforms.buffer
     }
-
-    if (builder.triangleCount() === 0) {
-      this.loaded = true;
-      return;
-    }
-
-    const combined = builder.finalize();
-
-    const vertex = patchrs.native.createVertexArray(combined.index, [
-      {location: 0, buffer: combined.pos, enabled: true, normalized: false, offset: 0, scalartype: GL_FLOAT, stride: 3 * 4, vectorlength: 3},
-      {location: 6, buffer: combined.color, enabled: true, normalized: true, offset: 0, scalartype: GL_UNSIGNED_BYTE, stride: 4, vectorlength: 4},
-    ]);
-
-    const uniforms = new UniformSnapshotBuilder({
-      uModelMatrix: "mat4",
-      uViewProjMatrix: "mat4"
-    });
-
-    const world_matrix = mat4.create();
-
-    mat4.fromScaling(world_matrix, [TILE_SIZE, TILE_SIZE, TILE_SIZE])
-
-    uniforms.mappings.uModelMatrix.write(
-      world_matrix as number[]
-    );
-
-    this.overlayHandle = patchrs.native.beginOverlay(
-      {skipProgramMask: SKIP_PROGRAM_MASK, vertexObjectId: this.targetVertexObject},
-      this.program,
-      vertex,
-      {
-        uniformSources: this.uniformSources,
-        uniformBuffer: uniforms.buffer
-      }
-    );
-
-    this.loaded = true;
-    if (this.stopped) {
-      this.stop();
-    }
-  }
-
-  stop() {
-    this.stopped = true;
-    this.overlayHandle?.stop();
-  }
+  )
 }
 
 export class TileMarkersOverlay {
   private program: patchrs.GlProgram | null = null;
   private uniformSources: patchrs.OverlayUniformSource[] = [];
   private knownProgs = new WeakMap<patchrs.GlProgram, {}>();
-  private chunks = new Map<string, Map<number, PathOverlayChunk>>();  // Key: "chunkX,chunkZ" -> vertexObjectId -> chunk
+  private chunks = new Map<string, Map<number, Alt1GLOverlay>>();  // Key: "chunkX,chunkZ" -> vertexObjectId -> chunk
   private stream: patchrs.StreamRenderObject | null = null;
-  private paths: Path[] = [];
+
+  private vertexArray: Alt1GLVertexArray | null = null;
+
   private stopped = false;
 
   constructor() {
@@ -117,8 +82,8 @@ export class TileMarkersOverlay {
     );
   }
 
-  draw(paths: Path[]): void {
-    this.setPaths(paths);
+  async draw(paths: Path[]): Promise<void> {
+    await this.setPaths(paths);
     this.start();
   }
 
@@ -129,12 +94,18 @@ export class TileMarkersOverlay {
     this.chunks.clear();
   }
 
-  private setPaths(paths: Path[]): void {
-    this.paths = paths.filter(p => p && p.length > 0);
+  private async setPaths(paths: Path[]): Promise<void> {
+    const builder = new MeshBuilder()
+
+    for (let path of paths) {
+      await buildPathMesh(path, builder)
+    }
+
+    this.vertexArray = new Alt1GLVertexArray(builder)
   }
 
   private start(): void {
-    if (!this.program || this.paths.length === 0) return;
+    if (!this.program) return;
 
     this.stopped = false;
 
@@ -168,11 +139,10 @@ export class TileMarkersOverlay {
         }
         const vaoMap = this.chunks.get(chunkKey)!;
         if (!vaoMap.has(render.vertexObjectId)) {
+          console.log("Creating overlay for VAO", render.vertexObjectId);
+
           vaoMap.set(render.vertexObjectId,
-            new PathOverlayChunk(
-              render.vertexObjectId,
-              this.paths, this.program!, this.uniformSources
-            )
+            createPathOverlay(render.vertexObjectId, this.vertexArray!, this.program!, this.uniformSources).start()
           );
         }
       }

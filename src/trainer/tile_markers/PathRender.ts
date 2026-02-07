@@ -291,14 +291,12 @@ async function drawBeamMarker(builder: MeshBuilder,
     const next = (i + 1) % segments;
     builder.triangle(bottomCenter, bottomVerts[next], bottomVerts[i]);
   }
-};
+}
 
 export async function buildPathMesh(
-  builder: MeshBuilder,
-  path: Path
-): Promise<void> {
-  console.log("Building path mesh");
-
+  path: Path,
+  builder: MeshBuilder = new MeshBuilder()
+): Promise<MeshBuilder> {
   let current_position_has_marker = false;
 
   for (let i = 0; i < path.length; i++) {
@@ -379,4 +377,6 @@ export async function buildPathMesh(
         break;
     }
   }
+
+  return builder
 }
