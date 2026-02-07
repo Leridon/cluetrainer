@@ -80,7 +80,7 @@ export class TileHeightData {
       promise.then((a) => this.chunks[coordinate.level][file_i] = a)
     }
 
-    return (await this.chunks[coordinate.level][file_i]).getSample(coordinate, where)
+    return (await this.chunks[coordinate.level][file_i])?.getSample(coordinate, where) ?? 0
   }
 }
 
