@@ -62,6 +62,7 @@ export class TileHeightData {
 
 export namespace TileHeightData {
   export type SamplePoint = "ne" | "nw" | "se" | "sw" | "center"
+  const DATA_SCALE = 32
 
   export class ChunkTileHeightData {
     constructor(
@@ -97,7 +98,7 @@ export namespace TileHeightData {
         debugger
       }
 
-      return this.height_data[i]
+      return this.height_data[i] / DATA_SCALE
     }
   }
 }

@@ -108,6 +108,8 @@ export interface MeshData {
   index: Uint8Array;
 }
 
+type Vector3 = { x: number, y: number, z: number };
+
 interface MeshBuilder {
   pos: number[];
   color: number[];
@@ -116,23 +118,72 @@ interface MeshBuilder {
 }
 
 type Vertex = {
-  pos: { x: number, y: number, z: number },
-  color_rgba: ColorRGBA
+  pos: Vector3,
+  color_rgba: ColorRGBA,
+  index: number | undefined
 }
 
+class Builder {
+  private vertices: Vertex[] = []
+  private indices: number[] = []
+
+  vertexCount(): number {
+    return this.vertices.length;
+  }
+
+  triangleCount(): number {
+    return this.indices.length / 3;
+  }
+
+  createVertex(pos: Vector3, color: ColorRGBA): Vertex {
+    const vertex: Vertex = {pos, color_rgba: color, index: this.vertices.length};
+    this.vertices.push(vertex);
+    return vertex;
+  }
+
+  triangle(v0: Vertex, v1: Vertex, v2: Vertex): void {
+    this.indices.push(v0.index, v1.index, v2.index);
+    this.indices.push(v0.index, v2.index, v1.index);
+  }
+
+  quad(v0: Vertex, v1: Vertex, v2: Vertex, v3: Vertex): void {
+    this.indices.push(v0.index, v1.index, v2.index, v0.index, v2.index, v3.index);
+    this.indices.push(v0.index, v2.index, v1.index, v0.index, v3.index, v2.index);
+  }
+
+  move(offset: Vector3): void {
+    this.vertices.forEach(v => {
+      v.pos.x += offset.x;
+      v.pos.y += offset.y;
+      v.pos.z += offset.z;
+    })
+  }
+
+  scale(scale: number): void {
+    this.vertices.forEach(v => {
+      v.pos.x *= scale;
+      v.pos.y *= scale;
+      v.pos.z *= scale;
+    })
+  }
+
+  finalize(): MeshData {
+
+    return {
+      pos: new Uint8Array(Float32Array.from(this.vertices.flatMap(v => [v.pos.x, v.pos.y, v.pos.z])).buffer),
+      color: new Uint8Array(Uint8Array.from(this.vertices.flatMap(v => v.color_rgba)).buffer),
+      index: new Uint8Array(Uint16Array.from(this.indices).buffer)
+    };
+  }
+}
 
 export async function buildPathMesh(
   path: Path,
-  chunkX: number,
-  chunkZ: number,
   level: floor_t
-): Promise<MeshData | null> {
+): Promise<Builder> {
   if (!path || path.length === 0) return null;
 
-  const mesh: MeshBuilder = {pos: [], color: [], index: [], vertexIndex: 0};
-  const rootX = -CHUNK_SIZE / 2 * TILE_SIZE;
-  const rootZ = -CHUNK_SIZE / 2 * TILE_SIZE;
-  const heightScaling = TILE_SIZE / 32;
+  const builder = new Builder();
 
   const getTerrainHeight = async (local_x: number, local_z: number): Promise<number> => {
     const tile_x = Math.floor(local_x);
@@ -142,8 +193,8 @@ export async function buildPathMesh(
     const dz = local_z - tile_z;
 
     const tile: TileCoordinates = {
-      x: tile_x + CHUNK_SIZE * chunkX,
-      y: tile_z + CHUNK_SIZE * chunkZ,
+      x: tile_x,
+      y: tile_z,
       level: level
     }
 
@@ -152,46 +203,8 @@ export async function buildPathMesh(
       await TileHeightData.instance().getTile(tile, "se") * dx * (1 - dz) +
       await TileHeightData.instance().getTile(tile, "nw") * (1 - dx) * dz +
       await TileHeightData.instance().getTile(tile, "ne") * dx * dz
-    ) * heightScaling
+    )
   }
-
-  const writeVertex = async (
-    tileX: number,
-    tileZ: number,
-    dx: number,
-    dy: number,
-    dz: number,
-    color: ColorRGBA
-  ): Promise<number> => {
-    if (tileX < 0 || tileZ < 0 || tileX >= CHUNK_SIZE || tileZ >= CHUNK_SIZE) {
-      return -1;
-    }
-
-    const height = await getTerrainHeight(tileX + dx, tileZ + dz);
-
-    mesh.pos.push(
-      (tileX + dx) * TILE_SIZE + rootX,
-      height + dy * TILE_SIZE,
-      (tileZ + dz) * TILE_SIZE + rootZ
-    );
-    mesh.color.push(...color);
-    return mesh.vertexIndex++;
-  };
-
-
-  const pushQuad = (v0: number, v1: number, v2: number, v3: number): void => {
-    if (v0 >= 0 && v1 >= 0 && v2 >= 0 && v3 >= 0) {
-      mesh.index.push(v0, v1, v2, v0, v2, v3);
-      mesh.index.push(v0, v2, v1, v0, v3, v2);
-    }
-  };
-
-  const pushTriangle = (v0: number, v1: number, v2: number): void => {
-    if (v0 >= 0 && v1 >= 0 && v2 >= 0) {
-      mesh.index.push(v0, v1, v2);
-      mesh.index.push(v0, v2, v1);
-    }
-  };
 
   const drawLine = async (
     from: TileCoordinates,
@@ -204,15 +217,10 @@ export async function buildPathMesh(
   ): Promise<void> => {
     if (from.level !== level || to.level !== level) return;
 
-    let fx = from.x - chunkX * CHUNK_SIZE + 0.5;
-    let fz = from.y - chunkZ * CHUNK_SIZE + 0.5;
-    const tx = to.x - chunkX * CHUNK_SIZE + 0.5;
-    const tz = to.y - chunkZ * CHUNK_SIZE + 0.5;
-
-    if ((fx < -1 && tx < -1) || (fx > CHUNK_SIZE && tx > CHUNK_SIZE) ||
-      (fz < -1 && tz < -1) || (fz > CHUNK_SIZE && tz > CHUNK_SIZE)) {
-      return;
-    }
+    let fx = from.x + 0.5;
+    let fz = from.y + 0.5;
+    const tx = to.x + 0.5;
+    const tz = to.y + 0.5;
 
     let dx = tx - fx;
     let dz = tz - fz;
@@ -243,9 +251,7 @@ export async function buildPathMesh(
 
     const segments = Math.max(1, Math.ceil(2 * bodyLen));
 
-    type Point = { x: number; z: number; y: number }
-
-    let control_points: { x: number; z: number; y: number }[] = [];
+    let control_points: Vector3[] = [];
 
     // Get all control points along the line
     for (let seg = 0; seg <= segments; seg++) {
@@ -258,10 +264,10 @@ export async function buildPathMesh(
       control_points.push({x, y, z});
     }
 
-    function convexHull(points: Point[]): Point[] {
+    function convexHull(points: Vector3[]): Vector3[] {
       // TODO: I don't think this is the most efficient algorithm.
       //       It's O(n^2), but there should be an O(n) solution.
-      const hull: Point[] = [];
+      const hull: Vector3[] = [];
       hull.push(points[0]);
 
       let next_unhandled = 1;
@@ -304,12 +310,12 @@ export async function buildPathMesh(
       const ex = segment_end.x;
       const ez = segment_end.z;
 
-      const v0 = await writeVertex(Math.floor(sx), Math.floor(sz), sx - Math.floor(sx) - perpX, LINE_HEIGHT, sz - Math.floor(sz) - perpZ, color);
-      const v1 = await writeVertex(Math.floor(sx), Math.floor(sz), sx - Math.floor(sx) + perpX, LINE_HEIGHT, sz - Math.floor(sz) + perpZ, color);
-      const v2 = await writeVertex(Math.floor(ex), Math.floor(ez), ex - Math.floor(ex) + perpX, LINE_HEIGHT, ez - Math.floor(ez) + perpZ, color);
-      const v3 = await writeVertex(Math.floor(ex), Math.floor(ez), ex - Math.floor(ex) - perpX, LINE_HEIGHT, ez - Math.floor(ez) - perpZ, color);
+      const v0 = builder.createVertex({x: sx - perpX, y: await getTerrainHeight(sx, sz), z: sz - perpZ}, color);
+      const v1 = builder.createVertex({x: sx + perpX, y: await getTerrainHeight(sx, sz), z: sz + perpZ}, color);
+      const v2 = builder.createVertex({x: ex + perpX, y: await getTerrainHeight(ex, ez), z: ez + perpZ}, color);
+      const v3 = builder.createVertex({x: ex - perpX, y: await getTerrainHeight(ex, ez), z: ez - perpZ}, color);
 
-      pushQuad(v0, v1, v2, v3);
+      builder.quad(v0, v1, v2, v3);
     }
 
     if (showArrow && len > ARROW_HEAD_LENGTH * 0.5) {
@@ -328,29 +334,27 @@ export async function buildPathMesh(
       const tipX = fx + dirX * effectiveLen;
       const tipZ = fz + dirZ * effectiveLen;
 
-      const v0 = await writeVertex(Math.floor(base1x), Math.floor(base1z), base1x - Math.floor(base1x), ARROW_HEAD_HEIGHT, base1z - Math.floor(base1z), color);
-      const v1 = await writeVertex(Math.floor(base2x), Math.floor(base2z), base2x - Math.floor(base2x), ARROW_HEAD_HEIGHT, base2z - Math.floor(base2z), color);
-      const v2 = await writeVertex(Math.floor(tipX), Math.floor(tipZ), tipX - Math.floor(tipX), ARROW_HEAD_HEIGHT, tipZ - Math.floor(tipZ), color);
+      const v0 = builder.createVertex({x: base1x, y: await getTerrainHeight(base1x, base1z), z: base1z}, color);
+      const v1 = builder.createVertex({x: base2x, y: await getTerrainHeight(base2x, base2z), z: base2z}, color);
+      const v2 = builder.createVertex({x: tipX, y: await getTerrainHeight(tipX, tipZ), z: tipZ}, color);
 
-      pushTriangle(v0, v1, v2);
+      builder.triangle(v0, v1, v2);
     }
   };
-
 
   const drawTileMarker = async (tile: TileCoordinates, color: ColorRGBA): Promise<void> => {
     if (tile.level !== level) return;
 
-    const lx = tile.x - chunkX * CHUNK_SIZE;
-    const lz = tile.y - chunkZ * CHUNK_SIZE;
-
-    if (lx < 0 || lz < 0 || lx >= CHUNK_SIZE || lz >= CHUNK_SIZE) return;
+    const lx = tile.x;
+    const lz = tile.y;
 
     const drawBorderQuad = async (x0: number, z0: number, x1: number, z1: number): Promise<void> => {
-      const v0 = await writeVertex(lx, lz, x0, TILE_MARKER_HEIGHT, z0, color);
-      const v1 = await writeVertex(lx, lz, x1, TILE_MARKER_HEIGHT, z0, color);
-      const v2 = await writeVertex(lx, lz, x1, TILE_MARKER_HEIGHT, z1, color);
-      const v3 = await writeVertex(lx, lz, x0, TILE_MARKER_HEIGHT, z1, color);
-      pushQuad(v0, v1, v2, v3);
+      const v0 = builder.createVertex({x: lx + x0, y: await getTerrainHeight(lx + x0, lz + z0) + TILE_MARKER_HEIGHT, z: lz + z0}, color);
+      const v1 = builder.createVertex({x: lx + x1, y: await getTerrainHeight(lx + x1, lz + z0) + TILE_MARKER_HEIGHT, z: lz + z0}, color);
+      const v2 = builder.createVertex({x: lx + x1, y: await getTerrainHeight(lx + x1, lz + z1) + TILE_MARKER_HEIGHT, z: lz + z1}, color);
+      const v3 = builder.createVertex({x: lx + x0, y: await getTerrainHeight(lx + x0, lz + z1) + TILE_MARKER_HEIGHT, z: lz + z1}, color);
+
+      builder.quad(v0, v1, v2, v3)
     };
 
     const t = TILE_MARKER_BORDER;
@@ -364,10 +368,8 @@ export async function buildPathMesh(
   const drawBeamMarker = async (tile: TileCoordinates, color: ColorRGBA): Promise<void> => {
     if (tile.level !== level) return;
 
-    const lx = tile.x - chunkX * CHUNK_SIZE;
-    const lz = tile.y - chunkZ * CHUNK_SIZE;
-
-    if (lx < 0 || lz < 0 || lx >= CHUNK_SIZE || lz >= CHUNK_SIZE) return;
+    const lx = tile.x;
+    const lz = tile.y;
 
     const beamHeight = 15.0;
     const bottomRadius = 0.8;
@@ -386,16 +388,24 @@ export async function buildPathMesh(
     const bottomColor: ColorRGBA = [255, 20, 20, 80];
     const topColor: ColorRGBA = [255, 100, 100, 0];
 
-    const bottomVerts: number[] = [];
-    const topVerts: number[] = [];
+    const bottomVerts: Vertex[] = [];
+    const topVerts: Vertex[] = [];
 
     for (let i = 0; i < segments; i++) {
       const angle = (i / segments) * 2 * Math.PI;
       const cos = Math.cos(angle);
       const sin = Math.sin(angle);
 
-      const bottomV = await writeVertex(lx, lz, centerX + cos * bottomRadius, 0, centerZ + sin * bottomRadius, bottomColor);
-      const topV = await writeVertex(lx, lz, topCenterX + cos * topRadius, beamHeight, topCenterZ + sin * topRadius, topColor);
+      const bottomV = builder.createVertex({
+        x: lx + centerX + cos * bottomRadius,
+        y: await getTerrainHeight(lx + centerX + cos * bottomRadius, centerZ + sin * bottomRadius),
+        z: centerZ + sin * bottomRadius
+      }, bottomColor);
+      const topV = builder.createVertex({
+        x: topCenterX + cos * topRadius,
+        y: await getTerrainHeight(lx + centerX + cos * bottomRadius, centerZ + sin * bottomRadius) + beamHeight,
+        z: topCenterZ + sin * topRadius,
+      }, topColor);
 
       bottomVerts.push(bottomV);
       topVerts.push(topV);
@@ -403,15 +413,18 @@ export async function buildPathMesh(
 
     for (let i = 0; i < segments; i++) {
       const next = (i + 1) % segments;
-      pushQuad(bottomVerts[i], bottomVerts[next], topVerts[next], topVerts[i]);
+      builder.quad(bottomVerts[i], bottomVerts[next], topVerts[next], topVerts[i]);
     }
 
-    const bottomCenter = await writeVertex(lx, lz, centerX, 0, centerZ, [255, 0, 0, 100]);
+    const bottomCenter = builder.createVertex({
+      x: lx + centerX,
+      y: await getTerrainHeight(lx + centerX, lz + centerZ) + beamHeight,
+      z: lz + centerZ,
+    }, [255, 0, 0, 100]);
+
     for (let i = 0; i < segments; i++) {
       const next = (i + 1) % segments;
-      if (bottomCenter >= 0 && bottomVerts[i] >= 0 && bottomVerts[next] >= 0) {
-        pushTriangle(bottomCenter, bottomVerts[next], bottomVerts[i]);
-      }
+      builder.triangle(bottomCenter, bottomVerts[next], bottomVerts[i]);
     }
   };
 
@@ -555,11 +568,5 @@ export async function buildPathMesh(
     }
   }
 
-  if (mesh.index.length === 0) return null;
-
-  return {
-    pos: new Uint8Array(Float32Array.from(mesh.pos).buffer),
-    color: new Uint8Array(Uint8Array.from(mesh.color).buffer),
-    index: new Uint8Array(Uint16Array.from(mesh.index).buffer)
-  };
+  return builder
 }
