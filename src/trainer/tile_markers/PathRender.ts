@@ -17,6 +17,8 @@ const ARROW_OVERLAP = 0.25;
 const ARROW_HEAD_LENGTH = 0.3;
 const LINE_HEIGHT = 0.1;
 const ARROW_HEAD_HEIGHT = 0.12;
+
+const FLOOR_OVERLAY_VERTICAL_OFFSET = 1 / 16;
 const TILE_MARKER_HEIGHT = 0.08;
 const TILE_MARKER_BORDER = 0.08;
 
@@ -168,7 +170,7 @@ export async function buildPathMesh(
         x: fx + dx * t0,
         y: fz + dz * t0,
         level: from.level
-      }))
+      }, FLOOR_OVERLAY_VERTICAL_OFFSET))
     }
 
     function convexHull(points: Vector3[]): Vector3[] {
@@ -236,9 +238,9 @@ export async function buildPathMesh(
       const tipX = fx + dirX * effectiveLen;
       const tipZ = fz + dirZ * effectiveLen;
 
-      const v0 = builder.createVertex(await height_data.resolve({x: base1x, y: base1z, level: to.level}), color);
-      const v1 = builder.createVertex(await height_data.resolve({x: base2x, y: base2z, level: to.level}), color);
-      const v2 = builder.createVertex(await height_data.resolve({x: tipX, y: tipZ, level: to.level}), color);
+      const v0 = builder.createVertex(await height_data.resolve({x: base1x, y: base1z, level: to.level}, FLOOR_OVERLAY_VERTICAL_OFFSET), color);
+      const v1 = builder.createVertex(await height_data.resolve({x: base2x, y: base2z, level: to.level}, FLOOR_OVERLAY_VERTICAL_OFFSET), color);
+      const v2 = builder.createVertex(await height_data.resolve({x: tipX, y: tipZ, level: to.level}, FLOOR_OVERLAY_VERTICAL_OFFSET), color);
 
       builder.triangle(v0, v1, v2);
     }
@@ -299,13 +301,13 @@ export async function buildPathMesh(
           x: lx + centerX + cos * bottomRadius,
           y: centerZ + sin * bottomRadius,
           level: tile.level
-        }), bottomColor);
+        }, FLOOR_OVERLAY_VERTICAL_OFFSET), bottomColor);
 
       const topV = builder.createVertex(await height_data.resolve({
         x: topCenterX + cos * topRadius,
         y: topCenterZ + sin * topRadius,
         level: tile.level
-      }), topColor);
+      }, 0), topColor);
 
       bottomVerts.push(bottomV);
       topVerts.push(topV);

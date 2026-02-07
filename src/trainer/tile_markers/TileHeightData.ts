@@ -42,7 +42,7 @@ export class TileHeightData {
     return TileHeightData._instance.get()
   }
 
-  async getInterpolated(coordinate: TileCoordinates): Promise<number> {
+  async getInterpolated(coordinate: TileCoordinates, offset: number = 0): Promise<number> {
     const rounded = TileCoordinates.snap(coordinate)
 
     const dx = coordinate.x - rounded.x + 0.5;
@@ -53,14 +53,14 @@ export class TileHeightData {
       await TileHeightData.instance().getTile(rounded, "se") * dx * (1 - dz) +
       await TileHeightData.instance().getTile(rounded, "nw") * (1 - dx) * dz +
       await TileHeightData.instance().getTile(rounded, "ne") * dx * dz
-    )
+    ) + offset
   }
 
   async resolve(coordinate: TileCoordinates, offset: number = 0): Promise<Vector3> {
     return {
       x: coordinate.x,
       z: coordinate.y,
-      y: await this.getInterpolated(coordinate) + offset
+      y: await this.getInterpolated(coordinate, offset)
     }
   }
 

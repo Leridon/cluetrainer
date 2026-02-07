@@ -6,6 +6,7 @@ import {GlOverlay} from "../../lib/alt1gl/ts/util/patchrs_napi";
 import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
 import {Path} from "../../lib/runescape/pathing";
 import {buildPathMesh, getPathLevels} from "./PathRender";
+import {mat4} from "gl-matrix";
 
 const CHUNK_SIZE = chunksize;
 const TILE_SIZE = tilesize;
@@ -23,7 +24,6 @@ class PathOverlayChunk {
     private targetVertexObject: number,
     chunkX: number,
     chunkZ: number,
-    private levels: Set<floor_t>,
     private paths: Path[],
     private program: patchrs.GlProgram,
     private uniformSources: patchrs.OverlayUniformSource[]
@@ -42,7 +42,7 @@ class PathOverlayChunk {
 
       if (mesh) {
         // Move mesh to be relative to chunk origin
-        mesh.move({x: -this.chunkX * CHUNK_SIZE - CHUNK_SIZE / 2, z: -this.chunkZ * CHUNK_SIZE - CHUNK_SIZE / 2, y: 0})
+        //mesh.move({x: -this.chunkX * CHUNK_SIZE - CHUNK_SIZE / 2, z: -this.chunkZ * CHUNK_SIZE - CHUNK_SIZE / 2, y: 0})
 
         // Scale from tile coordinate system to rendering coordinate system
         mesh.scale(TILE_SIZE)
@@ -54,7 +54,6 @@ class PathOverlayChunk {
         console.log("buildPathMesh returned null")
       }
     }
-
 
     if (meshes.length === 0) {
       this.loaded = true;
@@ -75,9 +74,9 @@ class PathOverlayChunk {
 
     uniforms.mappings.uModelMatrix.write(
       positionMatrix(
-        (this.chunkX + 0.5) * TILE_SIZE * CHUNK_SIZE,
-        TILE_SIZE / 16,
-        (this.chunkZ + 0.5) * TILE_SIZE * CHUNK_SIZE
+        0,
+        0,
+        0
       )
     );
 
@@ -210,7 +209,7 @@ export class TileMarkersOverlay {
           vaoMap.set(render.vertexObjectId,
             new PathOverlayChunk(
               render.vertexObjectId,
-              chunkX, chunkZ, levelsNeeded,
+              chunkX, chunkZ,
               this.paths, this.program!, this.uniformSources
             )
           );
