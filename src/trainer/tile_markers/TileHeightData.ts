@@ -1,5 +1,7 @@
 import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
 import {Lazy, lazy} from "../../lib/Lazy";
+import {MeshBuilder} from "./MeshBuilder";
+import Vector3 = MeshBuilder.Vector3;
 
 const meta = {
   chunks_per_file: 1,
@@ -40,6 +42,28 @@ export class TileHeightData {
     return TileHeightData._instance.get()
   }
 
+  async getInterpolated(coordinate: TileCoordinates, offset: number = 0): Promise<number> {
+    const rounded = TileCoordinates.snap(coordinate)
+
+    const dx = coordinate.x - rounded.x + 0.5;
+    const dz = coordinate.y - rounded.y + 0.5;
+
+    return (
+      await TileHeightData.instance().getTile(rounded, "sw") * (1 - dx) * (1 - dz) +
+      await TileHeightData.instance().getTile(rounded, "se") * dx * (1 - dz) +
+      await TileHeightData.instance().getTile(rounded, "nw") * (1 - dx) * dz +
+      await TileHeightData.instance().getTile(rounded, "ne") * dx * dz
+    ) + offset
+  }
+
+  async resolve(coordinate: TileCoordinates, offset: number = 0): Promise<Vector3> {
+    return {
+      x: coordinate.x,
+      z: coordinate.y,
+      y: await this.getInterpolated(coordinate, offset)
+    }
+  }
+
   async getTile(coordinate: TileCoordinates, where: TileHeightData.SamplePoint): Promise<number> {
     const file_x = ~~(coordinate.x / (meta.chunk_size * meta.chunks_per_file))
     const file_z = ~~(coordinate.y / (meta.chunk_size * meta.chunks_per_file))
@@ -56,12 +80,13 @@ export class TileHeightData {
       promise.then((a) => this.chunks[coordinate.level][file_i] = a)
     }
 
-    return (await this.chunks[coordinate.level][file_i]).getSample(coordinate, where)
+    return (await this.chunks[coordinate.level][file_i])?.getSample(coordinate, where) ?? 0
   }
 }
 
 export namespace TileHeightData {
   export type SamplePoint = "ne" | "nw" | "se" | "sw" | "center"
+  const DATA_SCALE = 32
 
   export class ChunkTileHeightData {
     constructor(
@@ -97,7 +122,7 @@ export namespace TileHeightData {
         debugger
       }
 
-      return this.height_data[i]
+      return this.height_data[i] / DATA_SCALE
     }
   }
 }
