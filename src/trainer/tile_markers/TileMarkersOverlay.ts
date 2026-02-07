@@ -37,26 +37,24 @@ class PathOverlayChunk {
     const meshes: { pos: Uint8Array, color: Uint8Array, index: Uint8Array }[] = [];
 
     // Build meshes for all levels needed
-    for (const level of this.levels) {
-      for (const path of this.paths) {
-        const mesh = await buildPathMesh(path, level);
+    for (const path of this.paths) {
+      const mesh = await buildPathMesh(path);
 
-        if (mesh) {
-          // Move mesh to be relative to chunk origin
-          mesh.move({x: -this.chunkX * CHUNK_SIZE - CHUNK_SIZE / 2, z: -this.chunkZ * CHUNK_SIZE - CHUNK_SIZE / 2, y: 0})
+      if (mesh) {
+        // Move mesh to be relative to chunk origin
+        mesh.move({x: -this.chunkX * CHUNK_SIZE - CHUNK_SIZE / 2, z: -this.chunkZ * CHUNK_SIZE - CHUNK_SIZE / 2, y: 0})
 
-          // Scale from tile coordinate system to rendering coordinate system
-          mesh.scale(TILE_SIZE)
+        // Scale from tile coordinate system to rendering coordinate system
+        mesh.scale(TILE_SIZE)
 
-          if (mesh.triangleCount() > 0) {
-            meshes.push(mesh.finalize())
-          }
-        } else {
-          console.log("buildPathMesh returned null")
+        if (mesh.triangleCount() > 0) {
+          meshes.push(mesh.finalize())
         }
-
+      } else {
+        console.log("buildPathMesh returned null")
       }
     }
+
 
     if (meshes.length === 0) {
       this.loaded = true;

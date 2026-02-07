@@ -1,5 +1,7 @@
 import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
 import {Lazy, lazy} from "../../lib/Lazy";
+import {MeshBuilder} from "./MeshBuilder";
+import Vector3 = MeshBuilder.Vector3;
 
 const meta = {
   chunks_per_file: 1,
@@ -38,6 +40,28 @@ export class TileHeightData {
 
   static instance(): TileHeightData {
     return TileHeightData._instance.get()
+  }
+
+  async getInterpolated(coordinate: TileCoordinates): Promise<number> {
+    const rounded = TileCoordinates.snap(coordinate)
+
+    const dx = coordinate.x - rounded.x + 0.5;
+    const dz = coordinate.y - rounded.y + 0.5;
+
+    return (
+      await TileHeightData.instance().getTile(rounded, "sw") * (1 - dx) * (1 - dz) +
+      await TileHeightData.instance().getTile(rounded, "se") * dx * (1 - dz) +
+      await TileHeightData.instance().getTile(rounded, "nw") * (1 - dx) * dz +
+      await TileHeightData.instance().getTile(rounded, "ne") * dx * dz
+    )
+  }
+
+  async resolve(coordinate: TileCoordinates, offset: number = 0): Promise<Vector3> {
+    return {
+      x: coordinate.x,
+      z: coordinate.y,
+      y: await this.getInterpolated(coordinate) + offset
+    }
   }
 
   async getTile(coordinate: TileCoordinates, where: TileHeightData.SamplePoint): Promise<number> {

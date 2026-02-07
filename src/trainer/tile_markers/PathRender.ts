@@ -3,9 +3,12 @@ import {tilesize} from "../../lib/alt1gl/ts/render/reflect3d";
 import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
 import {Path} from "../../lib/runescape/pathing";
 import {TileHeightData} from "./TileHeightData";
+import {MeshBuilder} from "./MeshBuilder";
+import ColorRGBA = MeshBuilder.ColorRGBA;
+import Vector3 = MeshBuilder.Vector3;
+import Vertex = MeshBuilder.Vertex;
 
 type AbilityName = "surge" | "escape" | "dive" | "barge" | "run" | "teleport" | "transport" | "powerburst" | "redclick";
-type ColorRGBA = [number, number, number, number];
 
 const CHUNK_SIZE = chunksize;
 const TILE_SIZE = tilesize;
@@ -17,7 +20,7 @@ const ARROW_HEAD_HEIGHT = 0.12;
 const TILE_MARKER_HEIGHT = 0.08;
 const TILE_MARKER_BORDER = 0.08;
 
-export const ABILITY_COLORS: Record<AbilityName, ColorRGBA> = {
+export const ABILITY_COLORS: Record<AbilityName, MeshBuilder.ColorRGBA> = {
   surge: [0, 100, 255, 255],
   escape: [255, 100, 0, 255],
   dive: [255, 220, 0, 255],
@@ -102,109 +105,15 @@ function tilesMatch(a: TileCoordinates, b: TileCoordinates): boolean {
   return a.x === b.x && a.y === b.y;
 }
 
-export interface MeshData {
-  pos: Uint8Array;
-  color: Uint8Array;
-  index: Uint8Array;
-}
-
-type Vector3 = { x: number, y: number, z: number };
-
-interface MeshBuilder {
-  pos: number[];
-  color: number[];
-  index: number[];
-  vertexIndex: number;
-}
-
-type Vertex = {
-  pos: Vector3,
-  color_rgba: ColorRGBA,
-  index: number | undefined
-}
-
-class Builder {
-  private vertices: Vertex[] = []
-  private indices: number[] = []
-
-  vertexCount(): number {
-    return this.vertices.length;
-  }
-
-  triangleCount(): number {
-    return this.indices.length / 3;
-  }
-
-  createVertex(pos: Vector3, color: ColorRGBA): Vertex {
-    const vertex: Vertex = {pos, color_rgba: color, index: this.vertices.length};
-    this.vertices.push(vertex);
-    return vertex;
-  }
-
-  triangle(v0: Vertex, v1: Vertex, v2: Vertex): void {
-    this.indices.push(v0.index, v1.index, v2.index);
-    this.indices.push(v0.index, v2.index, v1.index);
-  }
-
-  quad(v0: Vertex, v1: Vertex, v2: Vertex, v3: Vertex): void {
-    this.indices.push(v0.index, v1.index, v2.index, v0.index, v2.index, v3.index);
-    this.indices.push(v0.index, v2.index, v1.index, v0.index, v3.index, v2.index);
-  }
-
-  move(offset: Vector3): void {
-    this.vertices.forEach(v => {
-      v.pos.x += offset.x;
-      v.pos.y += offset.y;
-      v.pos.z += offset.z;
-    })
-  }
-
-  scale(scale: number): void {
-    this.vertices.forEach(v => {
-      v.pos.x *= scale;
-      v.pos.y *= scale;
-      v.pos.z *= scale;
-    })
-  }
-
-  finalize(): MeshData {
-
-    return {
-      pos: new Uint8Array(Float32Array.from(this.vertices.flatMap(v => [v.pos.x, v.pos.y, v.pos.z])).buffer),
-      color: new Uint8Array(Uint8Array.from(this.vertices.flatMap(v => v.color_rgba)).buffer),
-      index: new Uint8Array(Uint16Array.from(this.indices).buffer)
-    };
-  }
-}
 
 export async function buildPathMesh(
-  path: Path,
-  level: floor_t
-): Promise<Builder> {
+  path: Path
+): Promise<MeshBuilder> {
   if (!path || path.length === 0) return null;
 
-  const builder = new Builder();
+  const height_data = TileHeightData.instance();
 
-  const getTerrainHeight = async (local_x: number, local_z: number): Promise<number> => {
-    const tile_x = Math.floor(local_x);
-    const tile_z = Math.floor(local_z)
-
-    const dx = local_x - tile_x;
-    const dz = local_z - tile_z;
-
-    const tile: TileCoordinates = {
-      x: tile_x,
-      y: tile_z,
-      level: level
-    }
-
-    return (
-      await TileHeightData.instance().getTile(tile, "sw") * (1 - dx) * (1 - dz) +
-      await TileHeightData.instance().getTile(tile, "se") * dx * (1 - dz) +
-      await TileHeightData.instance().getTile(tile, "nw") * (1 - dx) * dz +
-      await TileHeightData.instance().getTile(tile, "ne") * dx * dz
-    )
-  }
+  const builder = new MeshBuilder();
 
   const drawLine = async (
     from: TileCoordinates,
@@ -215,8 +124,6 @@ export async function buildPathMesh(
     startHasTile: boolean,
     endHasTile: boolean
   ): Promise<void> => {
-    if (from.level !== level || to.level !== level) return;
-
     let fx = from.x + 0.5;
     let fz = from.y + 0.5;
     const tx = to.x + 0.5;
@@ -257,11 +164,11 @@ export async function buildPathMesh(
     for (let seg = 0; seg <= segments; seg++) {
       const t0 = (seg / segments) * (bodyLen / len);
 
-      const x = fx + dx * t0;
-      const z = fz + dz * t0;
-      const y = await getTerrainHeight(x, z)
-
-      control_points.push({x, y, z});
+      control_points.push(await height_data.resolve({
+        x: fx + dx * t0,
+        y: fz + dz * t0,
+        level: from.level
+      }))
     }
 
     function convexHull(points: Vector3[]): Vector3[] {
@@ -305,15 +212,10 @@ export async function buildPathMesh(
       const segment_start = control_points[i - 1];
       const segment_end = control_points[i];
 
-      const sx = segment_start.x;
-      const sz = segment_start.z;
-      const ex = segment_end.x;
-      const ez = segment_end.z;
-
-      const v0 = builder.createVertex({x: sx - perpX, y: await getTerrainHeight(sx, sz), z: sz - perpZ}, color);
-      const v1 = builder.createVertex({x: sx + perpX, y: await getTerrainHeight(sx, sz), z: sz + perpZ}, color);
-      const v2 = builder.createVertex({x: ex + perpX, y: await getTerrainHeight(ex, ez), z: ez + perpZ}, color);
-      const v3 = builder.createVertex({x: ex - perpX, y: await getTerrainHeight(ex, ez), z: ez - perpZ}, color);
+      const v0 = builder.createVertex(Vector3.add(segment_start, {x: -perpX, y: 0, z: -perpZ}), color);
+      const v1 = builder.createVertex(Vector3.add(segment_start, {x: +perpX, y: 0, z: +perpZ}), color);
+      const v2 = builder.createVertex(Vector3.add(segment_end, {x: -perpX, y: 0, z: -perpZ}), color);
+      const v3 = builder.createVertex(Vector3.add(segment_end, {x: +perpX, y: 0, z: +perpZ}), color);
 
       builder.quad(v0, v1, v2, v3);
     }
@@ -334,25 +236,23 @@ export async function buildPathMesh(
       const tipX = fx + dirX * effectiveLen;
       const tipZ = fz + dirZ * effectiveLen;
 
-      const v0 = builder.createVertex({x: base1x, y: await getTerrainHeight(base1x, base1z), z: base1z}, color);
-      const v1 = builder.createVertex({x: base2x, y: await getTerrainHeight(base2x, base2z), z: base2z}, color);
-      const v2 = builder.createVertex({x: tipX, y: await getTerrainHeight(tipX, tipZ), z: tipZ}, color);
+      const v0 = builder.createVertex(await height_data.resolve({x: base1x, y: base1z, level: to.level}), color);
+      const v1 = builder.createVertex(await height_data.resolve({x: base2x, y: base2z, level: to.level}), color);
+      const v2 = builder.createVertex(await height_data.resolve({x: tipX, y: tipZ, level: to.level}), color);
 
       builder.triangle(v0, v1, v2);
     }
   };
 
   const drawTileMarker = async (tile: TileCoordinates, color: ColorRGBA): Promise<void> => {
-    if (tile.level !== level) return;
-
     const lx = tile.x;
     const lz = tile.y;
 
     const drawBorderQuad = async (x0: number, z0: number, x1: number, z1: number): Promise<void> => {
-      const v0 = builder.createVertex({x: lx + x0, y: await getTerrainHeight(lx + x0, lz + z0) + TILE_MARKER_HEIGHT, z: lz + z0}, color);
-      const v1 = builder.createVertex({x: lx + x1, y: await getTerrainHeight(lx + x1, lz + z0) + TILE_MARKER_HEIGHT, z: lz + z0}, color);
-      const v2 = builder.createVertex({x: lx + x1, y: await getTerrainHeight(lx + x1, lz + z1) + TILE_MARKER_HEIGHT, z: lz + z1}, color);
-      const v3 = builder.createVertex({x: lx + x0, y: await getTerrainHeight(lx + x0, lz + z1) + TILE_MARKER_HEIGHT, z: lz + z1}, color);
+      const v0 = builder.createVertex(await height_data.resolve({x: lx + x0, y: lz + z0, level: tile.level}, TILE_MARKER_HEIGHT), color);
+      const v1 = builder.createVertex(await height_data.resolve({x: lx + x1, y: lz + z0, level: tile.level}, TILE_MARKER_HEIGHT), color);
+      const v2 = builder.createVertex(await height_data.resolve({x: lx + x1, y: lz + z1, level: tile.level}, TILE_MARKER_HEIGHT), color);
+      const v3 = builder.createVertex(await height_data.resolve({x: lx + x0, y: lz + z1, level: tile.level}, TILE_MARKER_HEIGHT), color);
 
       builder.quad(v0, v1, v2, v3)
     };
@@ -366,8 +266,6 @@ export async function buildPathMesh(
 
 
   const drawBeamMarker = async (tile: TileCoordinates, color: ColorRGBA): Promise<void> => {
-    if (tile.level !== level) return;
-
     const lx = tile.x;
     const lz = tile.y;
 
@@ -396,16 +294,18 @@ export async function buildPathMesh(
       const cos = Math.cos(angle);
       const sin = Math.sin(angle);
 
-      const bottomV = builder.createVertex({
-        x: lx + centerX + cos * bottomRadius,
-        y: await getTerrainHeight(lx + centerX + cos * bottomRadius, centerZ + sin * bottomRadius),
-        z: centerZ + sin * bottomRadius
-      }, bottomColor);
-      const topV = builder.createVertex({
+      const bottomV = builder.createVertex(
+        await height_data.resolve({
+          x: lx + centerX + cos * bottomRadius,
+          y: centerZ + sin * bottomRadius,
+          level: tile.level
+        }), bottomColor);
+
+      const topV = builder.createVertex(await height_data.resolve({
         x: topCenterX + cos * topRadius,
-        y: await getTerrainHeight(lx + centerX + cos * bottomRadius, centerZ + sin * bottomRadius) + beamHeight,
-        z: topCenterZ + sin * topRadius,
-      }, topColor);
+        y: topCenterZ + sin * topRadius,
+        level: tile.level
+      }), topColor);
 
       bottomVerts.push(bottomV);
       topVerts.push(topV);
@@ -416,11 +316,7 @@ export async function buildPathMesh(
       builder.quad(bottomVerts[i], bottomVerts[next], topVerts[next], topVerts[i]);
     }
 
-    const bottomCenter = builder.createVertex({
-      x: lx + centerX,
-      y: await getTerrainHeight(lx + centerX, lz + centerZ) + beamHeight,
-      z: lz + centerZ,
-    }, [255, 0, 0, 100]);
+    const bottomCenter = builder.createVertex(await height_data.resolve({x: lx + centerX, y: lz + centerZ, level: tile.level}, beamHeight), [255, 0, 0, 100]);
 
     for (let i = 0; i < segments; i++) {
       const next = (i + 1) % segments;
