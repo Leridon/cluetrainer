@@ -1,5 +1,5 @@
 import {GL_FLOAT, GL_UNSIGNED_BYTE, UniformSnapshotBuilder} from "../../lib/alt1gl/ts/overlays";
-import {chunksize, fragshadermouse, tilesize, vertshadermousealpha} from "../../lib/alt1gl/ts/overlays/tilemarkers";
+import {chunksize, tilesize} from "../../lib/alt1gl/ts/overlays/tilemarkers";
 import {getUniformValue} from "../../lib/alt1gl/ts/render/renderprogram";
 import * as patchrs from "../../lib/alt1gl/ts/util/patchrs_napi";
 import {Path} from "../../lib/runescape/pathing";
@@ -8,6 +8,8 @@ import {Alt1GLVertexArray} from "../../lib/alt1gl/overlay/Alt1GLVertexArray";
 import {buildPathMesh} from "./PathRender";
 import {MeshBuilder} from "./MeshBuilder";
 import {Alt1GLOverlay} from "../../lib/alt1gl/overlay/Alt1GLOverlay";
+import {lazy} from "../../lib/Lazy";
+import {Alt1GLProgram} from "../../lib/alt1gl/overlay/Alt1GLProgram";
 
 const CHUNK_SIZE = chunksize;
 const TILE_SIZE = tilesize;
@@ -17,7 +19,7 @@ const KNOWN_CHUNK_MASK = 1 << 6;
 function createPathOverlay(
   targetVertexObject: number,
   vertexArray: Alt1GLVertexArray,
-  program: patchrs.GlProgram,
+  program: Alt1GLProgram,
   uniformSources: patchrs.OverlayUniformSource[]
 ): Alt1GLOverlay {
   // TODO: This is a temporary function to use while refactoring. Probably won't exist in the final version
@@ -36,7 +38,7 @@ function createPathOverlay(
   );
 
   return new Alt1GLOverlay(
-    {skipProgramMask: SKIP_PROGRAM_MASK, vertexObjectId: targetVertexObject},
+    {skipProgramMask: SKIP_PROGRAM_MASK, vertexObjectId: targetVertexObject, maxPerFrame: 2},
     program,
     vertexArray,
     {
@@ -47,7 +49,8 @@ function createPathOverlay(
 }
 
 export class TileMarkersOverlay {
-  private program: patchrs.GlProgram | null = null;
+  private program = TileMarkersOverlay.program.get();
+
   private uniformSources: patchrs.OverlayUniformSource[] = [];
   private knownProgs = new WeakMap<patchrs.GlProgram, {}>();
   private chunks = new Map<string, Map<number, Alt1GLOverlay>>();  // Key: "chunkX,chunkZ" -> vertexObjectId -> chunk
@@ -62,24 +65,9 @@ export class TileMarkersOverlay {
   }
 
   private initializeProgram(): void {
-    const uniformsBuilder = new UniformSnapshotBuilder({
-      uModelMatrix: "mat4",
-      uViewProjMatrix: "mat4"
-    });
-
     this.uniformSources = [
       {type: "program", name: "uViewProjMatrix", sourceName: "uViewProjMatrix"}
     ];
-
-    this.program = patchrs.native.createProgram(
-      vertshadermousealpha,
-      fragshadermouse,
-      [
-        {location: 0, name: "aPos", type: GL_FLOAT, length: 3},
-        {location: 6, name: "aColor", type: GL_UNSIGNED_BYTE, length: 4}
-      ],
-      uniformsBuilder.args
-    );
   }
 
   async draw(paths: Path[]): Promise<void> {
@@ -105,8 +93,6 @@ export class TileMarkersOverlay {
   }
 
   private start(): void {
-    if (!this.program) return;
-
     this.stopped = false;
 
     this.stream = patchrs.native.streamRenderCalls({
@@ -115,6 +101,9 @@ export class TileMarkersOverlay {
       skipProgramMask: SKIP_PROGRAM_MASK,
       skipVerticesMask: KNOWN_CHUNK_MASK
     }, renders => {
+      console.log(renders.length)
+      debugger
+
       if (this.stopped) return;
 
       for (const render of renders) {
@@ -139,13 +128,52 @@ export class TileMarkersOverlay {
         }
         const vaoMap = this.chunks.get(chunkKey)!;
         if (!vaoMap.has(render.vertexObjectId)) {
-          console.log("Creating overlay for VAO", render.vertexObjectId);
-
           vaoMap.set(render.vertexObjectId,
-            createPathOverlay(render.vertexObjectId, this.vertexArray!, this.program!, this.uniformSources).start()
+            createPathOverlay(render.vertexObjectId, this.vertexArray!, this.program, this.uniformSources).start()
           );
         }
       }
     });
   }
+}
+
+export namespace TileMarkersOverlay {
+  export const program = lazy(() => {
+    const vertshader = `
+    #version 330 core
+    layout (location = 0) in vec3 aPos;
+    layout (location = 6) in vec4 aColor;
+    uniform highp mat4 uModelMatrix;
+    uniform highp mat4 uViewProjMatrix;
+    uniform highp vec2 uMouse;
+    out vec4 ourColor;
+    out vec3 FragPos;
+    void main() {
+        vec4 worldpos = uModelMatrix * vec4(aPos, 1.);
+        gl_Position = uViewProjMatrix * worldpos;
+        FragPos = worldpos.xyz/worldpos.w;
+        ourColor = aColor;
+    }`;
+
+    const fragshader = `
+    #version 330 core
+    in vec4 ourColor;
+    out vec4 FragColor;
+    void main() {
+        FragColor = ourColor;
+    }`;
+
+    return new Alt1GLProgram(
+      vertshader,
+      fragshader,
+      [
+        {location: 0, name: "aPos", type: GL_FLOAT, length: 3},
+        {location: 6, name: "aColor", type: GL_UNSIGNED_BYTE, length: 4}
+      ],
+      new UniformSnapshotBuilder({
+        uModelMatrix: "mat4",
+        uViewProjMatrix: "mat4"
+      }).args
+    )
+  })
 }
