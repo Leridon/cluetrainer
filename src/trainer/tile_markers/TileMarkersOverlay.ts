@@ -1,7 +1,7 @@
 import {GL_FLOAT, GL_UNSIGNED_BYTE, UniformSnapshotBuilder} from "../../lib/alt1gl/ts/overlays";
 import {chunksize, tilesize} from "../../lib/alt1gl/ts/overlays/tilemarkers";
-import {getUniformValue} from "../../lib/alt1gl/ts/render/renderprogram";
 import * as patchrs from "../../lib/alt1gl/ts/util/patchrs_napi";
+import {RenderInvocation} from "../../lib/alt1gl/ts/util/patchrs_napi";
 import {Path} from "../../lib/runescape/pathing";
 import {mat4} from "gl-matrix";
 import {Alt1GLVertexArray} from "../../lib/alt1gl/overlay/Alt1GLVertexArray";
@@ -10,6 +10,7 @@ import {MeshBuilder} from "./MeshBuilder";
 import {Alt1GLOverlay} from "../../lib/alt1gl/overlay/Alt1GLOverlay";
 import {lazy} from "../../lib/Lazy";
 import {Alt1GLProgram} from "../../lib/alt1gl/overlay/Alt1GLProgram";
+import {getUniformValue} from "../../lib/alt1gl/ts/render/renderprogram";
 
 const CHUNK_SIZE = chunksize;
 const TILE_SIZE = tilesize;
@@ -52,7 +53,7 @@ export class TileMarkersOverlay {
   private program = TileMarkersOverlay.program.get();
 
   private uniformSources: patchrs.OverlayUniformSource[] = [];
-  private chunks = new Map<string, Map<number, Alt1GLOverlay>>();  // Key: "chunkX,chunkZ" -> vertexObjectId -> chunk
+  private overlayMap = new Map<number, Alt1GLOverlay>
   private stream: patchrs.StreamRenderObject | null = null;
 
   private vertexArray: Alt1GLVertexArray | null = null;
@@ -77,8 +78,8 @@ export class TileMarkersOverlay {
   stop(): void {
     this.stopped = true;
     this.stream?.close();
-    this.chunks.forEach(vaoMap => vaoMap.forEach(chunk => chunk.stop()));
-    this.chunks.clear();
+    this.overlayMap.forEach(chunk => chunk.stop());
+    this.overlayMap.clear();
   }
 
   private async setPaths(paths: Path[]): Promise<void> {
@@ -111,19 +112,9 @@ export class TileMarkersOverlay {
           continue;
         }
 
-        const uniform = getUniformValue(render.uniformState, render.program.uniforms.find(q => q.name == "uModelMatrix")!);
-        const chunkX = Math.floor(uniform[0][12] / CHUNK_SIZE / TILE_SIZE);
-        const chunkZ = Math.floor(uniform[0][14] / CHUNK_SIZE / TILE_SIZE);
-
-        const chunkKey = `${chunkX},${chunkZ}`;
-
-        // Create overlay for each VAO seen for this chunk
-        if (!this.chunks.has(chunkKey)) {
-          this.chunks.set(chunkKey, new Map());
-        }
-        const vaoMap = this.chunks.get(chunkKey)!;
-        if (!vaoMap.has(render.vertexObjectId)) {
-          vaoMap.set(render.vertexObjectId,
+        if (!this.overlayMap.has(render.vertexObjectId)) {
+          // New terrain vao found, create new overlay bound to that vao. FIXME: Obviously, this is not a great thing to do
+          this.overlayMap.set(render.vertexObjectId,
             createPathOverlay(render.vertexObjectId, this.vertexArray!, this.program, this.uniformSources).start()
           );
         }
@@ -133,6 +124,14 @@ export class TileMarkersOverlay {
 }
 
 export namespace TileMarkersOverlay {
+  export function getChunkByRender(render: RenderInvocation) {
+    const uniform = getUniformValue(render.uniformState, render.program.uniforms.find(q => q.name == "uModelMatrix")!);
+    const chunkX = Math.floor(uniform[0][12] / CHUNK_SIZE / TILE_SIZE);
+    const chunkZ = Math.floor(uniform[0][14] / CHUNK_SIZE / TILE_SIZE);
+
+    return {chunkX, chunkZ};
+  }
+
   export const program = lazy(() => {
     const vertshader = `
     #version 330 core
