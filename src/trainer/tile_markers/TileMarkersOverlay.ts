@@ -52,7 +52,6 @@ export class TileMarkersOverlay {
   private program = TileMarkersOverlay.program.get();
 
   private uniformSources: patchrs.OverlayUniformSource[] = [];
-  private knownProgs = new WeakMap<patchrs.GlProgram, {}>();
   private chunks = new Map<string, Map<number, Alt1GLOverlay>>();  // Key: "chunkX,chunkZ" -> vertexObjectId -> chunk
   private stream: patchrs.StreamRenderObject | null = null;
 
@@ -99,7 +98,6 @@ export class TileMarkersOverlay {
       features: ["uniforms"],
       framecooldown: 2000,
       skipProgramMask: SKIP_PROGRAM_MASK,
-      skipVerticesMask: KNOWN_CHUNK_MASK
     }, renders => {
       console.log(renders.length)
       debugger
@@ -107,13 +105,10 @@ export class TileMarkersOverlay {
       if (this.stopped) return;
 
       for (const render of renders) {
-        if (!this.knownProgs.has(render.program)) {
-          if (render.program.inputs.find(q => q.name == "aMaterialSettingsSlotXY3")) {
-            this.knownProgs.set(render.program, {});
-          } else {
-            render.program.skipmask |= SKIP_PROGRAM_MASK;
-            continue;
-          }
+        if (!render.program.inputs.find(q => q.name == "aMaterialSettingsSlotXY3")) {
+          // Mark irrelevant programs with our skip mask
+          render.program.skipmask |= SKIP_PROGRAM_MASK;
+          continue;
         }
 
         const uniform = getUniformValue(render.uniformState, render.program.uniforms.find(q => q.name == "uModelMatrix")!);
