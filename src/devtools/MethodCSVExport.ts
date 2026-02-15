@@ -1,6 +1,6 @@
-import {MethodPackManager} from "../trainer/model/MethodPackManager";
+import {MethodPackManager} from "../cluetrainer/MethodPackManager";
 import {clue_data} from "../data/clues";
-import {Clues} from "../lib/runescape/clues";
+import {Clues} from "../cluetrainer/model/Clues";
 import lodash from "lodash";
 import ClueSpot = Clues.ClueSpot;
 

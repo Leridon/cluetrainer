@@ -1,7 +1,7 @@
 import {GameMap} from "./GameMap";
 import * as leaflet from "leaflet";
 import {TileCoordinates} from "../runescape/coordinates";
-import {Menu, MenuEntry} from "../../trainer/ui/widgets/ContextMenu";
+import {Menu, MenuEntry} from "../../cluetrainer/ui/widgets/ContextMenu";
 import {MapEntity} from "./MapEntity";
 
 export abstract class GameMapEvent<LeafletT extends leaflet.LeafletEvent, OriginalT extends Event> {

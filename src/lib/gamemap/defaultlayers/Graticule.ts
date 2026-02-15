@@ -1,6 +1,6 @@
 import * as leaflet from "leaflet"
 import {PolylineOptions} from "leaflet"
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {Vector2} from "../../math";
 
 /**

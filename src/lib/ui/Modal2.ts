@@ -1,4 +1,4 @@
-import * as jquery from "jquery";
+import jquery from "jquery";
 import {ewent, observe} from "../reactive";
 import Widget from "./Widget";
 import {C} from "./constructors";

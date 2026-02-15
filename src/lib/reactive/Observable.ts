@@ -1,4 +1,4 @@
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {ewent, Ewent} from "./Ewent";
 import {EwentHandler, observe} from "./index";
 import {LifetimeManager} from "../lifetime/LifetimeManager";

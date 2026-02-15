@@ -2,17 +2,17 @@ import {Rectangle, Vector2} from "../lib/math";
 import lodash from "lodash";
 import {FontDefinition, GenerateFontMeta} from "alt1/ocr";
 import Widget from "../lib/ui/Widget";
-import Properties from "../trainer/ui/widgets/Properties";
-import LightButton from "../trainer/ui/widgets/LightButton";
+import Properties from "../cluetrainer/ui/widgets/Properties";
+import LightButton from "../cluetrainer/ui/widgets/LightButton";
 import {ImageDetect} from "alt1";
 import {observe} from "../lib/reactive";
 import TextArea from "../lib/ui/controls/TextArea";
 import {OCR} from "../lib/alt1/OCR";
 import {util} from "../lib/util/util";
 import {C} from "../lib/ui/constructors";
-import {IssueWidget} from "../trainer/pathedit/EditedPathOverview";
-import {ClueReader} from "../trainer/ui/neosolving/cluereader/ClueReader";
-import {SettingsLayout} from "../trainer/ui/settings/SettingsEdit";
+import {IssueWidget} from "../cluetrainer/pathedit/EditedPathOverview";
+import {ClueReader} from "../cluetrainer/cluesolving/cluereader/ClueReader";
+import {SettingsLayout} from "../cluetrainer/ui/settings/SettingsEdit";
 import {storage} from "../lib/util/storage";
 
 export namespace FontSheets {

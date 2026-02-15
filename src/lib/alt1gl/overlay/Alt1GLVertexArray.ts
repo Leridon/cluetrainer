@@ -1,7 +1,7 @@
 import {Alt1GL} from "../Alt1GL";
 import {GL_FLOAT, GL_UNSIGNED_BYTE} from "../ts/overlays";
 import {VertexArraySnapshot} from "../ts/util/patchrs_napi";
-import {Mesh} from "../../../trainer/overlay3d/meshes/Mesh";
+import {Mesh} from "../../../cluetrainer/overlay3d/meshes/Mesh";
 
 export class Alt1GLVertexArray {
   public readonly vertex_array: VertexArraySnapshot

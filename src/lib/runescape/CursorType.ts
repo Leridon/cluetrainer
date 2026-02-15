@@ -1,5 +1,5 @@
 import {EntityName} from "./EntityName";
-import {CTRIcon} from "../../trainer/CTRIcon";
+import {CTRIcon} from "../../cluetrainer/CTRIcon";
 
 export type CursorType =
   "generic"

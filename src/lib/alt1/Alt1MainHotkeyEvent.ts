@@ -1,5 +1,5 @@
 import * as a1lib from "alt1";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {Vector2} from "../math";
 import {EwentHandler} from "../reactive";
 

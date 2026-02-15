@@ -1,6 +1,6 @@
 import {direction, MovementAbilities, PathFinder, PlayerPosition} from "./movement";
 import {util} from "../util/util";
-import * as lodash from "lodash"
+import lodash from "lodash"
 import {Rectangle, Vector2} from "../math";
 import {ExportImport} from "../util/exportString";
 import {floor_t, TileCoordinates, TileRectangle} from "./coordinates";
@@ -10,7 +10,7 @@ import {TileArea} from "./coordinates/TileArea";
 import {CursorType} from "./CursorType";
 import {EntityName} from "./EntityName";
 import {TransportData} from "../../data/transports";
-import {CTRIcon} from "../../trainer/CTRIcon";
+import {CTRIcon} from "../../cluetrainer/CTRIcon";
 import movement_ability = MovementAbilities.movement_ability;
 
 export type Path = Path.raw;

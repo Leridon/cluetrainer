@@ -1,7 +1,7 @@
 import {GameLayer} from "../GameLayer";
 import * as leaflet from "leaflet";
 import {Vector2} from "../../math";
-import {tilePolygon} from "../../../trainer/ui/polygon_helpers";
+import {tilePolygon} from "../../../cluetrainer/ui/polygon_helpers";
 import {GameMapMouseEvent} from "../MapEvents";
 import {GameMap} from "../GameMap";
 

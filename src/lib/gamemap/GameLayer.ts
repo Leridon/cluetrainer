@@ -6,7 +6,7 @@ import {MapEntity} from "./MapEntity";
 import * as tippy from "tippy.js";
 import {followCursor} from "tippy.js";
 import {QuadTree} from "../QuadTree";
-import {boxPolygon} from "../../trainer/ui/polygon_helpers";
+import {boxPolygon} from "../../cluetrainer/ui/polygon_helpers";
 import {LifetimeManager} from "../lifetime/LifetimeManager";
 import {util} from "../util/util";
 import profile = util.profile;

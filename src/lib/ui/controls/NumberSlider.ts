@@ -1,4 +1,4 @@
-import AbstractEditWidget from "../../../trainer/ui/widgets/AbstractEditWidget";
+import AbstractEditWidget from "../../../cluetrainer/ui/widgets/AbstractEditWidget";
 import Widget from "../Widget";
 import {observe} from "../../reactive";
 

@@ -1,5 +1,5 @@
-import AbstractEditWidget from "trainer/ui/widgets/AbstractEditWidget";
-import * as jquery from "jquery";
+import AbstractEditWidget from "cluetrainer/ui/widgets/AbstractEditWidget";
+import jquery from "jquery";
 
 export default class TextArea extends AbstractEditWidget<string, HTMLTextAreaElement> {
   constructor(customization: {

@@ -1,6 +1,6 @@
 import {TileCoordinates} from "./coordinates";
 import {ChunkedData} from "../util/ChunkedData";
-import * as lodash from "lodash"
+import lodash from "lodash"
 import {Rectangle, Transform, Vector2} from "../math";
 import pako from "pako";
 import {TileArea} from "./coordinates/TileArea";
