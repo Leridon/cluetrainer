@@ -8,10 +8,10 @@ export class Alt1GLOverlay extends Behaviour {
   private overlayHandle: GlOverlay | null = null;
 
   constructor(
-    private readonly renderFilter: RenderFilter,
-    private readonly program: Alt1GLProgram,
-    private readonly vertexObjectId: Alt1GLVertexArray,
-    private readonly overlayOptions: GlOverlayOption,
+    public readonly renderFilter: RenderFilter,
+    public readonly program: Alt1GLProgram,
+    public readonly vertexObjectId: Alt1GLVertexArray,
+    public readonly overlayOptions: GlOverlayOption,
   ) {
     super()
   }

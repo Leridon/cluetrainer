@@ -3,7 +3,7 @@ import {tilesize} from "../../lib/alt1gl/ts/render/reflect3d";
 import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
 import {Path} from "../../lib/runescape/pathing";
 import {TileHeightData} from "./TileHeightData";
-import {MeshBuilder} from "./MeshBuilder";
+import {MeshBuilder} from "../overlay3d/meshes/MeshBuilder";
 import {MovementAbilities} from "../../lib/runescape/movement";
 import ColorRGBA = MeshBuilder.ColorRGBA;
 import Vector3 = MeshBuilder.Vector3;
@@ -266,13 +266,13 @@ async function drawBeamMarker(builder: MeshBuilder,
     const bottomV = builder.createVertex(
       await height_data.resolve({
         x: lx + centerX + cos * bottomRadius,
-        y: centerZ + sin * bottomRadius,
+        y: lz + centerZ + sin * bottomRadius,
         level: tile.level
       }, FLOOR_OVERLAY_VERTICAL_OFFSET), bottomColor);
 
     const topV = builder.createVertex(await height_data.resolve({
-      x: topCenterX + cos * topRadius,
-      y: topCenterZ + sin * topRadius,
+      x: lx + topCenterX + cos * topRadius,
+      y: lz + topCenterZ + sin * topRadius,
       level: tile.level
     }, 0), topColor);
 
