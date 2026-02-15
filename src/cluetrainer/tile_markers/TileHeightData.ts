@@ -85,7 +85,7 @@ export class TileHeightData {
 }
 
 export namespace TileHeightData {
-  export type SamplePoint = "ne" | "nw" | "se" | "sw" | "center"
+  export type SamplePoint = "ne" | "nw" | "se" | "sw"
   const DATA_SCALE = 32
 
   export class ChunkTileHeightData {
@@ -105,8 +105,7 @@ export namespace TileHeightData {
         "sw": 0,
         "se": 1,
         "nw": 2,
-        "ne": 3,
-        "center": 4
+        "ne": 3
       }
 
       const relative_x = tile.x - this.file_x * tiles_per_file
