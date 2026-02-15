@@ -228,7 +228,7 @@ export type GlOverlay = {
   stop: () => void
 };
 
-type GlOverlayOption = {
+export type GlOverlayOption = {
   // When to trigger the overlay, default "after"
   trigger?: "before" | "after" | "replace" | "frameend" | "passive",
   // Set to true to enabled translucent overlays. Default failse when program is provided, inherits from original render otherwise
@@ -357,7 +357,7 @@ if (native) {
       }
     } else {
       if (e.match(/purged pogram (\d+)/)) { return }
-      console.info(e)
+      //console.info(e)
     }
   });
 }

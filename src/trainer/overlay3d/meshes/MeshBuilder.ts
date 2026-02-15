@@ -1,4 +1,4 @@
-import {Vector2} from "../../lib/math";
+import {Mesh} from "./Mesh";
 
 export class MeshBuilder {
   private vertices: MeshBuilder.Vertex[] = []
@@ -44,12 +44,8 @@ export class MeshBuilder {
     })
   }
 
-  finalize(): MeshBuilder.MeshData {
-    return {
-      pos: new Uint8Array(Float32Array.from(this.vertices.flatMap(v => [v.pos.x, v.pos.y, v.pos.z])).buffer),
-      color: new Uint8Array(Uint8Array.from(this.vertices.flatMap(v => v.color_rgba)).buffer),
-      index: new Uint8Array(Uint16Array.from(this.indices).buffer)
-    };
+  finalize(): Mesh {
+    return new Mesh([...this.vertices], [...this.indices]);
   }
 }
 
