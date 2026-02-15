@@ -76,7 +76,7 @@ export function levelIcon(floor: floor_t, scale: number = 1) {
  * Map data is sourced from Skillbert's amazing runeapps.org.
  */
 export class GameMap extends leaflet.Map {
-  floor: Observable<floor_t> = observe(0)
+  floor: Observable<floor_t> = observe<floor_t>(0)
 
   public viewport: Observable<GameMap.View> = observe(null).equality(GameMap.View.equals)
 

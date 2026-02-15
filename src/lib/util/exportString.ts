@@ -142,7 +142,7 @@ export namespace ExportImport {
           from_string,
           extract_envelop,
           extract_typed
-        )(s)
+        )(s) as T
       } catch (e) {
         console.error(e)
         return null

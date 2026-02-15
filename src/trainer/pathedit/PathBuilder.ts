@@ -218,7 +218,7 @@ export namespace PathBuilder {
       public step: Path.augmented_step,
     ) {}
 
-    update<T extends Path.Step>(f: (_: T) => void): void {
+    update(f: (_: Path.Step) => void): void {
       this.parent.updateCopy(this.index, f)
     }
 

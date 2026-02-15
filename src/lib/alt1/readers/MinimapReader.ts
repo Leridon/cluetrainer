@@ -67,7 +67,7 @@ export class MinimapReader extends DerivedCaptureService<MinimapReader.Options, 
         return this.raw_last_capture.value.refind(capture)
       }
 
-    } catch (e) {
+    } catch (e: any) {
       log().log(e)
     }
   }

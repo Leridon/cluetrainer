@@ -133,7 +133,7 @@ export class ChatReader extends DerivedCaptureService {
         this.collected_unreported_messages = []
       }
 
-    } catch (e) {
+    } catch (e: any) {
       log().log(e)
     }
 

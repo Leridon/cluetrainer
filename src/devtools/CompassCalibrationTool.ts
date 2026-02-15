@@ -315,7 +315,7 @@ function indexOfMinBy<T>(data: T[], f: (_: T, i: number) => number) {
 class TravellingSalesmanProblem<T> {
   private _init: AsyncInitialization
 
-  private distance_map: number[][]
+  private distance_map: (number | undefined)[][]
   private start_distance: number[]
 
   private start_position_index: number
@@ -331,7 +331,7 @@ class TravellingSalesmanProblem<T> {
     this.spots_with_start = [...spots, start_position]
     this.start_position_index = spots.length
 
-    this.distance_map = this.spots_with_start.map(_ => this.spots_with_start.map(_ => undefined))
+    this.distance_map = this.spots_with_start.map(_ => this.spots_with_start.map((_): undefined => undefined))
 
     this.distance_map.forEach((row, i) => row[i] = 0)
 
@@ -370,7 +370,7 @@ class TravellingSalesmanProblem<T> {
     if (this.spots.length == 0) return []
 
     // A solution is an array that maps spot indices to the index of the previous node in the path (come-from)
-    const come_from_map: number[] = this.spots.map(() => undefined)
+    const come_from_map: (number | undefined)[] = Array(this.spots.length).fill(undefined)
 
     let position = this.start_position_index
 
@@ -571,7 +571,7 @@ namespace TravellingSalesmanProblem {
         private readonly data: Node[][]
 
         constructor(public max: number) {
-          this.data = new Array(max + 1).fill(null).map(() => [])
+          this.data = new Array(max + 1).fill(null).map((): Node[] => [])
         }
 
         push(node: Node) {

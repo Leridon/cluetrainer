@@ -8,7 +8,7 @@ import {Observable, observe} from "lib/reactive";
 export default class GameMapDragAction extends ValueInteraction<TileRectangle> {
   dragstart: TileCoordinates = null
 
-  area: Observable<{ area: TileRectangle, committed: boolean }> = observe({area: null, committed: false})
+  area = observe<{ area: TileRectangle, committed: boolean }>({area: null, committed: false})
 
   constructor(public config: ValueInteraction.option_t<TileRectangle>) {
     super(config);
