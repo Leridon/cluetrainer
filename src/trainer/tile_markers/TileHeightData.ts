@@ -1,6 +1,6 @@
 import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
 import {Lazy, lazy} from "../../lib/Lazy";
-import {MeshBuilder} from "./MeshBuilder";
+import {MeshBuilder} from "../overlay3d/meshes/MeshBuilder";
 import Vector3 = MeshBuilder.Vector3;
 
 const meta = {

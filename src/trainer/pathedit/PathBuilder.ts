@@ -209,7 +209,7 @@ export class PathBuilder {
 }
 
 export namespace PathBuilder {
-  export class Step {
+  export class Step<StepT extends Path.Step = Path.Step> {
     associated_preview: PathStepEntity = null
 
     constructor(
@@ -218,7 +218,7 @@ export namespace PathBuilder {
       public step: Path.augmented_step,
     ) {}
 
-    update(f: (_: Path.Step) => void): void {
+    update(f: (_: StepT) => void): void {
       this.parent.updateCopy(this.index, f)
     }
 

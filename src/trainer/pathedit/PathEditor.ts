@@ -491,7 +491,7 @@ export class PathEditor extends Behaviour {
       this.editStep(
         value,
         new PlaceRedClickInteraction(v.raw.how)
-          .onCommit(new_s => value.update<Path.step_redclick>(v => {
+          .onCommit(new_s => value.update((v:Path.step_redclick) => {
             v.where = new_s.where
           }))
       )
@@ -503,7 +503,7 @@ export class PathEditor extends Behaviour {
             where: tile,
           })
         })
-          .onCommit(new_s => value.update<Path.step_powerburst>(v => {
+          .onCommit(new_s => value.update((v: Path.step_powerburst) => {
             v.where = new_s
           }))
           .attachTopControl(new InteractionTopControl().setName("Selecting tile").setText(`Select the location of the powerburst by clicking the tile.`))
@@ -542,7 +542,7 @@ export class PathEditor extends Behaviour {
                 stroke: true
               })
           )
-          .onCommit(new_s => value.update<Path.step_teleport>(v => {
+          .onCommit(new_s => value.update((v: Path.step_teleport) => {
             v.spot = new_s
           }))
           .attachTopControl(new InteractionTopControl().setName("Selecting tile").setText(`Select the specific target of the teleport by clicking the tile.`))
@@ -551,7 +551,7 @@ export class PathEditor extends Behaviour {
       this.editStep(
         value,
         new DrawCosmeticInteraction(v.raw)
-          .onCommit(new_s => value.update<Path.step_cosmetic>(v => {
+          .onCommit(new_s => value.update((v: Path.step_cosmetic) => {
             Object.assign(v, new_s)
           }))
       )
@@ -605,7 +605,7 @@ export class PathEditor extends Behaviour {
           type: "basic",
           text: direction.toString(dir),
           handler: () => {
-            step.update<Path.step_orientation>(s => s.direction = dir)
+            step.update((s: Path.step_orientation) => s.direction = dir)
           }
         }))
       })
@@ -620,7 +620,7 @@ export class PathEditor extends Behaviour {
           type: "basic",
           text: direction.toString(dir) ?? "None",
           handler: () => {
-            step.update<Path.step_cheat>(s => s.orientation = dir)
+            step.update((s: Path.step_cheat) => s.orientation = dir)
           }
         }))
       })
@@ -636,7 +636,7 @@ export class PathEditor extends Behaviour {
           text: cursor.description,
           icon: cursor.icon_url,
           handler: () => {
-            step.update<Path.step_redclick>(s => s.how = cursor.type)
+            step.update((s: Path.step_redclick) => s.how = cursor.type)
           }
         }))
       })
