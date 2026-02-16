@@ -33,7 +33,7 @@ import log = Log.log;
 import cleanedJSON = util.cleanedJSON;
 import async_init = util.async_init;
 import AsyncInitialization = util.AsyncInitialization;
-import {PlayerState} from "./PlayerPositionReader";
+import {PlayerStateTracking} from "./PlayerPositionReader";
 
 const CLUEREADERDEBUG = false
 
@@ -502,18 +502,11 @@ export namespace ClueReader {
 }
 
 export class GlClueReader extends Behaviour {
-  private position_reader: PlayerState
+  private position_reader: PlayerStateTracking
 
   protected async begin() {
-    this.position_reader = new PlayerState((position) => {
-      if (position) {
-        console.log("Player at:", position);
-      } else {
-        console.log("Player not found,");
-      }
-    });
-
-
+    console.log("Starting GlClueReader")
+    this.position_reader = new PlayerStateTracking().start();
 
     //todo: extract to a class eg CompassReader
     // const cache = new BufferCache();

@@ -348,8 +348,8 @@ export class ClueTrainer extends Behaviour {
 
     window.history.pushState({}, null, `${location.protocol}//${location.host}`)
 
-    if(Alt1GL.exists()) {
-      //this.withSub(new GlClueReader())
+    if (Alt1GL.exists()) {
+        this.withSub(new GlClueReader())
     }
   }
 

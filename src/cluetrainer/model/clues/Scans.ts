@@ -34,8 +34,10 @@ export namespace Scans {
     return Vector2.max_axis(Vector2.sub(player_tile, dig_tile))
   }
 
+  export type PulseRing = 1 | 2 | 3
+
   export type Pulse = {
-    pulse: 1 | 2 | 3,
+    pulse: PulseRing,
     different_level?: boolean
   }
 

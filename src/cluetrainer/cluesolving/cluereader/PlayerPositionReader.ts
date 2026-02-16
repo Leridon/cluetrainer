@@ -1,42 +1,55 @@
-import {StreamRenderObject} from "../../../lib/alt1gl/ts/util/patchrs_napi";
 import * as patchrs from "../../../lib/alt1gl/ts/util/patchrs_napi";
+import {StreamRenderObject} from "../../../lib/alt1gl/ts/util/patchrs_napi";
 import {getProgramMeta, getRenderFunc, getUniformValue} from "../../../lib/alt1gl/ts/render/renderprogram";
+import {Observable, observe} from "../../../lib/reactive";
+import {Scans} from "../../model/clues/Scans";
+import {MeshBuilder} from "../../overlay3d/meshes/MeshBuilder";
+import Behaviour from "../../../lib/ui/Behaviour";
+import {Alt1GL} from "../../../lib/alt1gl/Alt1GL";
+import {BufferCache} from "../../../lib/alt1gl/ts/programs/filteredstate";
+import {Angles} from "../../../lib/math/Angles";
+import Vector3 = MeshBuilder.Vector3;
+import radiansToDegrees = Angles.radiansToDegrees;
 
-export type RingType = 'none' | 'blue' | 'orange' | 'red';
-export type PlayerPosition = { x: number; y: number; z: number; } | null
-export type PlayerSnapshot = { position: PlayerPosition, pulseRing: RingType }
+export class PlayerStateTracking extends Behaviour {
+  public player_position: Observable<Vector3 | null> = observe(null);
+  public pulse_type: Observable<Scans.PulseRing | null> = observe(null);
 
-export class PlayerState {
+  private cache: BufferCache = new BufferCache();
   private stream: StreamRenderObject | undefined;
 
-  constructor(private callback: (state: PlayerSnapshot | null) => void) {
-    this.startStream();
+  constructor() {
+    super()
   }
 
-  private startStream(): void {
-    this.stream = patchrs.native.streamRenderCalls({
+  protected begin() {
+    console.log("Starting player state tracking")
+
+    this.stream = Alt1GL.instance().native.streamRenderCalls({
       features: ["full"],
       framecooldown: 600,
     }, (renders) => {
-      const state = this.findPlayerState(renders);
-      this.callback(state);
+      this.parsePlayerState(renders);
     });
   }
 
-  public stop(): void {
-    if (this.stream) {
-      this.stream.close();
-    }
+  protected end() {
+    this.stream?.close();
+    this.stream = null
   }
 
-  private findPlayerState(renders: patchrs.RenderInvocation[]): PlayerSnapshot | null {
-    let position: PlayerPosition = null;
-    let pulseRing: RingType = 'none';
+  private parsePlayerState(renders: patchrs.RenderInvocation[]): void {
+    console.log("Parsing player state from renders")
+    let position: Vector3 | null = null;
+    let pulseRing: Scans.PulseRing | null = null;
+
+    this.detectCompassAngle(renders);
 
     for (const render of renders) {
       if (!render.program || !render.uniformState) continue;
 
       let progmeta: ReturnType<typeof getProgramMeta>;
+
       try {
         progmeta = getProgramMeta(render.program);
       } catch {
@@ -44,31 +57,44 @@ export class PlayerState {
       }
 
       // Look for player position if we haven't found it yet
-      if (!position) {
-        const possiblePosition = this.detectPlayerPosition(render, progmeta);
-        if (possiblePosition) {
-          position = possiblePosition;
-        }
-      }
+      position = position ?? this.detectPlayerPosition(render, progmeta)
 
       // Look for pulse ring if we haven't found it yet
-      if (pulseRing === 'none') {
-        const ring = this.detectPulseRing(render, progmeta);
-        if (ring !== 'none') {
-          pulseRing = ring;
-        }
-      }
+      pulseRing = pulseRing ?? this.detectPulseRing(render, progmeta);
 
-      // Early exit if we atleast found the position, we may not have a ring active
-      if (position) {
+      // Exit if we found both
+      if (position != null && pulseRing != null) {
         break;
       }
     }
 
-    return { position, pulseRing };
+    this.player_position.set(position)
+    this.pulse_type.set(pulseRing)
   }
 
-  private detectPlayerPosition(render: patchrs.RenderInvocation, progmeta: ReturnType<typeof getProgramMeta>): PlayerPosition {
+  private detectCompassAngle(renders: patchrs.RenderInvocation[]): number | null {
+    for (const render of renders) {
+      if (!render.program || !render.uniformState) continue;
+
+      const mesh = this.cache.getMeshData(render)
+
+      if (!mesh) continue
+
+      if (mesh.cached.known.meshdatas[0].posbufferhash == 1998275936) {
+
+        // The angle is very accurate but still needs to be calibrated. Seems off by up to multiple degrees
+        const angle = Angles.normalizeAngle(Math.PI / 2 + mesh.position2d.yRotation)
+
+        console.log(`Frame ${render.framenr}, Angle: ${radiansToDegrees(angle).toFixed(1)}°`)
+      }
+    }
+
+    console.log("Compass not found")
+
+    return null;
+  }
+
+  private detectPlayerPosition(render: patchrs.RenderInvocation, progmeta: ReturnType<typeof getProgramMeta>): Vector3 {
     const TILESIZE = 512;
 
     const hasFrag = typeof render.program.fragmentShader?.source === 'string';
@@ -93,14 +119,14 @@ export class PlayerState {
       const z = Math.round(matrix[14] / TILESIZE) - 1;
 
       if (x === 0 && z === 0) return null;
-      return { x, y, z };
+      return {x, y, z};
     } catch (error) {
       // ignore errors
     }
     return null;
   }
 
-  private detectPulseRing(render: patchrs.RenderInvocation, progmeta: ReturnType<typeof getProgramMeta>): RingType {
+  private detectPulseRing(render: patchrs.RenderInvocation, progmeta: ReturnType<typeof getProgramMeta>): Scans.PulseRing {
     try {
       // get vertex count from render ranges
       const vertexCount = render.renderRanges?.reduce((sum: number, r: patchrs.RenderRange) => sum + r.length, 0) || 0;
@@ -144,13 +170,13 @@ export class PlayerState {
           const threshold = samplesToCheck * 0.75;
           if (blueCount >= threshold) {
             console.info("[PlayerState] BLUE PULSE RING DETECTED: verts:", vertexCount, "blue samples:", blueCount + "/" + samplesToCheck);
-            return 'blue';
+            return 1;
           } else if (orangeCount >= threshold) {
             console.info("[PlayerState] ORANGE PULSE RING DETECTED: verts:", vertexCount, "orange samples:", orangeCount + "/" + samplesToCheck);
-            return 'orange';
+            return 2;
           } else if (redCount >= threshold) {
             console.info("[PlayerState] RED PULSE RING DETECTED: verts:", vertexCount, "red samples:", redCount + "/" + samplesToCheck);
-            return 'red';
+            return 3;
           }
         }
       }
@@ -158,6 +184,6 @@ export class PlayerState {
       // ignore errors
     }
 
-    return 'none';
+    return null;
   }
 }

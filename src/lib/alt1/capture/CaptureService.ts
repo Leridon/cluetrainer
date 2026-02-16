@@ -1,6 +1,4 @@
-import {Process} from "../../Process";
 import {CapturedImage} from "./CapturedImage";
-import {ScreenRectangle} from "../ScreenRectangle";
 import {ewent} from "../../reactive";
 import {Log} from "../../util/Log";
 import lodash from "lodash";
