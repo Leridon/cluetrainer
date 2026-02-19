@@ -399,6 +399,8 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+        builder.wip(67, "TBD")
+
         builder.release(66, "UI Update Fixes - Batch 3", new Date(Date.parse("2026-01-31")))
           .list(l => l
             .item("Fixed text clue and tower puzzle reader.", new List()
