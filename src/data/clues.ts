@@ -1194,7 +1194,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Challenge Mistress Fara",
-        "spots": [{"range": {"origin": {"x": 2887, "y": 3529, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "in Burthorpe"}]
+        "spots": [{"range": {"origin": {"x": 2882, "y": 3532, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "in Burthorpe"}]
       }
     }, {
       "id": 94,
