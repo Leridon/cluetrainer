@@ -2088,7 +2088,7 @@ name: "Guthix Memorial",
       },
       {
         id: "burthorpe",
-        target: {"origin": {"x": 2887, "y": 3535, "level": 0}, "size": {"x": 3, "y": 4}, "data": "/g8="},
+        target: {"origin": {"x": 2886, "y": 3534, "level": 0}, "size": {"x": 4, "y": 5}, "data": "7u8O"},
         code: "5",
         name: "Burthorpe",
       },

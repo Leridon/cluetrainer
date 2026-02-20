@@ -378,11 +378,13 @@ export class GameMap extends leaflet.Map {
   }
 
   private updateBaseLayers() {
+    const MAP_ID = 4 // Hardcoded
     const SKILLBERT_ATTRIBUTION = '<a href="https://runeapps.org/" title="Creator of Alt1 and RuneApps.org">Skillbert</a>'
 
     function geturls(filename: string) {
       return [
-        `https://map.cluetrainer.app/${filename}`,
+        `https://runeapps.org/s3/map${MAP_ID}/live/${filename}`,
+        `https://runeapps.org/node/map/getnamed?mapid=${MAP_ID}&version=${Constants.map_version}&file=${filename}`
       ];
     }
 
