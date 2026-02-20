@@ -1,5 +1,4 @@
 import {AbstractCaptureService, CapturedImage, CaptureInterval, DerivedCaptureService, InterestedToken, NeedleImage} from "../capture";
-import {LegacyOverlayGeometry} from "../LegacyOverlayGeometry";
 import {util} from "../../util/util";
 import {ScreenRectangle} from "../ScreenRectangle";
 import {OCR} from "../OCR";
@@ -16,7 +15,7 @@ import {Alt1} from "../Alt1";
 import {Alt1ScreenCaptureService} from "../capture/Alt1ScreenCaptureService";
 import {Alt1Color} from "../Alt1Color";
 import {ewent} from "../../reactive";
-import over = LegacyOverlayGeometry.over;
+import {Alt1Overlay} from "../overlay/Alt1Overlay";
 import log = Log.log;
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
@@ -118,19 +117,14 @@ export class ChatReader extends DerivedCaptureService {
         })
       }
 
-      if (this.debug_mode) {
-        this.debug_overlay.clear()
-
+      Alt1Overlay.debug(() => this.debug_overlay.get(), this.debug_mode, debug_geometry => {
         this.chatboxes.forEach(box => {
-          this.debug_overlay.rect2(box.chatbox.body.screenRectangle(), {
+          debug_geometry.rectangle(box.chatbox.body.screenRectangle(), {
             color: Alt1Color.red,
             width: 1
           })
         })
-
-        this.debug_overlay.render()
-      }
-
+      })
 
       for (const box of this.chatboxes) box.read()
 
@@ -146,7 +140,7 @@ export class ChatReader extends DerivedCaptureService {
     return null
   }
 
-  private debug_overlay: LegacyOverlayGeometry = over()
+  private debug_overlay = lazy(() => new Alt1Overlay().start())
 
   setDebugEnabled(debug: boolean = true): this {
     this.debug_mode = debug
@@ -213,18 +207,17 @@ export namespace ChatReader {
     }
 
     private readLine(i: number): Message.Fragment[] {
-      const line = this.chatbox.line(i)
-      const line_img = line.getData()
+      const body_img = this.chatbox.body.getData()
 
-      const fodef = this.chatbox.font.def
+      const font_definition = this.chatbox.font.def
 
       const fragments: Message.Fragment[] = []
 
       let scan_x = 0
-      const baseline = this.chatbox.font.baseline_y
+      const baseline = this.chatbox.lowest_baseline - i * this.chatbox.font.lineheight
 
       const read_string = (colors: ColortTriplet[] = ChatReader.all_colors as ColortTriplet[]): boolean => {
-        const data = OCR.readLine(line_img, fodef, colors, scan_x, baseline, true, false);
+        const data = OCR.readLine(body_img, font_definition, colors, scan_x, baseline, true, false);
 
         if (data.text) {
           data.fragments.forEach(frag => {
@@ -248,10 +241,10 @@ export namespace ChatReader {
         const MAX_PIXEL_DIFFERENCE = 120
 
         for (const addspace of [true, false]) {
-          const badgeleft = scan_x + (addspace ? fodef.spacewidth : 0)
+          const badgeleft = scan_x + (addspace ? font_definition.spacewidth : 0)
 
           const matched_icon = findBestMatch(this.icons, icon =>
-              a1lib.ImageDetect.simpleCompare(line_img, icon.image.underlying, badgeleft, baseline + this.chatbox.font.icon_y, MAX_PIXEL_DIFFERENCE)
+              a1lib.ImageDetect.simpleCompare(body_img, icon.image.underlying, badgeleft, baseline + this.chatbox.font.icon_y_from_baseline, MAX_PIXEL_DIFFERENCE)
             , MAX_AVERAGE_DIFFERENCE, true)
 
           if (matched_icon) {
@@ -268,7 +261,7 @@ export namespace ChatReader {
         return false
       }
 
-      const timestamp_open = OCR.readChar(line_img, fodef, [255, 255, 255], scan_x, baseline, false, false);
+      const timestamp_open = OCR.readChar(body_img, font_definition, [255, 255, 255], scan_x, baseline, false, false);
 
       const has_timestamp = timestamp_open?.chr == "["
 

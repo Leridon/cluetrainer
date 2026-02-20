@@ -399,6 +399,28 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+        builder.release(67, "UI Update Fixes - Batch 4 & Method Updates", new Date(Date.parse("2026-02-20")))
+          .notification("Clue Methods have been updated.")
+          .header("Bug and Data Fixes")
+          .list(l => l
+            .item("Fixed chat reader for sextant messages in compasses.")
+            .item("Fixed minimap detection for scan range overlay.")
+            .item("Updated location of the Lowse teleport.")
+            .item("Updated area of the ring of respawn to Burthorpe teleport.")
+            .item("Updated position of Challenge Mistress Fara.")
+          )
+          .header("Method Updates by Ngis")
+          .list(l => l
+            .item("Updated methods for clues affected by the recent area changes.", new List()
+              .item("4 easy clues.")
+              .item("4 medium clues.")
+              .item("1 hard clue.")
+              .item("Varrock scan.")
+              .item("13 elite compass steps.")
+              .item("1 master step.")
+            )
+          )
+
         builder.release(66, "UI Update Fixes - Batch 3", new Date(Date.parse("2026-01-31")))
           .notification("Batch 3 of UI update fixes text clues and towers!")
           .list(l => l

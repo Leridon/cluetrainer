@@ -381,10 +381,6 @@ export class GameMap extends leaflet.Map {
     const MAP_ID = 4 // Hardcoded
     const SKILLBERT_ATTRIBUTION = '<a href="https://runeapps.org/" title="Creator of Alt1 and RuneApps.org">Skillbert</a>'
 
-    function backupUrl(filename: string, version: number) {
-      return `https://runeapps.org/node/map/getnamed?mapid=${MAP_ID}&version=${version}&file=${filename}`;
-    }
-
     function geturls(filename: string) {
       return [
         `https://runeapps.org/s3/map${MAP_ID}/live/${filename}`,

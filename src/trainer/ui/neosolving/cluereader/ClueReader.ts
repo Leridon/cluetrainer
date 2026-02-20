@@ -153,8 +153,6 @@ export class ClueReader {
               case "textclue":
                 const text = ClueReader.readTextClueModalText(modal)
 
-                console.log(`Text: ${text}`)
-
                 if (text.length >= 10) {
                   const best = findBestMatch(
                     clue_data.all.flatMap<Clues.StepWithTextIndex>(c => c.text.map((text, text_index) => {
