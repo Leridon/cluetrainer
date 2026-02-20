@@ -399,7 +399,16 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-        builder.wip(67, "TBD")
+        builder.release(67, "UI Update Fixes - Batch 4 & Method Updates", new Date(Date.parse("2026-02-20")))
+          .notification("Clue Methods have been updated.")
+          .header("Bug and Data Fixes")
+          .list(l => l
+            .item("Fixed chat reader for sextant messages in compasses.")
+            .item("Fixed minimap detection for scan range overlay.")
+            .item("Updated location of the Lowse teleport.")
+            .item("Updated area of the ring of respawn to Burthorpe teleport.")
+            .item("Updated position of Challenge Mistress Fara.")
+          )
           .header("Method Updates by Ngis")
           .list(l => l
             .item("Updated methods for clues affected by the recent area changes.", new List()
@@ -410,12 +419,6 @@ export namespace Changelog {
               .item("13 elite compass steps.")
               .item("1 master step.")
             )
-          )
-          .header("Bug and Data Fixes")
-          .list(l => l
-            .item("Fixed chat reader for sextant messages in compasses.")
-            .item("Updated location of the Lowse teleport.")
-            .item("Updated area of the ring of respawn to Burthorpe teleport.")
           )
 
         builder.release(66, "UI Update Fixes - Batch 3", new Date(Date.parse("2026-01-31")))
