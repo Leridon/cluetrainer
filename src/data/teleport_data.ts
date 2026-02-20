@@ -3576,7 +3576,7 @@ name: "Entrana",
       },
       {
         id: "lowse",
-        target: {"origin": {"x": 9600, "y": 3271, "level": 0}},
+        target: {"origin": {"x": 2991, "y": 699, "level": 0}},
         code: "0,5",
         name: "Collectors - Lowse",
         menu_ticks: 2,
