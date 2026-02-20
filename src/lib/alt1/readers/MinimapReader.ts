@@ -15,7 +15,7 @@ import log = Log.log;
 export class MinimapReader extends DerivedCaptureService<MinimapReader.Options, MinimapReader.CapturedMinimap> {
 
   private debug_overlay = over()
-  private debug_mode: boolean = true
+  private debug_mode: boolean = false
 
   private capture_interest: AbstractCaptureService.InterestToken<any, CapturedImage>
   private finder: Finder<MinimapReader.CapturedMinimap>
@@ -29,8 +29,6 @@ export class MinimapReader extends DerivedCaptureService<MinimapReader.Options, 
 
     this._initialized = (async () => {
       this.finder = await MinimapReader.CapturedMinimap.finder.get()
-
-      //return // TODO: Disabled until minimap finder is fixed
 
       this.capture_interest = this.addDataSource(capture_service, (time, child_options) => {
 
@@ -94,6 +92,7 @@ export class MinimapReader extends DerivedCaptureService<MinimapReader.Options, 
 }
 
 export namespace MinimapReader {
+  import radiansToDegrees = Angles.radiansToDegrees;
   export type Options = AbstractCaptureService.Options & {
     refind_interval: CaptureInterval
   }
@@ -107,8 +106,8 @@ export namespace MinimapReader {
 
     constructor(public readonly body: CapturedImage) {
       this.compass = body.getSubSection({
-        origin: {x: 5, y: 6},
-        size: {x: 34, y: 34}
+        origin: {x: 6, y: 6},
+        size: {x: 29, y: 29}
       }).setName("Compass")
 
       this.energy = body.getSubSection({
@@ -157,12 +156,11 @@ export namespace MinimapReader {
 
       const r = 11;
 
-      const center: Vector2 = {x: 17, y: 17}
-      const real_center: Vector2 = {x: 16.5, y: 16.5}
+      const center: Vector2 = {x: 14, y: 14}
 
       for (let x = center.x - r; x <= center.x + r; x++) {
         for (let y = center.y - r; y <= center.y + r; y++) {
-          const v = Vector2.sub({x, y}, real_center)
+          const v = Vector2.sub({x, y}, center)
 
           const length_squared = Vector2.lengthSquared(v)
 
@@ -176,7 +174,7 @@ export namespace MinimapReader {
         }
       }
 
-      const CALIBRATION = Angles.degreesToRadians(1.544740919)
+      const CALIBRATION = Angles.degreesToRadians(-1.2541083)
 
       const average_angle = Angles.normalizeAngle(Math.atan2(
         lodash.sum(angle_samples.map(a => Math.sin(a))),
