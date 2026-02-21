@@ -20,8 +20,7 @@ jobs:
           submodules: 'true'
       - name: Install and Build 🔧
         run: |
-          npm ci
-          npm ci --workspace=alt1
+          npm ci --workspaces --include-workspace-root
           npm run build-beta
       - name: Deploy
         uses: cloudflare/wrangler-action@v3
