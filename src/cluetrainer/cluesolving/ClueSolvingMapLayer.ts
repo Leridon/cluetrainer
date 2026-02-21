@@ -23,6 +23,8 @@ import {AbstractDropdownSelection} from "../ui/widgets/AbstractDropdownSelection
 import {clue_data} from "../../data/clues";
 import {Alt1Modal} from "../Alt1Modal";
 import {SettingsModal} from "../ui/settings/SettingsEdit";
+import {Alt1} from "../../lib/alt1/Alt1";
+import {Alt1GL} from "../../lib/alt1gl/Alt1GL";
 
 export class ClueSolvingMapLayer extends GameLayer {
   public solution_container: Widget
@@ -164,7 +166,7 @@ export namespace ClueSolvingMapLayer {
 
   export class MainControlBar extends Widget {
     fullscreen_preference = new storage.Variable<boolean>("preferences/solve/fullscreen", () => false)
-    autosolve_preference = new storage.Variable<boolean>("preferences/solve/autosolve", () => deps().app.in_alt1)
+    autosolve_preference = new storage.Variable<boolean>("preferences/solve/autosolve", () => Alt1.exists())
 
     search_bar: TextField
     rest: Widget
@@ -189,6 +191,8 @@ export namespace ClueSolvingMapLayer {
           threshold: -10000
         }
       )
+
+      const in_alt1 = Alt1.exists() || Alt1GL.exists()
 
       this.append(
         this.parent.tetracompass_only
@@ -222,21 +226,24 @@ export namespace ClueSolvingMapLayer {
               }
             }),
         this.rest = hbox(
-          deps().app.in_alt1
+          in_alt1
             ? undefined
             : new MainControlButton({icon: "/assets/icons/Alt1.png", text: "Solving available in Alt1", centered: true})
               .tooltip("More available in Alt1")
               .onClick(() => new Alt1Modal().show()),
-          !deps().app.in_alt1 ? undefined :
-            new MainControlButton({icon: "/assets/icons/activeclue.png", text: "Solve", centered: true})
+          !in_alt1
+            ? undefined
+            : new MainControlButton({icon: "/assets/icons/activeclue.png", text: "Solve", centered: true})
               .onClick(() => this.parent.clue_reader.solveManuallyTriggered())
               .tooltip("Read a clue from screen")
-              .setEnabled(deps().app.in_alt1),
-          !deps().app.in_alt1 ? undefined :
+              .setEnabled(in_alt1),
+          !in_alt1
+            ? undefined
+            :
             new MainControlButton({icon: "/assets/icons/lock.png", text: "Auto-Solve", centered: true})
               .setToggleable(true)
               .tooltip("Continuously read clues from screen")
-              .setEnabled(deps().app.in_alt1)
+              .setEnabled(in_alt1)
               .onToggle(v => {
                 this.parent.clue_reader.setAutoSolve(v)
                 this.autosolve_preference.set(v)

@@ -21,7 +21,7 @@ import {NislIcon} from "../ui/nisl";
 import {ClueProperties} from "../ui/theorycrafting/ClueProperties";
 import {SlideGuider, SliderSolving} from "./subbehaviours/SliderSolving";
 import {ClueSolvingSubBehaviour} from "./ClueSolvingSubBehaviour";
-import {CompassSolving} from "./subbehaviours/CompassSolving";
+import {CompassSolving} from "./subbehaviours/compass/CompassSolving";
 import {ScanTreeSolving} from "./subbehaviours/scans/ScanTreeSolving";
 import {KnotSolving} from "./subbehaviours/KnotSolving";
 import {LockboxSolving} from "./subbehaviours/LockboxSolving";
@@ -545,7 +545,7 @@ export default class ClueSolvingBehaviour extends Behaviour {
     }
 
     if (clue.type == "compass") {
-      const behaviour = new CompassSolving(this, clue, read_result?.type == "compass" ? read_result.reader : undefined,
+      const behaviour = new CompassSolving(this, clue, read_result?.type == "compass" ? read_result.capture : undefined,
         async spot => {
           if (spot) {
             const method = await this.getAutomaticMethod({ clue: clue.id, spot: spot })

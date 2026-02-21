@@ -22,7 +22,7 @@ import {ColorPicker} from "../../../lib/ui/controls/ColorPicker";
 import {util} from "../../../lib/util/util";
 import {SlideGuider} from "../../cluesolving/subbehaviours/SliderSolving";
 import {CrowdSourcing} from "../../CrowdSourcing";
-import {CompassSolving} from "../../cluesolving/subbehaviours/CompassSolving";
+import {CompassSolving} from "../../cluesolving/subbehaviours/compass/CompassSolving";
 import {clue_data} from "../../../data/clues";
 import {NislIcon} from "../nisl";
 import {TransportData} from "../../../data/transports";

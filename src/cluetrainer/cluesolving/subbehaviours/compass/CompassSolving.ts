@@ -1,328 +1,51 @@
-import {ClueSolvingSubBehaviour} from "../ClueSolvingSubBehaviour";
-import ClueSolvingBehaviour from "../ClueSolvingBehaviour";
-import {GameLayer} from "../../../lib/gamemap/GameLayer";
-import {Clues} from "../../model/Clues";
-import {GieliCoordinates, TileCoordinates, TileRectangle} from "../../../lib/runescape/coordinates";
-import {GameMapMouseEvent} from "../../../lib/gamemap/MapEvents";
-import {C} from "../../../lib/ui/constructors";
-import * as leaflet from "leaflet"
-import {Rectangle, Transform, Vector2} from "../../../lib/math";
-import {MapEntity} from "../../../lib/gamemap/MapEntity";
-import {Compasses} from "../../cluetheory/Compasses";
-import {TeleportSpotEntity} from "../../ui/map/entities/TeleportSpotEntity";
+import {ClueSolvingSubBehaviour} from "../../ClueSolvingSubBehaviour";
+import ClueSolvingBehaviour from "../../ClueSolvingBehaviour";
+import {GameLayer} from "../../../../lib/gamemap/GameLayer";
+import {Clues} from "../../../model/Clues";
+import {GieliCoordinates, TileCoordinates, TileRectangle} from "../../../../lib/runescape/coordinates";
+import {C} from "../../../../lib/ui/constructors";
+import {Rectangle, Vector2} from "../../../../lib/math";
+import {Compasses} from "../../../cluetheory/Compasses";
 import lodash, {identity, isArray} from "lodash";
-import {CompassReader} from "../cluereader/CompassReader";
-import {Transportation} from "../../../lib/runescape/transportation";
-import {TransportData} from "../../../data/transports";
-import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
-import {PathGraphics} from "../../ui/path_graphics";
-import {util} from "../../../lib/util/util";
-import {ewent, observe} from "../../../lib/reactive";
-import {deps} from "../../dependencies";
-import {clue_data} from "../../../data/clues";
-import Properties from "../../ui/widgets/Properties";
-import {Notification} from "../../ui/NotificationBar";
-import Widget from "../../../lib/ui/Widget";
-import {levelIcon} from "../../../lib/gamemap/GameMap";
-import {ClueEntities} from "../ClueEntities";
-import {PathStepEntity} from "../../ui/map/entities/PathStepEntity";
-import {SettingsModal} from "../../ui/settings/SettingsEdit";
-import {Log} from "../../../lib/util/Log";
-import {TextRendering} from "../../ui/TextRendering";
-import {Alt1} from "../../../lib/alt1/Alt1";
-import {Angles} from "../../../lib/math/Angles";
-import {ChatReader} from "../../../lib/alt1/readers/ChatReader";
-import {CaptureInterval} from "../../../lib/alt1/capture";
-import {MessageBuffer} from "../../../lib/alt1/readers/chatreader/ChatBuffer";
-import {ClueTrainerWiki} from "../../wiki";
-import span = C.span;
+import {CompassReader} from "../../cluereader/CompassReader";
+import {Transportation} from "../../../../lib/runescape/transportation";
+import {TransportData} from "../../../../data/transports";
+import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
+import {util} from "../../../../lib/util/util";
+import {observe} from "../../../../lib/reactive";
+import {deps} from "../../../dependencies";
+import {clue_data} from "../../../../data/clues";
+import {Notification} from "../../../ui/NotificationBar";
+import Widget from "../../../../lib/ui/Widget";
+import {PathStepEntity} from "../../../ui/map/entities/PathStepEntity";
+import {SettingsModal} from "../../../ui/settings/SettingsEdit";
+import {Log} from "../../../../lib/util/Log";
+import {Alt1} from "../../../../lib/alt1/Alt1";
+import {Angles} from "../../../../lib/math/Angles";
+import {ChatReader} from "../../../../lib/alt1/readers/ChatReader";
+import {CaptureInterval} from "../../../../lib/alt1/capture";
+import {MessageBuffer} from "../../../../lib/alt1/readers/chatreader/ChatBuffer";
+import {ClueTrainerWiki} from "../../../wiki";
+import {Alt1GL} from "../../../../lib/alt1gl/Alt1GL";
 import cls = C.cls;
 import TeleportGroup = Transportation.TeleportGroup;
 import findBestMatch = util.findBestMatch;
 import stringSimilarity = util.stringSimilarity;
-import italic = C.italic;
 import activate = TileArea.activate;
 import notification = Notification.notification;
-import DigSolutionEntity = ClueEntities.DigSolutionEntity;
 import inlineimg = C.inlineimg;
 import count = util.count;
 import digSpotArea = Clues.digSpotArea;
 import vbox = C.vbox;
 import log = Log.log;
-import render_digspot = TextRendering.render_digspot;
 import UncertainAngle = Angles.UncertainAngle;
 import degreesToRadians = Angles.degreesToRadians;
-
-class CompassHandlingLayer extends GameLayer {
-  private lines: {
-    line: leaflet.Layer
-  }[] = []
-
-  constructor(private solving: CompassSolving) {
-    super()
-
-    this.solving.spots.forEach((e) =>
-      e.marker = new KnownCompassSpot(e)
-        .setInteractive(true)
-        .addTo(this)
-    )
-  }
-
-  async updateOverlay() {
-    this.lines.forEach(l => {
-      l.line.remove()
-    })
-
-    this.lines = []
-
-    const information = this.solving.entries.filter(e => e.information).map(l => l.information)
-
-    this.lines = information.map(info => {
-      const from = info.origin
-
-      const off = Vector2.transform(Vector2.scale(2000, Compasses.ANGLE_REFERENCE_VECTOR), Transform.rotationRadians(info.angle_radians.median))
-
-      const to = Vector2.add(from, off)
-
-      const right = Vector2.transform(info.direction, Transform.rotationRadians(Math.PI / 2))
-
-      const corner_near_left = Vector2.add(from, Vector2.scale(info.origin_uncertainty, right))
-      const corner_near_right = Vector2.add(from, Vector2.scale(-info.origin_uncertainty, right))
+import {CompassHandlingLayer} from "./CompassHandlingLayer";
+import {KnownCompassSpot} from "./KnownCompassSpot";
+import {CompassEntryWidget} from "./CompassEntryWidget";
+import {CapturedCompass} from "../../cluereader/capture/CapturedCompass";
 
 
-      const corner_far_left = Vector2.add(corner_near_left, Vector2.transform(off, Transform.rotationRadians(info.angle_radians.epsilon)))
-      const corner_far_right = Vector2.add(corner_near_right, Vector2.transform(off, Transform.rotationRadians(-info.angle_radians.epsilon)))
-
-      return {
-        line:
-          leaflet.featureGroup([
-            leaflet.polyline([Vector2.toLatLong(from), Vector2.toLatLong(to)], {color: this.solving.settings.beam_color}),
-            leaflet.polygon([
-              Vector2.toLatLong(corner_near_left),
-              Vector2.toLatLong(corner_near_right),
-              Vector2.toLatLong(corner_far_right),
-              Vector2.toLatLong(corner_far_left),
-            ]).setStyle({
-              stroke: false,
-              fillOpacity: 0.2,
-              color: this.solving.settings.beam_color
-            })
-          ]).addTo(this)
-      }
-    })
-  }
-
-  eventClick(event: GameMapMouseEvent) {
-    event.onPost(() => {
-
-      if (event.active_entity instanceof TeleportSpotEntity) {
-        this.solving.registerSpot(event.active_entity.teleport, false)
-      } else if (event.active_entity instanceof PathStepEntity && event.active_entity.step.type == "teleport") {
-        this.solving.registerSpot(TransportData.resolveTeleport(event.active_entity.step.id), false)
-      } else if (event.active_entity instanceof KnownCompassSpot) {
-        if (this.solving.entries.some(e => e.information) || !this.solving.reader) {
-          this.solving.setSelectedSpot(event.active_entity.spot, true)
-        } else {
-          this.solving.registerSpot(activate(this.solving.clue.single_tile_target ? TileArea.init(event.active_entity.spot.spot.spot) : digSpotArea(event.active_entity.spot.spot.spot)), true)
-        }
-      } else {
-        this.solving.registerSpot(
-          activate(TileArea.fromRect(TileRectangle.lift(
-              Rectangle.centeredOn(event.tile(), this.solving.settings.manual_tile_inaccuracy),
-              event.tile().level
-            ))
-          ), false
-        )
-      }
-    })
-  }
-}
-
-class KnownCompassSpot extends MapEntity {
-  constructor(public readonly spot: CompassSolving.SpotData) {
-    super()
-
-    this.setTooltip(() => {
-      const layout = new Properties()
-
-      layout.header(c().append("Compass spot ", render_digspot(this.spot.spot_id + 1)))
-
-      layout.paragraph("Click to select as solution and view pathing.")
-
-      return layout
-    })
-  }
-
-  private possible: boolean = true
-  private number: number | null = null
-  private active: boolean = false
-
-  setPossible(v: boolean, number: number): this {
-    if (this.number != number || v != this.possible) {
-      this.number = number
-      this.possible = v
-
-      this.requestRendering()
-    }
-
-    return this
-  }
-
-  setActive(v: boolean): this {
-    if (v != this.active) {
-      this.active = v
-      this.requestRendering()
-    }
-
-    return this
-  }
-
-  bounds(): Rectangle {
-    return Rectangle.from(this.spot.spot.spot)
-  }
-
-  protected async render_implementation(props: MapEntity.RenderProps): Promise<Element> {
-    const opacity = this.possible ? 1 : 0.5
-
-    const scale = (this.active ? 1 : 0.5) * (props.highlight ? 1.5 : 1)
-
-    const marker = leaflet.marker(Vector2.toLatLong(this.spot.spot.spot), {
-      icon: levelIcon(this.spot.spot.spot.level, scale),
-      opacity: opacity,
-      interactive: true,
-      bubblingMouseEvents: true,
-    }).addTo(this)
-
-    if (this.number != null) {
-      marker.bindTooltip(leaflet.tooltip({
-        content: this.number.toString(),
-        className: "spot-number-on-map",
-        offset: [0, 10],
-        permanent: true,
-        direction: "center",
-        opacity: opacity
-      }))
-    }
-
-
-    if (this.active) {
-      DigSolutionEntity.areaGraphics(this.spot.spot.spot, this.spot.spot.clue.single_tile_target).addTo(this)
-    }
-
-    return marker.getElement()
-  }
-}
-
-class CompassEntryWidget extends Widget {
-  selection_requested = ewent<this>()
-  position_discard_requested = ewent<this>()
-  discard_requested = ewent<this>()
-  commit_requested = ewent<this>()
-
-  constructor(public entry: CompassSolving.Entry) {
-    super(cls("ctr-compass-solving-entry"));
-
-    this.tooltip("Select")
-      .on("click", () => {
-        this.selection_requested.trigger(this)
-      })
-
-    this.render()
-  }
-
-  setSelected(value: boolean): this {
-    this.toggleClass("selected", value)
-    return this
-  }
-
-  private _preview_angle: UncertainAngle | null = null
-
-  setPreviewAngle(angle: UncertainAngle | null): this {
-    this._preview_angle = angle
-
-    if (this.entry.information == null) {
-      if (angle != null) {
-        this.angle_container?.text(UncertainAngle.toAngleString(angle))
-
-        this.angle_container?.tooltip(UncertainAngle.toUncertaintyString(angle))
-      } else {
-        this.angle_container?.text(`???°`)
-        this.angle_container?.tooltip(null)
-      }
-    }
-
-    return this
-  }
-
-  private angle_container: Widget = null
-
-  render(): void {
-    this.empty()
-
-    const row = this
-
-    {
-      const discard_button = cls("ctr-neosolving-compass-entry-button")
-        .setInnerHtml("&times;")
-        .tooltip("Discard")
-        .appendTo(row)
-        .on("click", () => {
-          this.position_discard_requested.trigger(this)
-        })
-    }
-
-    {
-      const position = cls("ctr-neosolving-compass-entry-position").appendTo(row)
-
-      if (this.entry.position) {
-        if (this.entry.position instanceof TeleportGroup.Spot) {
-          position.append(
-            PathGraphics.Teleport.asSpan(this.entry.position),
-            span(this.entry.position.spot.name)
-          )
-
-          position.tooltip(TileArea.toString(this.entry.position.targetArea()))
-        } else {
-          position.append(span(Vector2.toString(this.entry.position.center())))
-
-          position.tooltip(TileArea.toString(this.entry.position.parent))
-        }
-      } else {
-        position.append(italic("No location selected"))
-      }
-    }
-
-    if (this.entry.position) {
-      const isCommited = this.entry.information != null
-
-      const angle = this.angle_container = cls("ctr-compass-solving-angle")
-        .toggleClass("committed", isCommited)
-        .text(isCommited
-          ? UncertainAngle.toAngleString(this.entry.information.angle_radians)
-          : (this._preview_angle != null ? UncertainAngle.toAngleString(this._preview_angle) : "???°")
-        )
-        .appendTo(row)
-
-      if (isCommited) {
-        angle.tooltip(UncertainAngle.toUncertaintyString(this.entry.information.angle_radians))
-      }
-
-      const angle_button = cls("ctr-neosolving-compass-entry-button")
-        .appendTo(row)
-        .text(isCommited ? "×" : "✓")
-        .tooltip(isCommited ? "Click to discard" : "Click to commit (Alt + 1)")
-        .on("click", (e) => {
-          e.stopPropagation()
-
-          if (isCommited) {
-            this.discard_requested.trigger(this)
-          } else {
-            this.commit_requested.trigger(this)
-          }
-        })
-    }
-  }
-}
 
 const DEBUG_ANGLE_OVERRIDE: UncertainAngle = null // degreesToRadians(206.87152474371157)
 const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = null // {origin: {x: 3214, y: 3376, level: 0}}
@@ -348,7 +71,9 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
 
   first_confirmed_state: CompassReader.Service.State = undefined
 
-  constructor(parent: ClueSolvingBehaviour, public clue: Clues.Compass, public reader: CompassReader,
+  constructor(parent: ClueSolvingBehaviour,
+              public clue: Clues.Compass,
+              public captured_compass: CapturedCompass,
               private spot_selection_callback: (_: TileCoordinates) => Promise<any>
   ) {
     super(parent, "clue")
@@ -364,9 +89,9 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
       this.updateMethodPreviews()
     })
 
-    if (reader) {
+    if (Alt1GL.existsAny()) {
       this.process = new CompassReader.Service(
-        this.reader.capture,
+        this.captured_compass,
         this.settings.enable_status_overlay ? {
           warn_antialiasing: this.settings.status_overlay_warn_antialiasing
         } : null
@@ -411,7 +136,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
 
     if (previous_solution_entry) {
 
-      if(state.state == "normal") {
+      if (state.state == "normal") {
         this.commit(previous_solution_entry)
       } else {
         this.discardPosition(previous_solution_entry)
@@ -981,7 +706,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
     this.layer = new CompassHandlingLayer(this)
     this.parent.map_layer.add(this.layer)
 
-    if (this.reader) {
+    if (Alt1GL.existsAny()) {
       this.process?.start()
 
       Alt1.instance().main_hotkey.subscribe(0, e => {
@@ -1002,7 +727,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
 
       await this.reset()
 
-      if (Alt1.exists()) {
+      if (Alt1.exists() || Alt1GL.exists()) {
         this.lifetime_manager.bind(
           ChatReader.instance().subscribe({
             options: () => ({

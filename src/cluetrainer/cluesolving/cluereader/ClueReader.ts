@@ -9,7 +9,6 @@ import { CelticKnots } from "../../cluetheory/CelticKnots";
 import { Sliders } from "../../cluetheory/Sliders";
 import { Rectangle, Vector2 } from "../../../lib/math";
 import { Clues } from "../../model/Clues";
-import Behaviour from "../../../lib/ui/Behaviour";
 import {Log} from "../../../lib/util/Log";
 import {util} from "../../../lib/util/util";
 import * as oldlib from "../../../skillbertssolver/cluesolver/oldlib";
@@ -20,7 +19,6 @@ import {CapturedModal} from "./capture/CapturedModal";
 import {CapturedScan} from "./capture/CapturedScan";
 import {CapturedSliderInterface} from "./capture/CapturedSlider";
 import ClueFont from "./ClueFont";
-import {CompassReader} from "./CompassReader";
 import {KnotReader} from "./KnotReader";
 import {LockBoxReader} from "./LockBoxReader";
 import {SlideReader, SliderReader} from "./SliderReader";
@@ -372,9 +370,7 @@ export class ClueReader {
 
         const is_arc = compass.isArcCompass()
 
-        const reader = new CompassReader(compass)
-
-        const compass_state = reader.getAngle()
+        const compass_state = compass.getAngle()
 
         if (compass_state?.type == "likely_solved") {
           //console.error("Compass found, but already in solved state.")
@@ -392,7 +388,7 @@ export class ClueReader {
         return {
           type: "compass",
           step: is_arc ? clue_data.arc_compass : (this.tetracompass_only ? clue_data.tetracompass : clue_data.gielinor_compass),
-          reader: reader
+          capture: compass
         }
       }
     }
@@ -459,7 +455,7 @@ export namespace ClueReader {
     export type CompassClue = base & {
       type: "compass",
       step: Clues.Compass,
-      reader: CompassReader
+      capture: CapturedCompass,
     }
 
     export type Puzzle = base & {
@@ -501,7 +497,7 @@ export namespace ClueReader {
   }
 }
 
-export class GlClueReader extends Behaviour {
+export class GlClueReader  {
   private position_reader: PlayerStateTracking
 
   protected async begin() {

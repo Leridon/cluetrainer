@@ -350,10 +350,6 @@ export class ClueTrainer extends Behaviour {
 
     window.history.pushState({}, null, `${location.protocol}//${location.host}`)
 
-    if (Alt1GL.exists()) {
-        this.withSub(new GlClueReader())
-    }
-
     if (ChatReader.instance().debug_mode) {
       ChatReader.instance().subscribe({
         options: () => ({

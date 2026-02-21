@@ -1,5 +1,6 @@
 import {lazy} from "../Lazy";
 import {type Alt1GlClient} from "./ts/util/patchrs_napi";
+import {Alt1} from "../alt1/Alt1";
 
 declare global {
   interface Window {
@@ -15,7 +16,7 @@ export class Alt1GL {
   }
 
   static _instance = lazy(() => {
-    if(!window.alt1gl) {
+    if (!window.alt1gl) {
       throw new Error("Alt1GL is not available. Make sure Clue Trainer runs within an alt1gl environment.")
     }
 
@@ -30,5 +31,9 @@ export class Alt1GL {
 export namespace Alt1GL {
   export function exists(): boolean {
     return !!window.alt1gl
+  }
+
+  export function existsAny(): boolean {
+    return Alt1GL.exists() || Alt1.exists()
   }
 }
