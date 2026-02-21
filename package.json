@@ -1,15 +1,18 @@
 {
   "name": "cluetrainer",
   "scripts": {
-    "build": "node -r ts-node/register ./node_modules/webpack/bin/webpack.js --node-env development",
-    "build-beta": "node -r ts-node/register ./node_modules/webpack/bin/webpack.js --node-env beta",
-    "build-production": "node -r ts-node/register ./node_modules/webpack/bin/webpack.js",
+    "build-libs": "npm run build -w alt1",
+    "build": "npm run build-libs && node -r ts-node/register ./node_modules/webpack/bin/webpack.js --node-env development",
+    "build-beta": "npm run build-libs && node -r ts-node/register ./node_modules/webpack/bin/webpack.js --node-env beta",
+    "build-production": "npm run build-libs && node -r ts-node/register ./node_modules/webpack/bin/webpack.js",
     "watch": "npm run build -- --watch",
     "runlocal": "electron dist/electron.bundle.js"
   },
+  "workspaces": [
+    "lib/*"
+  ],
   "dependencies": {
     "@popperjs/core": "^2.11.8",
-    "alt1": "^0.1.2",
     "assert": "^2.1.0",
     "assert-browserify": "^2.0.0",
     "buffer": "^6.0.3",
@@ -24,7 +27,8 @@
     "process": "^0.11.10",
     "timers-browserify": "^2.0.12",
     "tippy.js": "^6.3.7",
-    "uuid": "^11.0.3"
+    "uuid": "^11.0.3",
+    "alt1": "workspace:alt1"
   },
   "devDependencies": {
     "@alt1/imagedata-loader": "^1.0.0-alpha.6",

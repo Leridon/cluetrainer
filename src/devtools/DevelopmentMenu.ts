@@ -22,9 +22,13 @@ import {util} from "../lib/util/util";
 import {SlideReader} from "../trainer/ui/neosolving/cluereader/SliderReader";
 import {FontSheets} from "./FontSheets";
 import {ImageDetect} from "alt1";
+import {ChatboxFinder} from "../lib/alt1/readers/chatreader/ChatboxFinder";
+import {ChatReader} from "../lib/alt1/readers/ChatReader";
+import {MessageBuffer} from "../lib/alt1/readers/chatreader/ChatBuffer";
 import notification = Notification.notification;
 import cleanedJSON = util.cleanedJSON;
 import FontScript = FontSheets.FontScript;
+import log = Log.log;
 
 
 export class DevelopmentModal extends NisModal {
@@ -111,8 +115,29 @@ export class DevelopmentModal extends NisModal {
 
         await reader.initialization.wait()
 
-        ImportModal.img(img => {
-          console.log(reader.read(CapturedImage.bind(img)))
+        const chat_finder = await ChatboxFinder.instance.get()
+        const chat_icons = await ChatReader.ChatIcons.instance.get()
+
+        ImportModal.img(async img => {
+          const bound = CapturedImage.bind(img)
+
+          log().log("Detected Clue:")
+          log().log(reader.read(bound))
+
+          const chatboxes = chat_finder.find(bound)
+
+          log().log(`${chatboxes.length} detected chatboxes:`)
+          chatboxes.forEach(chatbox => {
+            log().log("Detected Chatbox", "", chatbox.body.getData())
+
+            const reader = new ChatReader.SingleChatboxReader(chat_icons, chatbox)
+            reader.read()
+
+            log().log("Messages:")
+            reader.buffer.get().forEach(message => {
+              log().log(MessageBuffer.Message.toString(message))
+            })
+          })
         })
       })
     )

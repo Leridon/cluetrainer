@@ -399,6 +399,13 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+        builder.release(68, "Bug Fixes", new Date(Date.parse("2026-02-21")))
+          .list(l => l
+            .item("Fixed a bug that caused chatboxes to not be detected when character name and title were too long.")
+            .item("Fixed a bug that caused the meerkat warning to show up for scans even when you had meerkats active.")
+          )
+
+
         builder.release(67, "UI Update Fixes - Batch 4 & Method Updates", new Date(Date.parse("2026-02-20")))
           .notification("Clue Methods have been updated.")
           .header("Bug and Data Fixes")
