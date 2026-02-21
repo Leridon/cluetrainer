@@ -34,6 +34,8 @@ import {SuccessfullInstallationNotice} from "./startup_messages/SuccessfullInsta
 import {lazy} from "../lib/Lazy";
 import {Alt1} from "../lib/alt1/Alt1";
 import {ClueTrainerWiki} from "./wiki";
+import {ChatReader} from "../lib/alt1/readers/ChatReader";
+import {CaptureInterval} from "../lib/alt1/capture";
 import ActiveTeleportCustomization = Transportation.TeleportGroup.ActiveTeleportCustomization;
 import TeleportSettings = Settings.TeleportSettings;
 import inlineimg = C.inlineimg;
@@ -341,6 +343,14 @@ export class ClueTrainer extends Behaviour {
     if (query_function) query_function()
 
     window.history.pushState({}, null, `${location.protocol}//${location.host}`)
+
+    if (ChatReader.instance().debug_mode) {
+      ChatReader.instance().subscribe({
+        options: () => ({
+          interval: CaptureInterval.fromApproximateInterval(300)
+        })
+      })
+    }
   }
 
   protected end() {
