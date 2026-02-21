@@ -403,6 +403,7 @@ export namespace Changelog {
           .list(l => l
             .item("Fixed a bug that caused chatboxes to not be detected when character name and title were too long.")
             .item("Fixed a bug that caused the meerkat warning to show up for scans even when you had meerkats active.")
+            .item("Fixed path for medium clue step involving Sabbot.")
           )
 
 
