@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
+        with:
+          submodules: 'true'
 
       - name: Set variables
         run: |
@@ -21,8 +23,8 @@ jobs:
 
       - name: Install and Build 🔧 # This example project is built using npm and outputs the result to the 'build' folder. Replace with the commands required to build your project, or remove this step entirely if your site is pre-built.
         run: |
-          npm ci
-          npm run build-production
+          npm ci --workspaces --include-workspace-root
+          npm run build-beta
 
       - name: Deploy cluetrainer.app
         uses: JamesIves/github-pages-deploy-action@v4
