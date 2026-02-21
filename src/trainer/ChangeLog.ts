@@ -402,6 +402,7 @@ export namespace Changelog {
         builder.release(68, "Bug Fixes", new Date(Date.parse("2026-02-21")))
           .list(l => l
             .item("Fixed a bug that caused chatboxes to not be detected when character name and title were too long.")
+            .item("Fixed a bug that caused the meerkat warning to show up for scans even when you had meerkats active.")
           )
 
 
