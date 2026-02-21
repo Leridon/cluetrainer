@@ -23,7 +23,7 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
    * @param img The image to search for chat boxes.
    */
   find(img: CapturedImage): CapturedChatbox[] {
-    return Alt1Overlay.debug(() => this.debug_overlay.get(), this.debug, (debug_geometry) : CapturedChatbox[] => {
+    return Alt1Overlay.debug(() => this.debug_overlay.get(), this.debug, (debug_geometry): CapturedChatbox[] => {
       // First, find plus/minus icons that indicate the top right of the chatbox.
       const top_rights: CapturedImage[] = [
         this.needles.tr_minus,
@@ -63,19 +63,20 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
       }
 
       const initial_bls = img.getScreenSection(relevant_bubble_area).findNeedle(this.needles.bot_left)
-        .filter(bl =>
-          bubbles.some(bubble => {
-            const delta = Vector2.sub(bubble.screen_rectangle.origin, bl.screen_rectangle.origin)
 
-            return delta.y <= -12 && delta.y >= -16
-              && delta.x >= 14 && delta.x <= 110
-          })
-        )
+      const filtered_bls = initial_bls.filter(bl =>
+        bubbles.some(bubble => {
+          const delta = Vector2.sub(bubble.screen_rectangle.origin, bl.screen_rectangle.origin)
+
+          return delta.y <= -12 && delta.y >= -16
+            && delta.x >= 14 && delta.x <= 300
+        })
+      )
 
       if (this.debug) {
-        console.log(`Found bot_lefts ${initial_bls.length}`)
+        console.log(`Found bot_lefts ${initial_bls.length}, filtered ${filtered_bls.length}`)
 
-        initial_bls.forEach(bub => bub.debugOverlay2(debug_geometry))
+        filtered_bls.forEach(bub => bub.debugOverlay2(debug_geometry))
       }
 
       function pairByPredicate<A, B, C>(
@@ -114,7 +115,7 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
         body: CapturedImage
       }
 
-      const areas = pairByPredicate(top_rights, initial_bls, (tr, bl): Pair => {
+      const areas = pairByPredicate(top_rights, filtered_bls, (tr, bl): Pair => {
         const body_area = ScreenRectangle.fromPixels(
           Vector2.add(tr.screen_rectangle.origin, ChatboxFinder.BODY_TR_FROM_TR_ANCHOR),
           Vector2.add(bl.screen_rectangle.origin, ChatboxFinder.BODY_BL_FROM_BL_ANCHOR),
@@ -127,7 +128,7 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
         }
       }, (pair) => {
         return top_rights.every(tr => !ScreenRectangle.contains(pair.body.screen_rectangle, tr.screen_rectangle.origin))
-          && initial_bls.every(bl => !ScreenRectangle.contains(pair.body.screen_rectangle, bl.screen_rectangle.origin))
+          && filtered_bls.every(bl => !ScreenRectangle.contains(pair.body.screen_rectangle, bl.screen_rectangle.origin))
       })
 
       if (this.debug) {
@@ -149,7 +150,7 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
 }
 
 export namespace ChatboxFinder {
-  export const BODY_BL_FROM_BL_ANCHOR: Vector2 = {x: 4, y: -25}
+  export const BODY_BL_FROM_BL_ANCHOR: Vector2 = {x: 3, y: -25}
 
   export const BODY_TR_FROM_TR_ANCHOR: Vector2 = {x: 15, y: 20}
 }

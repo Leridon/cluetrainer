@@ -28,7 +28,7 @@ import Message = MessageBuffer.Message;
  * and also to buffer messages so that scrolling the chat up and down does not cause messages to be read again.
  */
 export class ChatReader extends DerivedCaptureService {
-  private debug_mode: boolean = false
+  public debug_mode: boolean = false
 
   private buffer = new MessageBuffer()
 
@@ -192,7 +192,6 @@ export namespace ChatReader {
       "\u{1F480}", "\u26AF", "\u3289", "\u328F"
     ]
   }
-
 
   export class SingleChatboxReader {
     buffer = new MessageBuffer()

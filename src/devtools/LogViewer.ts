@@ -1,8 +1,8 @@
 import {Log} from "../lib/util/Log";
 import {NisModal} from "../lib/ui/NisModal";
 import {C} from "../lib/ui/constructors";
-import cls = C.cls;
 import {util} from "../lib/util/util";
+import cls = C.cls;
 import formatTime = util.formatTime;
 import cleanedJSON = util.cleanedJSON;
 import img = C.img;
@@ -30,7 +30,7 @@ export class LogViewer extends NisModal {
           .append(
             c().css("width", "100px").text(formatTime(entry.timestamps[0])),
             c().css("min-width", "100px").css("width", "100px").css("text-align", "center").text(entry.message.category),
-            c().text(entry.message.body.toString()),
+            c().text(entry.message.body?.toString() ?? JSON.stringify(entry.message.body)),
           )
           .appendTo(container)
 

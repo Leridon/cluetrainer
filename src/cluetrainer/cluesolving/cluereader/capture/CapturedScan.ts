@@ -134,6 +134,8 @@ export class CapturedScan {
 
     if (this.checkRawLines([
       {index: index(this.paragraph_start_indices.get(), -1), expected_text: "Your meerkats are"},
+      {index: index(this.paragraph_start_indices.get(), -1), expected_text: "Your meerkats increase"},
+      {index: -1, expected_text: "your scan range by 5."},
     ])) return true
 
     if (this.checkRawLines([
