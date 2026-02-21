@@ -16,10 +16,11 @@ jobs:
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
-
+        with:
+          submodules: 'true'
       - name: Install and Build 🔧
         run: |
-          npm ci
+          npm ci --workspaces --include-workspace-root
           npm run build-beta
       - name: Deploy
         uses: cloudflare/wrangler-action@v3
