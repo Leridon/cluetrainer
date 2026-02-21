@@ -1,7 +1,7 @@
 {
   "name": "cluetrainer",
   "scripts": {
-    "build-libs": "npm run build -w alt1",
+    "build-libs": "npm run build-tools -w alt1 && npm run build -w alt1",
     "build": "npm run build-libs && node -r ts-node/register ./node_modules/webpack/bin/webpack.js --node-env development",
     "build-beta": "npm run build-libs && node -r ts-node/register ./node_modules/webpack/bin/webpack.js --node-env beta",
     "build-production": "npm run build-libs && node -r ts-node/register ./node_modules/webpack/bin/webpack.js",
