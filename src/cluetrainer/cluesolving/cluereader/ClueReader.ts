@@ -1,20 +1,20 @@
 import * as OCR from "alt1/ocr";
-import { FontDefinition } from "alt1/ocr";
-import { clue_data } from "../../../data/clues";
-import { Alt1Color } from "../../../lib/alt1/Alt1Color";
-import { CapturedImage } from "../../../lib/alt1/capture";
-import { Finder } from "../../../lib/alt1/capture/Finder";
-import { LegacyOverlayGeometry } from "../../../lib/alt1/LegacyOverlayGeometry";
-import { CelticKnots } from "../../cluetheory/CelticKnots";
-import { Sliders } from "../../cluetheory/Sliders";
-import { Rectangle, Vector2 } from "../../../lib/math";
-import { Clues } from "../../model/Clues";
+import {FontDefinition} from "alt1/ocr";
+import {clue_data} from "../../../data/clues";
+import {Alt1Color} from "../../../lib/alt1/Alt1Color";
+import {CapturedImage} from "../../../lib/alt1/capture";
+import {Finder} from "../../../lib/alt1/capture/Finder";
+import {LegacyOverlayGeometry} from "../../../lib/alt1/LegacyOverlayGeometry";
+import {CelticKnots} from "../../cluetheory/CelticKnots";
+import {Sliders} from "../../cluetheory/Sliders";
+import {Rectangle, Vector2} from "../../../lib/math";
+import {Clues} from "../../model/Clues";
 import {Log} from "../../../lib/util/Log";
 import {util} from "../../../lib/util/util";
 import * as oldlib from "../../../skillbertssolver/cluesolver/oldlib";
 import {comparetiledata} from "../../../skillbertssolver/cluesolver/oldlib";
 import {Notification} from "../../ui/NotificationBar";
-import {CapturedCompass} from "./capture/CapturedCompass";
+import {CapturedCompassClassic} from "./capture/CapturedCompassClassic";
 import {CapturedModal} from "./capture/CapturedModal";
 import {CapturedScan} from "./capture/CapturedScan";
 import {CapturedSliderInterface} from "./capture/CapturedSlider";
@@ -23,6 +23,9 @@ import {KnotReader} from "./KnotReader";
 import {LockBoxReader} from "./LockBoxReader";
 import {SlideReader, SliderReader} from "./SliderReader";
 import {TowersReader} from "./TowersReader";
+import {PlayerStateTracking} from "./PlayerPositionReader";
+import {Alt1GLCapturedFrame} from "../../../lib/alt1gl/Alt1GLCapturedFrame";
+import {WorldMesh} from "../../../lib/alt1gl/ts/render/reflect3d";
 import stringSimilarity = util.stringSimilarity;
 import notification = Notification.notification;
 import findBestMatch = util.findBestMatch;
@@ -31,7 +34,6 @@ import log = Log.log;
 import cleanedJSON = util.cleanedJSON;
 import async_init = util.async_init;
 import AsyncInitialization = util.AsyncInitialization;
-import {PlayerStateTracking} from "./PlayerPositionReader";
 
 const CLUEREADERDEBUG = false
 
@@ -47,7 +49,7 @@ export class ClueReader {
     slider_reader: SliderReader,
     modal_finder: Finder<CapturedModal>
     slider_finder: CapturedSliderInterface.Finder,
-    compass_finder: Finder<CapturedCompass>
+    compass_finder: Finder<CapturedCompassClassic>
   }>
 
   constructor(public tetracompass_only: boolean) {
@@ -60,7 +62,7 @@ export class ClueReader {
         slider_reader: await SlideReader.instance(),
         modal_finder: await CapturedModal.finder.get(),
         slider_finder: await CapturedSliderInterface.Finder.instance.get(),
-        compass_finder: await CapturedCompass.finder.get()
+        compass_finder: await CapturedCompassClassic.finder.get()
       }
     })
 
@@ -455,7 +457,7 @@ export namespace ClueReader {
     export type CompassClue = base & {
       type: "compass",
       step: Clues.Compass,
-      capture: CapturedCompass,
+      capture: CapturedCompassClassic,
     }
 
     export type Puzzle = base & {
@@ -497,7 +499,7 @@ export namespace ClueReader {
   }
 }
 
-export class GlClueReader  {
+export class GlClueReader {
   private position_reader: PlayerStateTracking
 
   protected async begin() {
