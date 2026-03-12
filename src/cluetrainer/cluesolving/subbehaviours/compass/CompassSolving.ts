@@ -27,6 +27,10 @@ import {CaptureInterval} from "../../../../lib/alt1/capture";
 import {MessageBuffer} from "../../../../lib/alt1/readers/chatreader/ChatBuffer";
 import {ClueTrainerWiki} from "../../../wiki";
 import {Alt1GL} from "../../../../lib/alt1gl/Alt1GL";
+import {CompassHandlingLayer} from "./CompassHandlingLayer";
+import {KnownCompassSpot} from "./KnownCompassSpot";
+import {CompassEntryWidget} from "./CompassEntryWidget";
+import {CapturedCompassClassic} from "../../cluereader/capture/CapturedCompassClassic";
 import cls = C.cls;
 import TeleportGroup = Transportation.TeleportGroup;
 import findBestMatch = util.findBestMatch;
@@ -40,12 +44,6 @@ import vbox = C.vbox;
 import log = Log.log;
 import UncertainAngle = Angles.UncertainAngle;
 import degreesToRadians = Angles.degreesToRadians;
-import {CompassHandlingLayer} from "./CompassHandlingLayer";
-import {KnownCompassSpot} from "./KnownCompassSpot";
-import {CompassEntryWidget} from "./CompassEntryWidget";
-import {CapturedCompass} from "../../cluereader/capture/CapturedCompass";
-
-
 
 const DEBUG_ANGLE_OVERRIDE: UncertainAngle = null // degreesToRadians(206.87152474371157)
 const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = null // {origin: {x: 3214, y: 3376, level: 0}}
@@ -62,7 +60,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
   needs_more_info: boolean = true
 
   layer: CompassHandlingLayer
-  process: CompassReader.Service
+  angle_reading_service: CompassReader.Service
 
   // Variables defining the state machine
   entry_selection_index: number = 0
@@ -73,7 +71,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
 
   constructor(parent: ClueSolvingBehaviour,
               public clue: Clues.Compass,
-              public captured_compass: CapturedCompass,
+              public captured_compass: CapturedCompassClassic,
               private spot_selection_callback: (_: TileCoordinates) => Promise<any>
   ) {
     super(parent, "clue")
@@ -90,14 +88,15 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
     })
 
     if (Alt1GL.existsAny()) {
-      this.process = new CompassReader.Service(
+      this.angle_reading_service = new CompassReader.Service(
         this.captured_compass,
         this.settings.enable_status_overlay ? {
           warn_antialiasing: this.settings.status_overlay_warn_antialiasing
-        } : null
+        } : null,
+        deps().app.settings.settings.experimental.alt1gl_enabled
       )
 
-      this.process.onChange((is_state, was_state) => {
+      this.angle_reading_service.onChange((is_state, was_state) => {
         if (is_state) this.maybeSetFirstConfirmedState(is_state)
 
         if (is_state?.state == "closed") {
@@ -146,7 +145,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
   }
 
   pausesClueReader(): boolean {
-    return this.process && this.process.last_read?.type == "success"
+    return this.angle_reading_service && this.angle_reading_service.last_read?.type == "success"
   }
 
   private entry_container: Widget
@@ -257,7 +256,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
     Log.log().log(`Discarding angle of triangulation spot ${index}`, "Compass Solving")
 
     if (index >= 0) {
-      const state = this.process.state()
+      const state = this.angle_reading_service.state()
 
       entry.information = null
       entry.widget.render()
@@ -294,7 +293,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
           return undefined
         }
       } else {
-        const state = this.process.state()
+        const state = this.angle_reading_service.state()
 
         if (state.state != "normal") return undefined
 
@@ -504,7 +503,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
   }
 
   private createEntry(entry: CompassSolving.Entry, dont_update_selection: boolean = false): CompassSolving.Entry {
-    const state = this.process.state()
+    const state = this.angle_reading_service.state()
 
     entry.widget = new CompassEntryWidget(entry)
       .setPreviewAngle((!state || state.state != "normal") ? null : state.result.angle)
@@ -572,7 +571,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
 
     entry.widget.render()
 
-    const state = this.process.state()
+    const state = this.angle_reading_service.state()
     entry.widget.setPreviewAngle(state?.state != "normal" ? null : state.result.angle)
 
     if (hadInfo) {
@@ -683,7 +682,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
   private async tryToHandleSextantPosition() {
     if (!this.latest_unhandled_sextant_position) return
 
-    const reader_state = this.process.state()
+    const reader_state = this.angle_reading_service.state()
 
     if (!reader_state) return
 
@@ -707,7 +706,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
     this.parent.map_layer.add(this.layer)
 
     if (Alt1GL.existsAny()) {
-      this.process?.start()
+      this.angle_reading_service?.start()
 
       Alt1.instance().main_hotkey.subscribe(0, e => {
         if (e.text) {
@@ -794,7 +793,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
   protected end() {
     this.layer.remove()
 
-    if (this.process) this.process.stop()
+    if (this.angle_reading_service) this.angle_reading_service.stop()
   }
 }
 

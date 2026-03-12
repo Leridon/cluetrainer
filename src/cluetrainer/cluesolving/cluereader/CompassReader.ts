@@ -1,7 +1,6 @@
-import {Compasses} from "../../cluetheory/Compasses";
-import {Rectangle, Vector2} from "../../../lib/math";
+import {Vector2} from "../../../lib/math";
 import lodash from "lodash";
-import {CapturedCompass} from "./capture/CapturedCompass";
+import {CapturedCompassClassic} from "./capture/CapturedCompassClassic";
 import {EwentHandler, observe} from "../../../lib/reactive";
 import {ScreenRectangle} from "../../../lib/alt1/ScreenRectangle";
 import {CapturedImage, CaptureInterval} from "../../../lib/alt1/capture";
@@ -17,6 +16,9 @@ import {CalibrationTool} from "../../../devtools/CompassCalibrationTool";
 import {Alt1Overlay} from "../../../lib/alt1/overlay/Alt1Overlay";
 import {Alt1OverlayDrawCalls} from "../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
 import {ClueTrainerWiki} from "../../wiki";
+import {Alt1GLCapturedFrame} from "../../../lib/alt1gl/Alt1GLCapturedFrame";
+import {CapturedCompassGl} from "./capture/CapturedCompassGl";
+import {Alt1GL} from "../../../lib/alt1gl/Alt1GL";
 import log = Log.log;
 
 
@@ -335,11 +337,12 @@ export namespace CompassReader {
 
     last_read: CompassReader.AngleResult = null
 
-    initialization: AsyncInitialization<{ finder: Finder<CapturedCompass> }>
+    initialization: AsyncInitialization<{ finder: Finder<CapturedCompassClassic> }>
 
     constructor(
-      private matched_ui: CapturedCompass,
+      private matched_ui: CapturedCompassClassic,
       private overlay_config: Service.StatusOverlay.Config,
+      private use_alt1gl_reader: boolean,
       public readonly calibration_functions: (_: AntialiasingType) => CompassCalibrationFunction = typ => CompassReader.calibration_tables[typ],
       private refind_after_close: boolean = false,
     ) {
@@ -351,7 +354,7 @@ export namespace CompassReader {
 
       this.initialization = async_init(async () => {
         return {
-          finder: await CapturedCompass.finder.get()
+          finder: await CapturedCompassClassic.finder.get()
         }
       })
     }
@@ -383,6 +386,25 @@ export namespace CompassReader {
             this.tick(value.value)
           }
         }))
+
+      if (Alt1GL.exists()) {
+        this.lifetime_manager.bind(
+          Alt1GLCapturedFrame.subscribe({features: ["vertexarray", "uniforms"], framecooldown: 300}, frame => {
+            const compass_mesh = CapturedCompassGl.findCompass(frame)
+
+            if (compass_mesh) {
+              const angle = compass_mesh.getAngle()
+
+              if (angle.type == "success") {
+                this.committed_state.set({
+                  state: "normal",
+                  result: angle
+                })
+              }
+            }
+          })
+        )
+      }
     }
 
     protected end() {

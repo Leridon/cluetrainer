@@ -47,6 +47,7 @@ import {SolvingMethods} from "../../model/SolvingMethods";
 import {SectionControl} from "../widgets/SectionControl";
 import {ScanPanelOverlay} from "../../cluesolving/subbehaviours/scans/ScanPanelReader";
 import {Notification} from "../NotificationBar";
+import {AugmentedMethod} from "../../model/MethodPack";
 import cls = C.cls;
 import PotaColor = Settings.PotaColor;
 import hbox = C.hbox;
@@ -62,7 +63,6 @@ import span = C.span;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import Appendable = C.Appendable;
 import notification = Notification.notification;
-import {AugmentedMethod} from "../../model/MethodPack";
 
 export class SettingsLayout extends Properties {
   constructor() {super();}
@@ -94,6 +94,16 @@ export class SettingsLayout extends Properties {
   ): this {
     return this.named(hboxl(name, SettingsLayout.info(explanation)), content)
   }
+
+  checkbox<key extends string>(description: string, value: { [P in key]?: boolean }, key: key, callback: () => void = () => {}) {
+    this.row(new Checkbox(description)
+      .setValue(!!value[key])
+      .onCommit(v => {
+        value[key] = v
+        callback()
+      })
+    )
+  }
 }
 
 export namespace SettingsLayout {
@@ -105,15 +115,21 @@ export namespace SettingsLayout {
   }
 }
 
-class TeleportSettingsEdit extends Widget {
-  private layout: SettingsLayout
+abstract class AbstractSettingsEdit<T extends {}> extends Widget {
+  protected layout = new SettingsLayout().appendTo(this)
 
-  constructor(private value: Settings.TeleportSettings) {
+  protected constructor(protected value: T) {
     super();
 
-    this.layout = new SettingsLayout().appendTo(this)
-
     this.render()
+  }
+
+  abstract render()
+}
+
+class TeleportSettingsEdit extends AbstractSettingsEdit<Settings.TeleportSettings> {
+  constructor(value: Settings.TeleportSettings) {
+    super(value);
   }
 
   render() {
@@ -376,41 +392,20 @@ class TeleportSettingsEdit extends Widget {
   }
 }
 
-class ScanSettingsEdit extends Widget {
-  private layout: SettingsLayout
-
-  constructor(private value: ScanSolving.Settings) {
-    super()
-
-    this.layout = new SettingsLayout().appendTo(this)
-
-    this.render()
+class ScanSettingsEdit extends AbstractSettingsEdit<ScanSolving.Settings> {
+  constructor(value: ScanSolving.Settings) {
+    super(value)
   }
 
   render() {
     this.layout.empty()
 
-    this.layout.section("Minimap Scan Range Overlay", "The scan range overlay shows a square around the center of your minimap visualizing your current scan range. ")
+    this.layout.section("Minimap Scan Range Overlay", "The scan range overlay shows a square around the center of your minimap visualizing your current scan range.")
 
-    this.layout.row(new Checkbox("Show when using a scan tree")
-      .onCommit(v => this.value.show_minimap_overlay_scantree = v)
-      .setValue(this.value.show_minimap_overlay_scantree)
-    )
-
-    this.layout.row(new Checkbox("Show when not using a scan tree")
-      .onCommit(v => this.value.show_minimap_overlay_simple = v)
-      .setValue(this.value.show_minimap_overlay_simple)
-    )
-
-    this.layout.row(new Checkbox("Show Triple-Ping range")
-      .onCommit(v => this.value.show_triple_ping = v)
-      .setValue(this.value.show_triple_ping)
-    )
-
-    this.layout.row(new Checkbox("Show Double-Ping range")
-      .onCommit(v => this.value.show_double_ping = v)
-      .setValue(this.value.show_double_ping)
-    )
+    this.layout.checkbox("Show when using a scan tree", this.value, "show_minimap_overlay_scantree")
+    this.layout.checkbox("Show when not using a scan tree", this.value, "show_minimap_overlay_simple")
+    this.layout.checkbox("Show Triple-Ping range", this.value, "show_triple_ping")
+    this.layout.checkbox("Show Double-Ping range", this.value, "show_double_ping")
 
     this.layout.setting("Minimap Overlay Scaling", "Choose how to scale the scan range overlay to fit your minimap zoom.")
 
@@ -729,21 +724,9 @@ export namespace ScanInputOverlayConfigModal {
   }
 }
 
-export class ScanPanelStatusOverlayConfigModal extends FormModal<ScanPanelOverlay.Config> {
-  constructor() {
-    super();
-  }
-}
-
-class PuzzleSettingsEdit extends Widget {
-  private layout: Properties
-
-  constructor(private value: SlideGuider.Settings) {
-    super()
-
-    this.layout = new Properties().appendTo(this)
-
-    this.render()
+class PuzzleSettingsEdit extends AbstractSettingsEdit<SlideGuider.Settings> {
+  constructor(value: SlideGuider.Settings) {
+    super(value)
   }
 
   render() {
@@ -837,15 +820,9 @@ class PuzzleSettingsEdit extends Widget {
   }
 }
 
-class KnotSettingsEdit extends Widget {
-  private layout: Properties
-
-  constructor(private value: KnotSolving.Settings) {
-    super()
-
-    this.layout = new Properties().appendTo(this)
-
-    this.render()
+class KnotSettingsEdit extends AbstractSettingsEdit<KnotSolving.Settings> {
+  constructor(value: KnotSolving.Settings) {
+    super(value)
   }
 
   render() {
@@ -862,15 +839,9 @@ class KnotSettingsEdit extends Widget {
   }
 }
 
-class LockboxSettingsEdit extends Widget {
-  private layout: Properties
-
-  constructor(private value: LockboxSolving.Settings) {
-    super()
-
-    this.layout = new Properties().appendTo(this)
-
-    this.render()
+class LockboxSettingsEdit extends AbstractSettingsEdit<LockboxSolving.Settings> {
+  constructor(value: LockboxSolving.Settings) {
+    super(value)
   }
 
   render() {
@@ -929,15 +900,9 @@ class LockboxSettingsEdit extends Widget {
   }
 }
 
-class TowersSettingsEdit extends Widget {
-  private layout: Properties
-
-  constructor(private value: TowersSolving.Settings) {
-    super()
-
-    this.layout = new Properties().appendTo(this)
-
-    this.render()
+class TowersSettingsEdit extends AbstractSettingsEdit<TowersSolving.Settings> {
+  constructor(value: TowersSolving.Settings) {
+    super(value)
   }
 
   render() {
@@ -978,15 +943,9 @@ class TowersSettingsEdit extends Widget {
   }
 }
 
-class GeneralSolvingSettingsEdit extends Widget {
-  private layout: SettingsLayout
-
-  constructor(private value: ClueSolving.Settings.GeneralSettings) {
-    super()
-
-    this.layout = new SettingsLayout().appendTo(this)
-
-    this.render()
+class GeneralSolvingSettingsEdit extends AbstractSettingsEdit<ClueSolving.Settings.GeneralSettings> {
+  constructor(value: ClueSolving.Settings.GeneralSettings) {
+    super(value)
   }
 
   render() {
@@ -1001,7 +960,7 @@ class GeneralSolvingSettingsEdit extends Widget {
           .setValue(this.value.global_max_zoom)
           .onCommit(v => this.value.global_max_zoom = v),
         NislIcon.reset2().withClick(() => {
-          this.value.global_max_zoom = ClueSolving.Settings.GeneralSettings.normalize(undefined).global_max_zoom
+          this.value.global_max_zoom = ClueSolving.Settings.GeneralSettings.shape.global_max_zoom.parse(undefined)
           this.render()
         }).tooltip("Reset to default"),
       ),
@@ -1015,7 +974,7 @@ class GeneralSolvingSettingsEdit extends Widget {
           .setValue(this.value.minimum_view_size)
           .onCommit(v => this.value.minimum_view_size = v),
         NislIcon.reset2().withClick(() => {
-          this.value.minimum_view_size = ClueSolving.Settings.GeneralSettings.normalize(undefined).minimum_view_size
+          this.value.minimum_view_size = ClueSolving.Settings.GeneralSettings.shape.minimum_view_size.parse(undefined)
           this.render()
         }).tooltip("Reset to default"),
       ),
@@ -1031,16 +990,9 @@ class GeneralSolvingSettingsEdit extends Widget {
   }
 }
 
-class InterfaceSettingsEdit extends Widget {
-
-  private layout: SettingsLayout
-
-  constructor(private value: ClueSolving.Settings.InfoPanel) {
-    super()
-
-    this.layout = new SettingsLayout().appendTo(this)
-
-    this.render()
+class InterfaceSettingsEdit extends AbstractSettingsEdit<ClueSolving.Settings.InfoPanel> {
+  constructor(value: ClueSolving.Settings.InfoPanel) {
+    super(value)
   }
 
   render() {
@@ -1217,16 +1169,9 @@ class InterfaceSettingsEdit extends Widget {
   }
 }
 
-class CrowdSourcingSettingsEdit extends Widget {
-
-  private layout: Properties
-
-  constructor(private value: CrowdSourcing.Settings) {
-    super()
-
-    this.layout = new Properties().appendTo(this)
-
-    this.render()
+class CrowdSourcingSettingsEdit extends AbstractSettingsEdit<CrowdSourcing.Settings> {
+  constructor(value: CrowdSourcing.Settings) {
+    super(value)
   }
 
   render() {
@@ -1241,17 +1186,11 @@ class CrowdSourcingSettingsEdit extends Widget {
   }
 }
 
-class CompassSettingsEdit extends Widget {
-
-  private layout: SettingsLayout
+class CompassSettingsEdit extends AbstractSettingsEdit<CompassSolving.Settings> {
   private active_preset: CompassSolving.TriangulationPreset | null = null
 
-  constructor(private value: CompassSolving.Settings) {
-    super()
-
-    this.layout = new SettingsLayout().appendTo(this)
-
-    this.render()
+  constructor(value: CompassSolving.Settings) {
+    super(value)
   }
 
   render() {
@@ -1617,6 +1556,20 @@ class DataManagementEdit extends Widget {
   }
 }
 
+class ExperimentalSettingsEdit extends AbstractSettingsEdit<Settings.ExperimentalSettings> {
+  constructor(value: Settings.ExperimentalSettings) {
+    super(value);
+
+    this.render()
+  }
+
+  render() {
+    this.layout.empty()
+    this.layout.checkbox("Enable experimental Alt1GL features", this.value, "alt1gl_enabled")
+    this.layout.paragraph("Alt1GL features are highly experimental and may induce crashes of Clue Trainer, Alt1, or the entire game. It can cause performance issues with both Clue Trainer or the game, including memory leaks and a variety of other bugs. Use at your own risk. Requires Alt1GL api to be available.")
+  }
+}
+
 export class SettingsEdit extends Widget {
   value: Settings.Settings
 
@@ -1691,6 +1644,11 @@ export class SettingsEdit extends Widget {
             name: "Data Export",
             short_name: "Data",
             renderer: () => new DataManagementEdit()
+          }, {
+            id: "experimental",
+            name: "Experimental",
+            short_name: "Experimental",
+            renderer: () => new ExperimentalSettingsEdit(this.value.experimental)
           }
           ]
         },
@@ -1713,6 +1671,7 @@ export namespace SettingsEdit {
     | "crowdsourcing"
     | "scans"
     | "dataexport"
+    | "experimental"
 }
 
 export class SettingsModal extends FormModal<{

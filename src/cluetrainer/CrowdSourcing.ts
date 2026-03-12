@@ -6,6 +6,7 @@ import {Log} from "../lib/util/Log";
 import SliderPuzzle = Sliders.SliderPuzzle;
 import SliderState = Sliders.SliderState;
 import log = Log.log;
+import {SC} from "../lib/settings";
 
 export class CrowdSourcing {
   private last_slider_state = new storage.Variable<{
@@ -66,21 +67,9 @@ export class CrowdSourcing {
 }
 
 export namespace CrowdSourcing {
-  export type Settings = {
-    slider_states: boolean
-  }
+  export const Settings = SC.object({
+    slider_states: SC.boolean(false)
+  })
 
-  export namespace Settings {
-    export const DEFAULT: Settings = {
-      slider_states: false
-    }
-
-    export function normalize(settings: Settings): Settings {
-      if (!settings) return lodash.cloneDeep(DEFAULT)
-
-      if (![true, false].includes(settings.slider_states)) settings.slider_states = DEFAULT.slider_states
-
-      return settings
-    }
-  }
+  export type Settings = SC.AsType<typeof Settings>
 }

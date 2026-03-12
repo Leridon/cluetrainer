@@ -32,11 +32,11 @@ import {SimpleScanSolving} from "./subbehaviours/scans/SimpleScanSolving";
 import {ScanSolving} from "./subbehaviours/scans/ScanSolving";
 import {Transportation} from "../../lib/runescape/transportation";
 import {SettingsNormalization} from "../../lib/util/SettingsNormalization";
-import {util} from "../../lib/util/util";
 import {ScanTree} from "../cluetheory/scans/ScanTree";
 import {PathOverlayControl} from "../overlay3d/PathOverlayControl";
 import {ClueSolvingMapLayer} from "./ClueSolvingMapLayer";
 import {ClueReadingBehaviour} from "./ClueReadingBehaviour";
+import {AugmentedMethod} from "../model/MethodPack";
 import span = C.span;
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import interactionMarker = RenderingUtility.interactionMarker;
@@ -55,7 +55,8 @@ import ClueSpot = Clues.ClueSpot;
 import log = Log.log;
 import default_interactive_area = Transportation.EntityTransportation.default_interactive_area;
 import digSpotArea = Clues.digSpotArea;
-import {AugmentedMethod} from "../model/MethodPack";
+import z from "zod";
+import {SC} from "../../lib/settings";
 
 /**
  * ClueSolvingBehaviour is the central coordinator for clue solving.
@@ -167,7 +168,7 @@ export default class ClueSolvingBehaviour extends Behaviour {
 
     this.reset(this.state)
 
-    this.pushState({ type: "puzzle", puzzle: puzzle }, undefined)
+    this.pushState({type: "puzzle", puzzle: puzzle}, undefined)
 
     if (puzzle) {
       this.activateSubBehaviour((() => {
@@ -254,7 +255,7 @@ export default class ClueSolvingBehaviour extends Behaviour {
 
     this.reset(this.state)
 
-    const state = this.pushState({ type: "clue", clue: step }, read_result)
+    const state = this.pushState({type: "clue", clue: step}, read_result)
 
     switch (step.step.solution?.type) {
       case "search":
@@ -548,7 +549,7 @@ export default class ClueSolvingBehaviour extends Behaviour {
       const behaviour = new CompassSolving(this, clue, read_result?.type == "compass" ? read_result.capture : undefined,
         async spot => {
           if (spot) {
-            const method = await this.getAutomaticMethod({ clue: clue.id, spot: spot })
+            const method = await this.getAutomaticMethod({clue: clue.id, spot: spot})
 
             this.setMethod(method)
           } else {
@@ -652,8 +653,8 @@ export default class ClueSolvingBehaviour extends Behaviour {
     if ((this.state.step?.clue?.step?.type != "compass") || (active_behaviour instanceof CompassSolving && active_behaviour.selected_spot.value())) {
 
       const clue: ClueSpot.Id = active_behaviour instanceof CompassSolving
-        ? { clue: this.state.step.clue.step.id, spot: active_behaviour.selected_spot.value().spot.spot }
-        : { clue: this.state.step.clue.step.id }
+        ? {clue: this.state.step.clue.step.id, spot: active_behaviour.selected_spot.value().spot.spot}
+        : {clue: this.state.step.clue.step.id}
 
       this.method_selector.setClue(clue, method)
         .then(() => this.method_selector.show())
@@ -676,7 +677,7 @@ export default class ClueSolvingBehaviour extends Behaviour {
       return
     }
 
-    let m = await this.getAutomaticMethod({ clue: step.step.id })
+    let m = await this.getAutomaticMethod({clue: step.step.id})
 
     this.setClue(step, !m, read_result)
     this.setMethod(m, read_result)
@@ -815,7 +816,7 @@ export namespace ClueSolving {
     }
 
     export namespace InfoPanel {
-      export const EVERYTHING: Settings["info_panel"] = {
+      export const EVERYTHING: InfoPanel = {
         clue_text: "full",
         map_image: "show",
         dig_target: "show",
@@ -831,7 +832,7 @@ export namespace ClueSolving {
         path_step_list: "show",
       }
 
-      export const NOTHING: Settings["info_panel"] = {
+      export const NOTHING: InfoPanel = {
         clue_text: "hide",
         map_image: "hide",
         dig_target: "hide",
@@ -847,7 +848,7 @@ export namespace ClueSolving {
         path_step_list: "hide",
       }
 
-      export const REDUCED: Settings["info_panel"] = {
+      export const REDUCED: InfoPanel = {
         clue_text: "abridged",
         map_image: "show",
         dig_target: "show",
@@ -888,23 +889,16 @@ export namespace ClueSolving {
       }
     }
 
-    export type GeneralSettings = {
-      global_max_zoom: number,
-      minimum_view_size: number,
-      include_closest_teleport: boolean,
-    }
+    export const GeneralSettings = SC.object({
+      global_max_zoom: SC.int(0, 7, 7),
+      minimum_view_size: SC.int(1, 64, 8),
+      include_closest_teleport: SC.boolean(true),
+    })
 
-    export namespace GeneralSettings {
-      import compose = util.compose;
-      export const normalize: SettingsNormalization.NormalizationFunction<GeneralSettings> = SettingsNormalization.normaliz({
-        global_max_zoom: compose(SettingsNormalization.number(7), SettingsNormalization.clamp(0, 7)),
-        minimum_view_size: compose(SettingsNormalization.number(8), SettingsNormalization.clamp(1, 64)),
-        include_closest_teleport: SettingsNormalization.bool(true)
-      })
-    }
+    export type GeneralSettings = z.infer<typeof GeneralSettings>
 
     export const normalize: NormalizationFunction<Settings> = SettingsNormalization.normaliz<Settings>({
-      general: GeneralSettings.normalize,
+      general: i => GeneralSettings.parse(i),
       info_panel: InfoPanel.normalize,
       puzzles: Puzzles.normalize,
       compass: CompassSolving.Settings.normalize,
