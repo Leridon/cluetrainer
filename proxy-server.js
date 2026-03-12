@@ -14,7 +14,7 @@ http.createServer((req, res) => {
     return;
   }
 
-  if (req.url.startsWith('/maps/')) {
+  if (req.url.startsWith('/s3/')) {
     const targetUrl = `https://runeapps.org${req.url}`;
     
     console.log(`Proxying: ${targetUrl}`);
@@ -55,5 +55,5 @@ http.createServer((req, res) => {
   }
 }).listen(PORT, () => {
   console.log(`CORS proxy server running on http://localhost:${PORT}`);
-  console.log(`Proxying requests from /maps/* to https://runeapps.org/maps/*`);
+  console.log(`Proxying requests from /s3/* to https://runeapps.org/s3/*`);
 });
