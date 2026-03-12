@@ -27,6 +27,10 @@ import {CaptureInterval} from "../../../../lib/alt1/capture";
 import {MessageBuffer} from "../../../../lib/alt1/readers/chatreader/ChatBuffer";
 import {ClueTrainerWiki} from "../../../wiki";
 import {Alt1GL} from "../../../../lib/alt1gl/Alt1GL";
+import {CompassHandlingLayer} from "./CompassHandlingLayer";
+import {KnownCompassSpot} from "./KnownCompassSpot";
+import {CompassEntryWidget} from "./CompassEntryWidget";
+import {CapturedCompassClassic} from "../../cluereader/capture/CapturedCompassClassic";
 import cls = C.cls;
 import TeleportGroup = Transportation.TeleportGroup;
 import findBestMatch = util.findBestMatch;
@@ -40,10 +44,6 @@ import vbox = C.vbox;
 import log = Log.log;
 import UncertainAngle = Angles.UncertainAngle;
 import degreesToRadians = Angles.degreesToRadians;
-import {CompassHandlingLayer} from "./CompassHandlingLayer";
-import {KnownCompassSpot} from "./KnownCompassSpot";
-import {CompassEntryWidget} from "./CompassEntryWidget";
-import {CapturedCompassClassic} from "../../cluereader/capture/CapturedCompassClassic";
 
 const DEBUG_ANGLE_OVERRIDE: UncertainAngle = null // degreesToRadians(206.87152474371157)
 const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = null // {origin: {x: 3214, y: 3376, level: 0}}
@@ -92,7 +92,8 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
         this.captured_compass,
         this.settings.enable_status_overlay ? {
           warn_antialiasing: this.settings.status_overlay_warn_antialiasing
-        } : null
+        } : null,
+        deps().app.settings.settings.experimental.alt1gl_enabled
       )
 
       this.angle_reading_service.onChange((is_state, was_state) => {

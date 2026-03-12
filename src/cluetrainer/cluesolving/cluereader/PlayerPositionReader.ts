@@ -25,12 +25,14 @@ export class PlayerStateTracking extends Behaviour {
   protected begin() {
     console.log("Starting player state tracking")
 
-    this.stream = Alt1GL.instance().native.streamRenderCalls({
-      features: ["full"],
-      framecooldown: 600,
-    }, (renders) => {
-      this.parsePlayerState(renders);
-    });
+    if (Alt1GL.exists()) {
+      this.stream = Alt1GL.instance().native.streamRenderCalls({
+        features: ["full"],
+        framecooldown: 600,
+      }, (renders) => {
+        this.parsePlayerState(renders);
+      });
+    }
   }
 
   protected end() {

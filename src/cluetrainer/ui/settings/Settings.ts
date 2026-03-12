@@ -3,6 +3,8 @@ import {ClueTier} from "../../model/Clues";
 import {Transportation} from "../../../lib/runescape/transportation";
 import {ClueSolving} from "../../cluesolving/ClueSolvingBehaviour";
 import {CrowdSourcing} from "../../CrowdSourcing";
+import {SC} from "../../../lib/settings";
+import z from "zod/v4";
 
 export namespace Settings {
   import Tuple = TypeUtil.Tuple;
@@ -30,15 +32,17 @@ export namespace Settings {
   export type Settings = {
     teleport_customization: TeleportSettings,
     solving: ClueSolving.Settings,
-    crowdsourcing: CrowdSourcing.Settings
+    crowdsourcing: CrowdSourcing.Settings,
+    experimental: ExperimentalSettings
   }
 
   export function normalize(settings: Settings): Settings {
-    if (!settings) settings = {teleport_customization: undefined, solving: undefined, crowdsourcing: undefined}
+    if (!settings) settings = {teleport_customization: undefined, solving: undefined, crowdsourcing: undefined, experimental: undefined}
 
     settings.teleport_customization = TeleportSettings.normalize(settings.teleport_customization)
     settings.solving = ClueSolving.Settings.normalize(settings.solving)
-    settings.crowdsourcing = CrowdSourcing.Settings.normalize(settings.crowdsourcing)
+    settings.crowdsourcing = CrowdSourcing.Settings.parse(settings.crowdsourcing)
+    settings.experimental = ExperimentalSettings.parse(settings.crowdsourcing)
 
     return settings
   }
@@ -317,4 +321,10 @@ export namespace Settings {
       return `assets/icons/teleports/pota_${color}.png`
     }
   }
+
+  export const ExperimentalSettings = SC.object({
+    alt1gl_enabled: SC.boolean(false),
+  })
+
+  export type ExperimentalSettings = z.infer<typeof ExperimentalSettings>
 }

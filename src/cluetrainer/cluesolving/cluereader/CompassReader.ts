@@ -18,6 +18,7 @@ import {Alt1OverlayDrawCalls} from "../../../lib/alt1/overlay/Alt1OverlayDrawCal
 import {ClueTrainerWiki} from "../../wiki";
 import {Alt1GLCapturedFrame} from "../../../lib/alt1gl/Alt1GLCapturedFrame";
 import {CapturedCompassGl} from "./capture/CapturedCompassGl";
+import {Alt1GL} from "../../../lib/alt1gl/Alt1GL";
 import log = Log.log;
 
 
@@ -341,6 +342,7 @@ export namespace CompassReader {
     constructor(
       private matched_ui: CapturedCompassClassic,
       private overlay_config: Service.StatusOverlay.Config,
+      private use_alt1gl_reader: boolean,
       public readonly calibration_functions: (_: AntialiasingType) => CompassCalibrationFunction = typ => CompassReader.calibration_tables[typ],
       private refind_after_close: boolean = false,
     ) {
@@ -385,22 +387,24 @@ export namespace CompassReader {
           }
         }))
 
-      this.lifetime_manager.bind(
-        Alt1GLCapturedFrame.subscribe({features: ["vertexarray", "uniforms"], framecooldown: 300}, frame => {
-          const compass_mesh = CapturedCompassGl.findCompass(frame)
+      if (Alt1GL.exists()) {
+        this.lifetime_manager.bind(
+          Alt1GLCapturedFrame.subscribe({features: ["vertexarray", "uniforms"], framecooldown: 300}, frame => {
+            const compass_mesh = CapturedCompassGl.findCompass(frame)
 
-          if (compass_mesh) {
-            const angle = compass_mesh.getAngle()
+            if (compass_mesh) {
+              const angle = compass_mesh.getAngle()
 
-            if (angle.type == "success") {
-              this.committed_state.set({
-                state: "normal",
-                result: angle
-              })
+              if (angle.type == "success") {
+                this.committed_state.set({
+                  state: "normal",
+                  result: angle
+                })
+              }
             }
-          }
-        })
-      )
+          })
+        )
+      }
     }
 
     protected end() {
