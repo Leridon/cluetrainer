@@ -191,14 +191,16 @@ async function drawLine(
 
   control_points = upperHull(control_points);
 
-  for (let i = 1; i < control_points.length; i++) {
-    const segment_start = control_points[i - 1];
-    const segment_end = control_points[i];
+  const vertex_pairs = control_points.map((point) : [Vertex, Vertex] => {
+    const v1 = builder.createVertex(Vector3.add(point, Vector3.scale(thickness, {x: -perpendicular.x, y: 0, z: -perpendicular.y})), color);
+    const v2 = builder.createVertex(Vector3.add(point, Vector3.scale(thickness, {x: +perpendicular.x, y: 0, z: +perpendicular.y})), color);
 
-    const v0 = builder.createVertex(Vector3.add(segment_start, Vector3.scale(thickness, {x: -perpendicular.x, y: 0, z: -perpendicular.y})), color);
-    const v1 = builder.createVertex(Vector3.add(segment_end, Vector3.scale(thickness, {x: -perpendicular.x, y: 0, z: -perpendicular.y})), color);
-    const v2 = builder.createVertex(Vector3.add(segment_end, Vector3.scale(thickness, {x: +perpendicular.x, y: 0, z: +perpendicular.y})), color);
-    const v3 = builder.createVertex(Vector3.add(segment_start, Vector3.scale(thickness, {x: +perpendicular.x, y: 0, z: +perpendicular.y})), color);
+    return [v1, v2]
+  })
+
+  for (let i = 1; i < vertex_pairs.length; i++) {
+    const [v0, v3] = vertex_pairs[i - 1];
+    const [v1, v2] = vertex_pairs[i];
 
     builder.quad(v0, v1, v2, v3);
   }
