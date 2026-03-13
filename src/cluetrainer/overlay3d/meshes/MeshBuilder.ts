@@ -62,6 +62,14 @@ export namespace MeshBuilder {
         z: a.map(v => v.z).reduce((c, d) => c + d, 0),
       }
     }
+
+    export function scale(factor: number, vector: Vector3): Vector3 {
+      return {
+        x: vector.x * factor,
+        y: vector.y * factor,
+        z: vector.z * factor,
+      }
+    }
   }
 
   export type Vertex = {

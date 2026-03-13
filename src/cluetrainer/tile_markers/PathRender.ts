@@ -5,17 +5,14 @@ import {Path} from "../../lib/runescape/pathing";
 import {TileHeightData} from "./TileHeightData";
 import {MeshBuilder} from "../overlay3d/meshes/MeshBuilder";
 import {MovementAbilities} from "../../lib/runescape/movement";
+import {Vector2} from "../../lib/math";
 import ColorRGBA = MeshBuilder.ColorRGBA;
 import Vector3 = MeshBuilder.Vector3;
 import Vertex = MeshBuilder.Vertex;
 
 const CHUNK_SIZE = chunksize;
 const TILE_SIZE = tilesize;
-const TILE_EDGE_OFFSET = 0.55;
-const ARROW_OVERLAP = 0.25;
 const ARROW_HEAD_LENGTH = 0.3;
-const LINE_HEIGHT = 0.1;
-const ARROW_HEAD_HEIGHT = 0.12;
 
 const FLOOR_OVERLAY_VERTICAL_OFFSET = 0.12;
 const TILE_MARKER_VERTICAL_OFFSET = 0.15;
@@ -99,6 +96,16 @@ async function drawTileMarker(builder: MeshBuilder,
   await drawBorderQuad(1 - t, 0, 1, 1);
 }
 
+export function squareCrossSectionVector(dir: Vector2): Vector2 {
+  const m = Math.max(Math.abs(dir.x), Math.abs(dir.y));
+  if (m === 0) return {x: 0, y: 0};
+
+  return {
+    x: dir.x / m,
+    y: dir.y / m,
+  };
+}
+
 async function drawLine(
   builder: MeshBuilder,
   from: TileCoordinates,
@@ -110,53 +117,46 @@ async function drawLine(
   endHasTile: boolean,
   height_data = TileHeightData.instance()
 ): Promise<void> {
-  let fx = from.x + 0.5;
-  let fz = from.y + 0.5;
-  const tx = to.x + 0.5;
-  const tz = to.y + 0.5;
+  const direction = Vector2.normalize(Vector2.sub(to, from));
+  const cross_section = squareCrossSectionVector(direction);
 
-  let dx = tx - fx;
-  let dz = tz - fz;
-  let len = Math.sqrt(dx * dx + dz * dz);
-  if (len < 0.01) return;
+  const modified_start = Vector2.add(
+    from,
+    {x: 0.5, y: 0.5},
+    startHasTile ? Vector2.scale(0.5, cross_section) : Vector2.ZERO
+  );
 
-  const dirX = dx / len;
-  const dirZ = dz / len;
+  const modified_end = Vector2.add(
+    to,
+    {x: 0.5, y: 0.5},
+    endHasTile ? Vector2.scale(-0.5, cross_section) : Vector2.ZERO,
+    showArrow ? Vector2.scale(-ARROW_HEAD_LENGTH, direction) : Vector2.ZERO
+  )
 
-  if (startHasTile) {
-    fx += dirX * TILE_EDGE_OFFSET;
-    fz += dirZ * TILE_EDGE_OFFSET;
-    dx = tx - fx;
-    dz = tz - fz;
-    len = Math.sqrt(dx * dx + dz * dz);
-    if (len < 0.01) return;
+  const length = Vector2.length(Vector2.sub(modified_end, modified_start));
+
+  if (length < 0.001) return;
+
+  const perpendicular = {
+    x: -direction.y,
+    y: direction.x,
   }
 
-  const perpX = -dirZ * thickness;
-  const perpZ = dirX * thickness;
-
-  const endOffset = endHasTile ? -TILE_EDGE_OFFSET : ARROW_OVERLAP;
-  const effectiveLen = len + endOffset;
-
-  const bodyLen = showArrow
-    ? Math.max(0, effectiveLen - ARROW_HEAD_LENGTH)
-    : (endHasTile ? Math.max(0, effectiveLen) : len);
-
-  const segment_count = Math.max(1, Math.ceil(4 * bodyLen));
+  const segment_count = Math.max(1, Math.ceil(4 * length));
 
   let control_points: Vector3[] = [];
 
   // Get all control points along the line
   for (let seg = 0; seg <= segment_count; seg++) {
-    const t0 = (seg / segment_count) * (bodyLen / len);
+    const t = seg / segment_count;
 
-    control_points.push(await height_data.resolve({
-      x: fx + dx * t0,
-      y: fz + dz * t0,
-      level: from.level
-    }, FLOOR_OVERLAY_VERTICAL_OFFSET))
+    control_points.push(await height_data.resolve(TileCoordinates.lift(
+      Vector2.add(
+        Vector2.scale(1 - t, modified_start),
+        Vector2.scale(t, modified_end)
+      ), from.level
+    ), FLOOR_OVERLAY_VERTICAL_OFFSET))
   }
-
 
   function upperHull(points: Vector3[]): Vector3[] {
     if (points.length <= 2) return [...points];
@@ -195,33 +195,25 @@ async function drawLine(
     const segment_start = control_points[i - 1];
     const segment_end = control_points[i];
 
-    const v0 = builder.createVertex(Vector3.add(segment_start, {x: -perpX, y: 0, z: -perpZ}), color);
-    const v1 = builder.createVertex(Vector3.add(segment_end, {x: -perpX, y: 0, z: -perpZ}), color);
-    const v2 = builder.createVertex(Vector3.add(segment_end, {x: +perpX, y: 0, z: +perpZ}), color);
-    const v3 = builder.createVertex(Vector3.add(segment_start, {x: +perpX, y: 0, z: +perpZ}), color);
+    const v0 = builder.createVertex(Vector3.add(segment_start, Vector3.scale(thickness, {x: -perpendicular.x, y: 0, z: -perpendicular.y})), color);
+    const v1 = builder.createVertex(Vector3.add(segment_end, Vector3.scale(thickness, {x: -perpendicular.x, y: 0, z: -perpendicular.y})), color);
+    const v2 = builder.createVertex(Vector3.add(segment_end, Vector3.scale(thickness, {x: +perpendicular.x, y: 0, z: +perpendicular.y})), color);
+    const v3 = builder.createVertex(Vector3.add(segment_start, Vector3.scale(thickness, {x: +perpendicular.x, y: 0, z: +perpendicular.y})), color);
 
     builder.quad(v0, v1, v2, v3);
   }
 
-  if (showArrow && len > ARROW_HEAD_LENGTH * 0.5) {
+  if (showArrow) {
     const arrowWidth = thickness * 3;
-    const arrowBodyLen = Math.max(0, effectiveLen - ARROW_HEAD_LENGTH);
-    const arrowStart = arrowBodyLen / len;
 
-    const ax = fx + dx * arrowStart;
-    const az = fz + dz * arrowStart;
+    const base1 = Vector2.add(modified_end, Vector2.scale(arrowWidth, perpendicular));
+    const base2 = Vector2.add(modified_end, Vector2.scale(-arrowWidth, perpendicular));
 
-    const base1x = ax - dirZ * arrowWidth;
-    const base1z = az + dirX * arrowWidth;
-    const base2x = ax + dirZ * arrowWidth;
-    const base2z = az - dirX * arrowWidth;
+    const tip = Vector2.add(modified_end, Vector2.scale(ARROW_HEAD_LENGTH, direction));
 
-    const tipX = fx + dirX * effectiveLen;
-    const tipZ = fz + dirZ * effectiveLen;
-
-    const v0 = builder.createVertex(await height_data.resolve({x: base1x, y: base1z, level: to.level}, FLOOR_OVERLAY_VERTICAL_OFFSET), color);
-    const v1 = builder.createVertex(await height_data.resolve({x: base2x, y: base2z, level: to.level}, FLOOR_OVERLAY_VERTICAL_OFFSET), color);
-    const v2 = builder.createVertex(await height_data.resolve({x: tipX, y: tipZ, level: to.level}, FLOOR_OVERLAY_VERTICAL_OFFSET), color);
+    const v0 = builder.createVertex(await height_data.resolve(TileCoordinates.lift(base1, to.level), FLOOR_OVERLAY_VERTICAL_OFFSET), color);
+    const v1 = builder.createVertex(await height_data.resolve(TileCoordinates.lift(base2, to.level), FLOOR_OVERLAY_VERTICAL_OFFSET), color);
+    const v2 = builder.createVertex(await height_data.resolve(TileCoordinates.lift(tip, to.level), FLOOR_OVERLAY_VERTICAL_OFFSET), color);
 
     builder.triangle(v0, v1, v2);
   }
