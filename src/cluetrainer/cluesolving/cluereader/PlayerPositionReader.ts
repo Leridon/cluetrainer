@@ -1,68 +1,92 @@
 import * as patchrs from "../../../lib/alt1gl/ts/util/patchrs_napi";
-import {StreamRenderObject} from "../../../lib/alt1gl/ts/util/patchrs_napi";
 import {getProgramMeta, getRenderFunc, getUniformValue} from "../../../lib/alt1gl/ts/render/renderprogram";
-import {Observable, observe} from "../../../lib/reactive";
+import {observe} from "../../../lib/reactive";
 import {Scans} from "../../model/clues/Scans";
 import {MeshBuilder} from "../../overlay3d/meshes/MeshBuilder";
 import Behaviour from "../../../lib/ui/Behaviour";
 import {Alt1GL} from "../../../lib/alt1gl/Alt1GL";
 import {BufferCache} from "../../../lib/alt1gl/ts/programs/filteredstate";
-import {Angles} from "../../../lib/math/Angles";
+import {lazy} from "../../../lib/Lazy";
+import {Alt1GLCapturedFrame} from "../../../lib/alt1gl/Alt1GLCapturedFrame";
+import {Alt1GLFrameStream} from "../../../lib/alt1gl/Alt1GLFrameStream";
 import Vector3 = MeshBuilder.Vector3;
-import radiansToDegrees = Angles.radiansToDegrees;
+import PulseRing = Scans.PulseRing;
+
+export type PlayerState = {
+  position: Vector3;
+  pulse_type: PulseRing;
+}
+
+export type FramedValue<T> = {
+  frame: number;
+  value: T;
+};
 
 export class PlayerStateTracking extends Behaviour {
-  public player_position: Observable<Vector3 | null> = observe(null);
-  public pulse_type: Observable<Scans.PulseRing | null> = observe(null);
+  public framed_state = observe<FramedValue<PlayerState>>(null).structuralEquality()
+  public state = this.framed_state.map(v => v?.value).structuralEquality()
 
   private cache: BufferCache = new BufferCache();
-  private stream: StreamRenderObject | undefined;
+  private stream: Alt1GLFrameStream | undefined;
 
   constructor() {
     super()
+
+    this.state.subscribe(v => {
+      console.log(`Pos ${v.position.x.toFixed(2)}|${v.position.y.toFixed(2)}|${v.position.z.toFixed(2)}, Pulse ${v.pulse_type}`)
+    })
   }
 
   protected begin() {
-    console.log("Starting player state tracking")
 
     if (Alt1GL.exists()) {
-      this.stream = Alt1GL.instance().native.streamRenderCalls({
-        features: ["full"],
+      console.log("Starting player state tracking")
+
+      this.stream = Alt1GLCapturedFrame.subscribe({
+        features: ["vertexarray", "uniforms"],
         framecooldown: 600,
-      }, (renders) => {
-        this.parsePlayerState(renders);
+      }, (frame) => {
+        //console.log(`Got renders ${frame.renders.length}`)
+        this.parsePlayerState(frame);
       });
+
+      console.log(this.stream)
+    } else {
+      console.log("Alt1GL not available, skipping player state tracking")
     }
   }
 
   protected end() {
-    this.stream?.close();
+    console.log("Stopping player state tracking")
+    this.stream?.endLifetime();
     this.stream = null
   }
 
-  private parsePlayerState(renders: patchrs.RenderInvocation[]): void {
-    console.log("Parsing player state from renders")
+  private parsePlayerState(frame: Alt1GLCapturedFrame): void {
+    if (frame.renders.length == 0) {
+      console.log("No renders")
+      return;
+    }
+
     let position: Vector3 | null = null;
     let pulseRing: Scans.PulseRing | null = null;
 
-    this.detectCompassAngle(renders);
-
-    for (const render of renders) {
-      if (!render.program || !render.uniformState) continue;
+    for (const render of frame.renders) {
+      if (!render.raw.program || !render.raw.uniformState) continue;
 
       let progmeta: ReturnType<typeof getProgramMeta>;
 
       try {
-        progmeta = getProgramMeta(render.program);
+        progmeta = getProgramMeta(render.raw.program);
       } catch {
         continue;
       }
 
       // Look for player position if we haven't found it yet
-      position = position ?? this.detectPlayerPosition(render, progmeta)
+      position = position ?? this.detectPlayerPosition(render.raw, progmeta)
 
       // Look for pulse ring if we haven't found it yet
-      pulseRing = pulseRing ?? this.detectPulseRing(render, progmeta);
+      pulseRing = pulseRing ?? this.detectPulseRing(render.raw, progmeta);
 
       // Exit if we found both
       if (position != null && pulseRing != null) {
@@ -70,30 +94,13 @@ export class PlayerStateTracking extends Behaviour {
       }
     }
 
-    this.player_position.set(position)
-    this.pulse_type.set(pulseRing)
-  }
-
-  private detectCompassAngle(renders: patchrs.RenderInvocation[]): number | null {
-    for (const render of renders) {
-      if (!render.program || !render.uniformState) continue;
-
-      const mesh = this.cache.getMeshData(render)
-
-      if (!mesh) continue
-
-      if (mesh.cached.known.meshdatas[0].posbufferhash == 1998275936) {
-
-        // The angle is very accurate but still needs to be calibrated. Seems off by up to multiple degrees
-        const angle = Angles.normalizeAngle(Math.PI / 2 + mesh.position2d.yRotation)
-
-        console.log(`Frame ${render.framenr}, Angle: ${radiansToDegrees(angle).toFixed(1)}°`)
+    this.framed_state.set({
+      frame: frame.frame_number,
+      value: {
+        position: position,
+        pulse_type: pulseRing,
       }
-    }
-
-    console.log("Compass not found")
-
-    return null;
+    })
   }
 
   private detectPlayerPosition(render: patchrs.RenderInvocation, progmeta: ReturnType<typeof getProgramMeta>): Vector3 {
@@ -116,9 +123,9 @@ export class PlayerStateTracking extends Behaviour {
       const matrix = getUniformValue(render.uniformState, progmeta.uModelMatrix)[0] as number[];
       if (!matrix || matrix.length < 16) return null;
 
-      const x = Math.round(matrix[12] / TILESIZE) - 2;
+      const x = matrix[12] / TILESIZE - 0.5;
       const y = matrix[13] / TILESIZE;
-      const z = Math.round(matrix[14] / TILESIZE) - 1;
+      const z = matrix[14] / TILESIZE - 0.5; // Translate so that .0 = center of tile
 
       if (x === 0 && z === 0) return null;
       return {x, y, z};
@@ -187,5 +194,11 @@ export class PlayerStateTracking extends Behaviour {
     }
 
     return null;
+  }
+
+  static _instance = lazy(() => new PlayerStateTracking().start())
+
+  public static instance() {
+    return PlayerStateTracking._instance.get()
   }
 }

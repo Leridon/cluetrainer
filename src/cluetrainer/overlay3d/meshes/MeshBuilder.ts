@@ -70,6 +70,10 @@ export namespace MeshBuilder {
         z: vector.z * factor,
       }
     }
+
+    export function toString(vector: Vector3): string {
+      return `(${vector.x}, ${vector.y}, ${vector.z})`
+    }
   }
 
   export type Vertex = {

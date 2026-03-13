@@ -49,6 +49,7 @@ import entity = C.entity;
 import notification = Notification.notification;
 import log = Log.log;
 import {GlClueReader} from "./cluesolving/cluereader/ClueReader";
+import {PlayerStateTracking} from "./cluesolving/cluereader/PlayerPositionReader";
 
 declare global {
   var cluetrainer_build_environment: ClueTrainer.BuildEnvironment
@@ -214,7 +215,6 @@ export class ClueTrainer extends Behaviour {
       }
     }
 
-
     this.startup_settings.subscribe(s => this.startup_settings_storage.set(s))
 
     NotificationBar.instance().appendTo(jquery("body"))
@@ -357,6 +357,8 @@ export class ClueTrainer extends Behaviour {
         })
       })
     }
+
+    PlayerStateTracking.instance()
   }
 
   protected end() {
