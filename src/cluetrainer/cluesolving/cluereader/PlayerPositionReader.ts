@@ -68,7 +68,9 @@ export class PlayerStateTracking extends Behaviour {
       return;
     }
 
-    let position: Vector3 | null = null;
+    // Look for player position
+    let position: Vector3 | null = this.detectPlayerPosition(frame);
+
     let pulseRing: Scans.PulseRing | null = null;
 
     for (const render of frame.renders) {
@@ -82,8 +84,6 @@ export class PlayerStateTracking extends Behaviour {
         continue;
       }
 
-      // Look for player position if we haven't found it yet
-      position = position ?? this.detectPlayerPosition(render.raw, progmeta)
 
       // Look for pulse ring if we haven't found it yet
       pulseRing = pulseRing ?? this.detectPulseRing(render.raw, progmeta);
@@ -103,36 +103,48 @@ export class PlayerStateTracking extends Behaviour {
     })
   }
 
-  private detectPlayerPosition(render: patchrs.RenderInvocation, progmeta: ReturnType<typeof getProgramMeta>): Vector3 {
+  private detectPlayerPosition(frame: Alt1GLCapturedFrame): Vector3 {
     const TILESIZE = 512;
 
-    const hasFrag = typeof render.program.fragmentShader?.source === 'string';
-    const hasVert = typeof render.program.vertexShader?.source === 'string';
-    if (!hasFrag || !hasVert) return null;
+    const candidates: { render: Alt1GLCapturedFrame.Render, position: Vector3 }[] = [];
 
-    if (!progmeta.isTinted || !progmeta.uTint || !progmeta.uModelMatrix) return null;
-    if (!progmeta.isAnimated) return null;
+    for (let render of frame.renders) {
+      const hasFrag = typeof render.raw.program.fragmentShader?.source === 'string';
+      const hasVert = typeof render.raw.program.vertexShader?.source === 'string';
+      if (!hasFrag || !hasVert) return null;
 
-    try {
-      const tint = getUniformValue(render.uniformState, progmeta.uTint)[0] as number[];
-      if (!tint || tint.length < 4) return null;
+      const progmeta = render.progmeta.get();
 
-      const rgbSum = Math.abs(tint[0]) + Math.abs(tint[1]) + Math.abs(tint[2]);
-      if (rgbSum > 0.1 || tint[3] > 0.6) return null;
+      if (!progmeta.isTinted || !progmeta.uTint || !progmeta.uModelMatrix) return null;
+      if (!progmeta.isAnimated) return null;
 
-      const matrix = getUniformValue(render.uniformState, progmeta.uModelMatrix)[0] as number[];
-      if (!matrix || matrix.length < 16) return null;
 
-      const x = matrix[12] / TILESIZE - 0.5;
-      const y = matrix[13] / TILESIZE;
-      const z = matrix[14] / TILESIZE - 0.5; // Translate so that .0 = center of tile
+      try {
+        const tint = getUniformValue(render.raw.uniformState, progmeta.uTint)[0] as number[];
+        if (!tint || tint.length < 4) return null;
 
-      if (x === 0 && z === 0) return null;
-      return {x, y, z};
-    } catch (error) {
-      // ignore errors
+        const rgbSum = Math.abs(tint[0]) + Math.abs(tint[1]) + Math.abs(tint[2]);
+        if (rgbSum > 0.1 || tint[3] > 0.6) return null;
+
+        const matrix = getUniformValue(render.raw.uniformState, progmeta.uModelMatrix)[0] as number[];
+        if (!matrix || matrix.length < 16) return null;
+
+        const x = matrix[12] / TILESIZE - 0.5;
+        const y = matrix[13] / TILESIZE;
+        const z = matrix[14] / TILESIZE - 0.5; // Translate so that .0 = center of tile
+
+        if (x === 0 && z === 0) continue;
+
+        candidates.push({render: render, position: {x, y, z}})
+      } catch (error) {
+        // ignore errors
+      }
     }
-    return null;
+
+    console.log(candidates.length, "candidates found")
+    console.log(candidates)
+
+    return candidates[0]?.position ?? null;
   }
 
   private detectPulseRing(render: patchrs.RenderInvocation, progmeta: ReturnType<typeof getProgramMeta>): Scans.PulseRing {

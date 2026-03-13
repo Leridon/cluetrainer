@@ -3,6 +3,7 @@ import {Alt1GL} from "./Alt1GL";
 import {Alt1GLFrameStream} from "./Alt1GLFrameStream";
 import {lazy} from "../Lazy";
 import {BufferCache} from "./ts/programs/filteredstate";
+import {getProgramMeta} from "./ts/render/renderprogram";
 
 export class Alt1GLCapturedFrame {
   public readonly frame_number: number | undefined
@@ -36,6 +37,7 @@ export namespace Alt1GLCapturedFrame {
 
   export class Render {
     public readonly mesh = lazy(() => buffer.get().getMeshData(this.raw))
+    public readonly progmeta = lazy(() => getProgramMeta(this.raw.program))
 
     constructor(public readonly raw: RenderInvocation) {
     }
