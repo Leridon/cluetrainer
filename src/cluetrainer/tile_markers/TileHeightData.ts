@@ -16,8 +16,7 @@ export class TileHeightData {
   chunks: (TileHeightData.ChunkTileHeightData | Promise<TileHeightData.ChunkTileHeightData>)[][]
 
   private async fetch(file_x: number, file_z: number, level: number): Promise<Uint16Array> {
-    //TODO: fix this, for now use npm run proxy to run the terrain data proxy for runeapps, to avoid cors
-    const HEIGHT_ENDPOINT = "http://localhost:3001/s3/map4/live/";
+    const HEIGHT_ENDPOINT = "http://runeapps.org/s3/map4/live/";
     try {
       const url = `${HEIGHT_ENDPOINT}heightmesh-${level}/${file_x}-${file_z}.bin`;
       const res = await fetch(url);
