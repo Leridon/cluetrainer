@@ -17,8 +17,8 @@ const ARROW_HEAD_LENGTH = 0.3;
 const LINE_HEIGHT = 0.1;
 const ARROW_HEAD_HEIGHT = 0.12;
 
-const FLOOR_OVERLAY_VERTICAL_OFFSET = 1 / 16;
-const TILE_MARKER_HEIGHT = 0.08;
+const FLOOR_OVERLAY_VERTICAL_OFFSET = 0.12;
+const TILE_MARKER_VERTICAL_OFFSET = 0.15;
 const TILE_MARKER_BORDER = 0.08;
 
 const ABILITY_COLORS: Record<MovementAbilities.movement_ability, MeshBuilder.ColorRGBA> = {
@@ -84,10 +84,10 @@ async function drawTileMarker(builder: MeshBuilder,
   const lz = tile.y;
 
   const drawBorderQuad = async (x0: number, z0: number, x1: number, z1: number): Promise<void> => {
-    const v0 = builder.createVertex(await height_data.resolve({x: lx + x0, y: lz + z0, level: tile.level}, TILE_MARKER_HEIGHT), color);
-    const v1 = builder.createVertex(await height_data.resolve({x: lx + x1, y: lz + z0, level: tile.level}, TILE_MARKER_HEIGHT), color);
-    const v2 = builder.createVertex(await height_data.resolve({x: lx + x1, y: lz + z1, level: tile.level}, TILE_MARKER_HEIGHT), color);
-    const v3 = builder.createVertex(await height_data.resolve({x: lx + x0, y: lz + z1, level: tile.level}, TILE_MARKER_HEIGHT), color);
+    const v0 = builder.createVertex(await height_data.resolve({x: lx + x0, y: lz + z0, level: tile.level}, TILE_MARKER_VERTICAL_OFFSET), color);
+    const v1 = builder.createVertex(await height_data.resolve({x: lx + x1, y: lz + z0, level: tile.level}, TILE_MARKER_VERTICAL_OFFSET), color);
+    const v2 = builder.createVertex(await height_data.resolve({x: lx + x1, y: lz + z1, level: tile.level}, TILE_MARKER_VERTICAL_OFFSET), color);
+    const v3 = builder.createVertex(await height_data.resolve({x: lx + x0, y: lz + z1, level: tile.level}, TILE_MARKER_VERTICAL_OFFSET), color);
 
     builder.quad(v0, v1, v2, v3)
   };
@@ -142,13 +142,13 @@ async function drawLine(
     ? Math.max(0, effectiveLen - ARROW_HEAD_LENGTH)
     : (endHasTile ? Math.max(0, effectiveLen) : len);
 
-  const segments = Math.max(1, Math.ceil(2 * bodyLen));
+  const segment_count = Math.max(1, Math.ceil(4 * bodyLen));
 
   let control_points: Vector3[] = [];
 
   // Get all control points along the line
-  for (let seg = 0; seg <= segments; seg++) {
-    const t0 = (seg / segments) * (bodyLen / len);
+  for (let seg = 0; seg <= segment_count; seg++) {
+    const t0 = (seg / segment_count) * (bodyLen / len);
 
     control_points.push(await height_data.resolve({
       x: fx + dx * t0,
@@ -157,42 +157,39 @@ async function drawLine(
     }, FLOOR_OVERLAY_VERTICAL_OFFSET))
   }
 
-  function convexHull(points: Vector3[]): Vector3[] {
-    // TODO: I don't think this is the most efficient algorithm.
-    //       It's O(n^2), but there should be an O(n) solution.
-    const hull: Vector3[] = [];
-    hull.push(points[0]);
 
-    let next_unhandled = 1;
+  function upperHull(points: Vector3[]): Vector3[] {
+    if (points.length <= 2) return [...points];
 
-    while (next_unhandled < points.length) {
-      const last_control = hull[hull.length - 1];
+    const hull: number[] = [];
 
-      let highest_inclination = Number.MIN_VALUE
-      let best_next_spot: number = -1;
+    function slope(i: number, j: number): number {
+      // Equidistant, ordered points on a line => use index as horizontal distance
+      return (points[j].y - points[i].y) / (j - i);
+    }
 
-      for (let j = next_unhandled + 1; j < points.length; j++) {
-        const inclination = (points[j].y - last_control.y) / Math.sqrt((points[j].x - last_control.x) ** 2 + (points[j].z - last_control.z) ** 2);
+    for (let i = 0; i < points.length; i++) {
+      hull.push(i);
 
-        if (inclination > highest_inclination) {
-          highest_inclination = inclination;
-          best_next_spot = j;
+      while (hull.length >= 3) {
+        const n = hull.length;
+        const a = hull[n - 3];
+        const b = hull[n - 2];
+        const c = hull[n - 1];
+
+        // Upper hull requires non-increasing slopes
+        if (slope(a, b) < slope(b, c)) {
+          hull.splice(n - 2, 1); // remove b
+        } else {
+          break;
         }
-      }
-      if (best_next_spot != -1) {
-        hull.push(points[best_next_spot]);
-        next_unhandled = best_next_spot + 1;
-      } else {
-        break;
       }
     }
 
-    hull.push(points[points.length - 1]);
-
-    return hull;
+    return hull.map(i => points[i]);
   }
 
-  control_points = convexHull(control_points);
+  control_points = upperHull(control_points);
 
   for (let i = 1; i < control_points.length; i++) {
     const segment_start = control_points[i - 1];
