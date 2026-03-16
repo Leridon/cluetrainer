@@ -377,7 +377,7 @@ export namespace Path {
             } else {
 
               // if there is no previous position, at least assume the defined start position
-              let assumed_pos = state.position
+              const assumed_pos = lodash.cloneDeep(state.position)
 
               assumed_pos.tile ||= step.from
 
@@ -386,40 +386,24 @@ export namespace Path {
                 if (step.ability == "escape") assumed_pos.direction = direction.invert(assumed_pos.direction)
               }
 
-              switch (step.ability) {
-                case "surge": {
-                  let res = await MovementAbilities.surge(assumed_pos)
-
-                  if (!res || !TileCoordinates.eq(step.to, res.tile))
-                    augmented.issues.push({level: "error", message: "Surge target does not match where it would end up!"})
-
-                  break
+              const res = await (() => {
+                switch (step.ability) {
+                  case "surge":
+                    return MovementAbilities.surge(assumed_pos)
+                  case "escape":
+                    return MovementAbilities.escape(assumed_pos)
+                  case "dive":
+                    return MovementAbilities.dive(assumed_pos.tile, step.to)
+                  case "barge":
+                    return MovementAbilities.barge(assumed_pos.tile, step.to)
                 }
-                case "escape": {
-                  let res = await MovementAbilities.escape(assumed_pos)
+              })()
 
-                  if (!res || !TileCoordinates.eq(step.to, res.tile))
-                    augmented.issues.push({level: "error", message: "Escape target does not match where it would end up!"})
-
-                  break
-                }
-                case "dive": {
-                  let res = await MovementAbilities.dive(assumed_pos.tile, step.to)
-
-                  if (!res || !TileCoordinates.eq(step.to, res.tile))
-                    augmented.issues.push({level: "error", message: "Dive target can't be reached!"})
-
-                  break
-                }
-                case "barge": {
-                  let res = await MovementAbilities.barge(assumed_pos.tile, step.to)
-
-                  if (!res || !TileCoordinates.eq(step.to, res.tile))
-                    augmented.issues.push({level: "error", message: "Barge target can't be reached!"})
-
-                  break
-                }
-              }
+              if (!res || !TileCoordinates.eq(step.to, res.tile))
+                if (step.ability == "escape" || step.ability == "surge")
+                  augmented.issues.push({level: "error", message: `${lodash.capitalize(step.ability)} target does not match where it would end up!`})
+                else
+                  augmented.issues.push({level: "error", message: `${lodash.capitalize(step.ability)} target can't be reached!`})
             }
           }
 
