@@ -121,6 +121,10 @@ export namespace Path {
     export function setCooldownIfLarger(charge: AbilityCharge, tick: number, reason: CooldownType): void {
       if (tick <= charge.on_cooldown_till_tick) return
 
+      forceCooldown(charge, tick, reason)
+    }
+
+    export function forceCooldown(charge: AbilityCharge, tick: number, reason: CooldownType): void {
       charge.on_cooldown_till_tick = tick
       charge.cooldown_reason = reason
     }
@@ -622,8 +626,8 @@ export namespace Path {
           }
 
           // Reset cooldowns of dive and surge
-          for (const charge of state.cooldowns.surge) AbilityCharge.setCooldownIfLarger(charge, state.tick, "cooldown")
-          for (const charge of state.cooldowns.dive) AbilityCharge.setCooldownIfLarger(charge, state.tick, "cooldown")
+          for (const charge of state.cooldowns.surge) AbilityCharge.forceCooldown(charge, state.tick, "cooldown")
+          for (const charge of state.cooldowns.dive) AbilityCharge.forceCooldown(charge, state.tick, "cooldown")
 
           state.acceleration_activation_tick = state.tick
 
