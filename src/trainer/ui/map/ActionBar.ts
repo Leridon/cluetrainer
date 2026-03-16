@@ -62,7 +62,7 @@ export namespace ActionBar {
         .append(jquery(`<img src='${this.icon}'>`))
         .css("position", "relative")
 
-      if (this.cooldown.value() != 0 || this._activeInteraction.value()) {
+      if (this.cooldown.value() > 0 || this._activeInteraction.value()) {
 
         c("<div class='ctr-cooldown-overlay-shadow'></div>").appendTo(this)
 

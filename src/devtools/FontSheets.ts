@@ -545,7 +545,7 @@ export namespace FontSheets {
           this.font_script_errors.empty()
 
           results.errors.forEach(e => {
-            this.font_script_errors.append(new IssueWidget({message: `Line ${e.line}: ${e.message}`, level: 0}))
+            this.font_script_errors.append(new IssueWidget({message: `Line ${e.line}: ${e.message}`, level: "error"}))
           })
 
           s.font_script = results.script

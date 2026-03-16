@@ -14,12 +14,6 @@ import ControlWithHeader from "../ui/map/ControlWithHeader";
 import {DrawCheatInteraction} from "./interactions/DrawCheatInteraction";
 import movement_state = Path.movement_state;
 import ActionBarButton = ActionBar.ActionBarButton;
-import surge_cooldown = Path.movement_state.surge_cooldown;
-import escape_cooldown = Path.movement_state.escape_cooldown;
-import barge_cooldown = Path.movement_state.barge_cooldown;
-import dive_cooldown = Path.movement_state.dive_cooldown;
-import {SelectTileInteraction} from "../../lib/gamemap/interaction/SelectTileInteraction";
-import {TileMarker} from "../../lib/gamemap/TileMarker";
 import {DrawCosmeticInteraction} from "./interactions/DrawCosmeticInteraction";
 
 export default class PathEditActionBar extends GameMapControl<ControlWithHeader> {
@@ -161,10 +155,10 @@ export default class PathEditActionBar extends GameMapControl<ControlWithHeader>
   }
 
   private render(state: movement_state) {
-    this.buttons.surge.cooldown.set(surge_cooldown(state))
-    this.buttons.escape.cooldown.set(escape_cooldown(state))
-    this.buttons.barge.cooldown.set(barge_cooldown(state))
-    this.buttons.dive.cooldown.set(dive_cooldown(state))
+    this.buttons.surge.cooldown.set(movement_state.nextAvailableCharge(state, "surge").remaining_cooldown)
+    this.buttons.escape.cooldown.set(movement_state.nextAvailableCharge(state, "escape").remaining_cooldown)
+    this.buttons.barge.cooldown.set(movement_state.nextAvailableCharge(state, "barge").remaining_cooldown)
+    this.buttons.dive.cooldown.set(movement_state.nextAvailableCharge(state, "dive").remaining_cooldown)
     this.buttons.powerburst.cooldown.set(Math.max(state.acceleration_activation_tick + 120 - state.tick, 0))
   }
 

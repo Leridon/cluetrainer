@@ -317,9 +317,9 @@ export namespace ScanTree {
 
         let issues = Path.collect_issues(node.path)
 
-        if (issues.some(i => i.level == 0)) node.correctness = "error"
+        if (issues.some(i => i.level == "error")) node.correctness = "error"
         else if (cs.some(c => c.correctness == "error" || c.correctness == "error_in_children")) node.correctness = "error_in_children"
-        else if (issues.some(i => i.level == 1) || cs.some(c => c.correctness == "correct_with_warnings")) node.correctness = "correct_with_warnings"
+        else if (issues.some(i => i.level == "warning") || cs.some(c => c.correctness == "correct_with_warnings")) node.correctness = "correct_with_warnings"
         else node.correctness = "correct"
       }
 
