@@ -399,6 +399,13 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+        builder.wip(69, "")
+          .header("Path analysis")
+          .list(l => l
+            .item("Removed shared cooldown of surge and escape.")
+            .item("Fixed that powerburst of acceleration would reset escape cooldown.")
+          )
+
         builder.release(68, "Bug Fixes", new Date(Date.parse("2026-02-21")))
           .list(l => l
             .item("Fixed a bug that caused chatboxes to not be detected when character name and title were too long.")
