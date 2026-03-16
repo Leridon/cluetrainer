@@ -454,8 +454,10 @@ export namespace Path {
                 state.cooldowns.surge[j] = Math.max(state.tick + (powerburst() ? 1 : 2), state.cooldowns.surge[j])
               }
 
-              // Surge puts both escape charges on cooldown
-              state.cooldowns.escape.fill(state.tick + cooldown("escape", powerburst(), state.assumptions.mobile_perk))
+              // Surge puts both escape charges on antispam delay
+              for (let j = 0; j < state.cooldowns.escape.length; j++) {
+                state.cooldowns.escape[j] = Math.max(state.cooldowns.escape[j], state.tick + 2)
+              }
 
               break
             }
@@ -477,14 +479,16 @@ export namespace Path {
 
               // Put the used charge on cooldown
               state.cooldowns.escape[min] = state.tick + cooldown("escape", powerburst(), state.assumptions.mobile_perk)
-              // Set the antispam delay for the second charge
 
+              // Set the antispam delay for the (potential) second charge
               for (let j = 0; j < state.cooldowns.escape.length; j++) {
-                state.cooldowns.escape[j] = Math.max(state.tick + 2, state.cooldowns.escape[j])
+                state.cooldowns.escape[j] = Math.max(state.cooldowns.escape[j], state.tick + 2)
               }
 
-              // Escape puts both surge charges on cooldown
-              state.cooldowns.surge.fill(state.tick + cooldown("surge", powerburst(), state.assumptions.mobile_perk))
+              // Escape puts both surge charges on antispam delay
+              for (let j = 0; j < state.cooldowns.surge.length; j++) {
+                state.cooldowns.surge[j] = Math.max(state.cooldowns.surge[j], state.tick + 2)
+              }
 
               break
             }
