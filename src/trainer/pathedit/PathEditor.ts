@@ -458,7 +458,7 @@ export class PathEditor extends Behaviour {
 
     if (v.type == "ability") {
       this.editStep(value,
-        new DrawAbilityInteraction(v.ability)
+        new DrawAbilityInteraction(v.ability, this.value.assumptions())
           .setStartPosition(v.from)
           .onCommit(new_s => value.update(v => Object.assign(v, new_s)))
       )

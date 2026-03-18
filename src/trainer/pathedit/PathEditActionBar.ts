@@ -12,9 +12,10 @@ import {GameMapKeyboardEvent} from "../../lib/gamemap/MapEvents";
 import PlaceRedClickInteraction from "./interactions/PlaceRedClickInteraction";
 import ControlWithHeader from "../ui/map/ControlWithHeader";
 import {DrawCheatInteraction} from "./interactions/DrawCheatInteraction";
+import {DrawCosmeticInteraction} from "./interactions/DrawCosmeticInteraction";
 import movement_state = Path.movement_state;
 import ActionBarButton = ActionBar.ActionBarButton;
-import {DrawCosmeticInteraction} from "./interactions/DrawCosmeticInteraction";
+import PathAssumptions = Path.PathAssumptions;
 
 export default class PathEditActionBar extends GameMapControl<ControlWithHeader> {
   bar: ActionBar
@@ -75,7 +76,7 @@ export default class PathEditActionBar extends GameMapControl<ControlWithHeader>
           }
         }
 
-        return interact(new DrawAbilityInteraction(opt.ability)
+        return interact(new DrawAbilityInteraction(opt.ability, self.editor.value.assumptions())
           .onCommit((step) => self.editor.value.add(step))
           .setStartPosition(self.state.value().position?.tile))
       }
@@ -84,7 +85,10 @@ export default class PathEditActionBar extends GameMapControl<ControlWithHeader>
         surge: new ActionBarButton('assets/icons/surge.png', () => ability_handle({ability: "surge", predictor: MovementAbilities.surge}))
           .tooltip("Surge")
           .setHotKey("s-W"),
-        escape: new ActionBarButton('assets/icons/escape.png', () => ability_handle({ability: "escape", predictor: MovementAbilities.escape}))
+        escape: new ActionBarButton('assets/icons/escape.png', () => ability_handle({
+          ability: "escape",
+          predictor: pos => MovementAbilities.escape(pos, PathAssumptions.escapeRange(this.editor.value.assumptions()))
+        }))
           .tooltip("Escape")
           .setHotKey("s-S"),
         dive: new ActionBarButton('assets/icons/dive.png', () => ability_handle({ability: "dive"}))

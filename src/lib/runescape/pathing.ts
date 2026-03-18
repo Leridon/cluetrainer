@@ -21,12 +21,18 @@ export namespace Path {
   import cooldown = MovementAbilities.cooldown;
   import capitalize = util.capitalize;
   import EntityTransportation = Transportation.GeneralEntityTransportation;
-  import activate = TileArea.activate;
   import defaultInteractiveArea = Transportation.EntityTransportation.defaultInteractiveArea;
   export type PathAssumptions = {
     double_surge?: boolean,
     double_escape?: boolean,
     mobile_perk?: boolean,
+    range_weapon_range?: number
+  }
+
+  export namespace PathAssumptions {
+    export function escapeRange(assumptions: PathAssumptions): number {
+      return assumptions.range_weapon_range != undefined ? assumptions.range_weapon_range - 1 : 7
+    }
   }
 
   type step_base = {
@@ -252,7 +258,7 @@ export namespace Path {
           } else if (movement.fixed_target) {
 
 
-            return activate(TileArea.normalize(movement.fixed_target.target)).center()
+            return TileArea.activate(TileArea.normalize(movement.fixed_target.target)).center()
           }
           break
         case "redclick":
@@ -391,7 +397,7 @@ export namespace Path {
                   case "surge":
                     return MovementAbilities.surge(assumed_pos)
                   case "escape":
-                    return MovementAbilities.escape(assumed_pos)
+                    return MovementAbilities.escape(assumed_pos, PathAssumptions.escapeRange(state.assumptions))
                   case "dive":
                     return MovementAbilities.dive(assumed_pos.tile, step.to)
                   case "barge":
@@ -491,7 +497,7 @@ export namespace Path {
         case "teleport":
           let teleport = resolveTeleport(step.id)
 
-          if (!activate(teleport.targetArea()).query(step.spot)) {
+          if (!TileArea.activate(teleport.targetArea()).query(step.spot)) {
             augmented.issues.push({
               level: "error",
               message: "Teleport destination tile is outside of the teleport area."
@@ -530,7 +536,7 @@ export namespace Path {
           let entity = step.internal
           let action = entity.actions[0]
 
-          let in_interactive_area = !state.position.tile || activate(action.interactive_area || defaultInteractiveArea(entity)).query(state.position.tile)
+          let in_interactive_area = !state.position.tile || TileArea.activate(action.interactive_area || defaultInteractiveArea(entity)).query(state.position.tile)
 
           if (!in_interactive_area) {
             augmented.issues.push({level: "error", message: "Player is not in the interactive area for this shortcut!"})
@@ -553,7 +559,7 @@ export namespace Path {
             state.position.tile = TileCoordinates.move(start_tile, movement.offset)
             state.position.tile.level += movement.offset.level
           } else if (movement.fixed_target) {
-            state.position.tile = activate(TileArea.normalize(movement.fixed_target.target)).center()
+            state.position.tile = TileArea.activate(TileArea.normalize(movement.fixed_target.target)).center()
             // TODO: Add uncertainty
           }
 

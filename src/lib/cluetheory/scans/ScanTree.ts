@@ -43,7 +43,6 @@ export namespace ScanTree {
   export namespace Augmentation {
     import avg = util.avg;
     import ends_up = Path.ends_up;
-    import activate = TileArea.activate;
 
     export type Timing = {
       spots: { spot: TileCoordinates, timings: { ticks: number, incomplete: boolean }[], statistics: Timing.Statistics }[],
@@ -204,8 +203,8 @@ export namespace ScanTree {
         node.path = await Path.augment(node.raw.path,
           start_state,
           node.remaining_candidates.length == 1
-            ? [activate(digSpotArea(node.remaining_candidates[0]))]
-            : node.region?.area ? [activate(node.region.area)] : [])
+            ? [TileArea.activate(digSpotArea(node.remaining_candidates[0]))]
+            : node.region?.area ? [TileArea.activate(node.region.area)] : [])
 
         if (node.children.length > 0) {
           let cloned_state = lodash.cloneDeep(node.path.post_state)
@@ -353,7 +352,7 @@ export namespace ScanTree {
         else if (node.remaining_candidates.length == 1) {
           const e = ends_up(node.raw.path)
 
-          if (!e || !activate(digSpotArea(node.remaining_candidates[0])).query(e)) {
+          if (!e || !TileArea.activate(digSpotArea(node.remaining_candidates[0])).query(e)) {
             node.completeness = "incomplete"
           }
         }

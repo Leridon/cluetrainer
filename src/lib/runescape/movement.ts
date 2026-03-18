@@ -1,8 +1,9 @@
 import {TileCoordinates} from "./coordinates";
 import {ChunkedData} from "../util/ChunkedData";
-import * as lodash from "lodash"
+import lodash from "lodash";
 import {Rectangle, Transform, Vector2} from "../math";
 import pako from "pako";
+import {Path} from "./pathing";
 import {TileArea} from "./coordinates/TileArea";
 
 type TileMovementData = number
@@ -504,6 +505,7 @@ export namespace PathFinder {
 
 
 export namespace MovementAbilities {
+  import PathAssumptions = Path.PathAssumptions;
   export type movement_ability = "surge" | "dive" | "escape" | "barge"
 
   /*
@@ -710,8 +712,8 @@ export namespace MovementAbilities {
     return dive_far_internal(data, position.tile, position.direction, 10)
   }
 
-  export async function escape(position: PlayerPosition, data: MapData = HostedMapData.get()): Promise<PlayerPosition | null> {
-    let res = await dive_far_internal(data, position.tile, direction.invert(position.direction), 7)
+  export async function escape(position: PlayerPosition, distance: number, data: MapData = HostedMapData.get()): Promise<PlayerPosition | null> {
+    let res = await dive_far_internal(data, position.tile, direction.invert(position.direction), distance)
 
     if (!res) return null
     else return {
@@ -720,14 +722,14 @@ export namespace MovementAbilities {
     }
   }
 
-  export async function generic(data: MapData, ability: movement_ability, position: TileCoordinates, target: TileCoordinates): Promise<PlayerPosition | null> {
+  export async function generic(data: MapData, ability: movement_ability, assumptions: PathAssumptions, position: TileCoordinates, target: TileCoordinates): Promise<PlayerPosition | null> {
     switch (ability) {
       case "surge":
         return surge({tile: position, direction: direction.fromVector(Vector2.sub(target, position))}, data);
       case "dive":
         return dive(position, target, data);
       case "escape":
-        return escape({tile: position, direction: direction.fromVector(Vector2.sub(position, target))}, data);
+        return escape({tile: position, direction: direction.fromVector(Vector2.sub(position, target))}, PathAssumptions.escapeRange(assumptions), data);
       case "barge":
         return barge(position, target, data);
     }

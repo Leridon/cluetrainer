@@ -14,7 +14,6 @@ import {GameMap} from "../../../lib/gamemap/GameMap";
 export namespace ClueEntities {
 
   import interactionMarker = RenderingUtility.interactionMarker;
-  import activate = TileArea.activate;
   import npc = C.npc;
   import staticentity = C.staticentity;
   import digSpotRect = Clues.digSpotRect;
@@ -50,7 +49,7 @@ export namespace ClueEntities {
           }).addTo(this)
       }
 
-      const marker = interactionMarker(activate(this.range).center(), "talk", props.highlight ? 1.5 : 1, true,
+      const marker = interactionMarker(TileArea.activate(this.range).center(), "talk", props.highlight ? 1.5 : 1, true,
         floor_group.value.correct_level ? undefined : "ctr-entity-wrong-level"
       )
         .addTo(this)

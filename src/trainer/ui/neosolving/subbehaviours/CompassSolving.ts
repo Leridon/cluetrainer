@@ -1096,7 +1096,6 @@ export namespace CompassSolving {
   export type Spot = TileArea.ActiveTileArea | TeleportGroup.Spot
 
   export namespace Spot {
-    import activate = TileArea.activate;
 
     export function coords(spot: Spot): TileArea.ActiveTileArea {
       if (spot instanceof TeleportGroup.Spot) return activate(spot.targetArea())
