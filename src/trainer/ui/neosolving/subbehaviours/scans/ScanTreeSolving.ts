@@ -31,7 +31,6 @@ import {MinimapReader} from "../../../../../lib/alt1/readers/MinimapReader";
 import {ClueTrainerWiki} from "../../../../wiki";
 import {SettingsModal} from "../../../settings/SettingsEdit";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
-import activate = TileArea.activate;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
 import cls = C.cls;
 import Order = util.Order;
@@ -174,7 +173,7 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
     this.layer.clearLayers()
 
     const pos = node.region
-      ? activate(node.region.area).center()
+      ? TileArea.activate(node.region.area).center()
       : Path.ends_up(node.raw.path)
 
     if (pos) {

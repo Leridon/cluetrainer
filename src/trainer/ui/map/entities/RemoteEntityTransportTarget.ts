@@ -14,7 +14,6 @@ import Properties from "../../widgets/Properties";
 import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
 import COLORS = ShortcutViewLayer.COLORS;
 import entity = C.entity;
-import activate = TileArea.activate;
 import GeneralEntityTransportation = Transportation.GeneralEntityTransportation;
 import EntityAction = Transportation.EntityAction;
 import EntityActionMovement = Transportation.EntityActionMovement;
@@ -57,7 +56,7 @@ export class RemoteEntityTransportTarget extends MapEntity {
   protected async render_implementation(props: MapEntity.RenderProps): Promise<Element> {
     const scale = (props.highlight ? 1.5 : (this.zoom_sensitivity_layers.get(props.zoom_group_index).value.scale))
 
-    const circle = leaflet.circle(Vector2.toLatLong(activate(TileArea.normalize(this.movement.fixed_target.target)).center()), {
+    const circle = leaflet.circle(Vector2.toLatLong(TileArea.activate(TileArea.normalize(this.movement.fixed_target.target)).center()), {
       color: COLORS.target_area,
       weight: 2,
       radius: scale * 0.4,

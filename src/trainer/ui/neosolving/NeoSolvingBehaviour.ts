@@ -64,7 +64,6 @@ import spacer = C.spacer;
 import space = C.space;
 import hboxl = C.hboxl;
 import notification = Notification.notification;
-import activate = TileArea.activate;
 import ClueSpot = Clues.ClueSpot;
 import log = Log.log;
 import default_interactive_area = Transportation.EntityTransportation.default_interactive_area;
@@ -808,7 +807,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
           span(clue.answer)
         ))
 
-        interactionMarker(activate(clue.areas[0]).center(), clue.cursor)
+        interactionMarker(TileArea.activate(clue.areas[0]).center(), clue.cursor)
           .addTo(this.layer.generic_solution_layer)
       } else if (clue.type == "scan") {
         this.layer.scan_layer.marker.setClickable(true)

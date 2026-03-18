@@ -20,7 +20,6 @@ import span = C.span;
 import ClueSpot = Clues.ClueSpot;
 import natural_join = util.natural_join;
 import plural = util.plural;
-import activate = TileArea.activate;
 
 export class ClueProperties extends Properties {
   render_promise: Promise<this> = null
@@ -48,7 +47,7 @@ export class ClueProperties extends Properties {
             case "search":
               return c(`<span><img src='assets/icons/cursor_search.png' class="inline-img"> Search <span class="nisl-entity">${sol.entity}</span> at ${TileCoordinates.toString(TileRectangle.bl(sol.spot))}</span>`)
             case "talkto":
-              return c(`<span><img src='assets/icons/cursor_talk.png' class="inline-img"> Talk to <span class="nisl-npc">${sol.npc}</span> near ${TileCoordinates.toString(activate(sol.spots[self.alternative_index || 0].range).center())}</span>`)
+              return c(`<span><img src='assets/icons/cursor_talk.png' class="inline-img"> Talk to <span class="nisl-npc">${sol.npc}</span> near ${TileCoordinates.toString(TileArea.activate(sol.spots[self.alternative_index || 0].range).center())}</span>`)
           }
         })())
 

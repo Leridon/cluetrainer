@@ -6,7 +6,6 @@ import {TileArea} from "../../lib/runescape/coordinates/TileArea";
 import {TileCoordinates} from "../../lib/runescape/coordinates";
 import {direction} from "../../lib/runescape/movement";
 import {util} from "../../lib/util/util";
-import activate = TileArea.activate;
 import index = util.index;
 
 export function areaToPolygon<T>(raster: Raster<T>,
@@ -139,7 +138,7 @@ export function areaPolygon(area: TileArea): leaflet.Polygon {
   if (!area.data && !area.size) return tilePolygon(area.origin)
   if (!area.data) return boxPolygon(TileArea.toRect(area))
 
-  const active = activate(area)
+  const active = TileArea.activate(area)
 
   type LineSegment = Vector2[]
 

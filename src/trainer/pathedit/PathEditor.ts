@@ -39,14 +39,12 @@ import {DrawCosmeticInteraction} from "./interactions/DrawCosmeticInteraction";
 import {DrawTileAreaInteraction} from "../ui/devutilitylayer/DrawTileAreaInteraction";
 import {DrawArrowInteraction} from "./interactions/DrawArrowInteraction";
 import {PathGraphics} from "../ui/path_graphics";
-import {GameMap} from "../../lib/gamemap/GameMap";
 import {EditedPathOverview} from "./EditedPathOverview";
 import {PathEditorToolsControl} from "./PathEditorToolsControl";
 import {PathBuilder} from "./PathBuilder";
 import {PathEditMenuBar} from "./PathEditMenuBar";
 import movement_state = Path.movement_state;
 import index = util.index;
-import activate = TileArea.activate;
 import vbox = C.vbox;
 import TeleportGroup = Transportation.TeleportGroup;
 import resolveTeleport = TransportData.resolveTeleport;
@@ -60,7 +58,7 @@ import {ConfirmBeforeUnload} from "../../lib/util/ConfirmBeforeUnload";
 
 function needRepairing(state: movement_state, shortcut: Path.step_transportation): boolean {
   return state.position.tile
-    && activate(EntityAction.interactiveArea(shortcut.internal, shortcut.internal.actions[0]))
+    && TileArea.activate(EntityAction.interactiveArea(shortcut.internal, shortcut.internal.actions[0]))
       .query(state.position.tile)
     && !TileCoordinates.eq2(state.position.tile, shortcut.assumed_start)
 }
@@ -189,7 +187,7 @@ class PathEditorGameLayer extends GameLayer {
 
                   const steps: Path.Step[] = []
 
-                  if (current_tile && !activate(target).query(current_tile)) {
+                  if (current_tile && !TileArea.activate(target).query(current_tile)) {
                     const path_to_start = await PathFinder.find(
                       PathFinder.init_djikstra(current_tile),
                       target
@@ -236,7 +234,7 @@ class PathEditorGameLayer extends GameLayer {
                 const steps: Path.Step[] = []
 
                 if (current_tile) {
-                  if (activate(target).query(current_tile)) assumed_start = current_tile
+                  if (TileArea.activate(target).query(current_tile)) assumed_start = current_tile
                   else {
                     const path_to_start = await PathFinder.find(
                       PathFinder.init_djikstra(current_tile),
@@ -257,7 +255,7 @@ class PathEditorGameLayer extends GameLayer {
                   }
                 }
 
-                assumed_start ??= await findAsync(activate(target).getTiles(), t => HostedMapData.get().isAccessible(t))
+                assumed_start ??= await findAsync(TileArea.activate(target).getTiles(), t => HostedMapData.get().isAccessible(t))
 
                 let clone = lodash.cloneDeep(s)
                 clone.actions = [lodash.cloneDeep(a)]
@@ -507,7 +505,7 @@ export class PathEditor extends Behaviour {
           preview_render: tile => {
             assert(v.raw.type == "teleport")
 
-            if (activate(spot.targetArea()).query(tile)) {
+            if (TileArea.activate(spot.targetArea()).query(tile)) {
               return new PathStepEntity({
                 type: "teleport",
                 id: v.raw.id,
@@ -641,7 +639,7 @@ export class PathEditor extends Behaviour {
         text: `Edit target area`,
         handler: () => {
           this.editStep(step,
-            new DrawTileAreaInteraction(s.target_area ? activate(s.target_area).getTiles() : [])
+            new DrawTileAreaInteraction(s.target_area ? TileArea.activate(s.target_area).getTiles() : [])
               .setPreviewFunction(tiles =>
                 leaflet.featureGroup(
                   tiles.map(tile => tilePolygon(tile)
@@ -668,7 +666,7 @@ export class PathEditor extends Behaviour {
         text: `Edit area`,
         handler: () => {
           this.editStep(step,
-            new DrawTileAreaInteraction(s.area ? activate(s.area).getTiles() : [])
+            new DrawTileAreaInteraction(s.area ? TileArea.activate(s.area).getTiles() : [])
               .setPreviewFunction(tiles =>
                 leaflet.featureGroup(
                   tiles.map(tile => tilePolygon(tile)
