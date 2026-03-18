@@ -1,6 +1,6 @@
-import {direction, MovementAbilities, PathFinder, PlayerPosition} from "./movement";
+import {direction, MovementAbilities, MovementAssumptions, PathFinder, PlayerPosition} from "./movement";
 import {util} from "../util/util";
-import * as lodash from "lodash"
+import lodash from "lodash";
 import {Rectangle, Vector2} from "../math";
 import {ExportImport} from "../util/exportString";
 import {floor_t, TileCoordinates, TileRectangle} from "./coordinates";
@@ -22,19 +22,7 @@ export namespace Path {
   import capitalize = util.capitalize;
   import EntityTransportation = Transportation.GeneralEntityTransportation;
   import defaultInteractiveArea = Transportation.EntityTransportation.defaultInteractiveArea;
-  export type PathAssumptions = {
-    double_surge?: boolean,
-    double_escape?: boolean,
-    mobile_perk?: boolean,
-    range_weapon_range?: number
-  }
-
-  export namespace PathAssumptions {
-    export function escapeRange(assumptions: PathAssumptions): number {
-      return assumptions.range_weapon_range != undefined ? assumptions.range_weapon_range - 1 : 7
-    }
-  }
-
+  
   type step_base = {
     type: string,
     description?: string,
@@ -142,13 +130,12 @@ export namespace Path {
     acceleration_activation_tick: number,
     position: PlayerPosition,
     targeted_entity: TileCoordinates,      // The targeted entity is set by redclicking it and can be used to set the player's orientation after running.
-    assumptions: PathAssumptions
+    assumptions: MovementAssumptions
   }
 
   export namespace movement_state {
 
-
-    export function start(assumptions: PathAssumptions): movement_state {
+    export function start(assumptions: MovementAssumptions): movement_state {
       return {
         tick: 0,
         cooldowns: {
@@ -397,7 +384,7 @@ export namespace Path {
                   case "surge":
                     return MovementAbilities.surge(assumed_pos)
                   case "escape":
-                    return MovementAbilities.escape(assumed_pos, PathAssumptions.escapeRange(state.assumptions))
+                    return MovementAbilities.escape(assumed_pos, MovementAssumptions.escapeRange(state.assumptions))
                   case "dive":
                     return MovementAbilities.dive(assumed_pos.tile, step.to)
                   case "barge":

@@ -52,14 +52,14 @@ export class AssumptionProperty extends AbstractEditWidget<ClueAssumptions> {
           const slider = new NumberSlider(4, 9, 1).setValue(value.range_weapon_range ?? 7) // TODO: Support checkbox for undefined
             .onCommit(v => this.updateAssumptions(a => a.range_weapon_range = v))
 
-          const checkbox = new Checkbox()
-            .setValue(value.range_weapon_range != undefined)
+          const checkbox = new Checkbox("Ranged Weapon Range")
             .onCommit(checked => {
               slider.setEnabled(checked)
 
               if (checked) this.updateAssumptions(a => a.range_weapon_range = slider.get())
               else this.updateAssumptions(a => a.range_weapon_range = undefined)
             })
+            .setValue(value.range_weapon_range != undefined)
 
           return hbox(
             checkbox, slider

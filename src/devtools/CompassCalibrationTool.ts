@@ -28,7 +28,7 @@ import {Angles} from "../lib/math/Angles";
 import {storage} from "../lib/util/storage";
 import KeyValueStore from "../lib/util/KeyValueStore";
 import {ConfirmationModal} from "../trainer/ui/widgets/modals/ConfirmationModal";
-import {direction, HostedMapData, PathFinder, TileMovementData} from "../lib/runescape/movement";
+import {direction, PathFinder} from "../lib/runescape/movement";
 import {GameMapControl} from "../lib/gamemap/GameMapControl";
 import TransportLayer from "../trainer/ui/map/TransportLayer";
 import {TileArea} from "../lib/runescape/coordinates/TileArea";
@@ -55,6 +55,7 @@ import async_init = util.async_init;
 import profileAsync = util.profileAsync;
 import hgrid = C.hgrid;
 import index = util.index;
+import {HostedMapCollisionData, TileCollisionData} from "../lib/runescape/CollisionData";
 
 type Fraction = Vector2
 
@@ -550,7 +551,7 @@ namespace TravellingSalesmanProblem {
   }
 
   export class AStarDistanceFunction extends StatefulDistanceFunction<TileCoordinates> {
-    constructor(private map_date: HostedMapData, private max_distance: number) {super();}
+    constructor(private map_date: HostedMapCollisionData, private max_distance: number) {super();}
 
     async distance(a: TileCoordinates, b: TileCoordinates): Promise<number> {
       if (TileCoordinates.eq(a, b)) return 0
@@ -630,7 +631,7 @@ namespace TravellingSalesmanProblem {
 
         for (let dir of direction.all) {
 
-          if (TileMovementData.free(tile_data, dir)) {
+          if (TileCollisionData.isFree(tile_data, dir)) {
             const target_tile = TileCoordinates.move(next.position.coords, direction.toVector(dir))
 
             if (TileCoordinates.equals(b, target_tile)) return next.distance + 1
@@ -852,7 +853,7 @@ namespace CalibrationQueue {
 
         if (!TileRectangle.contains(rect, pos)) return 0
 
-        if (await HostedMapData.get().isAccessible(pos)) return i
+        if (await HostedMapCollisionData.get().isAccessible(pos)) return i
         else return findAccessibleOffset(sel, i + 1)
       }
 
@@ -872,7 +873,7 @@ namespace CalibrationQueue {
 
       self.queue = await new TravellingSalesmanProblem(sorted_by_should_angle,
         //new TravellingSalesmanProblem.PathFindingDistanceFunction()
-        new TravellingSalesmanProblem.AStarDistanceFunction(HostedMapData.get(), 64)
+        new TravellingSalesmanProblem.AStarDistanceFunction(HostedMapCollisionData.get(), 64)
           .comap(s => TileCoordinates.move(reference, OffsetSelection.activeOffset(s))),
         start_offset ? {offset: start_offset} : null
       )

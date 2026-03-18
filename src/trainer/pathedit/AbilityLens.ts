@@ -1,6 +1,6 @@
 import * as leaflet from "leaflet";
 import {TileCoordinates} from "../../lib/runescape/coordinates";
-import {direction, HostedMapData, MovementAbilities, PlayerPosition} from "../../lib/runescape/movement";
+import {direction, MovementAbilities, PlayerPosition} from "../../lib/runescape/movement";
 import {Vector2} from "../../lib/math";
 import {tileHalfPolygons, tilePolygon} from "../ui/polygon_helpers";
 import {GameLayer} from "../../lib/gamemap/GameLayer";
@@ -11,6 +11,7 @@ import {util} from "../../lib/util/util";
 import possibility_raster = MovementAbilities.possibility_raster;
 import observe_combined = Observable.observe_combined;
 import eqWithNull = util.eqWithNull;
+import {HostedMapCollisionData} from "../../lib/runescape/CollisionData";
 
 export class AbilityLens extends leaflet.FeatureGroup {
   constructor(private tile: TileCoordinates, private surge_escape_for: direction[] = []) {
@@ -20,7 +21,7 @@ export class AbilityLens extends leaflet.FeatureGroup {
   }
 
   async render() {
-    const raster = await possibility_raster(HostedMapData.get(), this.tile, this.surge_escape_for)
+    const raster = await possibility_raster(HostedMapCollisionData.get(), this.tile, this.surge_escape_for)
 
     function style(color: string): leaflet.PolylineOptions {
       return {

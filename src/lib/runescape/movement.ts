@@ -2,19 +2,8 @@ import {TileCoordinates} from "./coordinates";
 import {ChunkedData} from "../util/ChunkedData";
 import lodash from "lodash";
 import {Rectangle, Transform, Vector2} from "../math";
-import pako from "pako";
-import {Path} from "./pathing";
 import {TileArea} from "./coordinates/TileArea";
-
-type TileMovementData = number
-
-export namespace TileMovementData {
-  export function free(tile: TileMovementData, d: direction): boolean {
-    const t = [1, 2, 4, 8, 16, 32, 64, 128]
-
-    return (Math.floor(tile / t[d - 1]) % 2) != 0
-  }
-}
+import {HostedMapCollisionData, MapCollisionData, TileCollisionData} from "./CollisionData";
 
 export type PlayerPosition = {
   tile: TileCoordinates,
@@ -27,90 +16,16 @@ export namespace PlayerPosition {
   }
 }
 
-interface MapData {
-  getTile(coordinate: TileCoordinates): Promise<TileMovementData>
-
-  isAccessible(coordinates: TileCoordinates): Promise<boolean>
-
-  canMove(pos: TileCoordinates, d: direction): Promise<boolean>
+export type MovementAssumptions = {
+  double_surge?: boolean,
+  double_escape?: boolean,
+  mobile_perk?: boolean,
+  range_weapon_range?: number
 }
 
-abstract class AbstractMapData implements MapData {
-  async isAccessible(coordinates: TileCoordinates): Promise<boolean> {
-    for (const dir of direction.all) {
-      if (await this.canMove(
-        TileCoordinates.move(coordinates, direction.toVector(dir)),
-        direction.invert(dir)
-      )) return true
-    }
-
-    return false
-  }
-
-  abstract getTile(coordinate: TileCoordinates): Promise<TileMovementData>
-
-  async canMove(pos: TileCoordinates, d: direction): Promise<boolean> {
-    // Data is preprocessed so for every tile there are 8 bit signalling in which directions the player can move.
-    return TileMovementData.free(await this.getTile(pos), d)
-  }
-
-}
-
-type file = Uint8Array
-
-export class HostedMapData extends AbstractMapData {
-
-  meta = {
-    chunks_per_file: 20,
-    chunks_x: 100,
-    chunks_z: 200,
-    chunk_size: 64
-  }
-
-  chunks: (file | Promise<file>)[][]
-
-  private async fetch(file_x: number, file_z: number, floor: number): Promise<Uint8Array> {
-    const a = await fetch(`map/collision/collision-${file_x}-${file_z}-${floor}.bin`)
-
-    return new Uint8Array(pako.inflate(await a.arrayBuffer()))
-  }
-
-  private constructor() {
-    super()
-    // For every floor (0 to 3), create enough slots in the data cache.
-    this.chunks = [null, null, null, null].map(() => Array(this.meta.chunks_x * this.meta.chunks_z / (this.meta.chunks_per_file * this.meta.chunks_per_file)))
-  }
-
-  private static _instance: HostedMapData = new HostedMapData()
-
-  static get() {
-    return HostedMapData._instance
-  }
-
-  async getTile(coordinate: TileCoordinates): Promise<TileMovementData> {
-    const file_x = ~~(coordinate.x / (this.meta.chunk_size * this.meta.chunks_per_file))
-    const file_y = ~~(coordinate.y / (this.meta.chunk_size * this.meta.chunks_per_file))
-    const file_i = file_y * this.meta.chunks_per_file + file_x
-
-    if (!this.chunks[coordinate.level][file_i]) {
-      let promise = this.fetch(file_x, file_y, coordinate.level)
-
-      this.chunks[coordinate.level][file_i] = promise
-
-      promise.then((a) => this.chunks[coordinate.level][file_i] = a)
-    }
-
-    const tile_x = coordinate.x % (this.meta.chunk_size * this.meta.chunks_per_file)
-    const tile_y = coordinate.y % (this.meta.chunk_size * this.meta.chunks_per_file)
-    const tile_i = tile_y * (this.meta.chunk_size * this.meta.chunks_per_file) + tile_x
-
-    return (await this.chunks[coordinate.level][file_i])[tile_i]
-  }
-}
-
-export class ClearMapData extends AbstractMapData {
-  getTile(coordinate: TileCoordinates): Promise<TileMovementData> {
-    return Promise.resolve(255);
+export namespace MovementAssumptions {
+  export function escapeRange(assumptions: MovementAssumptions): number {
+    return assumptions.range_weapon_range != undefined ? assumptions.range_weapon_range - 1 : 7
   }
 }
 
@@ -294,7 +209,7 @@ export function move(pos: TileCoordinates, off: Vector2) {
 
 export namespace PathFinder {
   export type state = {
-    data: MapData,
+    data: MapCollisionData,
     start: TileCoordinates,
     tiles: ChunkedData<{ parent: ChunkedData.coordinates, unreachable?: boolean }>,
     queue: ChunkedData.coordinates[],
@@ -302,7 +217,7 @@ export namespace PathFinder {
     blocked?: boolean
   }
 
-  export function init_djikstra(start: TileCoordinates, data: MapData = HostedMapData.get()): state {
+  export function init_djikstra(start: TileCoordinates, data: MapCollisionData = HostedMapCollisionData.get()): state {
     let state: state = {
       data: data,
       start: start,
@@ -347,10 +262,10 @@ export namespace PathFinder {
     while (state.queue.length < step_limit && state.next < state.queue.length) {
       const e = state.queue[state.next++]
 
-      const e_movement_data: TileMovementData = await state.data.getTile(e.coords)
+      const e_movement_data: TileCollisionData = await state.data.getTile(e.coords)
 
       for (let i of movement_direction_priority) {
-        if (TileMovementData.free(e_movement_data, i)) push(move(e.coords, direction.toVector(i)), e)
+        if (TileCollisionData.isFree(e_movement_data, i)) push(move(e.coords, direction.toVector(i)), e)
       }
 
       if (target(e.coords)) {
@@ -505,7 +420,6 @@ export namespace PathFinder {
 
 
 export namespace MovementAbilities {
-  import PathAssumptions = Path.PathAssumptions;
   export type movement_ability = "surge" | "dive" | "escape" | "barge"
 
   /*
@@ -516,7 +430,7 @@ export namespace MovementAbilities {
       }>
   }*/
 
-  export async function possibility_raster(data: MapData, origin: TileCoordinates, surge_escape_for: direction[] = []): Promise<{
+  export async function possibility_raster(data: MapCollisionData, origin: TileCoordinates, surge_escape_for: direction[] = []): Promise<{
     targets: {
       direction: direction,
       surge: TileCoordinates,
@@ -548,7 +462,7 @@ export namespace MovementAbilities {
 
       if (direction.isCardinal(actor.movement)) {
 
-        if (movement_in_range.y && movement_in_range.x && TileMovementData.free(actor_tile_movement_data, actor.movement)) {
+        if (movement_in_range.y && movement_in_range.x && TileCollisionData.isFree(actor_tile_movement_data, actor.movement)) {
           await handle({
             position: TileCoordinates.move(actor.position, direction.toVector(actor.movement)),
             movement: actor.movement
@@ -557,14 +471,14 @@ export namespace MovementAbilities {
       } else {
         let [north_south, east_west] = direction.split(actor.movement)
 
-        if (movement_in_range.x && movement_in_range.y && TileMovementData.free(actor_tile_movement_data, actor.movement)) {
+        if (movement_in_range.x && movement_in_range.y && TileCollisionData.isFree(actor_tile_movement_data, actor.movement)) {
           await handle({
             position: TileCoordinates.move(actor.position, direction.toVector(actor.movement)),
             movement: actor.movement
           })
 
           // Create vertical mirror actor
-          if (TileMovementData.free(actor_tile_movement_data, north_south)) {
+          if (TileCollisionData.isFree(actor_tile_movement_data, north_south)) {
             await handle({
               position: TileCoordinates.move(actor.position, direction.toVector(north_south)),
               movement: north_south
@@ -572,27 +486,27 @@ export namespace MovementAbilities {
           }
 
           // Create horizontal mirror actor
-          if (TileMovementData.free(actor_tile_movement_data, east_west)) {
+          if (TileCollisionData.isFree(actor_tile_movement_data, east_west)) {
             await handle({
               position: TileCoordinates.move(actor.position, direction.toVector(east_west)),
               movement: east_west
             })
           }
-        } else if (movement_in_range.x && TileMovementData.free(actor_tile_movement_data, east_west)) {
+        } else if (movement_in_range.x && TileCollisionData.isFree(actor_tile_movement_data, east_west)) {
           await handle({
             position: TileCoordinates.move(actor.position, direction.toVector(east_west)),
             movement: actor.movement
           })
 
           // Create vertical mirror actor
-          if (TileMovementData.free(actor_tile_movement_data, north_south)) {
+          if (TileCollisionData.isFree(actor_tile_movement_data, north_south)) {
             await handle({
               position: TileCoordinates.move(actor.position, direction.toVector(north_south)),
               movement: north_south
             })
           }
 
-        } else if (movement_in_range.y && TileMovementData.free(actor_tile_movement_data, north_south)) {
+        } else if (movement_in_range.y && TileCollisionData.isFree(actor_tile_movement_data, north_south)) {
           await handle({
             position: TileCoordinates.move(actor.position, direction.toVector(north_south)),
             movement: actor.movement
@@ -629,7 +543,7 @@ export namespace MovementAbilities {
     }
   }
 
-  export async function dive_internal(data: MapData, position: TileCoordinates, target: TileCoordinates): Promise<PlayerPosition | null> {
+  export async function dive_internal(data: MapCollisionData, position: TileCoordinates, target: TileCoordinates): Promise<PlayerPosition | null> {
     // This function does not respect any max distances and expects the caller to handle that.
 
     if (position.level != target.level) return null
@@ -663,7 +577,7 @@ export namespace MovementAbilities {
       for (let choice of choices) {
         const candidate = move(position, choice.delta)
 
-        if (Rectangle.containsTile(bound, candidate) && TileMovementData.free(movement_data, choice.dir)) {
+        if (Rectangle.containsTile(bound, candidate) && TileCollisionData.isFree(movement_data, choice.dir)) {
           next = candidate
           break
         }
@@ -675,7 +589,7 @@ export namespace MovementAbilities {
     }
   }
 
-  export async function dive_far_internal(data: MapData, start: TileCoordinates, dir: direction, max_distance: number): Promise<PlayerPosition | null> {
+  export async function dive_far_internal(data: MapCollisionData, start: TileCoordinates, dir: direction, max_distance: number): Promise<PlayerPosition | null> {
     let d = direction.toVector(dir)
 
     /*
@@ -692,7 +606,7 @@ export namespace MovementAbilities {
     return null
   }
 
-  export async function dive(position: TileCoordinates, target: TileCoordinates, data: MapData = HostedMapData.get()): Promise<PlayerPosition | null> {
+  export async function dive(position: TileCoordinates, target: TileCoordinates, data: MapCollisionData = HostedMapCollisionData.get()): Promise<PlayerPosition | null> {
 
     const delta = Vector2.sub(target, position)
 
@@ -704,15 +618,15 @@ export namespace MovementAbilities {
     } else return dive_internal(data, position, target);
   }
 
-  export async function barge(position: TileCoordinates, target: TileCoordinates, data: MapData = HostedMapData.get()): Promise<PlayerPosition | null> {
+  export async function barge(position: TileCoordinates, target: TileCoordinates, data: MapCollisionData = HostedMapCollisionData.get()): Promise<PlayerPosition | null> {
     return dive(position, target, data) // Barge is the same logic as dive
   }
 
-  export async function surge(position: PlayerPosition, data: MapData = HostedMapData.get()): Promise<PlayerPosition | null> {
+  export async function surge(position: PlayerPosition, data: MapCollisionData = HostedMapCollisionData.get()): Promise<PlayerPosition | null> {
     return dive_far_internal(data, position.tile, position.direction, 10)
   }
 
-  export async function escape(position: PlayerPosition, distance: number, data: MapData = HostedMapData.get()): Promise<PlayerPosition | null> {
+  export async function escape(position: PlayerPosition, distance: number, data: MapCollisionData = HostedMapCollisionData.get()): Promise<PlayerPosition | null> {
     let res = await dive_far_internal(data, position.tile, direction.invert(position.direction), distance)
 
     if (!res) return null
@@ -722,14 +636,14 @@ export namespace MovementAbilities {
     }
   }
 
-  export async function generic(data: MapData, ability: movement_ability, assumptions: PathAssumptions, position: TileCoordinates, target: TileCoordinates): Promise<PlayerPosition | null> {
+  export async function generic(data: MapCollisionData, ability: movement_ability, assumptions: MovementAssumptions, position: TileCoordinates, target: TileCoordinates): Promise<PlayerPosition | null> {
     switch (ability) {
       case "surge":
         return surge({tile: position, direction: direction.fromVector(Vector2.sub(target, position))}, data);
       case "dive":
         return dive(position, target, data);
       case "escape":
-        return escape({tile: position, direction: direction.fromVector(Vector2.sub(position, target))}, PathAssumptions.escapeRange(assumptions), data);
+        return escape({tile: position, direction: direction.fromVector(Vector2.sub(position, target))}, MovementAssumptions.escapeRange(assumptions), data);
       case "barge":
         return barge(position, target, data);
     }
@@ -759,7 +673,7 @@ export namespace MovementAbilities {
 
     const dir = direction.fromVector(offset)
 
-    const far_target = (await dive_far_internal(HostedMapData.get(), from, dir, 10))?.tile
+    const far_target = (await dive_far_internal(HostedMapCollisionData.get(), from, dir, 10))?.tile
 
     return TileCoordinates.equals(far_target, to)
   }

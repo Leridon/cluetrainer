@@ -1,7 +1,7 @@
 import {GameMapControl} from "../../lib/gamemap/GameMapControl";
 import {PathEditor} from "./PathEditor";
 import {Path} from "../../lib/runescape/pathing";
-import {MovementAbilities, PlayerPosition} from "../../lib/runescape/movement";
+import {MovementAbilities, MovementAssumptions, PlayerPosition} from "../../lib/runescape/movement";
 import {DrawAbilityInteraction} from "./interactions/DrawAbilityInteraction";
 import InteractionLayer, {InteractionGuard} from "../../lib/gamemap/interaction/InteractionLayer";
 import DrawRunInteraction from "./interactions/DrawRunInteraction";
@@ -15,7 +15,6 @@ import {DrawCheatInteraction} from "./interactions/DrawCheatInteraction";
 import {DrawCosmeticInteraction} from "./interactions/DrawCosmeticInteraction";
 import movement_state = Path.movement_state;
 import ActionBarButton = ActionBar.ActionBarButton;
-import PathAssumptions = Path.PathAssumptions;
 
 export default class PathEditActionBar extends GameMapControl<ControlWithHeader> {
   bar: ActionBar
@@ -87,7 +86,7 @@ export default class PathEditActionBar extends GameMapControl<ControlWithHeader>
           .setHotKey("s-W"),
         escape: new ActionBarButton('assets/icons/escape.png', () => ability_handle({
           ability: "escape",
-          predictor: pos => MovementAbilities.escape(pos, PathAssumptions.escapeRange(this.editor.value.assumptions()))
+          predictor: pos => MovementAbilities.escape(pos, MovementAssumptions.escapeRange(this.editor.value.assumptions()))
         }))
           .tooltip("Escape")
           .setHotKey("s-S"),

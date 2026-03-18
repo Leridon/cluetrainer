@@ -18,7 +18,7 @@ import PlaceRedClickInteraction from "./interactions/PlaceRedClickInteraction";
 import {SelectTileInteraction} from "../../lib/gamemap/interaction/SelectTileInteraction";
 import InteractionTopControl from "../ui/map/InteractionTopControl";
 import DrawRunInteraction from "./interactions/DrawRunInteraction";
-import {direction, HostedMapData, MovementAbilities, PathFinder} from "../../lib/runescape/movement";
+import {direction, MovementAbilities, PathFinder} from "../../lib/runescape/movement";
 import {PathStepEntity} from "../ui/map/entities/PathStepEntity";
 import TransportLayer from "../ui/map/TransportLayer";
 import {TileArea} from "../../lib/runescape/coordinates/TileArea";
@@ -55,6 +55,7 @@ import notification = Notification.notification;
 import arrow = PathGraphics.arrow;
 import findAsync = util.findAsync;
 import {ConfirmBeforeUnload} from "../../lib/util/ConfirmBeforeUnload";
+import {HostedMapCollisionData} from "../../lib/runescape/CollisionData";
 
 function needRepairing(state: movement_state, shortcut: Path.step_transportation): boolean {
   return state.position.tile
@@ -255,7 +256,7 @@ class PathEditorGameLayer extends GameLayer {
                   }
                 }
 
-                assumed_start ??= await findAsync(TileArea.activate(target).getTiles(), t => HostedMapData.get().isAccessible(t))
+                assumed_start ??= await findAsync(TileArea.activate(target).getTiles(), t => HostedMapCollisionData.get().isAccessible(t))
 
                 let clone = lodash.cloneDeep(s)
                 clone.actions = [lodash.cloneDeep(a)]

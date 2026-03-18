@@ -8,6 +8,7 @@ import {ScanTheory} from "./Scans";
 import {TileCoordinates} from "../../runescape/coordinates";
 import {PathingGraphics} from "../../../trainer/ui/path_graphics";
 import {TileArea} from "../../runescape/coordinates/TileArea";
+import {MovementAssumptions} from "../../runescape/movement";
 
 /**
  * Scan Trees are decision trees used to solve scan clues efficiently.
@@ -194,7 +195,7 @@ export namespace ScanTree {
      * @param tree The tree whose paths to augment
      * @param assumptions The underlying path assumptions
      */
-    export async function path_augmentation(tree: AugmentedScanTree, assumptions: Path.PathAssumptions): Promise<AugmentedScanTree> {
+    export async function path_augmentation(tree: AugmentedScanTree, assumptions: MovementAssumptions): Promise<AugmentedScanTree> {
       async function helper(
         node: AugmentedScanTreeNode,
         start_state: Path.movement_state
@@ -435,7 +436,7 @@ export namespace ScanTree {
                                     analyze_completeness?: boolean,
                                     analyze_timing?: boolean,
                                     synthesize_triple_nodes?: boolean,
-                                    path_assumptions?: Path.PathAssumptions
+                                    path_assumptions?: MovementAssumptions
                                   }, tree: ScanTree,
                                   clue: Clues.Scan) {
 
