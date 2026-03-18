@@ -41,7 +41,6 @@ import TeleportGroup = Transportation.TeleportGroup;
 import findBestMatch = util.findBestMatch;
 import stringSimilarity = util.stringSimilarity;
 import italic = C.italic;
-import activate = TileArea.activate;
 import notification = Notification.notification;
 import DigSolutionEntity = ClueEntities.DigSolutionEntity;
 import inlineimg = C.inlineimg;
@@ -123,11 +122,11 @@ class CompassHandlingLayer extends GameLayer {
         if (this.solving.entries.some(e => e.information) || !this.solving.reader) {
           this.solving.setSelectedSpot(event.active_entity.spot, true)
         } else {
-          this.solving.registerSpot(activate(this.solving.clue.single_tile_target ? TileArea.init(event.active_entity.spot.spot.spot) : digSpotArea(event.active_entity.spot.spot.spot)), true)
+          this.solving.registerSpot(TileArea.activate(this.solving.clue.single_tile_target ? TileArea.init(event.active_entity.spot.spot.spot) : digSpotArea(event.active_entity.spot.spot.spot)), true)
         }
       } else {
         this.solving.registerSpot(
-          activate(TileArea.fromRect(TileRectangle.lift(
+          TileArea.activate(TileArea.fromRect(TileRectangle.lift(
               Rectangle.centeredOn(event.tile(), this.solving.settings.manual_tile_inaccuracy),
               event.tile().level
             ))
@@ -881,7 +880,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
         if (!assumed_position_from_previous_clue) return
 
-        const size = activate(assumed_position_from_previous_clue).size
+        const size = TileArea.activate(assumed_position_from_previous_clue).size
 
         const COMPASS_PREVIOUS_AREA_MAX_SIZE = 256
 
@@ -926,7 +925,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       sequence.forEach(e => {
         const spot = e.teleport
           ? TransportData.resolveTeleport(e.teleport)
-          : activate(TileArea.init(e.tile))
+          : TileArea.activate(TileArea.init(e.tile))
 
         this.createEntry({
           position: spot,
@@ -1096,10 +1095,9 @@ export namespace CompassSolving {
   export type Spot = TileArea.ActiveTileArea | TeleportGroup.Spot
 
   export namespace Spot {
-    import activate = TileArea.activate;
 
     export function coords(spot: Spot): TileArea.ActiveTileArea {
-      if (spot instanceof TeleportGroup.Spot) return activate(spot.targetArea())
+      if (spot instanceof TeleportGroup.Spot) return TileArea.activate(spot.targetArea())
       else return spot
     }
   }

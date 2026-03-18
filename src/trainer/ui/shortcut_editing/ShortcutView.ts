@@ -8,7 +8,6 @@ import {floor_t, TileCoordinates, TileRectangle} from "../../../lib/runescape/co
 import {GameMap} from "../../../lib/gamemap/GameMap";
 import {GameMapMouseEvent} from "../../../lib/gamemap/MapEvents";
 import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
-import activate = TileArea.activate;
 import {PathGraphics} from "../path_graphics";
 
 export class ShortcutViewLayer extends GameLayer {
@@ -41,7 +40,7 @@ export class ShortcutViewLayer extends GameLayer {
         let shortcut = l.data.value()
         s.draw_arrows = shortcut.type == "entity" &&
           (TileRectangle.containsCoords(shortcut.clickable_area, event.tile())
-            || shortcut.actions.some(a => activate(a.interactive_area).query(event.tile()))
+            || shortcut.actions.some(a => TileArea.activate(a.interactive_area).query(event.tile()))
           )
       })
     })

@@ -64,7 +64,6 @@ export class ClueOverviewMarker extends MapEntity {
 }
 
 export namespace ClueOverviewMarker {
-  import activate = TileArea.activate;
 
   export function position(clue: Clues.ClueSpot, alternative_index?: number): TileCoordinates {
     switch (clue.clue.type) {
@@ -76,7 +75,7 @@ export namespace ClueOverviewMarker {
           case "talkto":
             let i = Math.min(alternative_index || 0, clue.clue.solution.spots.length)
 
-            return activate(clue.clue.solution.spots[i].range).center()
+            return TileArea.activate(clue.clue.solution.spots[i].range).center()
           case "dig":
             return clue.clue.solution.spot
           case "search":
@@ -88,7 +87,7 @@ export namespace ClueOverviewMarker {
       case "coordinates":
         return GieliCoordinates.toCoords(clue.clue.coordinates)
       case "emote":
-        return activate(clue.clue.area).center()
+        return TileArea.activate(clue.clue.area).center()
       case "scan":
         return TileCoordinates.lift(Rectangle.center(Rectangle.from(...clue.clue.spots)), Math.min(...clue.clue.spots.map(s => s.level)) as floor_t)
       case "skilling":
@@ -96,7 +95,7 @@ export namespace ClueOverviewMarker {
 
         if (i >= 0 && clue.clue.areas?.length > 0) {
           if (i >= clue.clue.areas.length) i = 0
-          return activate(clue.clue.areas[i]).center()
+          return TileArea.activate(clue.clue.areas[i]).center()
         }
 
         break

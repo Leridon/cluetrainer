@@ -1,10 +1,11 @@
 import {TileCoordinates} from "../../lib/runescape/coordinates";
-import {direction, HostedMapData, MovementAbilities, PlayerPosition} from "../../lib/runescape/movement";
+import {direction, MovementAbilities, PlayerPosition} from "../../lib/runescape/movement";
 import {Vector2} from "../../lib/math";
 import {Path} from "../../lib/runescape/pathing";
 import movement_ability = MovementAbilities.movement_ability;
 import dive_internal = MovementAbilities.dive_internal;
 import {util} from "../../lib/util/util";
+import {HostedMapCollisionData} from "../../lib/runescape/CollisionData";
 
 
 export function withoutFirst<T>(array: T[], value: T): T[] {
@@ -59,7 +60,7 @@ export namespace PathFindingLite {
     }[] = await (async (): Promise<typeof possible_origins> => {
       return (await Promise.all(distinct(abilities).map(async (ability) => {
         const rest = withoutFirst(abilities, ability)
-          .filter(rest_abil => !(ability == "surge" && rest_abil == "escape" || ability == "escape" && rest_abil == "surge"))
+          //.filter(rest_abil => !(ability == "surge" && rest_abil == "escape" || ability == "escape" && rest_abil == "surge"))
 
         const origins: PlayerPosition[] = await (async (): Promise<typeof origins> => {
           switch (ability) {
@@ -77,7 +78,7 @@ export namespace PathFindingLite {
                   tile: TileCoordinates.move(target.tile, Vector2.scale(distance, direction.toVector(dir)))
                 }
 
-                const arrival = await dive_internal(HostedMapData.get(), from.tile, target.tile)
+                const arrival = await dive_internal(HostedMapCollisionData.get(), from.tile, target.tile)
 
                 if (arrival && TileCoordinates.eq(target.tile, arrival.tile)) return from
 
@@ -117,6 +118,6 @@ export namespace PathFindingLite {
       path: p
     }))))))).flat()
 
-    return asyncFilter(group(raw), g => HostedMapData.get().isAccessible(g.origin))
+    return asyncFilter(group(raw), g => HostedMapCollisionData.get().isAccessible(g.origin))
   }
 }

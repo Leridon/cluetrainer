@@ -2,10 +2,12 @@ import AbstractEditWidget from "../widgets/AbstractEditWidget";
 import {SolvingMethods} from "../../model/methods";
 import {Checkbox} from "../../../lib/ui/controls/Checkbox";
 import {C} from "../../../lib/ui/constructors";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import Widget from "../../../lib/ui/Widget";
+import NumberSlider from "../../../lib/ui/controls/NumberSlider";
 import ClueAssumptions = SolvingMethods.ClueAssumptions;
 import vbox = C.vbox;
+import hbox = C.hbox;
 
 export class AssumptionProperty extends AbstractEditWidget<ClueAssumptions> {
   relevant_assumptions: ClueAssumptions.Relevance = ClueAssumptions.Relevance.all
@@ -44,6 +46,27 @@ export class AssumptionProperty extends AbstractEditWidget<ClueAssumptions> {
       !relevant.includes("mobile_perk") ? undefined :
         new Checkbox("Mobile Perk").setValue(!!value.mobile_perk)
           .onCommit(v => this.updateAssumptions(a => a.mobile_perk = v))
+      ,
+      !relevant.includes("range_weapon_range") ? undefined :
+        (() => {
+          const slider = new NumberSlider(4, 9, 1).setValue(value.range_weapon_range ?? 8) // TODO: Support checkbox for undefined
+            .onCommit(v => this.updateAssumptions(a => a.range_weapon_range = v))
+
+          const checkbox = new Checkbox("Ranged Weapon Range")
+            .css("margin-right", "10px")
+            .onCommit(checked => {
+              slider.setEnabled(checked)
+
+              if (checked) this.updateAssumptions(a => a.range_weapon_range = slider.get())
+              else this.updateAssumptions(a => a.range_weapon_range = undefined)
+            })
+            .setValue(value.range_weapon_range != undefined)
+
+          return hbox(
+            checkbox, slider
+          )
+        })()
+
       ,
     ).appendTo(this)
   }

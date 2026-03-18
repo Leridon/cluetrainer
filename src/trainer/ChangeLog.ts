@@ -400,10 +400,12 @@ export namespace Changelog {
     .tap(builder => {
 
         builder.wip(69, "")
-          .header("Path analysis")
+          .header("Path Editor")
           .list(l => l
             .item("Removed shared cooldown of surge and escape.")
             .item("Fixed that powerburst of acceleration would reset escape cooldown.")
+            .item("Added ability to customize weapon range in path assumptions to control escape distance.")
+            .item("Changed Pathfinding Lite to allow for both surge and escape in one path.")
           )
 
         builder.release(68, "Bug Fixes", new Date(Date.parse("2026-02-21")))

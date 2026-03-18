@@ -1,6 +1,6 @@
-import {direction, MovementAbilities, PathFinder, PlayerPosition} from "./movement";
+import {direction, MovementAbilities, MovementAssumptions, PathFinder, PlayerPosition} from "./movement";
 import {util} from "../util/util";
-import * as lodash from "lodash"
+import lodash from "lodash";
 import {Rectangle, Vector2} from "../math";
 import {ExportImport} from "../util/exportString";
 import {floor_t, TileCoordinates, TileRectangle} from "./coordinates";
@@ -21,14 +21,8 @@ export namespace Path {
   import cooldown = MovementAbilities.cooldown;
   import capitalize = util.capitalize;
   import EntityTransportation = Transportation.GeneralEntityTransportation;
-  import activate = TileArea.activate;
   import defaultInteractiveArea = Transportation.EntityTransportation.defaultInteractiveArea;
-  export type PathAssumptions = {
-    double_surge?: boolean,
-    double_escape?: boolean,
-    mobile_perk?: boolean,
-  }
-
+  
   type step_base = {
     type: string,
     description?: string,
@@ -136,13 +130,12 @@ export namespace Path {
     acceleration_activation_tick: number,
     position: PlayerPosition,
     targeted_entity: TileCoordinates,      // The targeted entity is set by redclicking it and can be used to set the player's orientation after running.
-    assumptions: PathAssumptions
+    assumptions: MovementAssumptions
   }
 
   export namespace movement_state {
 
-
-    export function start(assumptions: PathAssumptions): movement_state {
+    export function start(assumptions: MovementAssumptions): movement_state {
       return {
         tick: 0,
         cooldowns: {
@@ -252,7 +245,7 @@ export namespace Path {
           } else if (movement.fixed_target) {
 
 
-            return activate(TileArea.normalize(movement.fixed_target.target)).center()
+            return TileArea.activate(TileArea.normalize(movement.fixed_target.target)).center()
           }
           break
         case "redclick":
@@ -391,7 +384,7 @@ export namespace Path {
                   case "surge":
                     return MovementAbilities.surge(assumed_pos)
                   case "escape":
-                    return MovementAbilities.escape(assumed_pos)
+                    return MovementAbilities.escape(assumed_pos, MovementAssumptions.escapeRange(state.assumptions))
                   case "dive":
                     return MovementAbilities.dive(assumed_pos.tile, step.to)
                   case "barge":
@@ -491,7 +484,7 @@ export namespace Path {
         case "teleport":
           let teleport = resolveTeleport(step.id)
 
-          if (!activate(teleport.targetArea()).query(step.spot)) {
+          if (!TileArea.activate(teleport.targetArea()).query(step.spot)) {
             augmented.issues.push({
               level: "error",
               message: "Teleport destination tile is outside of the teleport area."
@@ -530,7 +523,7 @@ export namespace Path {
           let entity = step.internal
           let action = entity.actions[0]
 
-          let in_interactive_area = !state.position.tile || activate(action.interactive_area || defaultInteractiveArea(entity)).query(state.position.tile)
+          let in_interactive_area = !state.position.tile || TileArea.activate(action.interactive_area || defaultInteractiveArea(entity)).query(state.position.tile)
 
           if (!in_interactive_area) {
             augmented.issues.push({level: "error", message: "Player is not in the interactive area for this shortcut!"})
@@ -553,7 +546,7 @@ export namespace Path {
             state.position.tile = TileCoordinates.move(start_tile, movement.offset)
             state.position.tile.level += movement.offset.level
           } else if (movement.fixed_target) {
-            state.position.tile = activate(TileArea.normalize(movement.fixed_target.target)).center()
+            state.position.tile = TileArea.activate(TileArea.normalize(movement.fixed_target.target)).center()
             // TODO: Add uncertainty
           }
 

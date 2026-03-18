@@ -4,7 +4,6 @@ import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
 import {Vector2} from "../../../lib/math";
 import {Log} from "../../../lib/util/Log";
 import log = Log.log;
-import activate = TileArea.activate;
 import {TileCoordinates} from "../../../lib/runescape/coordinates";
 
 /**

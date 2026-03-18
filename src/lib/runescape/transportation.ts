@@ -114,7 +114,6 @@ export namespace Transportation {
   export type Transportation = GeneralEntityTransportation | DoorTransportation | TeleportGroup
 
   export namespace TeleportGroup {
-    import activate = TileArea.activate;
     import PotaColor = Settings.PotaColor;
 
     export namespace TeleportAccess {
@@ -238,7 +237,7 @@ export namespace Transportation {
       }
 
       centerOfTarget(): TileCoordinates {
-        return activate(this.spot.target).center()
+        return TileArea.activate(this.spot.target).center()
       }
 
       targetArea(): TileArea {
@@ -255,11 +254,10 @@ export namespace Transportation {
   }
 
   export namespace EntityAction {
-    import activate = TileArea.activate;
 
     export function findApplicable(action: EntityAction, tile: TileCoordinates): EntityActionMovement {
       return action.movement.find(movement => {
-        return !movement.valid_from || activate(movement.valid_from).query(tile)
+        return !movement.valid_from || TileArea.activate(movement.valid_from).query(tile)
       })
     }
 
@@ -272,40 +270,12 @@ export namespace Transportation {
     export function default_interactive_area(area: TileRectangle): TileArea {
       const extended = TileRectangle.extend(area, 1)
 
-      let tiles = TileArea.activate(TileArea.fromRect(extended, true))
+      const tiles = TileArea.activate(TileArea.fromRect(extended, true))
 
       tiles.set(TileRectangle.tl(extended), false)
       tiles.set(TileRectangle.tr(extended), false)
       tiles.set(TileRectangle.bl(extended), false)
       tiles.set(TileRectangle.br(extended), false)
-      /*
-      tiles.setRectangle(area, true)
-
-      // west
-      tiles.setRectangle(TileRectangle.from(
-        TileCoordinates.move(TileRectangle.bl(area), direction.toVector(direction.north)),
-        TileCoordinates.move(TileRectangle.tl(area), direction.toVector(direction.south)),
-      ), true)
-
-      // north
-      tiles.setRectangle(TileRectangle.from(
-        TileCoordinates.move(TileRectangle.tl(area), direction.toVector(direction.west)),
-        TileCoordinates.move(TileRectangle.tr(area), direction.toVector(direction.east)),
-      ), true)
-
-      // east
-      tiles.setRectangle(TileRectangle.from(
-        TileCoordinates.move(TileRectangle.tr(area), direction.toVector(direction.south)),
-        TileCoordinates.move(TileRectangle.br(area), direction.toVector(direction.north)),
-      ), true)
-
-      // south
-      tiles.setRectangle(TileRectangle.from(
-        TileCoordinates.move(TileRectangle.br(area), direction.toVector(direction.west)),
-        TileCoordinates.move(TileRectangle.bl(area), direction.toVector(direction.east)),
-      ), true)
-
-      console.log(area)*/
 
       tiles.save()
 

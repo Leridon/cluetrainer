@@ -14,7 +14,6 @@ import {DrawArrowInteraction} from "../../pathedit/interactions/DrawArrowInterac
 import {Rectangle} from "../../../lib/math";
 import cleanedJSON = util.cleanedJSON;
 import notification = Notification.notification;
-import activate = TileArea.activate;
 
 export class DrawTileAreaInteraction extends ValueInteraction<TileCoordinates[]> {
   drawing: {
@@ -166,7 +165,7 @@ export class DrawTileAreaInteraction extends ValueInteraction<TileCoordinates[]>
 
                 const rect = TileRectangle.from(a, b)
 
-                this.set(additive, ...activate(TileArea.fromRect(rect)).getTiles())
+                this.set(additive, ...TileArea.activate(TileArea.fromRect(rect)).getTiles())
               })
               .addTo(this)
         } else {
