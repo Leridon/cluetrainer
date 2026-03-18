@@ -60,7 +60,7 @@ export namespace PathFindingLite {
     }[] = await (async (): Promise<typeof possible_origins> => {
       return (await Promise.all(distinct(abilities).map(async (ability) => {
         const rest = withoutFirst(abilities, ability)
-          .filter(rest_abil => !(ability == "surge" && rest_abil == "escape" || ability == "escape" && rest_abil == "surge"))
+          //.filter(rest_abil => !(ability == "surge" && rest_abil == "escape" || ability == "escape" && rest_abil == "surge"))
 
         const origins: PlayerPosition[] = await (async (): Promise<typeof origins> => {
           switch (ability) {

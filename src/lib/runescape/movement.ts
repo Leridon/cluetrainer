@@ -430,7 +430,7 @@ export namespace MovementAbilities {
       }>
   }*/
 
-  export async function possibility_raster(data: MapCollisionData, origin: TileCoordinates, surge_escape_for: direction[] = []): Promise<{
+  export async function possibility_raster(collision: MapCollisionData, assumptions: MovementAssumptions, origin: TileCoordinates, surge_escape_for: direction[] = []): Promise<{
     targets: {
       direction: direction,
       surge: TileCoordinates,
@@ -450,7 +450,7 @@ export namespace MovementAbilities {
     async function handle(actor: actor): Promise<void> {
       raster.set(actor.position, true)
 
-      const actor_tile_movement_data = await data.getTile(actor.position)
+      const actor_tile_movement_data = await collision.getTile(actor.position)
 
       const delta = Vector2.abs(Vector2.sub(actor.position, origin))
 
@@ -536,7 +536,7 @@ export namespace MovementAbilities {
         return {
           direction: dir,
           surge: findFurthest(dir, 10),
-          escape: findFurthest(direction.invert(dir), 7)
+          escape: findFurthest(direction.invert(dir), MovementAssumptions.escapeRange(assumptions))
         }
       }),
       data: raster

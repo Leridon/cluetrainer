@@ -75,7 +75,7 @@ export class DrawAbilityInteraction extends ValueInteraction<Path.step_ability> 
 
     if (tile == null) return
 
-    this._possibility_overlay = new AbilityLens(tile)
+    this._possibility_overlay = new AbilityLens(tile, this.assumptions)
     this._possibility_overlay.addTo(this)
   }
 
