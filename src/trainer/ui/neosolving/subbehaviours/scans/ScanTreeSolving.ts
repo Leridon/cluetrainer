@@ -31,7 +31,6 @@ import {MinimapReader} from "../../../../../lib/alt1/readers/MinimapReader";
 import {ClueTrainerWiki} from "../../../../wiki";
 import {SettingsModal} from "../../../settings/SettingsEdit";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
-import activate = TileArea.activate;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
 import cls = C.cls;
 import Order = util.Order;
@@ -66,7 +65,27 @@ function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): Aug
   return searchUp(tree)
 }
 
-function asFloorDistinctionNode(node: AugmentedScanTreeNode): { level: floor_t, node: AugmentedScanTreeNode }[] {
+class FloorDistinction {
+  constructor(private distinction: { level: floor_t, node: AugmentedScanTreeNode }[]) {}
+
+  get(known_level: floor_t, is_different_level: boolean): AugmentedScanTreeNode | null {
+    if (known_level == undefined) return null
+    if (is_different_level == undefined) return null
+
+    const compatible_nodes = this.distinction.filter(e => {
+        const node_expected_different_level = e.level != known_level;
+        return is_different_level == node_expected_different_level
+      }
+    )
+
+    // When exactly one node matches the current state of the "different level" state, select it.
+    if (compatible_nodes.length == 1) return compatible_nodes[0].node
+
+    return null
+  }
+}
+
+function asFloorDistinctionNode(node: AugmentedScanTreeNode): FloorDistinction | null {
   if (node.depth != 0) return null
   if (node.children.length != 2) return null
 
@@ -78,10 +97,10 @@ function asFloorDistinctionNode(node: AugmentedScanTreeNode): { level: floor_t, 
   if (!node.children[0].value.remaining_candidates.every(c => c.level == a)) return null
   if (!node.children[1].value.remaining_candidates.every(c => c.level == b)) return null
 
-  return [
+  return new FloorDistinction([
     {level: a, node: node.children[0].value},
     {level: b, node: node.children[1].value},
-  ]
+  ])
 }
 
 export class ScanTreeSolving extends NeoSolvingSubBehaviour {
@@ -99,7 +118,7 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
 
   constructor(parent: NeoSolvingBehaviour,
               public method: AugmentedMethod<ScanTreeMethod, Clues.Scan>,
-              private original_interface_capture: CapturedScan,
+              private original_interface_capture: CapturedScan | undefined,
               private settings: Observable<ScanSolving.Settings>
   ) {
     super(parent, "method")
@@ -174,7 +193,7 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
     this.layer.clearLayers()
 
     const pos = node.region
-      ? activate(node.region.area).center()
+      ? TileArea.activate(node.region.area).center()
       : Path.ends_up(node.raw.path)
 
     if (pos) {
@@ -346,29 +365,12 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
     const findStartNode = (): AugmentedScanTreeNode => {
       const root = this.augmented.root_node
 
-      if (this.settings.value().select_floor_based_on_previous_solution && this.original_interface_capture) {
-        const known_position = this.parent.getAssumedPlayerPositionByLastClueSolution()
+      const initial_is_dl: boolean | undefined = this.original_interface_capture?.isDifferentLevel()
 
-        const floor_distinction = asFloorDistinctionNode(root)
-
-        if (known_position && floor_distinction) {
-
-          const known_level = known_position.origin.level
-
-          const is_dl = this.original_interface_capture.isDifferentLevel()
-
-          const compatible_nodes = floor_distinction.filter(e => {
-              const node_is_dl = e.level != known_level;
-              return is_dl == node_is_dl
-            }
-          )
-
-          // When exactly one node matches the current state of the "different level" state, select it.
-          if (compatible_nodes.length == 1) return compatible_nodes[0].node
-        }
-      }
-
-      return root
+      return asFloorDistinctionNode(root)?.get(
+        this.parent.getAssumedPlayerPositionByLastClueSolution()?.origin?.level,
+        initial_is_dl
+      ) ?? root
     }
 
     this.setNode(findStartNode())

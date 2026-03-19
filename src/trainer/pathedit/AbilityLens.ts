@@ -1,6 +1,6 @@
 import * as leaflet from "leaflet";
 import {TileCoordinates} from "../../lib/runescape/coordinates";
-import {direction, HostedMapData, MovementAbilities, PlayerPosition} from "../../lib/runescape/movement";
+import {direction, MovementAbilities, MovementAssumptions, PlayerPosition} from "../../lib/runescape/movement";
 import {Vector2} from "../../lib/math";
 import {tileHalfPolygons, tilePolygon} from "../ui/polygon_helpers";
 import {GameLayer} from "../../lib/gamemap/GameLayer";
@@ -11,16 +11,17 @@ import {util} from "../../lib/util/util";
 import possibility_raster = MovementAbilities.possibility_raster;
 import observe_combined = Observable.observe_combined;
 import eqWithNull = util.eqWithNull;
+import {HostedMapCollisionData} from "../../lib/runescape/CollisionData";
 
 export class AbilityLens extends leaflet.FeatureGroup {
-  constructor(private tile: TileCoordinates, private surge_escape_for: direction[] = []) {
+  constructor(private tile: TileCoordinates, private assumptions: MovementAssumptions, private surge_escape_for: direction[] = []) {
     super();
 
     this.render()
   }
 
   async render() {
-    const raster = await possibility_raster(HostedMapData.get(), this.tile, this.surge_escape_for)
+    const raster = await possibility_raster(HostedMapCollisionData.get(), this.assumptions, this.tile, this.surge_escape_for)
 
     function style(color: string): leaflet.PolylineOptions {
       return {
@@ -92,7 +93,7 @@ export class StatefulAbilityLens extends GameLayer {
 
   render_for_state: Observable<PlayerPosition> = observe(null).equality((eqWithNull(PlayerPosition.eq)))
 
-  constructor(builder: PathBuilder) {
+  constructor(private builder: PathBuilder) {
     super();
 
     builder.cursor_state.subscribe(s => {
@@ -123,6 +124,7 @@ export class StatefulAbilityLens extends GameLayer {
     if (!state?.tile) return;
 
     this.active_lens = new AbilityLens(state.tile,
+      this.builder.assumptions(),
       state.direction ?
         [state.direction] : direction.all
     ).addTo(this)

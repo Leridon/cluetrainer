@@ -1,6 +1,6 @@
 import {TileCoordinates} from "../../../lib/runescape/coordinates";
 import * as leaflet from "leaflet";
-import {HostedMapData, MovementAbilities} from "../../../lib/runescape/movement";
+import {MovementAbilities, MovementAssumptions} from "../../../lib/runescape/movement";
 import {Path} from "../../../lib/runescape/pathing";
 import {GameMapKeyboardEvent, GameMapMouseEvent} from "../../../lib/gamemap/MapEvents";
 import InteractionTopControl from "../../ui/map/InteractionTopControl";
@@ -12,6 +12,7 @@ import {AbilityLens} from "../AbilityLens";
 import observe_combined = Observable.observe_combined;
 import arrow = PathGraphics.arrow;
 import isFarDive = MovementAbilities.isFarDive;
+import {HostedMapCollisionData} from "../../../lib/runescape/CollisionData";
 
 
 export class DrawAbilityInteraction extends ValueInteraction<Path.step_ability> {
@@ -26,7 +27,7 @@ export class DrawAbilityInteraction extends ValueInteraction<Path.step_ability> 
 
   private overlay_tile: Observable<TileCoordinates> = observe(null).equality(TileCoordinates.eq2)
 
-  constructor(private ability: MovementAbilities.movement_ability) {
+  constructor(private ability: MovementAbilities.movement_ability, private assumptions: MovementAssumptions) {
     super({})
 
     this.attachTopControl(new InteractionTopControl().setName(`Drawing ${ability}`))
@@ -74,7 +75,7 @@ export class DrawAbilityInteraction extends ValueInteraction<Path.step_ability> 
 
     if (tile == null) return
 
-    this._possibility_overlay = new AbilityLens(tile)
+    this._possibility_overlay = new AbilityLens(tile, this.assumptions)
     this._possibility_overlay.addTo(this)
   }
 
@@ -85,7 +86,7 @@ export class DrawAbilityInteraction extends ValueInteraction<Path.step_ability> 
 
       if (forced) return {from: start, to: hover, okay: true}
       else {
-        let res = await MovementAbilities.generic(HostedMapData.get(), this.ability, start, hover)
+        let res = await MovementAbilities.generic(HostedMapCollisionData.get(), this.ability, this.assumptions, start, hover)
 
         return {from: start, to: res?.tile || hover, okay: !!res}
       }
@@ -138,7 +139,7 @@ export class DrawAbilityInteraction extends ValueInteraction<Path.step_ability> 
             to: tile
           })
         } else {
-          let res = await MovementAbilities.generic(HostedMapData.get(), this.ability, this.start_position.value(), tile)
+          const res = await MovementAbilities.generic(HostedMapCollisionData.get(), this.ability, this.assumptions, this.start_position.value(), tile)
 
           if (res) {
             const is_far_dive = this.ability == "dive" && await isFarDive(this.start_position.value(), res.tile)

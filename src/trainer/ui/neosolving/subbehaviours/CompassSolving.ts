@@ -41,7 +41,6 @@ import TeleportGroup = Transportation.TeleportGroup;
 import findBestMatch = util.findBestMatch;
 import stringSimilarity = util.stringSimilarity;
 import italic = C.italic;
-import activate = TileArea.activate;
 import notification = Notification.notification;
 import DigSolutionEntity = ClueEntities.DigSolutionEntity;
 import inlineimg = C.inlineimg;
@@ -123,11 +122,11 @@ class CompassHandlingLayer extends GameLayer {
         if (this.solving.entries.some(e => e.information) || !this.solving.reader) {
           this.solving.setSelectedSpot(event.active_entity.spot, true)
         } else {
-          this.solving.registerSpot(activate(this.solving.clue.single_tile_target ? TileArea.init(event.active_entity.spot.spot.spot) : digSpotArea(event.active_entity.spot.spot.spot)), true)
+          this.solving.registerSpot(TileArea.activate(this.solving.clue.single_tile_target ? TileArea.init(event.active_entity.spot.spot.spot) : digSpotArea(event.active_entity.spot.spot.spot)), true)
         }
       } else {
         this.solving.registerSpot(
-          activate(TileArea.fromRect(TileRectangle.lift(
+          TileArea.activate(TileArea.fromRect(TileRectangle.lift(
               Rectangle.centeredOn(event.tile(), this.solving.settings.manual_tile_inaccuracy),
               event.tile().level
             ))
@@ -325,7 +324,6 @@ class CompassEntryWidget extends Widget {
 }
 
 const DEBUG_ANGLE_OVERRIDE: UncertainAngle = null // degreesToRadians(206.87152474371157)
-const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = null // {origin: {x: 3214, y: 3376, level: 0}}
 const DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE: UncertainAngle = undefined // degreesToRadians(112.6)
 
 /**
@@ -877,11 +875,11 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     if (!hard_reset && this.settings.use_previous_solution_as_start && (had_previous_solution || !only_use_previous_solution_if_existed_previously)) {
       (() => {
-        const assumed_position_from_previous_clue = DEBUG_LAST_SOLUTION_OVERRIDE ?? this.parent.getAssumedPlayerPositionByLastClueSolution()
+        const assumed_position_from_previous_clue = this.parent.getAssumedPlayerPositionByLastClueSolution()
 
         if (!assumed_position_from_previous_clue) return
 
-        const size = activate(assumed_position_from_previous_clue).size
+        const size = TileArea.activate(assumed_position_from_previous_clue).size
 
         const COMPASS_PREVIOUS_AREA_MAX_SIZE = 256
 
@@ -926,7 +924,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       sequence.forEach(e => {
         const spot = e.teleport
           ? TransportData.resolveTeleport(e.teleport)
-          : activate(TileArea.init(e.tile))
+          : TileArea.activate(TileArea.init(e.tile))
 
         this.createEntry({
           position: spot,
@@ -1096,10 +1094,9 @@ export namespace CompassSolving {
   export type Spot = TileArea.ActiveTileArea | TeleportGroup.Spot
 
   export namespace Spot {
-    import activate = TileArea.activate;
 
     export function coords(spot: Spot): TileArea.ActiveTileArea {
-      if (spot instanceof TeleportGroup.Spot) return activate(spot.targetArea())
+      if (spot instanceof TeleportGroup.Spot) return TileArea.activate(spot.targetArea())
       else return spot
     }
   }

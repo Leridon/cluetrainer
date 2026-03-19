@@ -1,6 +1,6 @@
-import {direction, MovementAbilities, PathFinder, PlayerPosition} from "./movement";
+import {direction, MovementAbilities, MovementAssumptions, PathFinder, PlayerPosition} from "./movement";
 import {util} from "../util/util";
-import * as lodash from "lodash"
+import lodash from "lodash";
 import {Rectangle, Vector2} from "../math";
 import {ExportImport} from "../util/exportString";
 import {floor_t, TileCoordinates, TileRectangle} from "./coordinates";
@@ -18,18 +18,11 @@ export type Path = Path.raw;
 export namespace Path {
   import resolveTeleport = TransportData.resolveTeleport;
   import index = util.index;
-  import minIndex = util.minIndex;
   import cooldown = MovementAbilities.cooldown;
   import capitalize = util.capitalize;
   import EntityTransportation = Transportation.GeneralEntityTransportation;
-  import activate = TileArea.activate;
   import defaultInteractiveArea = Transportation.EntityTransportation.defaultInteractiveArea;
-  export type PathAssumptions = {
-    double_surge?: boolean,
-    double_escape?: boolean,
-    mobile_perk?: boolean,
-  }
-
+  
   type step_base = {
     type: string,
     description?: string,
@@ -109,29 +102,47 @@ export namespace Path {
 
   export type Step = step_orientation | step_ability | step_run | step_teleport | step_redclick | step_powerburst | step_transportation | step_cheat | step_cosmetic
 
+
+  type AbilityCharge = { on_cooldown_till_tick: number, cooldown_reason: AbilityCharge.CooldownType }
+
+  namespace AbilityCharge {
+    export type CooldownType = "cooldown" | "antispam"
+
+    export function create(n: number): AbilityCharge[] {
+      return new Array(n).fill(0).map(() => ({on_cooldown_till_tick: 0, cooldown_reason: "cooldown"}))
+    }
+
+    export function setCooldownIfLarger(charge: AbilityCharge, tick: number, reason: CooldownType): void {
+      if (tick <= charge.on_cooldown_till_tick) return
+
+      forceCooldown(charge, tick, reason)
+    }
+
+    export function forceCooldown(charge: AbilityCharge, tick: number, reason: CooldownType): void {
+      charge.on_cooldown_till_tick = tick
+      charge.cooldown_reason = reason
+    }
+  }
+
   export type movement_state = {
     tick: number,
-    cooldowns: {    // Cooldowns signify the next tick the ability/charge can be used.
-      escape: number[],
-      surge: number[],
-      barge: number,
-      dive: number,
-    },
+    cooldowns: Record<movement_ability, AbilityCharge[]>,
     acceleration_activation_tick: number,
     position: PlayerPosition,
     targeted_entity: TileCoordinates,      // The targeted entity is set by redclicking it and can be used to set the player's orientation after running.
-    assumptions: PathAssumptions
+    assumptions: MovementAssumptions
   }
 
   export namespace movement_state {
-    export function start(assumptions: PathAssumptions): movement_state {
+
+    export function start(assumptions: MovementAssumptions): movement_state {
       return {
         tick: 0,
         cooldowns: {
-          escape: assumptions.double_escape ? [0, 0] : [0],
-          surge: assumptions.double_surge ? [0, 0] : [0],
-          barge: 0,
-          dive: 0,
+          escape: AbilityCharge.create(assumptions.double_escape ? 2 : 1),
+          surge: AbilityCharge.create(assumptions.double_surge ? 2 : 1),
+          barge: AbilityCharge.create(1),
+          dive: AbilityCharge.create(1),
         },
         acceleration_activation_tick: -1000,
         position: {tile: null, direction: null},
@@ -140,24 +151,13 @@ export namespace Path {
       }
     }
 
-    function cooldown(state: movement_state, charges: number[]): number {
-      return Math.max(0, Math.min(...charges) - state.tick)
-    }
+    export function nextAvailableCharge(state: movement_state, ability: movement_ability): { charge: AbilityCharge, remaining_cooldown: number } {
+      const charge = lodash.minBy(state.cooldowns[ability], c => c.on_cooldown_till_tick)
 
-    export function surge_cooldown(state: movement_state): number {
-      return cooldown(state, state.cooldowns.surge)
-    }
-
-    export function escape_cooldown(state: movement_state): number {
-      return cooldown(state, state.cooldowns.escape)
-    }
-
-    export function barge_cooldown(state: movement_state): number {
-      return cooldown(state, [state.cooldowns.barge])
-    }
-
-    export function dive_cooldown(state: movement_state): number {
-      return cooldown(state, [state.cooldowns.dive])
+      return {
+        charge,
+        remaining_cooldown: Math.max(0, charge.on_cooldown_till_tick - state.tick)
+      }
     }
   }
 
@@ -203,11 +203,10 @@ export namespace Path {
     issues: issue[]
   }
 
-  export type issue_level = 0 | 1 | 2 // 0 = error, 1 = warning, 2 = weak warning
+  export type issue_level = "error" | "warning" // 0 = error, 1 = warning
   export namespace issue_level {
-    export const error: issue_level = 0
-    export const warning: issue_level = 1
-    export const weak_warning: issue_level = 2
+    export const error: issue_level = "error"
+    export const warning: issue_level = "warning"
   }
 
   export type issue = { level: issue_level, message: string }
@@ -246,7 +245,7 @@ export namespace Path {
           } else if (movement.fixed_target) {
 
 
-            return activate(TileArea.normalize(movement.fixed_target.target)).center()
+            return TileArea.activate(TileArea.normalize(movement.fixed_target.target)).center()
           }
           break
         case "redclick":
@@ -338,7 +337,7 @@ export namespace Path {
           state.tick += step.ticks
           break
         case "orientation":
-          if (i > 0) augmented.issues.push({level: 0, message: "Orientation steps should only be used as the first step!"})
+          if (i > 0) augmented.issues.push({level: "error", message: "Orientation steps should only be used as the first step!"})
 
           // Assume one tick
           state.tick += 1
@@ -348,7 +347,7 @@ export namespace Path {
           break
         case "run": {
           if (state.position.tile && !TileCoordinates.eq(state.position.tile, step.waypoints[0]))
-            augmented.issues.push({level: 0, message: "Running does not start where the previous step ends!"})
+            augmented.issues.push({level: "error", message: "Running does not start where the previous step ends!"})
 
           state.position = {
             tile: index(step.waypoints, -1),
@@ -367,11 +366,11 @@ export namespace Path {
           // Check whether start and target matches expectations
           if (state.position) {
             if (state.position.tile && !TileCoordinates.eq(state.position.tile, step.from)) {
-              augmented.issues.push({level: 0, message: "Ability does not start where the previous step ends!"})
+              augmented.issues.push({level: "error", message: "Ability does not start where the previous step ends!"})
             } else {
 
               // if there is no previous position, at least assume the defined start position
-              let assumed_pos = state.position
+              const assumed_pos = lodash.cloneDeep(state.position)
 
               assumed_pos.tile ||= step.from
 
@@ -380,142 +379,92 @@ export namespace Path {
                 if (step.ability == "escape") assumed_pos.direction = direction.invert(assumed_pos.direction)
               }
 
-              switch (step.ability) {
-                case "surge": {
-                  let res = await MovementAbilities.surge(assumed_pos)
-
-                  if (!res || !TileCoordinates.eq(step.to, res.tile))
-                    augmented.issues.push({level: 0, message: "Surge target does not match where it would end up!"})
-
-                  break
+              const res = await (() => {
+                switch (step.ability) {
+                  case "surge":
+                    return MovementAbilities.surge(assumed_pos)
+                  case "escape":
+                    return MovementAbilities.escape(assumed_pos, MovementAssumptions.escapeRange(state.assumptions))
+                  case "dive":
+                    return MovementAbilities.dive(assumed_pos.tile, step.to)
+                  case "barge":
+                    return MovementAbilities.barge(assumed_pos.tile, step.to)
                 }
-                case "escape": {
-                  let res = await MovementAbilities.escape(assumed_pos)
+              })()
 
-                  if (!res || !TileCoordinates.eq(step.to, res.tile))
-                    augmented.issues.push({level: 0, message: "Escape target does not match where it would end up!"})
-
-                  break
-                }
-                case "dive": {
-                  let res = await MovementAbilities.dive(assumed_pos.tile, step.to)
-
-                  if (!res || !TileCoordinates.eq(step.to, res.tile))
-                    augmented.issues.push({level: 0, message: "Dive target can't be reached!"})
-
-                  break
-                }
-                case "barge": {
-                  let res = await MovementAbilities.barge(assumed_pos.tile, step.to)
-
-                  if (!res || !TileCoordinates.eq(step.to, res.tile))
-                    augmented.issues.push({level: 0, message: "Barge target can't be reached!"})
-
-                  break
-                }
-              }
+              if (!res || !TileCoordinates.eq(step.to, res.tile))
+                if (step.ability == "escape" || step.ability == "surge")
+                  augmented.issues.push({level: "error", message: `${lodash.capitalize(step.ability)} target does not match where it would end up!`})
+                else
+                  augmented.issues.push({level: "error", message: `${lodash.capitalize(step.ability)} target can't be reached!`})
             }
           }
 
-          // Whether powerburst is active can only be determined AFTER the real tick of the step is set
-          // To not duplicate so much code, this is used as a reusable shortcut.
-          const powerburst = () => (state.tick - state.acceleration_activation_tick) <= 10
-
-          // Check cooldowns
-          // Assumes mobile as well as double surge/escape.
-          // TODO: This entire logic is most likely riddled by off-by-one errors that need to be checked to ensure path lengths are estimated correctly.
-
-          // [13:46] treborsmada: its just (surge/escape/bd/(surge + bd)/(bd + surge)/(escape + bd)/(bd+ escape)) + <= 2 tiles movement
+          // Movement combinations in 1 tick:
+          // (surge|escape|dive|(surge + dive)|(dive + surge)|(escape + dive)|(dive + escape)) + 2 tiles movement
           // So essentially: Any movement + optionally dive + 2 tiles movement.
           // moving first and THEN an ability in the same tick does not work.
           // This essentially means that surge/escape/dive do not end the tick, but running does
+
+          const next_available_charge = movement_state.nextAvailableCharge(state, step.ability)
+
+          if (next_available_charge.remaining_cooldown > 0) {
+            // Log issue
+            if (next_available_charge.charge.cooldown_reason == "antispam") {
+              augmented.issues.push({level: "warning", message: `Antispam delay. Delaying for ${next_available_charge.remaining_cooldown} ticks.`})
+            } else {
+              const severity: issue_level = next_available_charge.remaining_cooldown >= 4 ? "error" : "warning"
+
+              if (state.cooldowns[step.ability].length > 1) {
+                augmented.issues.push({level: severity, message: `All ${step.ability} charges are still on cooldown for ${next_available_charge.remaining_cooldown} ticks!`})
+              } else {
+                augmented.issues.push({level: severity, message: `${lodash.capitalize(step.ability)} still on cooldown for ${next_available_charge.remaining_cooldown} ticks!`})
+              }
+            }
+
+            // Wait for cooldown
+            state.tick = next_available_charge.charge.on_cooldown_till_tick
+          }
+
+          const powerburst_active = (state.tick - state.acceleration_activation_tick) <= 10
+
+          // Put the used charge on cooldown
+          AbilityCharge.setCooldownIfLarger(
+            next_available_charge.charge,
+            state.tick + cooldown(step.ability, powerburst_active, state.assumptions.mobile_perk),
+            "cooldown"
+          )
+
           switch (step.ability) {
-            case "surge": {
-              let min = minIndex(state.cooldowns.surge)
-
-              let cd = state.cooldowns.surge[min] - state.tick
-              if (cd > 0) {
-                if (state.assumptions.double_surge && cd <= 2 && state.cooldowns.surge[1 - min] >= cooldown("surge", powerburst(), state.assumptions.mobile_perk) - 2)
-                  augmented.issues.push({level: 1, message: `Antispam delay. Delaying for ${cd} ticks.`})
-                else
-                  augmented.issues.push({
-                    level: cd >= 4 ? 0 : 1,
-                    message: `All surge charges are still on cooldown for ${cd} ticks!`
-                  })
-
-                state.tick = state.cooldowns.surge[min] // Wait for cooldown
-              }
-
-              // Put the used charge on cooldown
-              state.cooldowns.surge[min] = state.tick + cooldown("surge", powerburst(), state.assumptions.mobile_perk)
-
-              // Set the antispam delay for the second charge
-              for (let j = 0; j < state.cooldowns.surge.length; j++) {
-                state.cooldowns.surge[j] = Math.max(state.tick + (powerburst() ? 1 : 2), state.cooldowns.surge[j])
-              }
-
-              // Surge puts both escape charges on cooldown
-              state.cooldowns.escape.fill(state.tick + cooldown("escape", powerburst(), state.assumptions.mobile_perk))
-
-              break
-            }
+            case "surge":
             case "escape": {
-              let min = minIndex(state.cooldowns.escape)
+              // Surge antispam delay is reduced to 1 tick under powerburst
+              const antispam_delay = (step.ability == "surge" && powerburst_active) ? 1 : 2
 
-              let cd = state.cooldowns.escape[min] - state.tick
-              if (cd > 0) {
-                if (state.assumptions.double_escape && cd <= 2 && state.cooldowns.escape[1 - min] >= cooldown("escape", powerburst(), state.assumptions.mobile_perk) - 2)
-                  augmented.issues.push({level: 1, message: `Antispam delay. Delaying for ${cd} ticks.`})
-                else
-                  augmented.issues.push({
-                    level: cd >= 4 ? 0 : 1,
-                    message: `All escape charges are still on cooldown for ${cd} ticks!`
-                  })
-
-                state.tick = state.cooldowns.escape[min] // Wait for cooldown
+              // Set antispam delay for all remaining charges of surge/escape
+              for (const charge of state.cooldowns.surge) {
+                AbilityCharge.setCooldownIfLarger(charge, state.tick + antispam_delay, "antispam")
               }
 
-              // Put the used charge on cooldown
-              state.cooldowns.escape[min] = state.tick + cooldown("escape", powerburst(), state.assumptions.mobile_perk)
-              // Set the antispam delay for the second charge
-
-              for (let j = 0; j < state.cooldowns.escape.length; j++) {
-                state.cooldowns.escape[j] = Math.max(state.tick + 2, state.cooldowns.escape[j])
+              // Surge puts both escape charges on antispam delay
+              for (const charge of state.cooldowns.escape) {
+                AbilityCharge.setCooldownIfLarger(charge, state.tick + antispam_delay, "antispam")
               }
-
-              // Escape puts both surge charges on cooldown
-              state.cooldowns.surge.fill(state.tick + cooldown("surge", powerburst(), state.assumptions.mobile_perk))
 
               break
             }
-            case "dive": {
-              let cd = state.cooldowns.dive - state.tick
-              if (cd > 0) {
-                augmented.issues.push({level: cd >= 4 ? 0 : 1, message: `Dive is still on cooldown for ${cd} ticks!`})
-                state.tick = state.cooldowns.dive // Wait for cooldown
-              }
-
-              state.cooldowns.dive = state.tick + cooldown("dive", powerburst(), state.assumptions.mobile_perk)
-
+            case "dive":
+            case "barge":
+              // Nothing special to do here
               break
-            }
-            case "barge": {
-              let cd = state.cooldowns.barge - state.tick
-              if (cd > 0) {
-                augmented.issues.push({level: cd >= 4 ? 0 : 1, message: `Barge is still on cooldown for ${cd} ticks!`})
-                state.tick = state.cooldowns.barge // Wait for cooldown
-              }
-
-              state.cooldowns.barge = state.tick + cooldown("barge", powerburst(), state.assumptions.mobile_perk)
-
-              break
-            }
           }
 
           state.position = {
             tile: step.to,
             direction: direction.fromVector(Vector2.sub(step.to, step.from))
           }
+
+          // Invert direction for escape ability
           if (step.ability == "escape") state.position.direction = direction.invert(state.position.direction)
 
           switch (step.ability) {
@@ -535,9 +484,9 @@ export namespace Path {
         case "teleport":
           let teleport = resolveTeleport(step.id)
 
-          if (!activate(teleport.targetArea()).query(step.spot)) {
+          if (!TileArea.activate(teleport.targetArea()).query(step.spot)) {
             augmented.issues.push({
-              level: 0,
+              level: "error",
               message: "Teleport destination tile is outside of the teleport area."
             })
           }
@@ -574,14 +523,14 @@ export namespace Path {
           let entity = step.internal
           let action = entity.actions[0]
 
-          let in_interactive_area = !state.position.tile || activate(action.interactive_area || defaultInteractiveArea(entity)).query(state.position.tile)
+          let in_interactive_area = !state.position.tile || TileArea.activate(action.interactive_area || defaultInteractiveArea(entity)).query(state.position.tile)
 
           if (!in_interactive_area) {
-            augmented.issues.push({level: 0, message: "Player is not in the interactive area for this shortcut!"})
+            augmented.issues.push({level: "error", message: "Player is not in the interactive area for this shortcut!"})
           }
 
           if (state.position.tile && !TileCoordinates.eq2(state.position.tile, step.assumed_start)) {
-            augmented.issues.push({level: 0, message: "Ability does not start where the previous step ends!"})
+            augmented.issues.push({level: "error", message: "Ability does not start where the previous step ends!"})
           }
 
           let start_tile = step.assumed_start
@@ -589,7 +538,7 @@ export namespace Path {
           let movement = Transportation.EntityAction.findApplicable(action, start_tile)
 
           if (!movement) {
-            augmented.issues.push(({level: 0, message: "No applicable movement option from this tile"}))
+            augmented.issues.push(({level: "error", message: "No applicable movement option from this tile"}))
             movement = action.movement[0]
           }
 
@@ -597,7 +546,7 @@ export namespace Path {
             state.position.tile = TileCoordinates.move(start_tile, movement.offset)
             state.position.tile.level += movement.offset.level
           } else if (movement.fixed_target) {
-            state.position.tile = activate(TileArea.normalize(movement.fixed_target.target)).center()
+            state.position.tile = TileArea.activate(TileArea.normalize(movement.fixed_target.target)).center()
             // TODO: Add uncertainty
           }
 
@@ -625,13 +574,13 @@ export namespace Path {
           let next = path[i + 1] as step_run
 
           if (next?.type != "run")
-            augmented.issues.push({level: 0, message: "Redclicking is not followed by a run"})
+            augmented.issues.push({level: "error", message: "Redclicking is not followed by a run"})
           else if (next) {
             let natural = direction.fromVector(Vector2.sub(index(next.waypoints, -1), index(next.waypoints, -2)))
             let redclicked = direction.fromVector(Vector2.sub(step.where, index(next.waypoints, -1)))
 
             if (natural == redclicked)
-              augmented.issues.push({level: 1, message: "Redclicking orientation is the same as natural orientation."})
+              augmented.issues.push({level: "warning", message: "Redclicking orientation is the same as natural orientation."})
           }
 
           state.targeted_entity = step.where
@@ -641,22 +590,21 @@ export namespace Path {
           break;
         case "powerburst":
           if (state.position.tile && !TileCoordinates.eq(state.position.tile, step.where)) {
-            augmented.issues.push({level: 0, message: "Position of powerburst does not match where the player is at that point."})
+            augmented.issues.push({level: "error", message: "Position of powerburst does not match where the player is at that point."})
             state.position.tile = step.where
           }
 
           if (state.tick - state.acceleration_activation_tick < 120) {
             augmented.issues.push({
-              level: 1,
+              level: "warning",
               message: `Powerburst of acceleration still on cooldown for ${state.acceleration_activation_tick + 120 - state.tick} ticks!`
             })
             state.tick = state.acceleration_activation_tick + 120
           }
 
-          // Reset cooldowns
-          state.cooldowns.surge = state.assumptions.double_surge ? [state.tick, state.tick] : [state.tick]
-          state.cooldowns.escape = state.assumptions.double_surge ? [state.tick, state.tick] : [state.tick]
-          state.cooldowns.dive = state.tick
+          // Reset cooldowns of dive and surge
+          for (const charge of state.cooldowns.surge) AbilityCharge.forceCooldown(charge, state.tick, "cooldown")
+          for (const charge of state.cooldowns.dive) AbilityCharge.forceCooldown(charge, state.tick, "cooldown")
 
           state.acceleration_activation_tick = state.tick
 
@@ -675,7 +623,7 @@ export namespace Path {
     let path_issues: issue[] = []
 
     if ((target && (!state.position.tile || !target.some(t => t.query(state.position.tile))))) {
-      path_issues.push({level: 0, message: "Path does not end in target area"})
+      path_issues.push({level: "error", message: "Path does not end in target area"})
     }
 
     return {

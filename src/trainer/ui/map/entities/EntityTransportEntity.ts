@@ -18,7 +18,6 @@ import GeneralEntityTransportation = Transportation.GeneralEntityTransportation;
 import EntityTransportation = Transportation.EntityTransportation;
 import entity = C.entity;
 import isLocal = Transportation.EntityTransportation.Movement.isLocal;
-import activate = TileArea.activate;
 import arrow = PathGraphics.arrow;
 import defaultInteractiveArea = Transportation.EntityTransportation.defaultInteractiveArea;
 
@@ -169,7 +168,7 @@ export class EntityTransportEntity extends MapEntity {
         action.movement.forEach(movement => {
 
           if (movement.offset) {
-            let center = activate(movement.valid_from || action.interactive_area || defaultInteractiveArea(shortcut)).center()
+            let center = TileArea.activate(movement.valid_from || action.interactive_area || defaultInteractiveArea(shortcut)).center()
 
             let target = Vector2.add(center, movement.offset)
 
@@ -179,7 +178,7 @@ export class EntityTransportEntity extends MapEntity {
             const targe = TileArea.normalize(movement.fixed_target.target)
 
             if (targe.origin.level == this.parent.getMap().floor.value()) {
-              leaflet.circle(Vector2.toLatLong(activate(targe).center()), {
+              leaflet.circle(Vector2.toLatLong(TileArea.activate(targe).center()), {
                   color: COLORS.target_area,
                   weight: 2,
                   radius: 0.4,
@@ -191,7 +190,7 @@ export class EntityTransportEntity extends MapEntity {
             const center = TileArea.activate(movement.valid_from ?? action.interactive_area ?? defaultInteractiveArea(shortcut)).center()
             const target = TileArea.normalize(movement.fixed_target.target)
 
-            render_transport_arrow(center, activate(target).center(), target.origin.level - center.level).addTo(this)
+            render_transport_arrow(center, TileArea.activate(target).center(), target.origin.level - center.level).addTo(this)
           }
         })
       }

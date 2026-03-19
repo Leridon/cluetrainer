@@ -719,22 +719,17 @@ video {
     padding: 2px 3px 2px 5px;
 }
 
-.ctr-step-issue[level="2"] {
-    background-color: #3f3f3b;
-    color: #8d8a81;
-}
-
-.ctr-step-issue[level="1"] {
+.ctr-step-issue[level="warning"] {
     background-color: #42381f;
     color: #fce2a1;
 }
 
-.ctr-step-issue[level="0"] {
+.ctr-step-issue[level="error"] {
     background-color: #8f464a;
     color: #2f2324;
 }
 
-.ctr-step-issue-icon-2 {
+.ctr-step-issue-icon-weakwarning {
     display: inline-block;
     width: 12px;
     height: 11px;
@@ -742,7 +737,7 @@ video {
     background-image: url("/assets/icons/issue-weak-warning.png");
 }
 
-.ctr-step-issue-icon-1 {
+.ctr-step-issue-icon-warning {
     display: inline-block;
     width: 12px;
     height: 11px;
@@ -750,7 +745,7 @@ video {
     background-image: url("/assets/icons/issue-warning.png");
 }
 
-.ctr-step-issue-icon-0 {
+.ctr-step-issue-icon-error {
     display: inline-block;
     width: 12px;
     height: 12px;

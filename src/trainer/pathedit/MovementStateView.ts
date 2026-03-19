@@ -85,31 +85,36 @@ export default class MovementStateView extends Widget {
     }
 
     for (let cd of this.value.cooldowns.surge) {
+
       new BuffCooldownView({
         icon: "/assets/icons/surge.png",
-        on_cooldown: cd > this.value.tick,
-        time_left: cd - this.value.tick
+        on_cooldown: cd.on_cooldown_till_tick > this.value.tick,
+        time_left: cd.on_cooldown_till_tick - this.value.tick
       }).appendTo(cooldown_container)
     }
 
     for (let cd of this.value.cooldowns.escape) {
       new BuffCooldownView({
         icon: "/assets/icons/escape.png",
-        on_cooldown: cd > this.value.tick,
-        time_left: cd - this.value.tick
+        on_cooldown: cd.on_cooldown_till_tick > this.value.tick,
+        time_left: cd.on_cooldown_till_tick - this.value.tick
       }).appendTo(cooldown_container)
     }
 
-    new BuffCooldownView({
-      icon: "/assets/icons/dive.png",
-      on_cooldown: this.value.cooldowns.dive > this.value.tick,
-      time_left: this.value.cooldowns.dive - this.value.tick
-    }).appendTo(cooldown_container)
+    for (let cd of this.value.cooldowns.dive) {
+      new BuffCooldownView({
+        icon: "/assets/icons/dive.png",
+        on_cooldown: cd.on_cooldown_till_tick > this.value.tick,
+        time_left: cd.on_cooldown_till_tick - this.value.tick
+      }).appendTo(cooldown_container)
+    }
 
-    new BuffCooldownView({
-      icon: "/assets/icons/barge.png",
-      on_cooldown: this.value.cooldowns.barge > this.value.tick,
-      time_left: this.value.cooldowns.barge - this.value.tick
-    }).appendTo(cooldown_container)
+    for (let cd of this.value.cooldowns.barge) {
+      new BuffCooldownView({
+        icon: "/assets/icons/barge.png",
+        on_cooldown: cd.on_cooldown_till_tick > this.value.tick,
+        time_left: cd.on_cooldown_till_tick - this.value.tick
+      }).appendTo(cooldown_container)
+    }
   }
 }

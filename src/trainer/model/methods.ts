@@ -3,6 +3,7 @@ import {Path} from "lib/runescape/pathing";
 import {Clues} from "../../lib/runescape/clues";
 import {util} from "../../lib/util/util";
 import * as lodash from "lodash";
+import {MovementAssumptions} from "../../lib/runescape/movement";
 
 export namespace SolvingMethods {
   import timestamp = util.timestamp;
@@ -14,7 +15,7 @@ export namespace SolvingMethods {
     meerkats_active?: boolean,
     full_globetrotter?: boolean,
     way_of_the_footshaped_key?: boolean
-  } & Path.PathAssumptions
+  } & MovementAssumptions
 
   export namespace ClueAssumptions {
     export function init(): ClueAssumptions {
@@ -61,7 +62,7 @@ export namespace SolvingMethods {
         return relevant
       }
 
-      export const path: Relevance = ["double_escape", "double_surge", "mobile_perk"]
+      export const path: Relevance = ["double_escape", "double_surge", "mobile_perk", "range_weapon_range"]
     }
   }
 

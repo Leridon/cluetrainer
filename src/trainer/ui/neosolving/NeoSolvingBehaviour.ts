@@ -64,7 +64,6 @@ import spacer = C.spacer;
 import space = C.space;
 import hboxl = C.hboxl;
 import notification = Notification.notification;
-import activate = TileArea.activate;
 import ClueSpot = Clues.ClueSpot;
 import log = Log.log;
 import default_interactive_area = Transportation.EntityTransportation.default_interactive_area;
@@ -452,6 +451,9 @@ export default class NeoSolvingBehaviour extends Behaviour {
    * Solutions expire after 10 seconds, puzzles extend this expiry.
    */
   getAssumedPlayerPositionByLastClueSolution(): TileArea | null {
+    const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = null
+
+    if (DEBUG_LAST_SOLUTION_OVERRIDE) return DEBUG_LAST_SOLUTION_OVERRIDE
 
     const now = Date.now()
 
@@ -808,7 +810,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
           span(clue.answer)
         ))
 
-        interactionMarker(activate(clue.areas[0]).center(), clue.cursor)
+        interactionMarker(TileArea.activate(clue.areas[0]).center(), clue.cursor)
           .addTo(this.layer.generic_solution_layer)
       } else if (clue.type == "scan") {
         this.layer.scan_layer.marker.setClickable(true)

@@ -186,7 +186,7 @@ namespace SpiderwebTool {
     getButtons(): BigNisButton[] {
       return [
         new BigNisButton("Confirm", "confirm").onClick(() => this.confirm_current()),
-        new BigNisButton("Candel", "cancel").onClick(() => this.cancel()),
+        new BigNisButton("Cancel", "cancel").onClick(() => this.cancel()),
       ]
     }
   }

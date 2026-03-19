@@ -8,6 +8,7 @@ import {util} from "../../lib/util/util";
 import {TileArea} from "../../lib/runescape/coordinates/TileArea";
 import movement_state = Path.movement_state;
 import copyUpdate = util.copyUpdate;
+import {MovementAssumptions} from "../../lib/runescape/movement";
 
 export class PathBuilder {
   private commit_lock: Promise<void> = Promise.resolve()
@@ -35,11 +36,11 @@ export class PathBuilder {
     this.commit(initial_value.length, initial_value)
   }
 
-  assumptions(): Path.PathAssumptions {
+  assumptions(): MovementAssumptions {
     return this.meta.start_state.assumptions
   }
 
-  setAssumptions(assumptions: Path.PathAssumptions) {
+  setAssumptions(assumptions: MovementAssumptions) {
     this.meta.start_state = movement_state.start(assumptions)
 
     this.commit(this.cursor, this.path, false)

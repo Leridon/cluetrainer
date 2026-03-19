@@ -120,6 +120,7 @@ export class CapturedScan {
     ])) return true
 
     if (this.checkRawLines([
+      {index: this.paragraph_start_indices.get()[1], expected_text: "You are to"},
       {index: this.paragraph_start_indices.get()[1], expected_text: "You are too far away and"},
       {index: this.paragraph_start_indices.get()[1], expected_text: "The orb glows as you scan."},
     ])) return false

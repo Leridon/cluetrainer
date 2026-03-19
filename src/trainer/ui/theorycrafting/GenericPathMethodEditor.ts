@@ -22,7 +22,6 @@ import {Transportation} from "../../../lib/runescape/transportation";
 import {PathStepEntity} from "../map/entities/PathStepEntity";
 import GenericPathMethod = SolvingMethods.GenericPathMethod;
 import movement_state = Path.movement_state;
-import activate = TileArea.activate;
 import hbox = C.hbox;
 import hboxl = C.hboxl;
 import vbox = C.vbox;
@@ -349,18 +348,18 @@ export namespace GenericPathMethodEditor {
     const clue = spot.clue
 
     if (clue.type == "emote") {
-      const hidey_hole_in_target = clue.hidey_hole && activate(clue.area).query(TileRectangle.center(clue.hidey_hole.location))
+      const hidey_hole_in_target = clue.hidey_hole && TileArea.activate(clue.area).query(TileRectangle.center(clue.hidey_hole.location))
 
       if (!assumptions.full_globetrotter) {
         if (hidey_hole_in_target) {
           sequence.push({
             name: `Path to Hidey Hole in Target Area`,
-            path: {section: "main", target: [activate(default_interactive_area(clue.hidey_hole.location))]}
+            path: {section: "main", target: [TileArea.activate(default_interactive_area(clue.hidey_hole.location))]}
           })
         } else if (clue.hidey_hole) {
           sequence.push({
             name: `Path to Hidey Hole`,
-            path: {section: "pre", target: [activate(default_interactive_area(clue.hidey_hole.location))]}
+            path: {section: "pre", target: [TileArea.activate(default_interactive_area(clue.hidey_hole.location))]}
           })
         }
 
@@ -370,7 +369,7 @@ export namespace GenericPathMethodEditor {
 
       if (assumptions.full_globetrotter || !hidey_hole_in_target) sequence.push({
         name: "Path to Emote Area",
-        path: {section: "main", target: [activate(clue.area)]}
+        path: {section: "main", target: [TileArea.activate(clue.area)]}
       })
 
       sequence.push({name: "Summon Uri", ticks: 1})
@@ -380,14 +379,14 @@ export namespace GenericPathMethodEditor {
       if (clue.hidey_hole && !hidey_hole_in_target && !assumptions.full_globetrotter) {
         sequence.push({
           name: "Return to Hidey Hole",
-          path: {section: "post", target: [activate(default_interactive_area(clue.hidey_hole.location))]}
+          path: {section: "post", target: [TileArea.activate(default_interactive_area(clue.hidey_hole.location))]}
         })
 
         sequence.push({name: "Return Items", ticks: 1})
       }
     } else {
       if (Clues.requiresKey(clue) && !assumptions.way_of_the_footshaped_key) {
-        sequence.push({name: "Path to Key", path: {section: "pre", target: [activate(clue.solution.key.area)]}})
+        sequence.push({name: "Path to Key", path: {section: "pre", target: [TileArea.activate(clue.solution.key.area)]}})
 
         sequence.push({name: `Get Key (${clue.solution.key.instructions})`, ticks: 2})
       }
@@ -395,7 +394,7 @@ export namespace GenericPathMethodEditor {
       sequence.push({
         name: "To target", path: {
           section: "main",
-          target: Clues.ClueSpot.targetArea({clue: clue, spot: spot.spot}).map(activate)
+          target: Clues.ClueSpot.targetArea({clue: clue, spot: spot.spot}).map(TileArea.activate)
         }
       })
 

@@ -10,7 +10,6 @@ export namespace ScanTheory {
   import Pulse = Scans.Pulse;
   import ScanInformation = ScanTree.ScanInformation;
   import get_pulse = Scans.get_pulse;
-  import activate = TileArea.activate;
   import complementSpot = Scans.complementSpot;
   import distance = Scans.distance;
 
@@ -111,7 +110,7 @@ export namespace ScanTheory {
 
     const pulse_hashes: Pulse.hash_t[] = []
 
-    activate(area).getTiles().forEach(t => {
+    TileArea.activate(area).getTiles().forEach(t => {
       pulse_hashes.push(Pulse.hash(get_pulse(spot, t, range)))
     })
 

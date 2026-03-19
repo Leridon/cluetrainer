@@ -73,6 +73,22 @@ export namespace util {
     return x as T
   }
 
+  export function minIndexBy<T>(arr: T[], selector: (item: T) => number): number {
+    if (arr.length === 0) return -1;
+
+    let minIdx = 0;
+    let minVal = selector(arr[0]);
+
+    for (let i = 1; i < arr.length; i++) {
+      const v = selector(arr[i]);
+      if (v < minVal) {
+        minVal = v;
+        minIdx = i;
+      }
+    }
+
+    return minIdx;
+  }
 
   export function minIndex(array: number[]): number {
     return array.indexOf(Math.min(...array))

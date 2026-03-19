@@ -8,6 +8,7 @@ import {ScanTheory} from "./Scans";
 import {TileCoordinates} from "../../runescape/coordinates";
 import {PathingGraphics} from "../../../trainer/ui/path_graphics";
 import {TileArea} from "../../runescape/coordinates/TileArea";
+import {MovementAssumptions} from "../../runescape/movement";
 
 /**
  * Scan Trees are decision trees used to solve scan clues efficiently.
@@ -43,7 +44,6 @@ export namespace ScanTree {
   export namespace Augmentation {
     import avg = util.avg;
     import ends_up = Path.ends_up;
-    import activate = TileArea.activate;
 
     export type Timing = {
       spots: { spot: TileCoordinates, timings: { ticks: number, incomplete: boolean }[], statistics: Timing.Statistics }[],
@@ -195,7 +195,7 @@ export namespace ScanTree {
      * @param tree The tree whose paths to augment
      * @param assumptions The underlying path assumptions
      */
-    export async function path_augmentation(tree: AugmentedScanTree, assumptions: Path.PathAssumptions): Promise<AugmentedScanTree> {
+    export async function path_augmentation(tree: AugmentedScanTree, assumptions: MovementAssumptions): Promise<AugmentedScanTree> {
       async function helper(
         node: AugmentedScanTreeNode,
         start_state: Path.movement_state
@@ -204,8 +204,8 @@ export namespace ScanTree {
         node.path = await Path.augment(node.raw.path,
           start_state,
           node.remaining_candidates.length == 1
-            ? [activate(digSpotArea(node.remaining_candidates[0]))]
-            : node.region?.area ? [activate(node.region.area)] : [])
+            ? [TileArea.activate(digSpotArea(node.remaining_candidates[0]))]
+            : node.region?.area ? [TileArea.activate(node.region.area)] : [])
 
         if (node.children.length > 0) {
           let cloned_state = lodash.cloneDeep(node.path.post_state)
@@ -317,9 +317,9 @@ export namespace ScanTree {
 
         let issues = Path.collect_issues(node.path)
 
-        if (issues.some(i => i.level == 0)) node.correctness = "error"
+        if (issues.some(i => i.level == "error")) node.correctness = "error"
         else if (cs.some(c => c.correctness == "error" || c.correctness == "error_in_children")) node.correctness = "error_in_children"
-        else if (issues.some(i => i.level == 1) || cs.some(c => c.correctness == "correct_with_warnings")) node.correctness = "correct_with_warnings"
+        else if (issues.some(i => i.level == "warning") || cs.some(c => c.correctness == "correct_with_warnings")) node.correctness = "correct_with_warnings"
         else node.correctness = "correct"
       }
 
@@ -353,7 +353,7 @@ export namespace ScanTree {
         else if (node.remaining_candidates.length == 1) {
           const e = ends_up(node.raw.path)
 
-          if (!e || !activate(digSpotArea(node.remaining_candidates[0])).query(e)) {
+          if (!e || !TileArea.activate(digSpotArea(node.remaining_candidates[0])).query(e)) {
             node.completeness = "incomplete"
           }
         }
@@ -436,7 +436,7 @@ export namespace ScanTree {
                                     analyze_completeness?: boolean,
                                     analyze_timing?: boolean,
                                     synthesize_triple_nodes?: boolean,
-                                    path_assumptions?: Path.PathAssumptions
+                                    path_assumptions?: MovementAssumptions
                                   }, tree: ScanTree,
                                   clue: Clues.Scan) {
 

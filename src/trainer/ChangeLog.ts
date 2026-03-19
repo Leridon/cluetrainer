@@ -399,6 +399,20 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+        builder.release(69, "Escape Changes", new Date(Date.parse("2026-03-19")))
+          .header("Path Editor")
+          .list(l => l
+            .item("Removed shared cooldown of surge and escape.")
+            .item("Fixed that powerburst of acceleration would reset escape cooldown and add additional escape charges.")
+            .item("Added ability to customize weapon range in path assumptions to control escape distance.")
+            .item("Changed the pathfinding tool to allow for both surge and escape in one path.")
+          )
+          .header("General")
+          .list(l => l
+            .item("Slightly adjusted methods that used the Ring of Respawn teleport to Burthorpe.")
+            .item("Fixed a bug that caused the correct floor to not be properly detected for Brimhaven and Dorgesh Khaan scans.")
+          )
+
         builder.release(68, "Bug Fixes", new Date(Date.parse("2026-02-21")))
           .list(l => l
             .item("Fixed a bug that caused chatboxes to not be detected when character name and title were too long.")
