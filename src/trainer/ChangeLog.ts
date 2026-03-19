@@ -399,13 +399,13 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-        builder.wip(69, "")
+        builder.release(69, "Escape Changes", new Date(Date.parse("2026-03-19")))
           .header("Path Editor")
           .list(l => l
             .item("Removed shared cooldown of surge and escape.")
-            .item("Fixed that powerburst of acceleration would reset escape cooldown.")
+            .item("Fixed that powerburst of acceleration would reset escape cooldown and add additional escape charges.")
             .item("Added ability to customize weapon range in path assumptions to control escape distance.")
-            .item("Changed Pathfinding Lite to allow for both surge and escape in one path.")
+            .item("Changed the pathfinding tool to allow for both surge and escape in one path.")
           )
           .header("General")
           .list(l => l
