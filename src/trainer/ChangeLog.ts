@@ -407,6 +407,11 @@ export namespace Changelog {
             .item("Added ability to customize weapon range in path assumptions to control escape distance.")
             .item("Changed Pathfinding Lite to allow for both surge and escape in one path.")
           )
+          .header("General")
+          .list(l => l
+            .item("Slightly adjusted methods that used the Ring of Respawn teleport to Burthorpe.")
+            .item("Fixed a bug that caused the correct floor to not be properly detected for Brimhaven and Dorgesh Khaan scans.")
+          )
 
         builder.release(68, "Bug Fixes", new Date(Date.parse("2026-02-21")))
           .list(l => l

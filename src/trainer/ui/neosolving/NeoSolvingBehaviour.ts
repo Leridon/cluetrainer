@@ -451,6 +451,9 @@ export default class NeoSolvingBehaviour extends Behaviour {
    * Solutions expire after 10 seconds, puzzles extend this expiry.
    */
   getAssumedPlayerPositionByLastClueSolution(): TileArea | null {
+    const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = null
+
+    if (DEBUG_LAST_SOLUTION_OVERRIDE) return DEBUG_LAST_SOLUTION_OVERRIDE
 
     const now = Date.now()
 

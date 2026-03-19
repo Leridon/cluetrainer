@@ -324,7 +324,6 @@ class CompassEntryWidget extends Widget {
 }
 
 const DEBUG_ANGLE_OVERRIDE: UncertainAngle = null // degreesToRadians(206.87152474371157)
-const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = null // {origin: {x: 3214, y: 3376, level: 0}}
 const DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE: UncertainAngle = undefined // degreesToRadians(112.6)
 
 /**
@@ -876,7 +875,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     if (!hard_reset && this.settings.use_previous_solution_as_start && (had_previous_solution || !only_use_previous_solution_if_existed_previously)) {
       (() => {
-        const assumed_position_from_previous_clue = DEBUG_LAST_SOLUTION_OVERRIDE ?? this.parent.getAssumedPlayerPositionByLastClueSolution()
+        const assumed_position_from_previous_clue = this.parent.getAssumedPlayerPositionByLastClueSolution()
 
         if (!assumed_position_from_previous_clue) return
 
