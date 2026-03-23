@@ -399,6 +399,14 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+        builder.wip(70, "Havenhythe")
+          .list(l => l
+            .item("Added new easy clue step in Wendlewick")
+            .item("Added new Wendlewick scan.")
+            .item("Added Havenhythe teleports (Lodestone, Normal Spellbook, Fairy Ring)")
+            .item("Fixed a bug that caused weapon range customization to not be selectable when creating a new method.")
+          )
+
         builder.release(69, "Escape Changes", new Date(Date.parse("2026-03-19")))
           .header("Path Editor")
           .list(l => l

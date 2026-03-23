@@ -1275,6 +1275,16 @@ export namespace clue_data {
         "npc": "Hazelmere",
         "spots": [{"range": {"origin": {"x": 2675, "y": 3085, "level": 1}, "size": {"x": 5, "y": 5}}, "description": "east of Yanille"}]
       }
+    }, {
+      "id": 129,
+      "type": "simple",
+      "tier": "easy",
+      "text": ["Search a barrel upstairs in one of Wendlewick's farmhouses."],
+      "solution": {
+        "type": "search",
+        "entity": "Barrel",
+        "spot": {"topleft": {"x": 3531, "y": 1483}, "botright": {"x": 3532, "y": 1483}, "level": 1}
+      }
     }
   ]
 
@@ -4702,15 +4712,116 @@ export namespace clue_data {
       "range": 14,
       "scantext": "The Lost Grove"
     },
-    /*{
-         "id": 486,
-         "type": "scan",
-         "tier": "master",
-         "text": ["This scroll will work in the Lost Grove. Orb scan range: 14 paces. (TEST VERSION, NOT ACTUALLY INGAME)"],
-         "spots": [{"x":1374,"y":5550,"level":0},{"x":1390,"y":5616,"level":0},{"x":1431,"y":5596,"level":0},{"x":1421,"y":5627,"level":0},{"x":1423,"y":5718,"level":0},{"x":1417,"y":5684,"level":0},{"x":1405,"y":5651,"level":0},{"x":1392,"y":5730,"level":0},{"x":1367,"y":5720,"level":0},{"x":1361,"y":5733,"level":0},{"x":1307,"y":5622,"level":0},{"x":1385,"y":5656,"level":0},{"x":1352,"y":5625,"level":0},{"x":1373,"y":5634,"level":0},{"x":1351,"y":5659,"level":0},{"x":1368,"y":5609,"level":0},{"x":1370,"y":5670,"level":0}],
-         "range": 14,
-         "scantext": "The Lost Grove (TEST VERSION, NOT ACTUALLY INGAME)"
-       },*/
+    {
+      "id": 487,
+      "type": "scan",
+      "tier": "master",
+      "text": ["This scroll will work in Wendlewick. Orb scan range: ??? paces."],
+      "spots": [
+        {
+          "x": 3485,
+          "y": 1538,
+          "level": 0
+        },
+        {
+          "x": 3471,
+          "y": 1555,
+          "level": 0
+        },
+        {
+          "x": 3514,
+          "y": 1588,
+          "level": 0
+        },
+        {
+          "x": 3477,
+          "y": 1578,
+          "level": 0
+        },
+        {
+          "x": 3506,
+          "y": 1549,
+          "level": 0
+        },
+        {
+          "x": 3494,
+          "y": 1517,
+          "level": 0
+        },
+        {
+          "x": 3487,
+          "y": 1504,
+          "level": 0
+        },
+        {
+          "x": 3466,
+          "y": 1523,
+          "level": 0
+        },
+        {
+          "x": 3442,
+          "y": 1550,
+          "level": 0
+        },
+        {
+          "x": 3421,
+          "y": 1525,
+          "level": 0
+        },
+        {
+          "x": 3402,
+          "y": 1510,
+          "level": 0
+        },
+        {
+          "x": 3437,
+          "y": 1494,
+          "level": 0
+        },
+        {
+          "x": 3423,
+          "y": 1509,
+          "level": 0
+        },
+        {
+          "x": 3471,
+          "y": 1498,
+          "level": 0
+        },
+        {
+          "x": 3483,
+          "y": 1475,
+          "level": 0
+        },
+        {
+          "x": 3529,
+          "y": 1500,
+          "level": 0
+        },
+        {
+          "x": 3570,
+          "y": 1478,
+          "level": 0
+        },
+        {
+          "x": 3554,
+          "y": 1470,
+          "level": 0
+        },
+        {
+          "x": 3559,
+          "y": 1504,
+          "level": 0
+        },
+        {
+          "x": 3564,
+          "y": 1532,
+          "level": 0
+        }
+      ],
+      "range": 14,
+      "scantext": "Wendlewick"
+    },
   ]
 
   export const skilling: Clues.Skilling[] = [

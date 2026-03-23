@@ -241,7 +241,7 @@ const raw_data: Transportation.TeleportGroup[] = [
       },
       {
         id: "wendlewick",
-        img: {url: "lode_um.png", height: 28},
+        img: {url: "lode_wendlewick.png", height: 28},
         code: "Alt+W",
         target: {origin: {x: 3462, y: 1520, level: 0}},
         facing: direction.east,
