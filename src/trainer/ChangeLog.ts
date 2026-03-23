@@ -402,6 +402,7 @@ export namespace Changelog {
         builder.wip(70, "Havenhythe")
           .list(l => l
             .item("Added new easy clue step in Wendlewick")
+            .item("Added new medium clue step in Wendlewick")
             .item("Added new Wendlewick scan.")
             .item("Added Havenhythe teleports (Lodestone, Normal Spellbook, Fairy Ring)")
             .item("Fixed a bug that caused weapon range customization to not be selectable when creating a new method.")

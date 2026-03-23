@@ -3591,6 +3591,17 @@ export namespace clue_data {
         "npc": "Death"
       },
       "anagram": ["HATED"]
+    }, {
+      "id": 319,
+      "type": "anagram",
+      "tier": "medium",
+      "text": ["This anagram reveals who to speak to next: MR MIAI"],
+      "solution": {
+        "type": "talkto",
+        "spots": [{"range": {"origin":{"x":3491,"y":1506,"level":0},"size":{"x":2,"y":3}}, "description": "in Wendlewick"}],
+        "npc": "Miriam"
+      },
+      "anagram": ["MR MIAI"]
     }]
 
   export const coordinates: Clues.Coordinate[] = [
