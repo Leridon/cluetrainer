@@ -1372,7 +1372,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Captain Tobias.",
-        "spots": [{"range": {"origin": {"x": 3025, "y": 3215, "level": 0}, "size": {"x": 4, "y": 7}}, "description": "at Port Sarim"}]
+        "spots": [{"range": {"origin": {"x": 3027, "y": 3216, "level": 0}, "size": {"x": 2, "y": 3}}, "description": "at Port Sarim"}]
       }
     }, {
       "id": 182,
