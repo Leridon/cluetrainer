@@ -45,7 +45,7 @@ export namespace SolvingMethods {
       export const all: Relevance = ["double_escape", "double_surge", "mobile_perk", "way_of_the_footshaped_key", "full_globetrotter", "meerkats_active"]
 
       export function forSpot(step: ClueSpot): Relevance {
-        const relevant: Relevance = ["double_escape", "double_surge", "mobile_perk"]
+        const relevant: Relevance = [...path]
 
         if (step.clue.solution && step.clue.solution.type == "search" && step.clue.solution.key) {
           relevant.push("way_of_the_footshaped_key")

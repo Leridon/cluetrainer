@@ -239,6 +239,14 @@ const raw_data: Transportation.TeleportGroup[] = [
         facing: direction.east,
         name: "City of Um",
       },
+      {
+        id: "wendlewick",
+        img: {url: "lode_wendlewick.png", height: 28},
+        code: "Alt+W",
+        target: {origin: {x: 3462, y: 1520, level: 0}},
+        facing: direction.east,
+        name: "Wendlewick",
+      },
     ],
     access: [
       {
@@ -375,6 +383,12 @@ const raw_data: Transportation.TeleportGroup[] = [
         target: {"origin": {"x": 1402, "y": 5723, "level": 0}, "size": {"x": 5, "y": 5}, "data": "/3vvAQ=="},
         img: {url: "tele-northlostgrove.png"},
         name: "Lost Grove",
+      },
+      {
+        id: "wendlewick",
+        target: {"origin": {"x": 3479, "y": 1552, "level": 0}, "size": {"x": 5, "y": 5}, "data": "///fAQ=="},
+        img: {url: "tele-wendlewick.png"},
+        name: "Wendlewick",
       },
     ],
     access: [{
@@ -1340,6 +1354,12 @@ const raw_data: Transportation.TeleportGroup[] = [
         target: {origin: {"x": 2229, "y": 4244, "level": 1}},
         name: "Yu´biusk",
         code: "BLQ",
+      },
+      {
+        id: "BKS",
+        target: {origin: {"x": 3599, "y": 1410, "level": 0}},
+        name: "Inanna's shrine",
+        code: "BKS",
       },
     ],
     access: [{

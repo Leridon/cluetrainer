@@ -399,6 +399,18 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+        builder.release(70, "Havenhythe", new Date(Date.parse("2026-03-24")))
+          .list(l => l
+            .item("Added support for new easy clue step in Wendlewick.")
+            .item("Added support for new medium clue step in Wendlewick.")
+            .item("Added support for new Wendlewick elite scan.", new List()
+              .item(italic("We still have not seen confirmation of the scan ingame, so the scan range is only a guess. It may currently be unobtainable due to a bug."))
+            )
+            .item("Added teleports to Havenhythe: Lodestone, Normal Spellbook Teleport, BKS Fairy Ring")
+            .item("Updated collision data for the path editor.")
+            .item("Fixed a bug that caused weapon range customization to not be selectable when creating a new method.")
+          )
+
         builder.release(69, "Escape Changes", new Date(Date.parse("2026-03-19")))
           .header("Path Editor")
           .list(l => l
