@@ -399,7 +399,7 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-        builder.wip(70, "Havenhythe")
+        builder.release(70, "Havenhythe", new Date(Date.parse("2026-03-24")))
           .list(l => l
             .item("Added support for new easy clue step in Wendlewick.")
             .item("Added support for new medium clue step in Wendlewick.")
