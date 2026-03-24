@@ -407,6 +407,7 @@ export namespace Changelog {
               .item(italic("We still have not seen confirmation of the scan ingame, so the scan range is only a guess. It may currently be unobtainable due to a bug."))
             )
             .item("Added teleports to Havenhythe: Lodestone, Normal Spellbook Teleport, BKS Fairy Ring")
+            .item("Updated collision data for the path editor.")
             .item("Fixed a bug that caused weapon range customization to not be selectable when creating a new method.")
           )
 
