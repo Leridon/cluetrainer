@@ -401,10 +401,12 @@ export namespace Changelog {
 
         builder.wip(70, "Havenhythe")
           .list(l => l
-            .item("Added new easy clue step in Wendlewick")
-            .item("Added new medium clue step in Wendlewick")
-            .item("Added new Wendlewick scan.")
-            .item("Added Havenhythe teleports (Lodestone, Normal Spellbook, Fairy Ring)")
+            .item("Added support for new easy clue step in Wendlewick.")
+            .item("Added support for new medium clue step in Wendlewick.")
+            .item("Added support for new Wendlewick elite scan.", new List()
+              .item(italic("We still have not seen confirmation of the scan ingame, so the scan range is only a guess. It may currently be unobtainable due to a bug."))
+            )
+            .item("Added teleports to Havenhythe: Lodestone, Normal Spellbook Teleport, BKS Fairy Ring")
             .item("Fixed a bug that caused weapon range customization to not be selectable when creating a new method.")
           )
 
