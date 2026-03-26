@@ -404,6 +404,7 @@ export namespace Changelog {
           .item("Added methods for the new easy and medium steps in Havenhythe.")
           .item("Fixed a bug that caused RAM to fill up due unnecessary screenshots being saved to the log.")
           .item("Fixed keybind for Fort Forinthry lodestone.")
+          .item("Fixed that keybind overlays for teleports could be off-center.")
         )
 
         builder.release(70, "Havenhythe", new Date(Date.parse("2026-03-24")))
