@@ -402,6 +402,7 @@ export namespace Changelog {
       builder.wip(71, "New Methods and Bugfixes")
         .list(l => l
           .item("Fixed a bug that caused RAM to fill up due unnecessary screenshots being saved to the log.")
+          .item("Fixed keybind for Fort Forinthry lodestone.")
         )
 
         builder.release(70, "Havenhythe", new Date(Date.parse("2026-03-24")))

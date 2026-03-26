@@ -113,7 +113,7 @@ const raw_data: Transportation.TeleportGroup[] = [
       {
         id: "fortforinthry",
         img: {url: "lode_fortforinthry.png", height: 28},
-        code: "Alt+W",
+        code: "Shift+F",
         target: {origin: {x: 3298, y: 3525, level: 0}},
         facing: direction.south,
         name: "Fort Forinthry",
