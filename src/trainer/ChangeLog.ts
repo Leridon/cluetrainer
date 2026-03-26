@@ -399,7 +399,7 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {+
 
-      builder.wip(71, "New Methods and Bugfixes")
+      builder.release(71, "New Methods and Bugfixes", new Date(Date.parse("2026-03-26")))
         .list(l => l
           .item("Added methods for the new easy and medium steps in Havenhythe.")
           .item("Fixed a bug that caused RAM to fill up due unnecessary screenshots being saved to the log.")
