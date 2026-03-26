@@ -121,7 +121,7 @@ export class ScanTreeSolving extends NeoSolvingSubBehaviour {
               private original_interface_capture: CapturedScan | undefined,
               private settings: Observable<ScanSolving.Settings>
   ) {
-    super(parent, "method")
+    super("ScanTree", parent, "method")
 
     this.augmented = ScanTree.Augmentation.basic_augmentation(method.method.tree, method.clue.clue)
     ScanTree.Augmentation.synthesize_triple_nodes(this.augmented)

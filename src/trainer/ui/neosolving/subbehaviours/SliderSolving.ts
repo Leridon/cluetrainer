@@ -800,7 +800,7 @@ export class SliderSolving extends AbstractPuzzleSolving<
   SliderGuideProcess
 > {
   constructor(parent: NeoSolvingBehaviour, public readonly puzzle: ClueReader.Result.Puzzle.Slider) {
-    super(parent,
+    super("Slider", parent,
       puzzle,
       deps().app.settings.settings.solving.puzzles.sliders.autostart,
       "Slider Puzzle",

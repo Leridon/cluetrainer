@@ -176,7 +176,7 @@ export class LockboxSolving extends AbstractPuzzleSolving<ClueReader.Result.Puzz
 
   constructor(parent: NeoSolvingBehaviour,
               public lockbox: ClueReader.Result.Puzzle.Lockbox) {
-    super(parent, lockbox, deps().app.settings.settings.solving.puzzles.lockboxes.autostart, "Lockbox Puzzle", "lockboxes");
+    super("Lockbox", parent, lockbox, deps().app.settings.settings.solving.puzzles.lockboxes.autostart, "Lockbox Puzzle", "lockboxes");
   }
 
   protected constructProcess(): LockboxSolvingProcess {

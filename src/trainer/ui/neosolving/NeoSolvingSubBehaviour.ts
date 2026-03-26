@@ -14,7 +14,7 @@ import {TileCoordinates} from "../../../lib/runescape/coordinates";
 export abstract class NeoSolvingSubBehaviour<State extends NeoSolving.ActiveState = NeoSolving.ActiveState> extends Behaviour {
   protected _state: State = undefined
 
-  protected constructor(public readonly parent: NeoSolvingBehaviour, public readonly type: "clue" | "method") {
+  protected constructor(public readonly name: string, public readonly parent: NeoSolvingBehaviour, public readonly type: "clue" | "method") {
     super()
   }
 

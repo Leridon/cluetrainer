@@ -13,13 +13,15 @@ export abstract class AbstractPuzzleSolving<
   public process: ProcessT
   public modal: PuzzleModal
 
-  protected constructor(parent: NeoSolvingBehaviour,
-                        public puzzle: PuzzleT,
-                        private autostart: boolean,
-                        private modal_title: string,
-                        public settings_id: section_id
+  protected constructor(
+    name: string,
+    parent: NeoSolvingBehaviour,
+    public puzzle: PuzzleT,
+    private autostart: boolean,
+    private modal_title: string,
+    public settings_id: section_id
   ) {
-    super(parent, "clue");
+    super(name, parent, "clue");
   }
 
   protected abstract constructProcess(): ProcessT | Promise<ProcessT>
