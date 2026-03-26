@@ -112,13 +112,11 @@ export namespace TeleportSpotEntity {
     createIcon(oldIcon?: HTMLElement): HTMLElement {
       const scale = this.scale
       const SIZE = 30
-      const tele = this.tele
-
       return this.transformer(C.div(
           this.tele.code() ?? ""
         )
         .css2({
-          "background-image": `url("./assets/icons/teleports/${tele.image().url}")`,
+          "background-image": `url("./assets/icons/teleports/${this.tele.image().url}")`,
           color: "white",
           width: `${scale * SIZE}px`,
           height: `${scale * SIZE}px`,

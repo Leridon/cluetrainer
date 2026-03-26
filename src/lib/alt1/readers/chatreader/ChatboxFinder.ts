@@ -7,7 +7,7 @@ import {CapturedChatbox} from "./CapturedChatbox";
 import {ChatAnchors} from "./ChatAnchors";
 import {Alt1Overlay} from "../../overlay/Alt1Overlay";
 import {Log} from "../../../util/Log";
-import log = Log.log;
+
 
 export class ChatboxFinder implements Finder<CapturedChatbox[]> {
   debug_overlay = lazy(() => new Alt1Overlay().start())
@@ -135,10 +135,7 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
         console.log(`Found chatboxes ${areas.length}`)
       }
 
-      return areas.map(pair => {
-        log().log("", "", pair.body.getData())
-        return new CapturedChatbox(pair.body, "main")
-      })
+      return areas.map(pair => new CapturedChatbox(pair.body, "main"))
     })
   }
 

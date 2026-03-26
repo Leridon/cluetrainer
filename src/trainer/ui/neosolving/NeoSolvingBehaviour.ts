@@ -434,7 +434,7 @@ export default class NeoSolvingBehaviour extends Behaviour {
   private activateSubBehaviour(behaviour: NeoSolvingSubBehaviour) {
     if (behaviour) {
       behaviour.setRelatedState(this.state)
-      log().log(`Activating subbehaviour: ${behaviour.constructor.name}`, "Solving")
+      log().log(`Activating subbehaviour: ${behaviour.name}`, "Solving")
     }
 
     this.active_behaviour.set(behaviour)

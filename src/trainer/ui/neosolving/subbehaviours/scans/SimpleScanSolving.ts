@@ -26,7 +26,7 @@ export class SimpleScanSolving extends NeoSolvingSubBehaviour {
               private clue: Clues.Scan,
               private original_interface_capture: CapturedScan
   ) {
-    super(parent, "clue");
+    super("SimpleScan", parent, "clue");
 
     this.settings = deps().app.settings.settings.solving.scans
 

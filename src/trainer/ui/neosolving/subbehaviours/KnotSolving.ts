@@ -189,7 +189,7 @@ export class KnotSolving extends AbstractPuzzleSolving<
 > {
   constructor(parent: NeoSolvingBehaviour,
               public knot: ClueReader.Result.Puzzle.Knot) {
-    super(parent, knot, deps().app.settings.settings.solving.puzzles.knots.autostart, "Celtic Knot Puzzle", "knots");
+    super("Knot", parent, knot, deps().app.settings.settings.solving.puzzles.knots.autostart, "Celtic Knot Puzzle", "knots");
   }
 
   protected constructProcess(): KnotSolvingProcess {

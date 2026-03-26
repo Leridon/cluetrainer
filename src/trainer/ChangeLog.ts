@@ -399,6 +399,14 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+      builder.release(71, "New Methods and Bugfixes", new Date(Date.parse("2026-03-26")))
+        .list(l => l
+          .item("Added methods for the new easy and medium steps in Havenhythe.")
+          .item("Fixed a bug that caused RAM to fill up due unnecessary screenshots being saved to the log.")
+          .item("Fixed keybind for Fort Forinthry lodestone.")
+          .item("Fixed that keybind overlays for teleports could be off-center.")
+        )
+
         builder.release(70, "Havenhythe", new Date(Date.parse("2026-03-24")))
           .list(l => l
             .item("Added support for new easy clue step in Wendlewick.")

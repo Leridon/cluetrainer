@@ -349,7 +349,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
   constructor(parent: NeoSolvingBehaviour, public clue: Clues.Compass, public reader: CompassReader,
               private spot_selection_callback: (_: TileCoordinates) => Promise<any>
   ) {
-    super(parent, "clue")
+    super("Compass", parent, "clue")
 
     this.settings = deps().app.settings.settings.solving.compass
 
@@ -1014,8 +1014,6 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
         if (this.settings.read_chat_for_sextant_message) {
           ChatReader.instance().new_message_bulk.on(async e => {
-            log().log(`Got ${e.length} new messages`, "Sextant Reading", e)
-
             const trigger_message = lodash.maxBy(e.filter(m => m.text.includes("The sextant displays")), m => m.timestamp)
 
             if (!trigger_message) {
