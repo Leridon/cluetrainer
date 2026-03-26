@@ -401,6 +401,7 @@ export namespace Changelog {
 
       builder.wip(71, "New Methods and Bugfixes")
         .list(l => l
+          .item("Added methods for the new easy and medium steps in Havenhythe.")
           .item("Fixed a bug that caused RAM to fill up due unnecessary screenshots being saved to the log.")
           .item("Fixed keybind for Fort Forinthry lodestone.")
         )
