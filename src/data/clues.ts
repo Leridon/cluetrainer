@@ -3598,7 +3598,7 @@ export namespace clue_data {
       "text": ["This anagram reveals who to speak to next: MR MIAI"],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin":{"x":3491,"y":1506,"level":0},"size":{"x":2,"y":3}}, "description": "in Wendlewick"}],
+        "spots": [{"range": {"origin": {"x": 3491, "y": 1506, "level": 0}, "size": {"x": 2, "y": 3}}, "description": "in Wendlewick"}],
         "npc": "Miriam"
       },
       "anagram": ["MR MIAI"]

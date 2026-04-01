@@ -42,7 +42,8 @@ export namespace SolvingMethods {
     export type Relevance = (keyof ClueAssumptions)[]
 
     export namespace Relevance {
-      export const all: Relevance = ["double_escape", "double_surge", "mobile_perk", "way_of_the_footshaped_key", "full_globetrotter", "meerkats_active"]
+      export const path: Relevance = ["double_escape", "double_surge", "mobile_perk", "range_weapon_range"]
+      export const all: Relevance = [...path, "way_of_the_footshaped_key", "full_globetrotter", "meerkats_active"]
 
       export function forSpot(step: ClueSpot): Relevance {
         const relevant: Relevance = [...path]
@@ -61,8 +62,6 @@ export namespace SolvingMethods {
 
         return relevant
       }
-
-      export const path: Relevance = ["double_escape", "double_surge", "mobile_perk", "range_weapon_range"]
     }
   }
 
