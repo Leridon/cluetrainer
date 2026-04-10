@@ -404,6 +404,7 @@ export namespace Changelog {
         .list(l => l
           .item("Fixed that the weapon range assumption could not be set for method packs.")
           .item("Fixed that non-default escape ranges were not shown in the assumption summary.")
+          .item("Updated challenge answer for Emissary of Zamorak medium clue.")
         )
 
         builder.release(71, "New Methods and Bugfixes", new Date(Date.parse("2026-03-26")))
