@@ -407,6 +407,7 @@ export namespace Changelog {
           .item("Updated challenge answer for Emissary of Zamorak medium clue.")
           .item("Improved detection of meerkat and triple pulse for scan clues.")
           .item("Fixed minimap detection for scan range overlay.")
+          .item("Fixed location of easy map clue west of the Champion's Guild.")
         )
 
         builder.release(71, "New Methods and Bugfixes", new Date(Date.parse("2026-03-26")))
