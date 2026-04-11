@@ -92,7 +92,6 @@ export class MinimapReader extends DerivedCaptureService<MinimapReader.Options, 
 }
 
 export namespace MinimapReader {
-  import radiansToDegrees = Angles.radiansToDegrees;
   export type Options = AbstractCaptureService.Options & {
     refind_interval: CaptureInterval
   }
@@ -260,7 +259,7 @@ export namespace MinimapReader {
   }
 
   export namespace CapturedMinimap {
-    const debug_finder: boolean = true
+    const debug_finder: boolean = false
 
     export const finder = async_lazy<Finder<CapturedMinimap>>(async () => {
       const imgs = await CapturedMinimap.anchors.get()
@@ -269,7 +268,7 @@ export namespace MinimapReader {
 
         find(img: CapturedImage): CapturedMinimap {
 
-          const homeport = img.findNeedle(imgs.homeport)[0];
+          const homeport = img.findNeedleSet(imgs.homeports, true)[0];
 
           if (!homeport) {
             if (debug_finder) console.log("No homeport found")
@@ -288,16 +287,11 @@ export namespace MinimapReader {
           )
 
           const top_right = (() => {
-            const energies: { needle: NeedleImage, offset: Vector2 }[] = [
-              {needle: imgs.botrun, offset: {x: 35, y: -25}},
-              {needle: imgs.botwalk, offset: {x: 35, y: -25}},
-            ];
+            const TR_OFFSET_FROM_ENERGY: Vector2 = {x: 35, y: -25}
 
-            for (const energy of energies) {
-              const results = energy_search_area.findNeedle(energy.needle)
+            const results = energy_search_area.findNeedleSet(imgs.energies, true)
 
-              if (results.length > 0) return Vector2.add(results[0].screen_rectangle.origin, energy.offset)
-            }
+            if (results.length > 0) return Vector2.add(results[0].screen_rectangle.origin, TR_OFFSET_FROM_ENERGY)
 
             return null
           })()
@@ -318,9 +312,14 @@ export namespace MinimapReader {
 
     export const anchors = async_lazy(async () => {
       return {
-        botrun: await NeedleImage.fromURL("/alt1anchors/minimap/botrun.png"),
-        botwalk: await NeedleImage.fromURL("/alt1anchors/minimap/botwalk.png"),
-        homeport: await NeedleImage.fromURL("/alt1anchors/minimap/homeport.png")
+        energies: await NeedleImage.AlternativeSet.fromURLs(
+          "/alt1anchors/minimap/botrun.png",
+          "/alt1anchors/minimap/botwalk.png",
+        ),
+        homeports: await NeedleImage.AlternativeSet.fromURLs(
+          "/alt1anchors/minimap/homeport1.png",
+          "/alt1anchors/minimap/homeport2.png"
+        )
       }
     })
   }

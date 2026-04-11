@@ -25,10 +25,12 @@ import {ImageDetect} from "alt1";
 import {ChatboxFinder} from "../lib/alt1/readers/chatreader/ChatboxFinder";
 import {ChatReader} from "../lib/alt1/readers/ChatReader";
 import {MessageBuffer} from "../lib/alt1/readers/chatreader/ChatBuffer";
+import {MinimapReader} from "../lib/alt1/readers/MinimapReader";
 import notification = Notification.notification;
 import cleanedJSON = util.cleanedJSON;
 import FontScript = FontSheets.FontScript;
 import log = Log.log;
+import CapturedMinimap = MinimapReader.CapturedMinimap;
 
 
 export class DevelopmentModal extends NisModal {
@@ -138,6 +140,15 @@ export class DevelopmentModal extends NisModal {
               log().log(MessageBuffer.Message.toString(message))
             })
           })
+
+          const minimap_finder = await CapturedMinimap.finder.get()
+
+          const minimap = minimap_finder.find(bound)
+
+          log().log(minimap ? "Minimap found:" : "No Minimap found")
+          if (minimap) {
+            log().log(minimap.body.screenRectangle())
+          }
         })
       })
     )

@@ -71,6 +71,16 @@ export class CapturedImage {
     return this._relativeRectangle
   }
 
+  findNeedleSet(needle_set: NeedleImage.AlternativeSet, limit_one: boolean): CapturedImage[] {
+    const found: CapturedImage[] = []
+
+    for (let i = 0; i < needle_set.needles.length && (!limit_one || found.length == 0); i++) {
+      found.push(...this.findNeedle(needle_set.needles[i]))
+    }
+
+    return found
+  }
+
   findNeedle(needle: NeedleImage): CapturedImage[] {
     const find = ((): Vector2[] => {
       if (this.capture.img_ref instanceof a1lib.ImgRefBind && alt1.bindFindSubImg) {

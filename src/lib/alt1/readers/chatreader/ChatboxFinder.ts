@@ -6,7 +6,6 @@ import {async_lazy, lazy} from "../../../Lazy";
 import {CapturedChatbox} from "./CapturedChatbox";
 import {ChatAnchors} from "./ChatAnchors";
 import {Alt1Overlay} from "../../overlay/Alt1Overlay";
-import {Log} from "../../../util/Log";
 
 
 export class ChatboxFinder implements Finder<CapturedChatbox[]> {
@@ -25,12 +24,7 @@ export class ChatboxFinder implements Finder<CapturedChatbox[]> {
   find(img: CapturedImage): CapturedChatbox[] {
     return Alt1Overlay.debug(() => this.debug_overlay.get(), this.debug, (debug_geometry): CapturedChatbox[] => {
       // First, find plus/minus icons that indicate the top right of the chatbox.
-      const top_rights: CapturedImage[] = [
-        this.needles.tr_minus,
-        this.needles.tr_minus_hover,
-        this.needles.tr_plus,
-        this.needles.tr_plus_hover
-      ].flatMap(needle => img.findNeedle(needle))
+      const top_rights: CapturedImage[] = img.findNeedleSet(this.needles.top_rights, false)
 
       if (this.debug) console.log(`Found top_rights ${top_rights.length}`)
 
