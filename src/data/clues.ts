@@ -3137,7 +3137,10 @@ export namespace clue_data {
       "type": "anagram",
       "tier": "medium",
       "text": ["This anagram reveals who to speak to next: Iz A Ammo Load For Mrs Yakkers"],
-      "challenge": [{"type": "challengescroll", "question": "How many bottles are there on the stall to the east of Mr Ex?", "answers": [{"answer": 5}]}],
+      "challenge": [{"type": "challengescroll", "question": "How many bottles are there on the stall to the east of Mr Ex?", "answers": [
+        {"answer": 5, "note": "Edgeville intact"},
+        {"answer": 3, "note": "Edgeville destroyed"},
+        ]}],
       "solution": {
         "type": "talkto",
         "npc": "Moldark, Emissary of Zamorak",
