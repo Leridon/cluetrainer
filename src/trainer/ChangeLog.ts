@@ -409,6 +409,7 @@ export namespace Changelog {
           .item("Fixed minimap detection for scan range overlay.")
           .item("Fixed location of easy map clue west of the Champion's Guild.")
           .item("Added an export option of advanced method analysis data to method packs.")
+          .item("Fixed a bug that caused orthogonal abilities of length 1 to not be rendered.")
         )
         .header("Methods")
         .list(l => l
