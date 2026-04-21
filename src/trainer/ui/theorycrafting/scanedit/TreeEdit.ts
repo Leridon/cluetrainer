@@ -349,16 +349,18 @@ class TreeNodeEdit extends Widget {
 
       const LIMIT = 20
 
-      for (let i = parents.length - 1; i >= 0; i--) {
-        let next = i > 0
-          ? AugmentedScanTree.decision_string(parents[i])
-          : ""
+      for (let i = parents.length - 1; i > 0; i--) {
+        const next = "/" + AugmentedScanTree.decision_string(parents[i]) + decision_path_text
 
-        if (decision_path_text.length + next.length >= LIMIT && i > 0) {
+        if(next.length > LIMIT) {
           decision_path_text = "..." + decision_path_text
-          break
-        } else decision_path_text = "/" + next + decision_path_text
+          break;
+        }
+
+        decision_path_text = next
       }
+
+      if (decision_path_text.length == 0) decision_path_text = "/"
 
       this.decision_span.text(`${decision_path_text}: `)
     }
