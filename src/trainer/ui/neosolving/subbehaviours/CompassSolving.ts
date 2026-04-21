@@ -760,6 +760,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       if (!this.parent.active_method && (information.length > 0 || possible.length < 50)
         && (possible.length > 1 || (possible.length == 1 && !this.parent.active_method))) {
         this.parent.layer.fit(TileRectangle.from(...possible.map(s => s.spot.spot)), "setting")
+        log().log(`Fitting to ${possible.length} candidates`, "Compass Solving")
       }
     }
 
