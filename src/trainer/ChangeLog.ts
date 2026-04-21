@@ -409,6 +409,16 @@ export namespace Changelog {
           .item("Fixed minimap detection for scan range overlay.")
           .item("Fixed location of easy map clue west of the Champion's Guild.")
         )
+        .header("Methods")
+        .list(l => l
+          .item("Updated method for the Easy Clue step west of Champions Guild to match the current dig location.")
+          .item("Updated two paths for elite compass spots that no longer worked due to updated blocking.")
+          .item("Added alterantive methods for elite compass spots that exclusively relied on wicked hood teleports.", new List()
+            .item("3 spots near Mind Altar.")
+            .item("3 spots near Nature Altar.")
+            .item("2 spots near Earth Altar.")
+          )
+        )
 
         builder.release(71, "New Methods and Bugfixes", new Date(Date.parse("2026-03-26")))
           .list(l => l
