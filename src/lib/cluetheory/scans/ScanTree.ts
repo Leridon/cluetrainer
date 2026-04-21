@@ -69,7 +69,7 @@ export namespace ScanTree {
             average: avg(...ticks),
             min: ticks[0],
             max: ticks[ticks.length - 1],
-            median:  median(ticks),
+            median: median(ticks),
           }
         }
       }
@@ -135,6 +135,19 @@ export namespace ScanTree {
       completeness?: completeness_t,
       correctness?: correctness_t,
       timing_analysis?: Timing,
+    }
+
+    export namespace AugmentedScanTreeNode {
+      export function uncycled(node: AugmentedScanTreeNode): AugmentedScanTreeNode {
+        const copy = {...node}
+
+        copy.parent = undefined
+        copy.root = undefined
+
+        copy.children.forEach(c => c.value = uncycled(c.value))
+
+        return copy
+      }
     }
 
     /* NodeId identifies a node within a scan tree by a chain of keys. */

@@ -408,6 +408,7 @@ export namespace Changelog {
           .item("Improved detection of meerkat and triple pulse for scan clues.")
           .item("Fixed minimap detection for scan range overlay.")
           .item("Fixed location of easy map clue west of the Champion's Guild.")
+          .item("Added an export option of advanced method analysis data to method packs.")
         )
         .header("Methods")
         .list(l => l

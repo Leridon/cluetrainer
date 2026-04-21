@@ -65,6 +65,12 @@ export type AugmentedMethod<
 > = { method: method_t, pack?: Pack, clue?: ClueSpot<step_t> }
 
 export namespace AugmentedMethod {
+  import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
+  import GenericPathMethod = SolvingMethods.GenericPathMethod;
+
+  export function create(method: ScanTreeMethod, pack: Pack): AugmentedMethod<ScanTreeMethod, Clues.Scan>
+  export function create(method: GenericPathMethod, pack: Pack): AugmentedMethod<GenericPathMethod>
+  export function create(method: Method, pack: Pack): AugmentedMethod
   export function create<
     method_t extends Method = Method,
     step_t extends Clues.Step = Clues.Step

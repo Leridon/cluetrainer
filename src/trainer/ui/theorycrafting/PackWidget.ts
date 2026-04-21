@@ -1,5 +1,5 @@
 import Widget from "../../../lib/ui/Widget";
-import {MethodPackManager, Pack} from "../../model/MethodPackManager";
+import {AugmentedMethod, MethodPackManager, Pack} from "../../model/MethodPackManager";
 import Properties from "../widgets/Properties";
 import {C} from "../../../lib/ui/constructors";
 import {ExportImport} from "../../../lib/util/exportString";
@@ -12,12 +12,16 @@ import {util} from "../../../lib/util/util";
 import {Notification} from "../NotificationBar";
 import {MethodNormalization} from "./MethodNormalization";
 import * as lodash from "lodash"
+import {SolvingMethods} from "../../model/methods";
+import {ScanTree} from "../../../lib/cluetheory/scans/ScanTree";
+import {Path} from "../../../lib/runescape/pathing";
 import exp = ExportImport.exp;
 import cleanedJSON = util.cleanedJSON;
 import notification = Notification.notification;
 import hboxl = C.hboxl;
 import span = C.span;
 import spacer = C.spacer;
+import Method = SolvingMethods.Method;
 
 export default class PackWidget extends Widget {
   constructor(public pack: Pack,
@@ -184,6 +188,45 @@ export default class PackWidget extends Widget {
         }
       })
     }
+
+    menu.children.push({
+      type: "submenu",
+      text: "Advanced",
+      children: [{
+        type: "basic",
+        text: "Detailled Export",
+        handler: async () => {
+          type MethodWithDetails = Method & { details: any }
+
+          const with_details: MethodWithDetails[] = await Promise.all(this.pack.methods.map(async m => {
+            const details: any = await (async () => {
+              switch (m.type) {
+                case "scantree": {
+                  const augmented_method = AugmentedMethod.create(m, this.pack)
+                  const augmented = await ScanTree.Augmentation.augment({
+                    augment_paths: true,
+                    analyze_correctness: true,
+                    analyze_completeness: true,
+                    analyze_timing: true,
+                    synthesize_triple_nodes: false,
+                    path_assumptions: m.assumptions
+                  }, m.tree, augmented_method.clue.clue)
+
+                  augmented.root_node = ScanTree.Augmentation.AugmentedScanTreeNode.uncycled(augmented.root_node)
+                  return augmented
+                }
+                case "general_path":
+                  return await Path.augment(m.main_path)
+              }
+            })()
+
+            return {...m, details: details}
+          }))
+
+          ExportStringModal.do(cleanedJSON(with_details), "All methods of this method pack with advanced analysis included.", `${this.pack.name}_augmented.json`)
+        }
+      }]
+    })
 
     new ContextMenu(menu).showFromEvent2(event.originalEvent as MouseEvent)
 
