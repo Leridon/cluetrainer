@@ -1053,7 +1053,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
               log().log(GieliCoordinates.toString(coords))
 
-              this.tryToHandleSextantPosition()
+              await this.tryToHandleSextantPosition()
             }
 
           }).bindTo(this.lifetime_manager)
