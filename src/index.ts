@@ -1,4 +1,4 @@
-import {ClueTrainer} from "./trainer/ClueTrainer";
+import {ClueTrainer} from "./cluetrainer/ClueTrainer";
 
 document.addEventListener("DOMContentLoaded", (e) => {
   ClueTrainer.instance().start()

@@ -1,0 +1,125 @@
+import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
+import {Lazy, lazy} from "../../lib/Lazy";
+import {MeshBuilder} from "../overlay3d/meshes/MeshBuilder";
+import Vector3 = MeshBuilder.Vector3;
+
+const meta = {
+  chunks_per_file: 1,
+  chunks_x: 100,
+  chunks_z: 200,
+  chunk_size: 64
+}
+
+const BYTES_PER_TILE = 5
+
+export class TileHeightData {
+  chunks: (TileHeightData.ChunkTileHeightData | Promise<TileHeightData.ChunkTileHeightData>)[][]
+
+  private async fetch(file_x: number, file_z: number, level: number): Promise<Uint16Array> {
+    const HEIGHT_ENDPOINT = "http://runeapps.org/s3/map4/live/";
+    try {
+      const url = `${HEIGHT_ENDPOINT}heightmesh-${level}/${file_x}-${file_z}.bin`;
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const buffer = await res.arrayBuffer();
+      if (buffer.byteLength === 0 || buffer.byteLength % 2 !== 0) return null;
+      return new Uint16Array(buffer);
+    } catch {
+      return null;
+    }
+  }
+
+  private constructor() {
+    // For every floor (0 to 3), create enough slots in the data cache.
+    this.chunks = [null, null, null, null].map(() => Array(meta.chunks_x * meta.chunks_z / (meta.chunks_per_file * meta.chunks_per_file)))
+  }
+
+  private static _instance: Lazy<TileHeightData> = lazy(() => new TileHeightData())
+
+  static instance(): TileHeightData {
+    return TileHeightData._instance.get()
+  }
+
+  async getInterpolated(coordinate: TileCoordinates, offset: number = 0): Promise<number> {
+    const rounded = TileCoordinates.snap(coordinate)
+
+    const dx = coordinate.x - rounded.x + 0.5;
+    const dz = coordinate.y - rounded.y + 0.5;
+
+    return (
+      await TileHeightData.instance().getTile(rounded, "sw") * (1 - dx) * (1 - dz) +
+      await TileHeightData.instance().getTile(rounded, "se") * dx * (1 - dz) +
+      await TileHeightData.instance().getTile(rounded, "nw") * (1 - dx) * dz +
+      await TileHeightData.instance().getTile(rounded, "ne") * dx * dz
+    ) + offset
+  }
+
+  async resolve(coordinate: TileCoordinates, offset: number = 0): Promise<Vector3> {
+    return {
+      x: coordinate.x,
+      z: coordinate.y,
+      y: await this.getInterpolated(coordinate, offset)
+    }
+  }
+
+  async getTile(coordinate: TileCoordinates, where: TileHeightData.SamplePoint): Promise<number> {
+    const file_x = ~~(coordinate.x / (meta.chunk_size * meta.chunks_per_file))
+    const file_z = ~~(coordinate.y / (meta.chunk_size * meta.chunks_per_file))
+    const file_i = file_z * (meta.chunks_x / meta.chunks_per_file) + file_x
+
+    if (!this.chunks[coordinate.level][file_i]) {
+      const promise = this.fetch(file_x, file_z, coordinate.level)
+        .then(height_data => height_data
+          ? new TileHeightData.ChunkTileHeightData(file_x, file_z, coordinate.level, height_data)
+          : null)
+
+      this.chunks[coordinate.level][file_i] = promise
+
+      promise.then((a) => this.chunks[coordinate.level][file_i] = a)
+    }
+
+    return (await this.chunks[coordinate.level][file_i])?.getSample(coordinate, where) ?? 0
+  }
+}
+
+export namespace TileHeightData {
+  export type SamplePoint = "ne" | "nw" | "se" | "sw"
+  const DATA_SCALE = 32
+
+  export class ChunkTileHeightData {
+    constructor(
+      public readonly file_x: number,
+      public readonly file_z: number,
+      public readonly floor: floor_t,
+      private readonly height_data: Uint16Array
+    ) {}
+
+    getSample(tile: TileCoordinates, what: SamplePoint): number {
+      if (!this.height_data) return 0
+
+      const tiles_per_file = meta.chunk_size * meta.chunks_per_file
+
+      const SAMPLE_POINT_TRANSLATION: Record<SamplePoint, number> = {
+        "sw": 0,
+        "se": 1,
+        "nw": 2,
+        "ne": 3
+      }
+
+      const relative_x = tile.x - this.file_x * tiles_per_file
+      const relative_z = tile.y - this.file_z * tiles_per_file
+
+      const tileIndex = (relative_x + relative_z * tiles_per_file) * BYTES_PER_TILE;
+
+
+      const i = tileIndex + SAMPLE_POINT_TRANSLATION[what];
+
+      if (i < 0 || i >= this.height_data.length) {
+        console.log(`(${relative_x} + ${relative_z} * ${tiles_per_file}) * ${BYTES_PER_TILE}`)
+        debugger
+      }
+
+      return this.height_data[i] / DATA_SCALE
+    }
+  }
+}

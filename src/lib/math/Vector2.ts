@@ -6,6 +6,8 @@ import {Angles} from "./Angles";
 export type Vector2 = { x: number, y: number }
 
 export namespace Vector2 {
+  export const ZERO: Vector2 = {x: 0, y: 0}
+
   export function add(...a: Vector2[]): Vector2 {
     return {
       x: a.map(v => v.x).reduce((c, d) => c + d, 0),

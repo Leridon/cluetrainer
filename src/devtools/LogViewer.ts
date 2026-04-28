@@ -2,13 +2,13 @@ import {Log} from "../lib/util/Log";
 import {NisModal} from "../lib/ui/NisModal";
 import {C} from "../lib/ui/constructors";
 import {util} from "../lib/util/util";
-import {BigNisButton} from "../trainer/ui/widgets/BigNisButton";
-import ExportStringModal from "../trainer/ui/widgets/modals/ExportStringModal";
 import cls = C.cls;
 import formatTime = util.formatTime;
 import cleanedJSON = util.cleanedJSON;
 import img = C.img;
+import {BigNisButton} from "../cluetrainer/ui/widgets/BigNisButton";
 import downloadTextFile = util.downloadTextFile;
+import ExportStringModal from "../cluetrainer/ui/widgets/modals/ExportStringModal";
 
 export class LogViewer extends NisModal {
   constructor(private buffer: Log.LogBuffer) {

@@ -1,4 +1,4 @@
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {Rectangle, Vector2} from "./math";
 
 export class QuadTree<T extends QuadTree.Element<T>> {

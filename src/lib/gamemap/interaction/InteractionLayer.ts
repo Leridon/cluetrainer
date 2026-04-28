@@ -1,7 +1,7 @@
 import {GameLayer} from "../GameLayer";
 import {GameMap} from "../GameMap";
 
-import InteractionTopControl from "../../../trainer/ui/map/InteractionTopControl";
+import InteractionTopControl from "../../../cluetrainer/ui/map/InteractionTopControl";
 import {ewent} from "../../reactive";
 
 export class InteractionGuard {

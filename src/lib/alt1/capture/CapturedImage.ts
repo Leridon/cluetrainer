@@ -4,7 +4,7 @@ import * as a1lib from "alt1";
 import {ImgRef, ImgRefBind, ImgRefData} from "alt1";
 import {LegacyOverlayGeometry} from "../LegacyOverlayGeometry";
 import {NeedleImage} from "./NeedleImage";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {Alt1Color} from "../Alt1Color";
 import {Alt1OverlayDrawCalls} from "../overlay/Alt1OverlayDrawCalls";
 

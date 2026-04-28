@@ -18,6 +18,10 @@ export namespace Angles {
     return Math.abs(a - b) < EQUALITY_EPSILON
   }
 
+  /**
+   * Normalizes a radians angle into the [0, 2*PI] range
+   * @param radians An angle in radians
+   */
   export function normalizeAngle(radians: number): number {
     while (radians < 0) radians += 2 * Math.PI
     while (radians > 2 * Math.PI) radians -= 2 * Math.PI
@@ -29,10 +33,20 @@ export namespace Angles {
     return Math.atan2(lodash.sum(angles.map(Math.sin)), lodash.sum(angles.map(Math.cos)))
   }
 
+  /**
+   * Computes an unsigned angle difference in the range [0, PI]
+   * @param a The first angle
+   * @param b The second angle
+   */
   export function angleDifference(a: number, b: number): number {
-    return Math.abs(positive_mod(b - a + Math.PI, 2 * Math.PI) - Math.PI);
+    return Math.abs(angleDifferenceSigned(a, b));
   }
 
+  /**
+   * Computes a signed angle difference in the range [-PI, PI]
+   * @param a The first angle
+   * @param b The second angle
+   */
   export function angleDifferenceSigned(a: number, b: number): number {
     return positive_mod(b - a + Math.PI, 2 * Math.PI) - Math.PI;
   }

@@ -5,7 +5,7 @@
 
 
 import {ImageData, Rect, RectLike} from "alt1";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {util} from "../util/util";
 
 export namespace OCR {

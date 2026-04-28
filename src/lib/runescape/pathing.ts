@@ -10,7 +10,7 @@ import {TileArea} from "./coordinates/TileArea";
 import {CursorType} from "./CursorType";
 import {EntityName} from "./EntityName";
 import {TransportData} from "../../data/transports";
-import {CTRIcon} from "../../trainer/CTRIcon";
+import {CTRIcon} from "../../cluetrainer/CTRIcon";
 import movement_ability = MovementAbilities.movement_ability;
 
 export type Path = Path.raw;

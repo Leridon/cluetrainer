@@ -1,6 +1,6 @@
 import {Rectangle, Vector2} from "../math";
 import {util} from "../util/util";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {ScreenRectangle} from "./ScreenRectangle";
 import {Circle} from "../math/Circle";
 import {Alt1Color} from "./Alt1Color";

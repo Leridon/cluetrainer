@@ -3,7 +3,7 @@ import {FitBoundsOptions, MapOptions, Polygon} from "leaflet";
 import {floor_t, TileCoordinates, TileRectangle} from "../runescape/coordinates";
 import Graticule from "./defaultlayers/Graticule";
 import Widget from "../ui/Widget";
-import ContextMenu from "../../trainer/ui/widgets/ContextMenu";
+import ContextMenu from "../../cluetrainer/ui/widgets/ContextMenu";
 import TileHighlightLayer from "./defaultlayers/TileHighlightLayer";
 import {GameMapContextMenuEvent, GameMapEvent, GameMapKeyboardEvent, GameMapMouseEvent, GameMapViewChangedEvent} from "./MapEvents";
 import {GameMapControl} from "./GameMapControl";
@@ -15,11 +15,11 @@ import {Observable, observe} from "../reactive";
 import {GameLayer} from "./GameLayer";
 import {InteractionGuard} from "./interaction/InteractionLayer";
 import {ValueInteraction} from "./interaction/ValueInteraction";
-import * as jquery from "jquery";
+import jquery from "jquery";
 import {C} from "../ui/constructors";
-import {Constants} from "../../trainer/constants";
+import {Constants} from "../../cluetrainer/constants";
 import cls = C.cls;
-import {boxPolygon} from "../../trainer/ui/polygon_helpers";
+import {boxPolygon} from "../../cluetrainer/ui/polygon_helpers";
 
 export const red_marker = "/assets/icons/marker_red.png"
 export const blue_marker = "/assets/icons/marker_blue.png"
@@ -76,7 +76,7 @@ export function levelIcon(floor: floor_t, scale: number = 1) {
  * Map data is sourced from Skillbert's amazing runeapps.org.
  */
 export class GameMap extends leaflet.Map {
-  floor: Observable<floor_t> = observe(0)
+  floor: Observable<floor_t> = observe<floor_t>(0)
 
   public viewport: Observable<GameMap.View> = observe(null).equality(GameMap.View.equals)
 

@@ -1,6 +1,6 @@
 import Widget from "../Widget";
 import {ewent, observe} from "../../reactive";
-import * as jquery from "jquery";
+import jquery from "jquery";
 import {LifetimeManager} from "../../lifetime/LifetimeManager";
 
 export default class Button extends Widget {

@@ -42,7 +42,7 @@ export namespace Alt1 {
   }
 
   export function exists(): boolean {
-    return a1lib.hasAlt1
+    return a1lib.hasAlt1 && !!alt1.identifyAppUrl
   }
 
   export function checkPermission(f: (_: Permissions) => boolean): boolean {

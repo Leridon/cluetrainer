@@ -4,7 +4,7 @@ import {Vector2} from "lib/math/Vector2";
 import {Process} from "../Process";
 
 export class Alt1MouseTracking {
-  private process: Process
+  private process: Process<void>
   private position = observe<Vector2>(null).structuralEquality()
 
   constructor() {}
@@ -17,7 +17,7 @@ export class Alt1MouseTracking {
     this.process = new class extends Process.Interval {
       constructor() {super(20);}
 
-      tick(): void {
+      override tick(): void {
         if (self.position.changed.handlerCount() == 0) {
           this.stop()
 

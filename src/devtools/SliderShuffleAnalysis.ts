@@ -1,9 +1,9 @@
 import {NisModal} from "../lib/ui/NisModal";
-import Properties from "../trainer/ui/widgets/Properties";
+import Properties from "../cluetrainer/ui/widgets/Properties";
 import {crowdsourcedSliderData, SliderDataEntry} from "./SliderBenchmarking";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import Widget from "../lib/ui/Widget";
-import {Sliders} from "../lib/cluetheory/Sliders";
+import {Sliders} from "../cluetrainer/cluetheory/Sliders";
 import {C} from "../lib/ui/constructors";
 import SliderState = Sliders.SliderState;
 import hbox = C.hbox;

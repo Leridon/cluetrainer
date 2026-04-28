@@ -1,4 +1,4 @@
-import AbstractEditWidget from "../../../trainer/ui/widgets/AbstractEditWidget";
+import AbstractEditWidget from "../../../cluetrainer/ui/widgets/AbstractEditWidget";
 import Widget from "../Widget";
 import {C} from "../constructors";
 import cls = C.cls;

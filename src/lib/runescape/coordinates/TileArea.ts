@@ -2,7 +2,7 @@ import {TileCoordinates} from "./TileCoordinates";
 import {Rectangle, Vector2} from "../../math";
 import {base64ToBytes, bytesToBase64} from "byte-base64";
 import {TileRectangle} from "./TileRectangle";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {util} from "../../util/util";
 import {direction} from "../movement";
 import {TileTransform} from "./TileTransform";

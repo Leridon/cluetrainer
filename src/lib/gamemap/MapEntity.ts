@@ -4,7 +4,7 @@ import Widget from "../ui/Widget";
 import {GameLayer} from "./GameLayer";
 import {FloorLevels, ZoomLevels} from "./ZoomLevels";
 import {GameMapContextMenuEvent} from "./MapEvents";
-import {Menu} from "../../trainer/ui/widgets/ContextMenu";
+import {Menu} from "../../cluetrainer/ui/widgets/ContextMenu";
 import {QuadTree} from "../QuadTree";
 import {Rectangle} from "../math";
 import {floor_t} from "../runescape/coordinates";

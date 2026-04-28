@@ -120,6 +120,14 @@ export default class Widget<T extends HTMLElement = HTMLElement> {
     return this
   }
 
+  show(): this {
+    return this.setVisible(true)
+  }
+
+  hide(): this {
+    return this.setVisible(false)
+  }
+
   toggleClass(cls: string, value: boolean = null): this {
     this._raw.classList.toggle(cls, value)
 

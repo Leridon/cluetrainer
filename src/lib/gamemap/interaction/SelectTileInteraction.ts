@@ -1,7 +1,7 @@
 import {GameMapMouseEvent} from "../MapEvents";
 import {ValueInteraction} from "./ValueInteraction";
 import {TileCoordinates} from "../../runescape/coordinates";
-import InteractionTopControl from "../../../trainer/ui/map/InteractionTopControl";
+import InteractionTopControl from "../../../cluetrainer/ui/map/InteractionTopControl";
 
 export class SelectTileInteraction extends ValueInteraction<TileCoordinates> {
   constructor(public config: ValueInteraction.option_t<TileCoordinates> = {}, protected conf: {

@@ -1,9 +1,7 @@
-import {Process} from "../../Process";
 import {CapturedImage} from "./CapturedImage";
-import {ScreenRectangle} from "../ScreenRectangle";
 import {ewent} from "../../reactive";
 import {Log} from "../../util/Log";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {LifetimeManager} from "../../lifetime/LifetimeManager";
 import {LifetimeManaged} from "../../lifetime/LifetimeManaged";
 import TimedValue = AbstractCaptureService.TimedValue;
