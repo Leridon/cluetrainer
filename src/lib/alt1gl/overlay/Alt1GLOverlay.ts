@@ -1,13 +1,14 @@
-import * as patchrs from "../ts/util/patchrs_napi";
-import {GlOverlay, GlOverlayOption, RenderFilter} from "../ts/util/patchrs_napi";
 import {Alt1GLVertexArray} from "./Alt1GLVertexArray";
 import Behaviour from "../../ui/Behaviour";
 import {Alt1GLProgram} from "./Alt1GLProgram";
+import {Alt1GLSession} from "../../alt1/alt1gl/Alt1GLSession";
+import {GlOverlay, GlOverlayOption, RenderFilter} from "../../alt1/alt1gllib/ts/util/alt1gltypes";
 
 export class Alt1GLOverlay extends Behaviour {
   private overlayHandle: GlOverlay | null = null;
 
   constructor(
+    private readonly session: Alt1GLSession,
     public readonly renderFilter: RenderFilter,
     public readonly program: Alt1GLProgram,
     public readonly vertexObjectId: Alt1GLVertexArray,
@@ -21,7 +22,7 @@ export class Alt1GLOverlay extends Behaviour {
   protected begin() {
     console.log(`Starting overlay ${Alt1GLOverlay.count++}`)
 
-    this.overlayHandle = patchrs.native.beginOverlay(
+    this.overlayHandle = this.session.raw().beginOverlay(
       this.renderFilter,
       this.program.get(),
       this.vertexObjectId.vertex_array,

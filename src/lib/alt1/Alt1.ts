@@ -7,14 +7,20 @@ import {Vector2} from "../math";
 import {Alt1TooltipManager} from "./Alt1TooltipManager";
 import {Alt1ScreenCaptureService} from "./capture/Alt1ScreenCaptureService";
 import {Alt1OverlayManager} from "./Alt1OverlayManager";
+import {Alt1GLSession} from "./alt1gl/Alt1GLSession";
 
 export class Alt1 {
+  public readonly raw: typeof globalThis.alt1 = alt1
+
+  public readonly featureGl: boolean = alt1?.permissionGLApi != undefined
+
   public readonly mouse_tracking = new Alt1MouseTracking()
   public readonly main_hotkey = new Alt1MainHotkeyEvent()
   public readonly context_menu = new Alt1ContextMenuDetection()
   public readonly tooltips = new Alt1TooltipManager()
   public readonly capturing = new Alt1ScreenCaptureService()
   public readonly overlays = new Alt1OverlayManager()
+  public readonly opengl = this.featureGl ? new Alt1GLSession(this) : undefined
 
   private static _instance = lazy(() => new Alt1())
 
@@ -28,6 +34,8 @@ export class Alt1 {
       overlays: alt1.permissionOverlay,
       screen_capture: alt1.permissionPixel,
       gamestate: alt1.permissionGameState,
+      gl_api: alt1?.permissionGLApi ?? false,
+      settings: alt1?.permissionSettings ?? false,
     }
   }
 }
@@ -38,7 +46,9 @@ export namespace Alt1 {
     installed: boolean,
     overlays: boolean,
     screen_capture: boolean,
-    gamestate: boolean
+    gamestate: boolean,
+    gl_api: boolean,
+    settings: boolean
   }
 
   export function exists(): boolean {
@@ -46,7 +56,7 @@ export namespace Alt1 {
   }
 
   export function checkPermission(f: (_: Permissions) => boolean): boolean {
-    if(!Alt1.exists()) return false
+    if (!Alt1.exists()) return false
 
     return f(Alt1.instance().permissions())
   }

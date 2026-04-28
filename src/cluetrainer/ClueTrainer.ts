@@ -34,7 +34,6 @@ import {SuccessfullInstallationNotice} from "./startup_messages/SuccessfullInsta
 import {lazy} from "../lib/Lazy";
 import {Alt1} from "../lib/alt1/Alt1";
 import {ClueTrainerWiki} from "./wiki";
-import {Alt1GL} from "../lib/alt1gl/Alt1GL";
 import {ChatReader} from "../lib/alt1/readers/ChatReader";
 import {CaptureInterval} from "../lib/alt1/capture";
 import ActiveTeleportCustomization = Transportation.TeleportGroup.ActiveTeleportCustomization;

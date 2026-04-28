@@ -1,17 +1,15 @@
-import * as patchrs from "../../lib/alt1gl/ts/util/patchrs_napi";
-import {GlProgram, RenderFilter} from "../../lib/alt1gl/ts/util/patchrs_napi";
-import {Alt1GLVertexArray} from "../../lib/alt1gl/overlay/Alt1GLVertexArray";
 import Behaviour from "../../lib/ui/Behaviour";
 import {Alt1GLOverlay} from "../../lib/alt1gl/overlay/Alt1GLOverlay";
 import {observe} from "../../lib/reactive";
 import lodash from "lodash";
-import {GL_FLOAT, GL_UNSIGNED_BYTE, UniformSnapshotBuilder} from "../../lib/alt1gl/ts/overlays";
 import {mat4} from "gl-matrix";
-import {tilesize} from "../../lib/alt1gl/ts/overlays/tilemarkers";
 import {lazy} from "../../lib/Lazy";
 import {Alt1GLProgram} from "../../lib/alt1gl/overlay/Alt1GLProgram";
-import {Alt1GL} from "../../lib/alt1gl/Alt1GL";
 import {Mesh} from "./meshes/Mesh";
+import {Alt1} from "../../lib/alt1/Alt1";
+import {GlProgram, RenderFilter, StreamRenderObject} from "../../lib/alt1/alt1gllib/ts/util/alt1gltypes";
+import {tilesize} from "../../lib/alt1/alt1gllib/ts/render/reflect3d";
+import {GL_FLOAT, GL_UNSIGNED_BYTE, UniformSnapshotBuilder} from "../../lib/alt1/alt1gllib/ts/overlays";
 
 export const WORLD_UNITS_PER_TILE = tilesize;
 const SKIP_PROGRAM_MASK = 1 << 5;
@@ -50,6 +48,7 @@ export class SimpleGLOverlay extends Behaviour {
       );
 
       this.overlays.push(new Alt1GLOverlay(
+        Alt1.instance().opengl,
         t,
         SimpleGLOverlay.program.get(),
         this.geometry.vertexArray(),
@@ -122,7 +121,7 @@ export namespace SimpleGLOverlay {
   export class TriggerManagement extends Behaviour {
     public readonly active_triggers = observe<RenderFilter[]>([]).structuralEquality();
 
-    private stream: patchrs.StreamRenderObject | null = null;
+    private stream: StreamRenderObject | null = null;
 
     constructor() {
       super()
@@ -137,10 +136,10 @@ export namespace SimpleGLOverlay {
 
     begin(): void {
 
-      console.log(`Trigger management begin ${Alt1GL.exists()}`)
+      console.log(`Trigger management begin ${Alt1.instance().featureGl}`)
 
-      if (Alt1GL.exists()) {
-        this.stream = patchrs.native.streamRenderCalls({
+      if (Alt1.instance().featureGl) {
+        this.stream = Alt1.instance().opengl.session.streamRenderCalls({
           features: ["uniforms"],
           framecooldown: 10000,
           skipProgramMask: SKIP_PROGRAM_MASK,

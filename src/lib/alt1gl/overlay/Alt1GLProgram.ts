@@ -1,5 +1,5 @@
-import {Alt1GL} from "../Alt1GL";
-import {GlAttributeArgument, GlProgram, GlUniformArgument} from "../ts/util/patchrs_napi";
+import {GlAttributeArgument, GlProgram, GlUniformArgument} from "../../alt1/alt1gllib/ts/util/alt1gltypes";
+import {Alt1} from "../../alt1/Alt1";
 
 export class Alt1GLProgram {
   public readonly program: GlProgram
@@ -10,7 +10,7 @@ export class Alt1GLProgram {
     public readonly inputs: GlAttributeArgument[],
     public readonly uniforms: GlUniformArgument[]
   ) {
-    this.program = Alt1GL.instance().native.createProgram(
+    this.program = Alt1.instance().opengl.session.createProgram(
       this.vertex_shader,
       this.fragment_shader,
       this.inputs,

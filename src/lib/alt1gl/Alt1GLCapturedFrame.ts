@@ -1,9 +1,9 @@
-import {RecordRenderOptions, RenderInvocation} from "./ts/util/patchrs_napi";
-import {Alt1GL} from "./Alt1GL";
 import {Alt1GLFrameStream} from "./Alt1GLFrameStream";
 import {lazy} from "../Lazy";
-import {BufferCache} from "./ts/programs/filteredstate";
-import {getProgramMeta} from "./ts/render/renderprogram";
+import {RecordRenderOptions, RenderInvocation} from "../alt1/alt1gllib/ts/util/alt1gltypes";
+import {BufferCache} from "../alt1/alt1gllib/ts/programs/filteredstate";
+import {getProgramMeta} from "../alt1/alt1gllib/ts/render/renderprogram";
+import {Alt1} from "../alt1/Alt1";
 
 export class Alt1GLCapturedFrame {
   public readonly frame_number: number | undefined
@@ -18,14 +18,14 @@ export class Alt1GLCapturedFrame {
   }
 
   static async capture(options: RecordRenderOptions = {features: ["full"]}): Promise<Alt1GLCapturedFrame> {
-    const renders = await Alt1GL.instance().native.recordRenderCalls(options)
+    const renders = await Alt1.instance().opengl.session.recordRenderCalls(options)
 
     return new Alt1GLCapturedFrame(options, renders)
   }
 
   static subscribe(options: RecordRenderOptions, handler: (_: Alt1GLCapturedFrame) => void): Alt1GLFrameStream {
     return new Alt1GLFrameStream(
-      Alt1GL.instance().native.streamRenderCalls(options, renders => {
+      Alt1.instance().opengl.session.streamRenderCalls(options, renders => {
         handler(new Alt1GLCapturedFrame(options, renders))
       })
     )
@@ -33,7 +33,7 @@ export class Alt1GLCapturedFrame {
 }
 
 export namespace Alt1GLCapturedFrame {
-  const buffer = lazy(() => new BufferCache())
+  const buffer = lazy(() => new BufferCache(null))
 
   export class Render {
     public readonly mesh = lazy(() => buffer.get().getMeshData(this.raw))

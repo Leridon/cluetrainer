@@ -1,8 +1,8 @@
-import {WorldMesh} from "../../../../lib/alt1gl/ts/render/reflect3d";
 import {Alt1GLCapturedFrame} from "../../../../lib/alt1gl/Alt1GLCapturedFrame";
 import {CapturedCompass} from "./CapturedCompass";
 import {CompassReader} from "../CompassReader";
 import {Angles} from "../../../../lib/math/Angles";
+import {WorldMesh} from "../../../../lib/alt1/alt1gllib/ts/render/reflect3d";
 
 export class CapturedCompassGl implements CapturedCompass {
   constructor(private readonly mesh: WorldMesh) {

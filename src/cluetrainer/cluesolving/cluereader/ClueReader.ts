@@ -24,8 +24,6 @@ import {LockBoxReader} from "./LockBoxReader";
 import {SlideReader, SliderReader} from "./SliderReader";
 import {TowersReader} from "./TowersReader";
 import {PlayerStateTracking} from "./PlayerPositionReader";
-import {Alt1GLCapturedFrame} from "../../../lib/alt1gl/Alt1GLCapturedFrame";
-import {WorldMesh} from "../../../lib/alt1gl/ts/render/reflect3d";
 import stringSimilarity = util.stringSimilarity;
 import notification = Notification.notification;
 import findBestMatch = util.findBestMatch;
@@ -508,7 +506,7 @@ export class GlClueReader {
 
     //todo: extract to a class eg CompassReader
     // const cache = new BufferCache();
-    // this.stream = Alt1GL.instance().native.streamRenderCalls({
+    // this.stream = Alt1.instance().opengl.session.native.streamRenderCalls({
     //   vertexObjectId: 1657,
     //   features: ["full"]
     // }, (r) => {

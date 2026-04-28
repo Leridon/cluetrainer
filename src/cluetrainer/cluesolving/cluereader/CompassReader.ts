@@ -18,7 +18,6 @@ import {Alt1OverlayDrawCalls} from "../../../lib/alt1/overlay/Alt1OverlayDrawCal
 import {ClueTrainerWiki} from "../../wiki";
 import {Alt1GLCapturedFrame} from "../../../lib/alt1gl/Alt1GLCapturedFrame";
 import {CapturedCompassGl} from "./capture/CapturedCompassGl";
-import {Alt1GL} from "../../../lib/alt1gl/Alt1GL";
 import log = Log.log;
 
 
@@ -387,7 +386,7 @@ export namespace CompassReader {
           }
         }))
 
-      if (Alt1GL.exists()) {
+      if (Alt1.instance().featureGl) {
         this.lifetime_manager.bind(
           Alt1GLCapturedFrame.subscribe({features: ["vertexarray", "uniforms"], framecooldown: 300}, frame => {
             const compass_mesh = CapturedCompassGl.findCompass(frame)

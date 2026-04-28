@@ -7,7 +7,6 @@ import {deps} from "../dependencies";
 import {Notification} from "../ui/NotificationBar";
 import {Log} from "../../lib/util/Log";
 import {Alt1GLCapturedFrame} from "../../lib/alt1gl/Alt1GLCapturedFrame";
-import {Alt1GL} from "../../lib/alt1gl/Alt1GL";
 import {clue_data} from "../../data/clues";
 import notification = Notification.notification;
 import log = Log.log;
@@ -96,7 +95,7 @@ export class ClueReadingBehaviour extends Behaviour {
   setAutoSolve(v: boolean) {
     this.autoSolve = v
 
-    if (Alt1GL.exists()) {
+    if (Alt1.instance().featureGl) {
       Alt1GLCapturedFrame.subscribe({
         features: ["full"]
       }, frame => {
@@ -115,7 +114,7 @@ export class ClueReadingBehaviour extends Behaviour {
 
       const found =
         (await (async () => {
-          if (!Alt1GL.exists()) return null
+          if (!Alt1.instance().featureGl) return null
 
           return this.solveGL(await Alt1GLCapturedFrame.capture())
         })()) ??

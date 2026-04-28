@@ -26,7 +26,6 @@ import {ChatReader} from "../../../../lib/alt1/readers/ChatReader";
 import {CaptureInterval} from "../../../../lib/alt1/capture";
 import {MessageBuffer} from "../../../../lib/alt1/readers/chatreader/ChatBuffer";
 import {ClueTrainerWiki} from "../../../wiki";
-import {Alt1GL} from "../../../../lib/alt1gl/Alt1GL";
 import {CompassHandlingLayer} from "./CompassHandlingLayer";
 import {KnownCompassSpot} from "./KnownCompassSpot";
 import {CompassEntryWidget} from "./CompassEntryWidget";
@@ -35,8 +34,6 @@ import cls = C.cls;
 import TeleportGroup = Transportation.TeleportGroup;
 import findBestMatch = util.findBestMatch;
 import stringSimilarity = util.stringSimilarity;
-import activate = TileArea.activate;
-import italic = C.italic;
 import notification = Notification.notification;
 import inlineimg = C.inlineimg;
 import count = util.count;
@@ -88,7 +85,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
       this.updateMethodPreviews()
     })
 
-    if (Alt1GL.existsAny()) {
+    if (Alt1.exists()) {
       this.angle_reading_service = new CompassReader.Service(
         this.captured_compass,
         this.settings.enable_status_overlay ? {
@@ -707,7 +704,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
     this.layer = new CompassHandlingLayer(this)
     this.parent.map_layer.add(this.layer)
 
-    if (Alt1GL.existsAny()) {
+    if (Alt1.exists()) {
       this.angle_reading_service?.start()
 
       Alt1.instance().main_hotkey.subscribe(0, e => {
@@ -728,7 +725,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
 
       await this.reset()
 
-      if (Alt1.exists() || Alt1GL.exists()) {
+      if (Alt1.exists() || Alt1.instance().featureGl) {
         this.lifetime_manager.bind(
           ChatReader.instance().subscribe({
             options: () => ({

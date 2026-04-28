@@ -24,7 +24,6 @@ import {clue_data} from "../../data/clues";
 import {Alt1Modal} from "../Alt1Modal";
 import {SettingsModal} from "../ui/settings/SettingsEdit";
 import {Alt1} from "../../lib/alt1/Alt1";
-import {Alt1GL} from "../../lib/alt1gl/Alt1GL";
 
 export class ClueSolvingMapLayer extends GameLayer {
   public solution_container: Widget
@@ -192,7 +191,7 @@ export namespace ClueSolvingMapLayer {
         }
       )
 
-      const in_alt1 = Alt1.exists() || Alt1GL.exists()
+      const in_alt1 = Alt1.exists() || Alt1.instance().featureGl
 
       this.append(
         this.parent.tetracompass_only

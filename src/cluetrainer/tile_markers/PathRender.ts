@@ -1,5 +1,3 @@
-import {chunksize} from "../../lib/alt1gl/ts/overlays/tilemarkers";
-import {tilesize} from "../../lib/alt1gl/ts/render/reflect3d";
 import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
 import {Path} from "../../lib/runescape/pathing";
 import {TileHeightData} from "./TileHeightData";
@@ -9,6 +7,7 @@ import {Vector2} from "../../lib/math";
 import ColorRGBA = MeshBuilder.ColorRGBA;
 import Vector3 = MeshBuilder.Vector3;
 import Vertex = MeshBuilder.Vertex;
+import {chunksize, tilesize} from "../../lib/alt1/alt1gllib/ts/overlays/tilemarkers";
 
 const CHUNK_SIZE = chunksize;
 const TILE_SIZE = tilesize;

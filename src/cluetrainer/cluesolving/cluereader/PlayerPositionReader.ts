@@ -1,16 +1,16 @@
-import * as patchrs from "../../../lib/alt1gl/ts/util/patchrs_napi";
-import {getProgramMeta, getRenderFunc, getUniformValue} from "../../../lib/alt1gl/ts/render/renderprogram";
 import {observe} from "../../../lib/reactive";
 import {Scans} from "../../model/clues/Scans";
 import {MeshBuilder} from "../../overlay3d/meshes/MeshBuilder";
 import Behaviour from "../../../lib/ui/Behaviour";
-import {Alt1GL} from "../../../lib/alt1gl/Alt1GL";
-import {BufferCache} from "../../../lib/alt1gl/ts/programs/filteredstate";
 import {lazy} from "../../../lib/Lazy";
 import {Alt1GLCapturedFrame} from "../../../lib/alt1gl/Alt1GLCapturedFrame";
 import {Alt1GLFrameStream} from "../../../lib/alt1gl/Alt1GLFrameStream";
 import Vector3 = MeshBuilder.Vector3;
 import PulseRing = Scans.PulseRing;
+import {BufferCache} from "../../../lib/alt1/alt1gllib/ts/programs/filteredstate";
+import {getProgramMeta, getRenderFunc, getUniformValue} from "../../../lib/alt1/alt1gllib/ts/render/renderprogram";
+import {RenderInvocation, RenderRange} from "../../../lib/alt1/alt1gllib/ts/util/alt1gltypes";
+import {Alt1} from "../../../lib/alt1/Alt1";
 
 export type PlayerState = {
   position: Vector3;
@@ -26,20 +26,21 @@ export class PlayerStateTracking extends Behaviour {
   public framed_state = observe<FramedValue<PlayerState>>(null).structuralEquality()
   public state = this.framed_state.map(v => v?.value).structuralEquality()
 
-  private cache: BufferCache = new BufferCache();
+  private cache: BufferCache = new BufferCache(null);
   private stream: Alt1GLFrameStream | undefined;
 
   constructor() {
     super()
 
     this.state.subscribe(v => {
-      console.log(`Pos ${v.position.x.toFixed(2)}|${v.position.y.toFixed(2)}|${v.position.z.toFixed(2)}, Pulse ${v.pulse_type}`)
+
+      //console.log(`Pos ${v.position.x.toFixed(2)}|${v.position.y.toFixed(2)}|${v.position.z.toFixed(2)}, Pulse ${v.pulse_type}`)
     })
   }
 
   protected begin() {
 
-    if (Alt1GL.exists()) {
+    if (Alt1.instance().featureGl) {
       console.log("Starting player state tracking")
 
       this.stream = Alt1GLCapturedFrame.subscribe({
@@ -147,10 +148,10 @@ export class PlayerStateTracking extends Behaviour {
     return candidates[0]?.position ?? null;
   }
 
-  private detectPulseRing(render: patchrs.RenderInvocation, progmeta: ReturnType<typeof getProgramMeta>): Scans.PulseRing {
+  private detectPulseRing(render: RenderInvocation, progmeta: ReturnType<typeof getProgramMeta>): Scans.PulseRing {
     try {
       // get vertex count from render ranges
-      const vertexCount = render.renderRanges?.reduce((sum: number, r: patchrs.RenderRange) => sum + r.length, 0) || 0;
+      const vertexCount = render.renderRanges?.reduce((sum: number, r: RenderRange) => sum + r.length, 0) || 0;
 
       // Ring signature: the ring mesh has 576 verts, maybe we can find a better way ?
       // 576 blue

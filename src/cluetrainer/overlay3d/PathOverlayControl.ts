@@ -1,14 +1,14 @@
 import Behaviour from "../../lib/ui/Behaviour";
-import {Alt1GL} from "../../lib/alt1gl/Alt1GL";
 import {Path} from "../../lib/runescape/pathing";
 import {SimpleGLOverlay} from "./SimpleGLOverlay";
 import {buildPathMesh} from "../tile_markers/PathRender";
+import {Alt1} from "../../lib/alt1/Alt1";
 
 export class PathOverlayControl extends Behaviour {
   private _overlay: SimpleGLOverlay[] = [];
 
   public async setIngameOverlays(paths: Path[]): Promise<void> {
-    if (!Alt1GL.exists()) return;
+    if (!Alt1.instance().featureGl) return;
 
     this.reset()
 

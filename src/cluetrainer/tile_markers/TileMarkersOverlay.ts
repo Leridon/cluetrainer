@@ -1,7 +1,7 @@
-import {chunksize} from "../../lib/alt1gl/ts/overlays/tilemarkers";
-import {RenderInvocation} from "../../lib/alt1gl/ts/util/patchrs_napi";
-import {getUniformValue} from "../../lib/alt1gl/ts/render/renderprogram";
 import {WORLD_UNITS_PER_TILE} from "../overlay3d/SimpleGLOverlay";
+import {chunksize} from "../../lib/alt1/alt1gllib/ts/overlays/tilemarkers";
+import {RenderInvocation} from "../../lib/alt1/alt1gllib/ts/util/alt1gltypes";
+import {getUniformValue} from "../../lib/alt1/alt1gllib/ts/render/renderprogram";
 
 const CHUNK_SIZE = chunksize;
 
