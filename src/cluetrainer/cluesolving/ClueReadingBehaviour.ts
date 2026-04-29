@@ -98,11 +98,11 @@ export class ClueReadingBehaviour extends Behaviour {
     this.autoSolve = v
 
     if (Alt1.instance().featureGl) {
-      Alt1GLCapturedFrame.subscribe({
+      /*Alt1GLCapturedFrame.subscribe({
         features: ["full"]
       }, frame => {
         this.solveGL(frame)
-      })
+      })*/
     }
   }
 

@@ -506,7 +506,7 @@ export class GlClueReader {
 
     //todo: extract to a class eg CompassReader
     // const cache = new BufferCache();
-    // this.stream = Alt1.instance().opengl.session.native.streamRenderCalls({
+    // this.stream = Alt1.instance().opengl.get().native.streamRenderCalls({
     //   vertexObjectId: 1657,
     //   features: ["full"]
     // }, (r) => {

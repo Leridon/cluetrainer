@@ -10,7 +10,7 @@ export class Alt1GLProgram {
     public readonly inputs: GlAttributeArgument[],
     public readonly uniforms: GlUniformArgument[]
   ) {
-    this.program = Alt1.instance().opengl.session.createProgram(
+    this.program = Alt1.instance().opengl.get().createProgram(
       this.vertex_shader,
       this.fragment_shader,
       this.inputs,

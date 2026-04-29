@@ -18,14 +18,14 @@ export class Alt1GLCapturedFrame {
   }
 
   static async capture(options: RecordRenderOptions = {features: ["full"]}): Promise<Alt1GLCapturedFrame> {
-    const renders = await Alt1.instance().opengl.session.recordRenderCalls(options)
+    const renders = await Alt1.instance().opengl.get().recordRenderCalls(options)
 
     return new Alt1GLCapturedFrame(options, renders)
   }
 
   static subscribe(options: RecordRenderOptions, handler: (_: Alt1GLCapturedFrame) => void): Alt1GLFrameStream {
     return new Alt1GLFrameStream(
-      Alt1.instance().opengl.session.streamRenderCalls(options, renders => {
+      Alt1.instance().opengl.get().streamRenderCalls(options, renders => {
         handler(new Alt1GLCapturedFrame(options, renders))
       })
     )

@@ -4,13 +4,16 @@ import {Log} from "../../util/Log";
 import log = Log.log;
 
 export class Alt1GLSession {
-  public session: Alt1GlClient
+  private session: Alt1GlClient
 
   constructor(private readonly alt1: Alt1) {
-    this.refreshSession()
   }
 
   private refreshSession() {
+    if (!this.alt1.featureGl || !this.alt1.raw.permissionGLApi) {
+      return
+    }
+
     const session = this.alt1.raw.getGlSession()
 
     session.setCheckGlErrors(true)
@@ -21,6 +24,12 @@ export class Alt1GLSession {
     })
 
     this.session = session
+  }
+
+  public get(): Alt1GlClient {
+    if (!this.session) this.refreshSession()
+
+    return this.session
   }
 
   public raw(): Alt1GlClient {

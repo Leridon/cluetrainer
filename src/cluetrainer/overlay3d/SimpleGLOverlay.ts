@@ -139,7 +139,7 @@ export namespace SimpleGLOverlay {
       console.log(`Trigger management begin ${Alt1.instance().featureGl}`)
 
       if (Alt1.instance().featureGl) {
-        this.stream = Alt1.instance().opengl.session.streamRenderCalls({
+        this.stream = Alt1.instance().opengl.get().streamRenderCalls({
           features: ["uniforms"],
           framecooldown: 10000,
           skipProgramMask: SKIP_PROGRAM_MASK,
