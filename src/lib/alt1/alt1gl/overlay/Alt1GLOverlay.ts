@@ -1,8 +1,8 @@
 import {Alt1GLVertexArray} from "./Alt1GLVertexArray";
-import Behaviour from "../../ui/Behaviour";
+import Behaviour from "../../../ui/Behaviour";
 import {Alt1GLProgram} from "./Alt1GLProgram";
-import {Alt1GLSession} from "../../alt1/alt1gl/Alt1GLSession";
-import {GlOverlay, GlOverlayOption, RenderFilter} from "../../alt1/alt1gllib/ts/util/alt1gltypes";
+import {Alt1GLSession} from "../Alt1GLSession";
+import {GlOverlay, GlOverlayOption, RenderFilter} from "../../alt1gllib/ts/util/alt1gltypes";
 
 export class Alt1GLOverlay extends Behaviour {
   private overlayHandle: GlOverlay | null = null;

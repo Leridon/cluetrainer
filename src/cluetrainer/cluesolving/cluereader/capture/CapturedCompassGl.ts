@@ -1,4 +1,4 @@
-import {Alt1GLCapturedFrame} from "../../../../lib/alt1gl/Alt1GLCapturedFrame";
+import {Alt1GLCapturedFrame} from "../../../../lib/alt1/alt1gl/Alt1GLCapturedFrame";
 import {CapturedCompass} from "./CapturedCompass";
 import {CompassReader} from "../CompassReader";
 import {Angles} from "../../../../lib/math/Angles";

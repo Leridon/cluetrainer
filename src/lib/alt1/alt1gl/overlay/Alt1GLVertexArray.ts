@@ -1,7 +1,7 @@
-import {Mesh} from "../../../cluetrainer/overlay3d/meshes/Mesh";
-import {VertexArraySnapshot} from "../../alt1/alt1gllib/ts/util/alt1gltypes";
-import {GL_FLOAT, GL_UNSIGNED_BYTE} from "../../alt1/alt1gllib/ts/overlays";
-import {Alt1} from "../../alt1/Alt1";
+import {Mesh} from "../../../../cluetrainer/overlay3d/meshes/Mesh";
+import {VertexArraySnapshot} from "../../alt1gllib/ts/util/alt1gltypes";
+import {GL_FLOAT, GL_UNSIGNED_BYTE} from "../../alt1gllib/ts/overlays";
+import {Alt1} from "../../Alt1";
 
 export class Alt1GLVertexArray {
   public readonly vertex_array: VertexArraySnapshot

@@ -1,5 +1,5 @@
-import {GlAttributeArgument, GlProgram, GlUniformArgument} from "../../alt1/alt1gllib/ts/util/alt1gltypes";
-import {Alt1} from "../../alt1/Alt1";
+import {GlAttributeArgument, GlProgram, GlUniformArgument} from "../../alt1gllib/ts/util/alt1gltypes";
+import {Alt1} from "../../Alt1";
 
 export class Alt1GLProgram {
   public readonly program: GlProgram

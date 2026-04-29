@@ -1,10 +1,10 @@
 import Behaviour from "../../lib/ui/Behaviour";
-import {Alt1GLOverlay} from "../../lib/alt1gl/overlay/Alt1GLOverlay";
+import {Alt1GLOverlay} from "../../lib/alt1/alt1gl/overlay/Alt1GLOverlay";
 import {observe} from "../../lib/reactive";
 import lodash from "lodash";
 import {mat4} from "gl-matrix";
 import {lazy} from "../../lib/Lazy";
-import {Alt1GLProgram} from "../../lib/alt1gl/overlay/Alt1GLProgram";
+import {Alt1GLProgram} from "../../lib/alt1/alt1gl/overlay/Alt1GLProgram";
 import {Mesh} from "./meshes/Mesh";
 import {Alt1} from "../../lib/alt1/Alt1";
 import {GlProgram, RenderFilter, StreamRenderObject} from "../../lib/alt1/alt1gllib/ts/util/alt1gltypes";

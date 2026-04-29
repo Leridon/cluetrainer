@@ -16,7 +16,7 @@ import {CalibrationTool} from "../../../devtools/CompassCalibrationTool";
 import {Alt1Overlay} from "../../../lib/alt1/overlay/Alt1Overlay";
 import {Alt1OverlayDrawCalls} from "../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
 import {ClueTrainerWiki} from "../../wiki";
-import {Alt1GLCapturedFrame} from "../../../lib/alt1gl/Alt1GLCapturedFrame";
+import {Alt1GLCapturedFrame} from "../../../lib/alt1/alt1gl/Alt1GLCapturedFrame";
 import {CapturedCompassGl} from "./capture/CapturedCompassGl";
 import log = Log.log;
 

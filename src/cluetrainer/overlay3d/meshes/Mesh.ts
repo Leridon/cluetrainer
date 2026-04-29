@@ -1,5 +1,5 @@
 import {MeshBuilder} from "./MeshBuilder";
-import {Alt1GLVertexArray} from "../../../lib/alt1gl/overlay/Alt1GLVertexArray";
+import {Alt1GLVertexArray} from "../../../lib/alt1/alt1gl/overlay/Alt1GLVertexArray";
 import {lazy} from "../../../lib/Lazy";
 
 export class Mesh {

@@ -1,9 +1,9 @@
 import {Alt1GLFrameStream} from "./Alt1GLFrameStream";
-import {lazy} from "../Lazy";
-import {RecordRenderOptions, RenderInvocation} from "../alt1/alt1gllib/ts/util/alt1gltypes";
-import {BufferCache} from "../alt1/alt1gllib/ts/programs/filteredstate";
-import {getProgramMeta} from "../alt1/alt1gllib/ts/render/renderprogram";
-import {Alt1} from "../alt1/Alt1";
+import {lazy} from "../../Lazy";
+import {RecordRenderOptions, RenderInvocation} from "../alt1gllib/ts/util/alt1gltypes";
+import {BufferCache} from "../alt1gllib/ts/programs/filteredstate";
+import {getProgramMeta} from "../alt1gllib/ts/render/renderprogram";
+import {Alt1} from "../Alt1";
 
 export class Alt1GLCapturedFrame {
   public readonly frame_number: number | undefined

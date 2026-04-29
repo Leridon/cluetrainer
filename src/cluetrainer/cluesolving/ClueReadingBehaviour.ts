@@ -6,7 +6,7 @@ import {Alt1} from "../../lib/alt1/Alt1";
 import {deps} from "../dependencies";
 import {Notification} from "../ui/NotificationBar";
 import {Log} from "../../lib/util/Log";
-import {Alt1GLCapturedFrame} from "../../lib/alt1gl/Alt1GLCapturedFrame";
+import {Alt1GLCapturedFrame} from "../../lib/alt1/alt1gl/Alt1GLCapturedFrame";
 import {clue_data} from "../../data/clues";
 import notification = Notification.notification;
 import log = Log.log;
