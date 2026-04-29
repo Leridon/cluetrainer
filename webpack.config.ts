@@ -8,12 +8,19 @@ const webpack = require("webpack")
 const DefinePlugin = webpack.DefinePlugin;
 const ProvidePlugin = webpack.ProvidePlugin;
 
-const development_mode = process.env.NODE_ENV == "development"
+const build_type = process.env.NODE_ENV
+
+if (!["production", "development", "beta", "openglbeta"].includes(build_type)) {
+  console.log(`Unknown build type ${build_type}`);
+  throw ""
+}
+
+const development_mode = build_type == "development"
 
 type BuildEnvironment = {
-  is_beta_build: boolean,
   commit_sha: string,
   build_timestamp: number,
+  build_type: string
 }
 
 type PassedEnvironment = {
@@ -25,13 +32,13 @@ let commitHash = require('child_process')
   .toString()
   .trim();
 
-const is_beta = process.env.NODE_ENV == "beta"
+const is_beta = build_type == "beta" || build_type == "openglbeta"
 
 const passed_environment: PassedEnvironment = {
   cluetrainer_build_environment: {
     commit_sha: commitHash,
     build_timestamp: Date.now().valueOf(),
-    is_beta_build: is_beta
+    build_type: build_type,
   }
 }
 

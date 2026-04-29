@@ -18,15 +18,18 @@ export namespace Changelog {
     build_info?: {
       commit_sha: string,
       build_timestamp: Date,
-      is_beta_build?: boolean
+      build_type: Version.BuildType
     }
   }
+
 
   export namespace Version {
     import Order = util.Order;
 
+    export type BuildType = "development" | "production" | "beta" | "openglbeta"
+
     export function isBeta(self: Version): boolean {
-      return self?.build_info?.is_beta_build
+      return self?.build_info?.build_type == "beta" || self?.build_info?.build_type == "openglbeta"
     }
 
     export function lift(self: Version | number): Version {
@@ -36,13 +39,13 @@ export namespace Changelog {
 
     export function isNewerThan(a: Version, than: Version): boolean {
       if (a.version > than.version) return true
-      if (a.version == than.version && a.build_info?.is_beta_build && than.build_info?.is_beta_build) return new Date(a.build_info.build_timestamp).valueOf() > new Date(than.build_info.build_timestamp).valueOf();
+      if (a.version == than.version && Version.isBeta(a) && Version.isBeta(than)) return new Date(a.build_info.build_timestamp).valueOf() > new Date(than.build_info.build_timestamp).valueOf();
 
       return false
     }
 
     export function asString(self: Version): string {
-      if (self.build_info?.is_beta_build) return `v${self.version}B-${self.build_info.commit_sha}`
+      if (Version.isBeta(self)) return `v${self.version}B-${self.build_info.commit_sha}`
       else return `v${self.version}`
     }
 
@@ -399,29 +402,34 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-      builder.wip(72, "Editor and Method Updated")
-        .header("Method and Path Editor")
-        .list(l => l
-          .item("Fixed that the weapon range assumption could not be set for method packs.")
-          .item("Fixed that non-default escape ranges were not shown in the assumption summary.")
-          .item("Updated challenge answer for Emissary of Zamorak medium clue.")
-          .item("Improved detection of meerkat and triple pulse for scan clues.")
-          .item("Fixed minimap detection for scan range overlay.")
-          .item("Fixed location of easy map clue west of the Champion's Guild.")
-          .item("Added an export option of advanced method analysis data to method packs.")
-          .item("Fixed a bug that caused orthogonal abilities of length 1 to not be rendered.")
-          .item("Added the Marigold Farm variant of the Wendlewick teleport.")
-        )
-        .header("Methods")
-        .list(l => l
-          .item("Updated method for the Easy Clue step west of Champions Guild to match the current dig location.")
-          .item("Updated two paths for elite compass spots that no longer worked due to updated blocking.")
-          .item("Added alternative methods for elite compass spots that exclusively relied on wicked hood teleports.", new List()
-            .item("3 spots near Mind Altar.")
-            .item("3 spots near Nature Altar.")
-            .item("2 spots near Earth Altar.")
+        builder.wip(73, "Clue Trainer NEXT")
+          .list(l => l
+            .item("Great stuff")
           )
-        )
+
+        builder.wip(72, "Editor and Method Updated")
+          .header("Method and Path Editor")
+          .list(l => l
+            .item("Fixed that the weapon range assumption could not be set for method packs.")
+            .item("Fixed that non-default escape ranges were not shown in the assumption summary.")
+            .item("Updated challenge answer for Emissary of Zamorak medium clue.")
+            .item("Improved detection of meerkat and triple pulse for scan clues.")
+            .item("Fixed minimap detection for scan range overlay.")
+            .item("Fixed location of easy map clue west of the Champion's Guild.")
+            .item("Added an export option of advanced method analysis data to method packs.")
+            .item("Fixed a bug that caused orthogonal abilities of length 1 to not be rendered.")
+            .item("Added the Marigold Farm variant of the Wendlewick teleport.")
+          )
+          .header("Methods")
+          .list(l => l
+            .item("Updated method for the Easy Clue step west of Champions Guild to match the current dig location.")
+            .item("Updated two paths for elite compass spots that no longer worked due to updated blocking.")
+            .item("Added alternative methods for elite compass spots that exclusively relied on wicked hood teleports.", new List()
+              .item("3 spots near Mind Altar.")
+              .item("3 spots near Nature Altar.")
+              .item("2 spots near Earth Altar.")
+            )
+          )
 
         builder.release(71, "New Methods and Bugfixes", new Date(Date.parse("2026-03-26")))
           .list(l => l

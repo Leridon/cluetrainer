@@ -36,6 +36,8 @@ import {Alt1} from "../lib/alt1/Alt1";
 import {ClueTrainerWiki} from "./wiki";
 import {ChatReader} from "../lib/alt1/readers/ChatReader";
 import {CaptureInterval} from "../lib/alt1/capture";
+import {PlayerStateTracking} from "./cluesolving/cluereader/PlayerPositionReader";
+import {NisModal} from "../lib/ui/NisModal";
 import ActiveTeleportCustomization = Transportation.TeleportGroup.ActiveTeleportCustomization;
 import TeleportSettings = Settings.TeleportSettings;
 import inlineimg = C.inlineimg;
@@ -47,8 +49,6 @@ import staticentity = C.staticentity;
 import entity = C.entity;
 import notification = Notification.notification;
 import log = Log.log;
-import {GlClueReader} from "./cluesolving/cluereader/ClueReader";
-import {PlayerStateTracking} from "./cluesolving/cluereader/PlayerPositionReader";
 
 declare global {
   var cluetrainer_build_environment: ClueTrainer.BuildEnvironment
@@ -210,7 +210,7 @@ export class ClueTrainer extends Behaviour {
       Changelog.log.latest_patch.version.build_info = {
         commit_sha: environment.commit_sha,
         build_timestamp: new Date(environment.build_timestamp),
-        is_beta_build: environment.is_beta_build ?? false
+        build_type: environment.build_type ?? "development"
       }
     }
 
@@ -234,7 +234,24 @@ export class ClueTrainer extends Behaviour {
     this.menu_bar.switchToTab(this.in_alt1 ? "solve" : "solve")
 
     if (Alt1.exists()) {
-      alt1.identifyAppUrl("appconfig.json");
+      (() => {
+        switch (this.version.build_info?.build_type) {
+          case "production":
+            return "appconfig.json"
+          case "development":
+            return "appconfig.json"
+          case "beta":
+            return "appconfig.beta.json"
+          case "openglbeta":
+            return "appconfig.opengl.json"
+        }
+      })()
+
+      alt1.identifyAppUrl(
+        Changelog.Version.isBeta(this.version)
+          ? "appconfig.beta.json"
+          : "appconfig.json"
+      );
     }
 
     const is_first_visit = this.startup_settings.value().last_loaded_version == null
@@ -303,7 +320,7 @@ export class ClueTrainer extends Behaviour {
 
         logDiagnostics()
 
-        if (this.version.build_info?.is_beta_build) await logScreen()
+        if (Changelog.Version.isBeta(this.version)) await logScreen()
 
         LogViewer.do(log().get())
       }
@@ -324,7 +341,7 @@ export class ClueTrainer extends Behaviour {
     } else {
       log().log(`Build Timestamp: Unavailable`)
     }
-    log().log(`Beta: ${this.version.build_info?.is_beta_build ?? false}`)
+    log().log(`Environment: ${this.version.build_info?.build_type ?? "unknown"}`)
 
     logDiagnostics()
 
@@ -335,7 +352,7 @@ export class ClueTrainer extends Behaviour {
     Alt1UpdateNotice.maybeRemind(this)
     ClueTrainerAppMigrationNotice.maybeRemind(this)
 
-    if (Changelog.log.latest_patch.version.build_info?.is_beta_build) {
+    if (Changelog.Version.isBeta(Changelog.log.latest_patch.version)) {
       notification(`You are on beta build ${Changelog.Version.asString(this.version)}. Please remember to switch back to the main branch when testing is done.`)
         .setDuration(null)
         .show()
@@ -357,7 +374,31 @@ export class ClueTrainer extends Behaviour {
       })
     }
 
-    PlayerStateTracking.instance()
+    if (this.version.build_info?.build_type == "openglbeta" || (Alt1.exists() && Alt1.instance().featureGl)) {
+      (new class extends NisModal {
+        override render() {
+          super.render();
+
+          this.title.set("Clue Trainer OpenGL Beta")
+
+          this.body.append(`
+            <p>Welcome to the closed beta of Clue Trainer's OpenGL features with Alt1 1.7.0. <b>Please read the following carefully.</b></p>
+            <p>Alt1 1.7.0 introduces a new OpenGL Api that allows plugins to do two things: 1. read more detailled game information by intercepting commands RuneScape sends to the GPU, and 2. render 3d overlays such as tile markers directly into the game by sending their own GPU commands. When fully implemented Clue Trainer can use these features to render paths ingame, and automatically read your position, more accurate compass angles, as well as the pulse type in scan clues.</p>
+            <p>Both Alt1 1.7.0 and Clue Trainer's OpenGL features are <b>USE AT YOUR OWN RISK</b> in all regards. We are confident that using either is not a bannable offense, but we cannot predict Jagex's stance on this.</p>
+            <p>Both the new API itself and Clue Trainer's usage of it can and will be unstable: Expect lag spikes, game and maybe even device crashes, and bugs. Always remember that this is a closed beta of highly experimental features. We are not responsible for any damage caused, both in and outside of the game.</p>
+            <p>At the point of writing this, only ingame path rendering is fully implemented and usable. Credits for a significant of the work done so far go to @Spare.</p>
+            <p>To activate the features, you need to do the following:</p>
+            <ul>
+                <li>Be on at least Alt1 1.7.0: (Current ${Alt1.exists() ? Alt1.instance().raw.version : "Not in Alt1"})</li>
+                <li>Enable the experimental OpenGL API in the Alt1 settings ("Other" tab): (Current Unknown)</li>
+                <li>Switch the Alt1 capture mode to GPU Integrated: (Current ${Alt1.exists() ? (Alt1.instance().raw.captureMethod == "Alt1Gl" ? "GPU Integrated" : Alt1.instance().raw.captureMethod) : "Not in Alt1"})</li>
+                <li>Grant Clue Trainer the GPU Api permission: (Current ${Alt1.exists() ? (Alt1.instance().permissions().gl_api ? "Granted" : "Missing") : "Not in Alt1"})</li>
+                <li>Restart both Alt1 and the Game.</li>
+            </ul>
+            `)
+        }
+      }).show()
+    }
   }
 
   protected end() {
@@ -367,9 +408,9 @@ export class ClueTrainer extends Behaviour {
 export namespace ClueTrainer {
 
   export type BuildEnvironment = {
-    is_beta_build: boolean,
     commit_sha: string,
     build_timestamp: number,
+    build_type: Changelog.Version.BuildType
   }
 
   export type Preferences = {
