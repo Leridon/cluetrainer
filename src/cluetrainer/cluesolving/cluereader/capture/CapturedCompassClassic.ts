@@ -72,7 +72,7 @@ export class CapturedCompassClassic implements CapturedCompass {
     }
 
     if (CompassReader.DEBUG_COMPASS_READER) {
-      CompassReader.debug_overlay?.setGeometry(
+      CompassReader.debug_overlay?.get()?.setGeometry(
         this.compass_area.debugOverlay2().buffer()
       )
     }

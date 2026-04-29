@@ -8,6 +8,8 @@ import {Alt1TooltipManager} from "./Alt1TooltipManager";
 import {Alt1ScreenCaptureService} from "./capture/Alt1ScreenCaptureService";
 import {Alt1OverlayManager} from "./Alt1OverlayManager";
 import {Alt1GLSession} from "./alt1gl/Alt1GLSession";
+import {Log} from "../util/Log";
+import log = Log.log;
 
 export class Alt1 {
   public readonly raw: typeof globalThis.alt1 = alt1
@@ -23,6 +25,10 @@ export class Alt1 {
   public readonly opengl = this.featureGl ? new Alt1GLSession(this) : undefined
 
   private static _instance = lazy(() => new Alt1())
+
+  private constructor() {
+    this.raw.on("log", e => log().log(e.message, "Alt1"))
+  }
 
   public static instance(): Alt1 {
     return this._instance.get()

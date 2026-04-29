@@ -12,6 +12,9 @@ export class Alt1GLSession {
 
   private refreshSession() {
     const session = this.alt1.raw.getGlSession()
+
+    session.setCheckGlErrors(true)
+
     session.on("close", () => {
       log().log("Alt1GLSession crashed, refreshing...", "Alt1GL")
       this.refreshSession()
