@@ -191,7 +191,7 @@ export namespace ClueSolvingMapLayer {
         }
       )
 
-      const in_alt1 = Alt1.exists() || Alt1.instance().featureGl
+      const in_alt1 = Alt1.exists()
 
       this.append(
         this.parent.tetracompass_only

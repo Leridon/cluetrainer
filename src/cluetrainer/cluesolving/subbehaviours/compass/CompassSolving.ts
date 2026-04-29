@@ -725,7 +725,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
 
       await this.reset()
 
-      if (Alt1.exists() || Alt1.instance().featureGl) {
+      if (Alt1.exists()) {
         this.lifetime_manager.bind(
           ChatReader.instance().subscribe({
             options: () => ({
