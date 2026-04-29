@@ -88,19 +88,19 @@ if (typeof __non_webpack_require__ != "undefined") {
 } else {
 	// cef based api in global scope
 	native = globalThis.alt1;
-}
 
-native.on("log", e => {
-	let m = e.message.match(/bufferdata (\d+)\->(\d+)/);
-	if (m) {
-		let dif = +m[1] - +m[2];
-		if (dif > 1e6) {
-			console.log("large alloc: " + dif);
-		}
-	} else {
-		console.info(e)
-	}
-});
+  native.on("log", e => {
+    let m = e.message.match(/bufferdata (\d+)\->(\d+)/);
+    if (m) {
+      let dif = +m[1] - +m[2];
+      if (dif > 1e6) {
+        console.log("large alloc: " + dif);
+      }
+    } else {
+      console.info(e)
+    }
+  });
+}
 
 export function getDebug() {
 	if (!("debug" in native)) {
