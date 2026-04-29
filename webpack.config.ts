@@ -15,7 +15,8 @@ if (!["production", "development", "beta", "openglbeta"].includes(build_type)) {
   throw ""
 }
 
-const development_mode = build_type == "development"
+const is_beta = build_type == "beta" || build_type == "openglbeta"
+const development_mode = build_type == "development" || is_beta
 
 type BuildEnvironment = {
   commit_sha: string,
@@ -32,7 +33,6 @@ let commitHash = require('child_process')
   .toString()
   .trim();
 
-const is_beta = build_type == "beta" || build_type == "openglbeta"
 
 const passed_environment: PassedEnvironment = {
   cluetrainer_build_environment: {
