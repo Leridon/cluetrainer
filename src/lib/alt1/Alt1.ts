@@ -51,6 +51,12 @@ export namespace Alt1 {
     settings: boolean
   }
 
+  export namespace Permissions {
+    export function toString(self: Permissions): string {
+      return `Installer ${self.installed}, Overlays ${self.overlays}, Pixel ${self.screen_capture}, Gamestate ${self.gamestate}, Gl Api ${self.gl_api}, Settings ${self.settings}`
+    }
+  }
+
   export function exists(): boolean {
     return a1lib.hasAlt1 && !!alt1.identifyAppUrl
   }

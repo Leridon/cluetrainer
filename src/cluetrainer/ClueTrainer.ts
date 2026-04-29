@@ -36,7 +36,6 @@ import {Alt1} from "../lib/alt1/Alt1";
 import {ClueTrainerWiki} from "./wiki";
 import {ChatReader} from "../lib/alt1/readers/ChatReader";
 import {CaptureInterval} from "../lib/alt1/capture";
-import {PlayerStateTracking} from "./cluesolving/cluereader/PlayerPositionReader";
 import {NisModal} from "../lib/ui/NisModal";
 import ActiveTeleportCustomization = Transportation.TeleportGroup.ActiveTeleportCustomization;
 import TeleportSettings = Settings.TeleportSettings;
@@ -284,11 +283,11 @@ export class ClueTrainer extends Behaviour {
     const logDiagnostics = () => {
       log().log("Current settings", "General", {type: "object", value: lodash.cloneDeep(this.settings.settings)})
 
-      if (globalThis.alt1) {
+      if (Alt1.exists()) {
         try {
-          log().log(`Alt 1 version: ${alt1.version}`)
-          log().log(`Active capture mode: ${alt1.captureMethod}`)
-          log().log(`Permissions: Installed ${alt1.permissionInstalled}, GameState ${alt1.permissionGameState}, Pixel ${alt1.permissionPixel}, Overlay ${alt1.permissionOverlay}`)
+          log().log(`Alt 1 version: ${Alt1.instance().raw.version}`)
+          log().log(`Active capture mode: ${Alt1.instance().raw.captureMethod}`)
+          log().log(`Permissions: ${Alt1.Permissions.toString(Alt1.instance().permissions())}`)
         } catch (e) {
           if (e instanceof Error) {
             log().log("Error while logging Alt 1 Info")
@@ -298,6 +297,8 @@ export class ClueTrainer extends Behaviour {
             console.error(e.toString())
           }
         }
+      } else {
+        log().log(`Not in Alt1`)
       }
     }
 
