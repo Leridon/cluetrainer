@@ -89,7 +89,7 @@ if (typeof __non_webpack_require__ != "undefined") {
 	// cef based api in global scope
 	native = globalThis.alt1;
 
-  native.on("log", e => {
+  native?.on("log", e => {
     let m = e.message.match(/bufferdata (\d+)\->(\d+)/);
     if (m) {
       let dif = +m[1] - +m[2];
