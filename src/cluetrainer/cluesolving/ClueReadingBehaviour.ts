@@ -30,12 +30,14 @@ export class ClueReadingBehaviour extends Behaviour {
   protected begin() {
     const interval = CaptureInterval.fromApproximateInterval(300)
 
-    // Subscribe to screen captures. Automatically paused by the this.autoSolve variable OR by the active clue behaviour
-    this.lifetime_manager.bind(Alt1.instance().capturing.subscribe({
-      options: (time: AbstractCaptureService.CaptureTime) => ({interval: interval, area: null}),
-      paused: () => (!this.autoSolve || this.parent.active_behaviour.get()?.pausesClueReader()),
-      handle: (img) => this.solve(img.value, true)
-    }))
+    if(Alt1.exists()){
+      // Subscribe to screen captures. Automatically paused by the this.autoSolve variable OR by the active clue behaviour
+      this.lifetime_manager.bind(Alt1.instance().capturing.subscribe({
+        options: (time: AbstractCaptureService.CaptureTime) => ({interval: interval, area: null}),
+        paused: () => (!this.autoSolve || this.parent.active_behaviour.get()?.pausesClueReader()),
+        handle: (img) => this.solve(img.value, true)
+      }))
+    }
   }
 
   protected end() {

@@ -366,7 +366,7 @@ export class ClueTrainer extends Behaviour {
 
     window.history.pushState({}, null, `${location.protocol}//${location.host}`)
 
-    if (ChatReader.instance().debug_mode) {
+    if (Alt1.exists() && ChatReader.instance().debug_mode) {
       ChatReader.instance().subscribe({
         options: () => ({
           interval: CaptureInterval.fromApproximateInterval(300)
