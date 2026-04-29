@@ -21,7 +21,7 @@ jobs:
       - name: Install and Build 🔧
         run: |
           npm ci --workspaces --include-workspace-root
-          npm run build-beta
+          npm run build-openglbeta
       - name: Deploy
         uses: cloudflare/wrangler-action@v3
         with:
