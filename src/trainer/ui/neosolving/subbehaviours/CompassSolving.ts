@@ -323,8 +323,8 @@ class CompassEntryWidget extends Widget {
   }
 }
 
-const DEBUG_ANGLE_OVERRIDE: UncertainAngle = UncertainAngle.fromEpsilonAngle(degreesToRadians(342.1), 0.1) // degreesToRadians(206.87152474371157)
-const DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE: UncertainAngle = UncertainAngle.fromEpsilonAngle(degreesToRadians(342.1), 0.1) // degreesToRadians(112.6)
+const DEBUG_ANGLE_OVERRIDE: UncertainAngle = null
+const DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE: UncertainAngle = null
 
 /**
  * The {@link NeoSolvingSubBehaviour} for compass clues.
