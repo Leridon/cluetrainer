@@ -399,8 +399,8 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-      builder.wip(72, "Editor and Method Updated")
-        .header("Method and Path Editor")
+      builder.release(72, "Fixes and Methods", new Date(Date.parse("2026-05-04")))
+        .header("General")
         .list(l => l
           .item("Fixed that the weapon range assumption could not be set for method packs.")
           .item("Fixed that non-default escape ranges were not shown in the assumption summary.")
@@ -408,9 +408,9 @@ export namespace Changelog {
           .item("Improved detection of meerkat and triple pulse for scan clues.")
           .item("Fixed minimap detection for scan range overlay.")
           .item("Fixed location of easy map clue west of the Champion's Guild.")
-          .item("Added an export option of advanced method analysis data to method packs.")
           .item("Fixed a bug that caused orthogonal abilities of length 1 to not be rendered.")
           .item("Added the Marigold Farm variant of the Wendlewick teleport.")
+          .item("Added an export option of advanced method analysis data to method packs.")
         )
         .header("Methods")
         .list(l => l
