@@ -47,25 +47,9 @@ export default class TheoryCraftingSidebar extends MapSideBar {
 
     const props = new Properties().appendTo(this.body)
 
-    /*
-    props.named("Map Visibility",
-      new DropdownSelection({
-        type_class: {
-          toHTML: e => e
-        }
-      }, ["None", "All", "Preferred per Clue", "Focussed Method Pack", "Manual Selection"])
-    )*/
-
     if (focus) {
       this.header.name.set(`Pack: ${focus.name}`)
       this.header.close_handler.set(() => this.opened_pack.set(null))
-
-      /*props.row(btnrow(
-        new LightButton("Visibility", "rectangle")
-          .onClick(async () => {
-
-          }),
-      ))*/
 
       this.method_widgets = focus.methods.map(method =>
         new MethodWidget(this.theorycrafter, AugmentedMethod.create(method, focus))

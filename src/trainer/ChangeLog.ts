@@ -399,13 +399,37 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-      builder.release(71, "New Methods and Bugfixes", new Date(Date.parse("2026-03-26")))
+      builder.release(72, "Fixes and Methods", new Date(Date.parse("2026-05-04")))
+        .header("General")
         .list(l => l
-          .item("Added methods for the new easy and medium steps in Havenhythe.")
-          .item("Fixed a bug that caused RAM to fill up due unnecessary screenshots being saved to the log.")
-          .item("Fixed keybind for Fort Forinthry lodestone.")
-          .item("Fixed that keybind overlays for teleports could be off-center.")
+          .item("Fixed that the weapon range assumption could not be set for method packs.")
+          .item("Fixed that non-default escape ranges were not shown in the assumption summary.")
+          .item("Updated challenge answer for Emissary of Zamorak medium clue.")
+          .item("Improved detection of meerkat and triple pulse for scan clues.")
+          .item("Fixed minimap detection for scan range overlay.")
+          .item("Fixed location of easy map clue west of the Champion's Guild.")
+          .item("Fixed a bug that caused orthogonal abilities of length 1 to not be rendered.")
+          .item("Added the Marigold Farm variant of the Wendlewick teleport.")
+          .item("Added an export option of advanced method analysis data to method packs.")
         )
+        .header("Methods")
+        .list(l => l
+          .item("Updated method for the Easy Clue step west of Champions Guild to match the current dig location.")
+          .item("Updated two paths for elite compass spots that no longer worked due to updated blocking.")
+          .item("Added alternative methods for elite compass spots that exclusively relied on wicked hood teleports.", new List()
+            .item("3 spots near Mind Altar.")
+            .item("3 spots near Nature Altar.")
+            .item("2 spots near Earth Altar.")
+          )
+        )
+
+        builder.release(71, "New Methods and Bugfixes", new Date(Date.parse("2026-03-26")))
+          .list(l => l
+            .item("Added methods for the new easy and medium steps in Havenhythe.")
+            .item("Fixed a bug that caused RAM to fill up due unnecessary screenshots being saved to the log.")
+            .item("Fixed keybind for Fort Forinthry lodestone.")
+            .item("Fixed that keybind overlays for teleports could be off-center.")
+          )
 
         builder.release(70, "Havenhythe", new Date(Date.parse("2026-03-24")))
           .list(l => l

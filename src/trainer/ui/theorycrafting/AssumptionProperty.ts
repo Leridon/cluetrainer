@@ -114,6 +114,9 @@ export namespace AssumptionProperty {
     if (assumptions.way_of_the_footshaped_key) icons.push(icon("/assets/icons/Key_(Treasure_Trails).png")
       .tooltip("Assumes 'Way of the footshaped key' is unlocked")
     )
+    if (assumptions.range_weapon_range != undefined && assumptions.range_weapon_range != 8) icons.push(icon("/assets/icons/escape.png")
+      .tooltip("Assumes non-default escape range.")
+    )
 
     icons.forEach(i => i.css("margin-left", "3px"))
 

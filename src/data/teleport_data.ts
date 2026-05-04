@@ -390,6 +390,12 @@ const raw_data: Transportation.TeleportGroup[] = [
         img: {url: "tele-wendlewick.png"},
         name: "Wendlewick",
       },
+      {
+        id: "wendlewick-marigold",
+        target: {"origin": {"x": 3560, "y": 1486, "level": 0}, "size": {"x": 5, "y": 5}},
+        img: {url: "tele-wendlewick-marigold-farm.png"},
+        name: "Wendlewick (Marigold Farm)",
+      },
     ],
     access: [{
       id: "spellbook",

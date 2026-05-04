@@ -8,10 +8,7 @@ export namespace ChatAnchors {
 
   export type Needles = {
     brackets: { img: NeedleImage, baseline_y_from_needle_top: number, font: ChatFont }[],
-    tr_plus: NeedleImage;
-    tr_plus_hover: NeedleImage;
-    tr_minus: NeedleImage;
-    tr_minus_hover: NeedleImage;
+    top_rights: NeedleImage.AlternativeSet,
     chatbubble: NeedleImage;
     bot_left: NeedleImage;
   }
@@ -56,10 +53,12 @@ export namespace ChatAnchors {
             img: await NeedleImage.fromURL("/alt1anchors/chat/lbracket_22pt.png")
           },
         ],
-        tr_minus: await NeedleImage.fromURL("/alt1anchors/chat/tr_minus.png"),
-        tr_plus: await NeedleImage.fromURL("/alt1anchors/chat/tr_plus.png"),
-        tr_minus_hover: await NeedleImage.fromURL("/alt1anchors/chat/tr_minus_hover.png"),
-        tr_plus_hover: await NeedleImage.fromURL("/alt1anchors/chat/tr_plus_hover.png"),
+        top_rights: await NeedleImage.AlternativeSet.fromURLs(
+          "/alt1anchors/chat/tr_minus.png",
+          "/alt1anchors/chat/tr_plus.png",
+          "/alt1anchors/chat/tr_minus_hover.png",
+          "/alt1anchors/chat/tr_plus_hover.png"
+        ),
         chatbubble: await NeedleImage.fromURL("/alt1anchors/chat/chatbubble.png"),
         bot_left: await NeedleImage.fromURL("/alt1anchors/chat/chat_bar_bl.png"),
       }

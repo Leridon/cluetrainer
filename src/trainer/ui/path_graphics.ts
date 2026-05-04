@@ -105,7 +105,7 @@ export namespace PathGraphics {
   export function arrow(from: Vector2, to: Vector2, arrow_head: ArrowHeadOptions = {type: "tip", arm_length: 0.5}): leaflet.Polyline {
     let direction = Vector2.sub(from, to)
 
-    if (Vector2.lengthSquared(direction) < 1) return leaflet.polyline([])
+    if (Vector2.lengthSquared(direction) < 0.01) return leaflet.polyline([])
 
     const segments: Vector2[][] = []
 

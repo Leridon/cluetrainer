@@ -323,8 +323,8 @@ class CompassEntryWidget extends Widget {
   }
 }
 
-const DEBUG_ANGLE_OVERRIDE: UncertainAngle = null // degreesToRadians(206.87152474371157)
-const DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE: UncertainAngle = undefined // degreesToRadians(112.6)
+const DEBUG_ANGLE_OVERRIDE: UncertainAngle = UncertainAngle.fromEpsilonAngle(degreesToRadians(342.1), 0.1) // degreesToRadians(206.87152474371157)
+const DEBUG_LAST_SOLUTION_ANGLE_OVERRIDE: UncertainAngle = UncertainAngle.fromEpsilonAngle(degreesToRadians(342.1), 0.1) // degreesToRadians(112.6)
 
 /**
  * The {@link NeoSolvingSubBehaviour} for compass clues.
@@ -760,6 +760,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
       if (!this.parent.active_method && (information.length > 0 || possible.length < 50)
         && (possible.length > 1 || (possible.length == 1 && !this.parent.active_method))) {
         this.parent.layer.fit(TileRectangle.from(...possible.map(s => s.spot.spot)), "setting")
+        log().log(`Fitting to ${possible.length} candidates`, "Compass Solving")
       }
     }
 
@@ -1053,7 +1054,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
               log().log(GieliCoordinates.toString(coords))
 
-              this.tryToHandleSextantPosition()
+              await this.tryToHandleSextantPosition()
             }
 
           }).bindTo(this.lifetime_manager)
