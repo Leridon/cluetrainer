@@ -387,6 +387,7 @@ export namespace CompassReader {
           }
         }))
 
+      /*
       if (Alt1.instance().featureGl) {
         this.lifetime_manager.bind(
           Alt1GLCapturedFrame.subscribe({features: ["vertexarray", "uniforms"], framecooldown: 300}, frame => {
@@ -404,7 +405,7 @@ export namespace CompassReader {
             }
           })
         )
-      }
+      }*/
     }
 
     protected end() {
