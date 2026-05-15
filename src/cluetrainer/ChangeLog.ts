@@ -402,10 +402,39 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-        builder.wip(73, "Clue Trainer NEXT")
-          .list(l => l
-            .item("Great stuff")
+      builder.wip(74, "Clue Trainer NEXT")
+        .list(l => l
+          .item("Great stuff")
+        )
+
+      builder.release(73, "Compass Fix", new Date(Date.parse("2026-05-04")))
+        .list(l => l
+          .item("Fixed a bug that messed up compass angles introduces in v72.")
+        )
+
+      builder.release(72, "Fixes and Methods", new Date(Date.parse("2026-05-04")))
+        .header("General")
+        .list(l => l
+          .item("Fixed that the weapon range assumption could not be set for method packs.")
+          .item("Fixed that non-default escape ranges were not shown in the assumption summary.")
+          .item("Updated challenge answer for Emissary of Zamorak medium clue.")
+          .item("Improved detection of meerkat and triple pulse for scan clues.")
+          .item("Fixed minimap detection for scan range overlay.")
+          .item("Fixed location of easy map clue west of the Champion's Guild.")
+          .item("Fixed a bug that caused orthogonal abilities of length 1 to not be rendered.")
+          .item("Added the Marigold Farm variant of the Wendlewick teleport.")
+          .item("Added an export option of advanced method analysis data to method packs.")
+        )
+        .header("Methods")
+        .list(l => l
+          .item("Updated method for the Easy Clue step west of Champions Guild to match the current dig location.")
+          .item("Updated two paths for elite compass spots that no longer worked due to updated blocking.")
+          .item("Added alternative methods for elite compass spots that exclusively relied on wicked hood teleports.", new List()
+            .item("3 spots near Mind Altar.")
+            .item("3 spots near Nature Altar.")
+            .item("2 spots near Earth Altar.")
           )
+        )
 
         builder.wip(72, "Editor and Method Updated")
           .header("Method and Path Editor")
