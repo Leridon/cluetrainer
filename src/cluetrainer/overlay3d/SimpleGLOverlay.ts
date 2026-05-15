@@ -10,6 +10,8 @@ import {Alt1} from "../../lib/alt1/Alt1";
 import {GlProgram, RenderFilter, StreamRenderObject} from "../../lib/alt1/alt1gllib/ts/util/alt1gltypes";
 import {tilesize} from "../../lib/alt1/alt1gllib/ts/render/reflect3d";
 import {GL_FLOAT, GL_UNSIGNED_BYTE, UniformSnapshotBuilder} from "../../lib/alt1/alt1gllib/ts/overlays";
+import {Alt1GLCapturedFrame} from "../../lib/alt1/alt1gl/Alt1GLCapturedFrame";
+import {Alt1GLFrameStream} from "../../lib/alt1/alt1gl/Alt1GLFrameStream";
 
 export const WORLD_UNITS_PER_TILE = tilesize;
 const SKIP_PROGRAM_MASK = 1 << 5;
@@ -121,7 +123,7 @@ export namespace SimpleGLOverlay {
   export class TriggerManagement extends Behaviour {
     public readonly active_triggers = observe<RenderFilter[]>([]).structuralEquality();
 
-    private stream: StreamRenderObject | null = null;
+    private stream: Alt1GLFrameStream | null = null;
 
     constructor() {
       super()
@@ -131,7 +133,7 @@ export namespace SimpleGLOverlay {
 
     end(): void {
       console.log(`Trigger management end`)
-      this.stream?.close();
+      this.stream?.endLifetime();
     }
 
     begin(): void {
@@ -139,21 +141,21 @@ export namespace SimpleGLOverlay {
       console.log(`Trigger management begin ${Alt1.instance().featureGl}`)
 
       if (Alt1.instance().featureGl) {
-        this.stream = Alt1.instance().opengl.get().streamRenderCalls({
+        this.stream = Alt1GLCapturedFrame.subscribe({
           features: ["uniforms"],
           framecooldown: 10000,
           skipProgramMask: SKIP_PROGRAM_MASK,
-        }, renders => {
+        }, frames => {
           const new_triggers: RenderFilter[] = [...this.active_triggers.value()]
 
-          for (const render of renders) {
-            if (TriggerManagement.isProgramRelevantForChunkRendering(render.program)) {
-              if (!new_triggers.some(p => p.programId == render.program.programId)) {
-                new_triggers.push({programId: render.program.programId, maxPerFrame: 1});
+          for (const render of frames.renders) {
+            if (TriggerManagement.isProgramRelevantForChunkRendering(render.raw.program)) {
+              if (!new_triggers.some(p => p.programId == render.raw.program.programId)) {
+                new_triggers.push({programId: render.raw.program.programId, maxPerFrame: 1});
               }
             } else {
               // Mark irrelevant programs with our skip mask so we do not check them again
-              render.program.skipmask |= SKIP_PROGRAM_MASK;
+              render.raw.program.skipmask |= SKIP_PROGRAM_MASK;
             }
           }
           this.active_triggers.set(new_triggers)
