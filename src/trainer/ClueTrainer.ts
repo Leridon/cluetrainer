@@ -87,8 +87,7 @@ export class SettingsManagement {
   constructor() {
     this.observable_settings.subscribe(v => {
       this.settings = v
-      this.storage.set(v)
-      this.active_teleport_customization.set(TeleportSettings.inferActiveCustomization(v.teleport_customization))
+      this.save()
     })
 
     // Normalize on first load to prevent migration issues
@@ -103,6 +102,11 @@ export class SettingsManagement {
     const clone = lodash.cloneDeep(this.settings)
     f(clone)
     this.set(clone)
+  }
+
+  save() {
+    this.storage.set(this.settings)
+    this.active_teleport_customization.set(TeleportSettings.inferActiveCustomization(this.settings.teleport_customization))
   }
 }
 

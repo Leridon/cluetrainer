@@ -36,7 +36,7 @@ export namespace ClueTrainerMigrations {
     }
 
     if (changed) {
-      cluetrainer.settings.set(cluetrainer.settings.settings)
+      cluetrainer.settings.save()
     }
   }
 
