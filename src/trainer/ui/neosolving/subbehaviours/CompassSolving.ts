@@ -1015,7 +1015,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
         if (this.settings.read_chat_for_sextant_message) {
           ChatReader.instance().new_message_bulk.on(async e => {
-            const trigger_message = lodash.maxBy(e.filter(m => m.text.includes("The sextant displays")), m => m.timestamp)
+            const trigger_message = lodash.maxBy(e.filter(m => stringSimilarity(m.text, "The sextant displays") > 0.8), m => m.timestamp)
 
             if (!trigger_message) {
               return
@@ -1027,8 +1027,8 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
             const rest = e.filter(m => m.timestamp == trigger_message.timestamp)
 
-            const latitude_message = rest.map(m => m.text.match(/^(\d\d) degrees, (\d\d) minutes (north|south)/)).find(identity)
-            const longitude_message = rest.map(m => m.text.match(/^(\d\d) degrees, (\d\d) minutes (east|west)/)).find(identity)
+            const latitude_message = rest.map(m => m.text.match(/^(\d\d).*(\d\d).*(north|south)/)).find(identity)
+            const longitude_message = rest.map(m => m.text.match(/^(\d\d).*(\d\d).*(east|west)/)).find(identity)
 
             if (!longitude_message || !latitude_message) {
               return

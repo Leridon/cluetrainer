@@ -408,6 +408,7 @@ export namespace Changelog {
           .item("Fixed a bug that could cause corrupted custom triangulation presets when using precise tiles.", new List()
             .item("A startup check for this has been added and you will be prompted to select an option to resolve corrupted presets.")
           )
+          .item("Sextant detection for compass solving has been made more resilient to chat misreads.")
         )
 
       builder.release(73, "Compass Fix", new Date(Date.parse("2026-05-04")))
