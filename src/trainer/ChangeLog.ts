@@ -403,7 +403,7 @@ export namespace Changelog {
         return new Date(year, month -1, day)
       }
 
-      builder.wip(73, "TBD")
+      builder.wip(74, "TBD")
         .list(l => l
           .item("Fixed a bug that could cause corrupted custom triangulation presets when using precise tiles.", new List()
             .item("A startup check for this has been added and you will be prompted to select an option to resolve corrupted presets.")
