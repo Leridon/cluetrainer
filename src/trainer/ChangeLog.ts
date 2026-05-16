@@ -405,7 +405,9 @@ export namespace Changelog {
 
       builder.wip(73, "TBD")
         .list(l => l
-          .item("Fixed a bug that could cause corrupted custom triangulation presets when using precise tiles.")
+          .item("Fixed a bug that could cause corrupted custom triangulation presets when using precise tiles.", new List()
+            .item("A startup check for this has been added and you will be prompted to select an option to resolve corrupted presets.")
+          )
         )
 
       builder.release(73, "Compass Fix", new Date(Date.parse("2026-05-04")))
