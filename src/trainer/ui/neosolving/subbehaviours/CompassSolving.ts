@@ -260,15 +260,13 @@ class CompassEntryWidget extends Widget {
 
     const row = this
 
-    {
-      const discard_button = cls("ctr-neosolving-compass-entry-button")
-        .setInnerHtml("&times;")
-        .tooltip("Discard")
-        .appendTo(row)
-        .on("click", () => {
-          this.position_discard_requested.trigger(this)
-        })
-    }
+    cls("ctr-neosolving-compass-entry-button")
+      .setInnerHtml("&times;")
+      .tooltip("Discard")
+      .appendTo(row)
+      .on("click", () => {
+        this.position_discard_requested.trigger(this)
+      })
 
     {
       const position = cls("ctr-neosolving-compass-entry-position").appendTo(row)
@@ -282,7 +280,7 @@ class CompassEntryWidget extends Widget {
 
           position.tooltip(TileArea.toString(this.entry.position.targetArea()))
         } else {
-          position.append(span(Vector2.toString(this.entry.position.center())))
+          position.append(span(Vector2.toString(this.entry.position.center(true, false))))
 
           position.tooltip(TileArea.toString(this.entry.position.parent))
         }
@@ -409,7 +407,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
     if (previous_solution_entry) {
 
-      if(state.state == "normal") {
+      if (state.state == "normal") {
         this.commit(previous_solution_entry)
       } else {
         this.discardPosition(previous_solution_entry)
@@ -618,7 +616,7 @@ export class CompassSolving extends NeoSolvingSubBehaviour {
 
             const angle = Compasses.getExpectedAngle(
               e.information.origin,
-              spot.center(),
+              spot.center(true, false),
             )
 
             const COLINEARITY_THRESHOLD = degreesToRadians(1.5)

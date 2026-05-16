@@ -409,6 +409,7 @@ export namespace Changelog {
             .item("A startup check for this has been added and you will be prompted to select an option to resolve corrupted presets.")
           )
           .item("Sextant detection for compass solving has been made more resilient to chat misreads.")
+          .item("Fixed a bug causing wrong triangulation for teleport area with holes (e.g. Amulet of nature).")
         )
 
       builder.release(73, "Compass Fix", new Date(Date.parse("2026-05-04")))
