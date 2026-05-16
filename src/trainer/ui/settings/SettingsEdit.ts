@@ -46,7 +46,6 @@ import {ScanTree} from "lib/cluetheory/scans/ScanTree";
 import {AugmentedMethod} from "../../model/MethodPackManager";
 import {SolvingMethods} from "../../model/methods";
 import {SectionControl} from "../widgets/SectionControl";
-import {ScanPanelOverlay} from "../neosolving/subbehaviours/scans/ScanPanelReader";
 import {Notification} from "../NotificationBar";
 import cls = C.cls;
 import PotaColor = Settings.PotaColor;
@@ -63,6 +62,7 @@ import span = C.span;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import Appendable = C.Appendable;
 import notification = Notification.notification;
+import {ScanPanelOverlay} from "../neosolving/subbehaviours/scans/ScanPanelReader";
 
 export class SettingsLayout extends Properties {
   constructor() {super();}
@@ -1474,6 +1474,7 @@ class CompassSettingsEdit extends Widget {
           }, TransportData.getAllTeleportSpots())
             .onSelection((s: TeleportGroup.Spot) => {
               point.teleport = s.id()
+              point.tile = undefined
             })
             .css("flex-grow", "1")
 
@@ -1526,6 +1527,7 @@ class CompassSettingsEdit extends Widget {
                             }
                           })
                             .attachTopControl(new InteractionTopControl()
+                              .setCancelHandler(() => this.cancel())
                               .setName("Spot selection")
                               .setContent(c().text("Click a teleport spot or any tile on the map to select it as a triangulation spot."))
                             )
@@ -1548,8 +1550,13 @@ class CompassSettingsEdit extends Widget {
                     .do()
 
                   if (res) {
-                    if (res instanceof TeleportGroup.Spot) point.teleport = res.id()
-                    else point.tile = res
+                    if (res instanceof TeleportGroup.Spot) {
+                      point.teleport = res.id()
+                      point.tile = undefined
+                    } else {
+                      point.tile = res
+                      point.teleport = undefined
+                    }
 
                     this.render()
                   }

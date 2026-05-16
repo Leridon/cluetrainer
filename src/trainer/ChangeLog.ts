@@ -399,6 +399,15 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+      function date(year: number, month: number, day: number): Date {
+        return new Date(year, month -1, day)
+      }
+
+      builder.wip(73, "TBD")
+        .list(l => l
+          .item("Fixed a bug that could cause corrupted custom triangulation presets when using precise tiles.")
+        )
+
       builder.release(73, "Compass Fix", new Date(Date.parse("2026-05-04")))
         .list(l => l
           .item("Fixed a bug that messed up compass angles introduces in v72.")
