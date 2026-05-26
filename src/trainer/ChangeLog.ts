@@ -410,6 +410,7 @@ export namespace Changelog {
           )
           .item("Sextant detection for compass solving has been made more resilient to chat misreads.")
           .item("Fixed a bug causing wrong triangulation for teleport area with holes (e.g. Amulet of nature).")
+          .item("Added the real scan range for the Wendlewick elite scan.")
         )
 
       builder.release(73, "Compass Fix", new Date(Date.parse("2026-05-04")))
