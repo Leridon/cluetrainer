@@ -2,13 +2,14 @@ import TextArea from "../../../../lib/ui/controls/TextArea";
 import Widget from "../../../../lib/ui/Widget";
 import {BigNisButton} from "../BigNisButton";
 import {FormModal} from "../../../../lib/ui/controls/FormModal";
+import {NisModal} from "../../../../lib/ui/NisModal";
 
 export class ConfirmationModal<T> extends FormModal<T> {
   textarea: TextArea
   explanation: Widget
 
-  constructor(private config: ConfirmationModal.options<T>) {
-    super({size: "small"});
+  constructor(private config: ConfirmationModal.options<T>, options: NisModal.Options = null) {
+    super(options ?? {size: "small"});
   }
 
   render() {

@@ -28,7 +28,6 @@ import {DataExport} from "./DataExport";
 import {BookmarkStorage} from "./pathedit/BookmarkStorage";
 import {SectionMemory} from "./ui/neosolving/PathControl";
 import {Alt1UpdateNotice} from "./startup_messages/Alt1UpdateNotice";
-import {ClueTrainerAppMigrationNotice} from "./startup_messages/ClueTrainerAppMigrationNotice";
 import {PermissionChecker} from "./startup_messages/PermissionChecker";
 import {SuccessfullInstallationNotice} from "./startup_messages/SuccessfullInstallationNotice";
 import {lazy} from "../lib/Lazy";
@@ -36,6 +35,7 @@ import {Alt1} from "../lib/alt1/Alt1";
 import {ClueTrainerWiki} from "./wiki";
 import {ChatReader} from "../lib/alt1/readers/ChatReader";
 import {CaptureInterval} from "../lib/alt1/capture";
+import {ClueTrainerMigrations} from "./migrations";
 import ActiveTeleportCustomization = Transportation.TeleportGroup.ActiveTeleportCustomization;
 import TeleportSettings = Settings.TeleportSettings;
 import inlineimg = C.inlineimg;
@@ -87,8 +87,7 @@ export class SettingsManagement {
   constructor() {
     this.observable_settings.subscribe(v => {
       this.settings = v
-      this.storage.set(v)
-      this.active_teleport_customization.set(TeleportSettings.inferActiveCustomization(v.teleport_customization))
+      this.save()
     })
 
     // Normalize on first load to prevent migration issues
@@ -103,6 +102,11 @@ export class SettingsManagement {
     const clone = lodash.cloneDeep(this.settings)
     f(clone)
     this.set(clone)
+  }
+
+  save() {
+    this.storage.set(this.settings)
+    this.active_teleport_customization.set(TeleportSettings.inferActiveCustomization(this.settings.teleport_customization))
   }
 }
 
@@ -327,8 +331,8 @@ export class ClueTrainer extends Behaviour {
       PermissionChecker.check()
     }
 
-    Alt1UpdateNotice.maybeRemind(this)
-    ClueTrainerAppMigrationNotice.maybeRemind(this)
+    await Alt1UpdateNotice.maybeRemind(this)
+    await ClueTrainerMigrations.run_migrations(this)
 
     if (Changelog.log.latest_patch.version.build_info?.is_beta_build) {
       notification(`You are on beta build ${Changelog.Version.asString(this.version)}. Please remember to switch back to the main branch when testing is done.`)
