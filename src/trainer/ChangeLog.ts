@@ -403,14 +403,17 @@ export namespace Changelog {
         return new Date(year, month -1, day)
       }
 
-      builder.wip(74, "TBD")
+      builder.release(74, "Bug Fixes and Wendlewick Scan", date(2026, 5, 30))
         .list(l => l
           .item("Fixed a bug that could cause corrupted custom triangulation presets when using precise tiles.", new List()
             .item("A startup check for this has been added and you will be prompted to select an option to resolve corrupted presets.")
           )
           .item("Sextant detection for compass solving has been made more resilient to chat misreads.")
           .item("Fixed a bug causing wrong triangulation for teleport area with holes (e.g. Amulet of nature).")
-          .item("Added the real scan range for the Wendlewick elite scan.")
+          .item("Added the real scan range for the Wendlewick elite scan (12 tiles).")
+          .item("Added two possible scan routes for the Wendlewick scan.", new List()
+            .item(italic("Don't let the method names mislead you. Both routes were made by Ngis."))
+          )
         )
 
       builder.release(73, "Compass Fix", new Date(Date.parse("2026-05-04")))
