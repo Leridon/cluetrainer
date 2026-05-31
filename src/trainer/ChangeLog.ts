@@ -403,6 +403,11 @@ export namespace Changelog {
         return new Date(year, month -1, day)
       }
 
+      builder.wip(75, "TBD")
+        .list(l => l
+          .item("Added new Havenhythe teleports on the Nature's sentinel outfit and updated menu hotkeys accordingly.")
+        )
+
       builder.release(74, "Bug Fixes and Wendlewick Scan", date(2026, 5, 30))
         .list(l => l
           .item("Fixed a bug that could cause corrupted custom triangulation presets when using precise tiles.", new List()
