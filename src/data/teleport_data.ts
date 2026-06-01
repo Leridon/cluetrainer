@@ -1327,6 +1327,12 @@ const raw_data: Transportation.TeleportGroup[] = [
         name: "Kandarin: Snowy Hunter area",
       },
       {
+        id: "DLP",
+        target: {origin: {x: 3742, y: 1601, level: 0}},
+        code: "DLP",
+        name: "Havenhythe: North of Amberfell",
+      },
+      {
         id: "DLQ",
         target: {origin: {x: 3423, y: 3016, level: 0}},
         code: "DLQ",

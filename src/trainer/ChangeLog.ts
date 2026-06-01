@@ -406,6 +406,7 @@ export namespace Changelog {
       builder.wip(75, "TBD")
         .list(l => l
           .item("Added new Havenhythe teleports on the Nature's sentinel outfit and updated menu hotkeys accordingly.")
+          .item("Added new fairy ring (DLP) at Amberfell.")
         )
 
       builder.release(74, "Bug Fixes and Wendlewick Scan", date(2026, 5, 30))
