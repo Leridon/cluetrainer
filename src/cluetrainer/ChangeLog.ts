@@ -405,6 +405,7 @@ export namespace Changelog {
       builder.wip(76, "Clue Trainer NEXT")
         .header("Changes to the beta from newest to oldest.")
         .list(l => l
+          .item("Removed overlay render limit per frame to fix overlay flickers with low lighting details.")
           .item("Added debug logging for invalid alt1 overlay calls.")
           .item("Better caching for tile height data.")
         )

@@ -151,7 +151,7 @@ export namespace SimpleGLOverlay {
           for (const render of frames.renders) {
             if (TriggerManagement.isProgramRelevantForChunkRendering(render.raw.program)) {
               if (!new_triggers.some(p => p.programId == render.raw.program.programId)) {
-                new_triggers.push({programId: render.raw.program.programId, maxPerFrame: 1});
+                new_triggers.push({programId: render.raw.program.programId, /*maxPerFrame: 1*/});
               }
             } else {
               // Mark irrelevant programs with our skip mask so we do not check them again
