@@ -19,7 +19,7 @@ const TILE_MARKER_BORDER = 0.08;
 
 const ABILITY_COLORS: Record<MovementAbilities.movement_ability, MeshBuilder.ColorRGBA> = {
   surge: [0, 100, 255, 255],
-  escape: [255, 100, 0, 255],
+  escape: [86, 186, 15, 255],
   dive: [255, 220, 0, 255],
   barge: [150, 0, 255, 255],
 }
