@@ -3,8 +3,11 @@ import {Alt1Color} from "../Alt1Color";
 import {ScreenRectangle} from "../ScreenRectangle";
 import {Circle} from "../../math/Circle";
 import lodash from "lodash";
+import {Log} from "../../util/Log";
 
 export namespace Alt1OverlayDrawCalls {
+  import log = Log.log;
+
   export class Buffer {
     constructor(public primitives: Primitive[]
     ) { }
@@ -97,12 +100,28 @@ export namespace Alt1OverlayDrawCalls {
 
     rectangle(rect: ScreenRectangle,
               options: Alt1OverlayDrawCalls.StrokeOptions = Alt1OverlayDrawCalls.StrokeOptions.DEFAULT): this {
+      if (Number.isNaN(rect.origin.x) || Number.isNaN(rect.origin.y) || Number.isNaN(rect.size.x) || Number.isNaN(rect.size.y) || Number.isNaN(options.width)) {
+        log().log(`Invalid alt1 overlay line ${rect.size.x}x${rect.size.y}@${rect.origin.x}|${rect.origin.y} (stroke ${options.width})`)
+        log().log(Error().stack)
+
+        return this
+      }
+
       this.primitives.push({type: "rect", rect: ScreenRectangle.toRectangle(rect), options: options})
       return this
     }
 
-    line(from: Vector2, to: Vector2, options: Alt1OverlayDrawCalls.StrokeOptions = Alt1OverlayDrawCalls.StrokeOptions.DEFAULT) {
+    line(from: Vector2, to: Vector2, options: Alt1OverlayDrawCalls.StrokeOptions = Alt1OverlayDrawCalls.StrokeOptions.DEFAULT): this {
+
+      if (Number.isNaN(from.x) || Number.isNaN(from.y) || Number.isNaN(to.x) || Number.isNaN(to.y) || Number.isNaN(options.width)) {
+        log().log(`Invalid alt1 overlay line ${from.x}|${from.y} -> ${to.x}|${to.y} (stroke ${options.width})`)
+        log().log(Error().stack)
+
+        return this
+      }
+
       this.primitives.push({type: "line", from: from, to: to, options: options})
+
       return this
     }
 

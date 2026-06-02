@@ -403,9 +403,10 @@ export namespace Changelog {
     .tap(builder => {
 
       builder.wip(76, "Clue Trainer NEXT")
+        .header("Changes to the beta from newest to oldest.")
         .list(l => l
+          .item("Added debug logging for invalid alt1 overlay calls.")
           .item("Better caching for tile height data.")
-          .item("Great stuff")
         )
 
       function date(year: number, month: number, day: number): Date {

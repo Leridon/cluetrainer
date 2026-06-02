@@ -173,7 +173,7 @@ export namespace SimpleGLOverlay {
 
   export namespace TriggerManagement {
     export function isProgramRelevantForChunkRendering(program: GlProgram): boolean {
-      return program.inputs.find(q => q.name == "aMaterialSettingsSlotXY3") != null
+      return program.inputs.some(q => q.name == "aMaterialSettingsSlotXY3")
     }
   }
 }
