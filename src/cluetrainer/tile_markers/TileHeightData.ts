@@ -15,17 +15,17 @@ const BYTES_PER_TILE = 5
 export class TileHeightData {
   chunks: (TileHeightData.ChunkTileHeightData | Promise<TileHeightData.ChunkTileHeightData>)[][]
 
-  private async fetch(file_x: number, file_z: number, level: number): Promise<Uint16Array> {
+  private async fetch(file_x: number, file_z: number, level: floor_t): Promise<TileHeightData.ChunkTileHeightData> {
     const HEIGHT_ENDPOINT = "https://runeapps.org/s3/map4/live/";
     try {
       const url = `${HEIGHT_ENDPOINT}heightmesh-${level}/${file_x}-${file_z}.bin`;
       const res = await fetch(url);
-      if (!res.ok) return null;
+      if (!res.ok) return TileHeightData.ChunkTileHeightData.ZERO.get();
       const buffer = await res.arrayBuffer();
-      if (buffer.byteLength === 0 || buffer.byteLength % 2 !== 0) return null;
-      return new Uint16Array(buffer);
+      if (buffer.byteLength === 0 || buffer.byteLength % 2 !== 0) return TileHeightData.ChunkTileHeightData.ZERO.get();
+      return new TileHeightData.FetchedChunkTileHeightData(file_x, file_z, level, new Uint16Array(buffer));
     } catch {
-      return null;
+      return TileHeightData.ChunkTileHeightData.ZERO.get();
     }
   }
 
@@ -69,9 +69,6 @@ export class TileHeightData {
 
     if (!this.chunks[coordinate.level][file_i]) {
       const promise = this.fetch(file_x, file_z, coordinate.level)
-        .then(height_data => height_data
-          ? new TileHeightData.ChunkTileHeightData(file_x, file_z, coordinate.level, height_data)
-          : null)
 
       this.chunks[coordinate.level][file_i] = promise
 
@@ -86,7 +83,11 @@ export namespace TileHeightData {
   export type SamplePoint = "ne" | "nw" | "se" | "sw"
   const DATA_SCALE = 32
 
-  export class ChunkTileHeightData {
+  export interface ChunkTileHeightData {
+    getSample(tile: TileCoordinates, what: SamplePoint): number
+  }
+
+  export class FetchedChunkTileHeightData {
     constructor(
       public readonly file_x: number,
       public readonly file_z: number,
@@ -111,7 +112,6 @@ export namespace TileHeightData {
 
       const tileIndex = (relative_x + relative_z * tiles_per_file) * BYTES_PER_TILE;
 
-
       const i = tileIndex + SAMPLE_POINT_TRANSLATION[what];
 
       if (i < 0 || i >= this.height_data.length) {
@@ -121,5 +121,16 @@ export namespace TileHeightData {
 
       return this.height_data[i] / DATA_SCALE
     }
+  }
+
+  export namespace ChunkTileHeightData {
+    import ChunkTileHeightData = TileHeightData.ChunkTileHeightData;
+    export const ZERO = lazy<ChunkTileHeightData>(() => new class implements ChunkTileHeightData {
+      constructor() {}
+
+      getSample(tile: TileCoordinates, what: TileHeightData.SamplePoint): number {
+        return 0;
+      }
+    })
   }
 }

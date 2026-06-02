@@ -404,6 +404,7 @@ export namespace Changelog {
 
       builder.wip(76, "Clue Trainer NEXT")
         .list(l => l
+          .item("Better caching for tile height data.")
           .item("Great stuff")
         )
 
