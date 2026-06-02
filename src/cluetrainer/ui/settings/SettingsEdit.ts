@@ -45,7 +45,6 @@ import {Alt1} from "lib/alt1/Alt1";
 import {ScanTree} from "../../cluetheory/scans/ScanTree";
 import {SolvingMethods} from "../../model/SolvingMethods";
 import {SectionControl} from "../widgets/SectionControl";
-import {ScanPanelOverlay} from "../../cluesolving/subbehaviours/scans/ScanPanelReader";
 import {Notification} from "../NotificationBar";
 import {AugmentedMethod} from "../../model/MethodPack";
 import cls = C.cls;
@@ -1413,6 +1412,7 @@ class CompassSettingsEdit extends AbstractSettingsEdit<CompassSolving.Settings> 
           }, TransportData.getAllTeleportSpots())
             .onSelection((s: TeleportGroup.Spot) => {
               point.teleport = s.id()
+              point.tile = undefined
             })
             .css("flex-grow", "1")
 
@@ -1465,6 +1465,7 @@ class CompassSettingsEdit extends AbstractSettingsEdit<CompassSolving.Settings> 
                             }
                           })
                             .attachTopControl(new InteractionTopControl()
+                              .setCancelHandler(() => this.cancel())
                               .setName("Spot selection")
                               .setContent(c().text("Click a teleport spot or any tile on the map to select it as a triangulation spot."))
                             )
@@ -1487,8 +1488,13 @@ class CompassSettingsEdit extends AbstractSettingsEdit<CompassSolving.Settings> 
                     .do()
 
                   if (res) {
-                    if (res instanceof TeleportGroup.Spot) point.teleport = res.id()
-                    else point.tile = res
+                    if (res instanceof TeleportGroup.Spot) {
+                      point.teleport = res.id()
+                      point.tile = undefined
+                    } else {
+                      point.tile = res
+                      point.teleport = undefined
+                    }
 
                     this.render()
                   }

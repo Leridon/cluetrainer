@@ -29,7 +29,7 @@ export namespace Compasses {
 
       const l = location_uncertainty / Math.tan(angle.epsilon)
 
-      const center = Vector2.sub(position.center(false), Vector2.scale(0.5 * rectangleCrossSection(size, angle.median + Math.PI / 2), direction_vector))
+      const center = Vector2.sub(position.center(false, false), Vector2.scale(0.5 * rectangleCrossSection(size, angle.median + Math.PI / 2), direction_vector))
 
       const uncertainty_origin = Vector2.sub(center, Vector2.scale(l, direction_vector))
 

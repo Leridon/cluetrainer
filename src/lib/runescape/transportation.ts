@@ -237,7 +237,7 @@ export namespace Transportation {
       }
 
       centerOfTarget(): TileCoordinates {
-        return TileArea.activate(this.spot.target).center()
+        return TileArea.activate(this.spot.target).center(true, false)
       }
 
       targetArea(): TileArea {

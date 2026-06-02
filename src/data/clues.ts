@@ -4730,7 +4730,7 @@ export namespace clue_data {
       "id": 487,
       "type": "scan",
       "tier": "elite",
-      "text": ["This scroll will work in Wendlewick. Orb scan range: ??? paces."],
+      "text": ["This scroll will work in Wendlewick. Orb scan range: 12 paces."],
       "spots": [
         {
           "x": 3485,
@@ -4833,7 +4833,7 @@ export namespace clue_data {
           "level": 0
         }
       ],
-      "range": 100,
+      "range": 12,
       "scantext": "Wendlewick"
     },
   ]
