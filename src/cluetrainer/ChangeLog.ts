@@ -402,68 +402,45 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-      builder.wip(76, "Clue Trainer NEXT")
-        .header("Changes to the beta from newest to oldest.")
-        .list(l => l
-          .item("Removed overlay render limit per frame to fix overlay flickers with low lighting details.")
-          .item("Added debug logging for invalid alt1 overlay calls.")
-          .item("Better caching for tile height data.")
-        )
-
-      function date(year: number, month: number, day: number): Date {
-        return new Date(year, month -1, day)
-      }
-
-      builder.wip(75, "TBD")
-        .list(l => l
-          .item("Added new Havenhythe teleports on the Nature's sentinel outfit and updated menu hotkeys accordingly.")
-          .item("Added new fairy ring (DLP) at Amberfell.")
-        )
-
-      builder.release(74, "Bug Fixes and Wendlewick Scan", date(2026, 5, 30))
-        .list(l => l
-          .item("Fixed a bug that could cause corrupted custom triangulation presets when using precise tiles.", new List()
-            .item("A startup check for this has been added and you will be prompted to select an option to resolve corrupted presets.")
+        builder.wip(76, "Clue Trainer NEXT")
+          .header("Changes to the beta from newest to oldest.")
+          .list(l => l
+            .item("Scans no longer render overlays for the entire scan tree.")
+            .item("Removed overlay render limit per frame to fix overlay flickers with low lighting details.")
+            .item("Added debug logging for invalid alt1 overlay calls.")
+            .item("Better caching for tile height data.")
           )
-          .item("Sextant detection for compass solving has been made more resilient to chat misreads.")
-          .item("Fixed a bug causing wrong triangulation for teleport area with holes (e.g. Amulet of nature).")
-          .item("Added the real scan range for the Wendlewick elite scan (12 tiles).")
-          .item("Added two possible scan routes for the Wendlewick scan.", new List()
-            .item(italic("Don't let the method names mislead you. Both routes were made by Ngis."))
+
+        function date(year: number, month: number, day: number): Date {
+          return new Date(year, month - 1, day)
+        }
+
+        builder.wip(75, "TBD")
+          .list(l => l
+            .item("Added new Havenhythe teleports on the Nature's sentinel outfit and updated menu hotkeys accordingly.")
+            .item("Added new fairy ring (DLP) at Amberfell.")
           )
-        )
 
-      builder.release(73, "Compass Fix", new Date(Date.parse("2026-05-04")))
-        .list(l => l
-          .item("Fixed a bug that messed up compass angles introduces in v72.")
-        )
-
-      builder.release(72, "Fixes and Methods", new Date(Date.parse("2026-05-04")))
-        .header("General")
-        .list(l => l
-          .item("Fixed that the weapon range assumption could not be set for method packs.")
-          .item("Fixed that non-default escape ranges were not shown in the assumption summary.")
-          .item("Updated challenge answer for Emissary of Zamorak medium clue.")
-          .item("Improved detection of meerkat and triple pulse for scan clues.")
-          .item("Fixed minimap detection for scan range overlay.")
-          .item("Fixed location of easy map clue west of the Champion's Guild.")
-          .item("Fixed a bug that caused orthogonal abilities of length 1 to not be rendered.")
-          .item("Added the Marigold Farm variant of the Wendlewick teleport.")
-          .item("Added an export option of advanced method analysis data to method packs.")
-        )
-        .header("Methods")
-        .list(l => l
-          .item("Updated method for the Easy Clue step west of Champions Guild to match the current dig location.")
-          .item("Updated two paths for elite compass spots that no longer worked due to updated blocking.")
-          .item("Added alternative methods for elite compass spots that exclusively relied on wicked hood teleports.", new List()
-            .item("3 spots near Mind Altar.")
-            .item("3 spots near Nature Altar.")
-            .item("2 spots near Earth Altar.")
+        builder.release(74, "Bug Fixes and Wendlewick Scan", date(2026, 5, 30))
+          .list(l => l
+            .item("Fixed a bug that could cause corrupted custom triangulation presets when using precise tiles.", new List()
+              .item("A startup check for this has been added and you will be prompted to select an option to resolve corrupted presets.")
+            )
+            .item("Sextant detection for compass solving has been made more resilient to chat misreads.")
+            .item("Fixed a bug causing wrong triangulation for teleport area with holes (e.g. Amulet of nature).")
+            .item("Added the real scan range for the Wendlewick elite scan (12 tiles).")
+            .item("Added two possible scan routes for the Wendlewick scan.", new List()
+              .item(italic("Don't let the method names mislead you. Both routes were made by Ngis."))
+            )
           )
-        )
 
-        builder.wip(72, "Editor and Method Updated")
-          .header("Method and Path Editor")
+        builder.release(73, "Compass Fix", new Date(Date.parse("2026-05-04")))
+          .list(l => l
+            .item("Fixed a bug that messed up compass angles introduces in v72.")
+          )
+
+        builder.release(72, "Fixes and Methods", new Date(Date.parse("2026-05-04")))
+          .header("General")
           .list(l => l
             .item("Fixed that the weapon range assumption could not be set for method packs.")
             .item("Fixed that non-default escape ranges were not shown in the assumption summary.")
@@ -471,9 +448,33 @@ export namespace Changelog {
             .item("Improved detection of meerkat and triple pulse for scan clues.")
             .item("Fixed minimap detection for scan range overlay.")
             .item("Fixed location of easy map clue west of the Champion's Guild.")
-            .item("Added an export option of advanced method analysis data to method packs.")
             .item("Fixed a bug that caused orthogonal abilities of length 1 to not be rendered.")
             .item("Added the Marigold Farm variant of the Wendlewick teleport.")
+            .item("Added an export option of advanced method analysis data to method packs.")
+          )
+          .header("Methods")
+          .list(l => l
+            .item("Updated method for the Easy Clue step west of Champions Guild to match the current dig location.")
+            .item("Updated two paths for elite compass spots that no longer worked due to updated blocking.")
+            .item("Added alternative methods for elite compass spots that exclusively relied on wicked hood teleports.", new List()
+              .item("3 spots near Mind Altar.")
+              .item("3 spots near Nature Altar.")
+              .item("2 spots near Earth Altar.")
+            )
+          )
+
+        builder.release(72, "Fixes and Methods", new Date(Date.parse("2026-05-04")))
+          .header("General")
+          .list(l => l
+            .item("Fixed that the weapon range assumption could not be set for method packs.")
+            .item("Fixed that non-default escape ranges were not shown in the assumption summary.")
+            .item("Updated challenge answer for Emissary of Zamorak medium clue.")
+            .item("Improved detection of meerkat and triple pulse for scan clues.")
+            .item("Fixed minimap detection for scan range overlay.")
+            .item("Fixed location of easy map clue west of the Champion's Guild.")
+            .item("Fixed a bug that caused orthogonal abilities of length 1 to not be rendered.")
+            .item("Added the Marigold Farm variant of the Wendlewick teleport.")
+            .item("Added an export option of advanced method analysis data to method packs.")
           )
           .header("Methods")
           .list(l => l

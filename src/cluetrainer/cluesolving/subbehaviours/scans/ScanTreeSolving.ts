@@ -29,6 +29,9 @@ import {ScanMinimapOverlay} from "./ScanMinimapOverlay";
 import {MinimapReader} from "../../../../lib/alt1/readers/MinimapReader";
 import {ClueTrainerWiki} from "../../../wiki";
 import {SettingsModal} from "../../../ui/settings/SettingsEdit";
+import {AugmentedMethod} from "../../../model/MethodPack";
+import {PathOverlay3d} from "../../../tile_markers/PathRender";
+import {SingleBehaviour} from "../../../../lib/ui/Behaviour";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
 import cls = C.cls;
@@ -39,7 +42,6 @@ import digSpotArea = Clues.digSpotArea;
 import hbox = C.hbox;
 import spacer = C.spacer;
 import inlineimg = C.inlineimg;
-import {AugmentedMethod} from "../../../model/MethodPack";
 
 function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): AugmentedScanTreeNode {
   function searchDown(node: AugmentedScanTreeNode): AugmentedScanTreeNode {
@@ -115,6 +117,8 @@ export class ScanTreeSolving extends ClueSolvingSubBehaviour {
   private minimap_overlay: ScanMinimapOverlay
 
   tree_widget: Widget
+
+  private overlay: SingleBehaviour<PathOverlay3d> = this.withSub(new SingleBehaviour<PathOverlay3d>())
 
   constructor(parent: ClueSolvingBehaviour,
               public method: AugmentedMethod<ScanTreeMethod, Clues.Scan>,
@@ -335,6 +339,19 @@ export class ScanTreeSolving extends ClueSolvingSubBehaviour {
     // Setting the path in the path control will in turn trigger the section selected event.
     // This in turn triggers fitting the map, so we do not need to do that here explicitly.
     this.parent.path_control.reset().setPath(node.raw?.path ?? [], {method: this.method, node})
+
+    const is_triple_disambiguation = node.children.every(c => c.key.pulse == 3)
+
+    const overlay_relevant_nodes = [
+      ...ScanTree.Augmentation.AugmentedScanTree.collect_parents(node),
+      ...node.children.map(c => c.value).filter(n => is_triple_disambiguation || n.parent.key.pulse != 3)
+    ]
+
+    PathOverlay3d.forPaths(overlay_relevant_nodes.map(n => n.raw.path)).then(overlay => {
+      if (this.node != node) return // Check that the node is still active to prevent races
+
+      this.overlay.set(overlay)
+    })
   }
 
   private handling_layer: GameLayer = null

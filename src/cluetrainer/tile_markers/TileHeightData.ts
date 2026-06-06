@@ -87,7 +87,7 @@ export namespace TileHeightData {
     getSample(tile: TileCoordinates, what: SamplePoint): number
   }
 
-  export class FetchedChunkTileHeightData {
+  export class FetchedChunkTileHeightData implements ChunkTileHeightData {
     constructor(
       public readonly file_x: number,
       public readonly file_z: number,

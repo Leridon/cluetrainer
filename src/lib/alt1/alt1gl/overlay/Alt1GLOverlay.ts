@@ -17,10 +17,17 @@ export class Alt1GLOverlay extends Behaviour {
     super()
   }
 
-  static count = 0
-
   protected begin() {
-    console.log(`Starting overlay ${Alt1GLOverlay.count++}`)
+    if (!Alt1GLOverlay._pageunload_hook_created) {
+      window.addEventListener("pagehide", () => {
+        Alt1GLOverlay._active_overlays.forEach(overlay => overlay.stop())
+      })
+      Alt1GLOverlay._pageunload_hook_created = true
+    }
+
+    Alt1GLOverlay._active_overlays.push(this)
+
+    console.log(`Starting overlay ${Alt1GLOverlay._active_overlays.length++}`)
 
     this.overlayHandle = this.session.raw().beginOverlay(
       this.renderFilter,
@@ -31,9 +38,12 @@ export class Alt1GLOverlay extends Behaviour {
   }
 
   protected end() {
-    Alt1GLOverlay.count--;
+    Alt1GLOverlay._active_overlays.splice(Alt1GLOverlay._active_overlays.indexOf(this), 1)
 
     this.overlayHandle?.stop();
     this.overlayHandle = null;
   }
+
+  private static _active_overlays: Alt1GLOverlay[] = []
+  private static _pageunload_hook_created = false
 }

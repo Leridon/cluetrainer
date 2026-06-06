@@ -629,11 +629,6 @@ export default class ClueSolvingBehaviour extends Behaviour {
         this.activateSubBehaviour(
           new ScanTreeSolving(this, method as AugmentedMethod<ScanTreeMethod, Clues.Scan>, scan_interface, this.app.settings.observable.scans)
         )
-
-        const paths: Path[] = []
-        ScanTree.traverse(method.method.tree.root, n => paths.push(n.path))
-
-        this.overlay_control.setIngameOverlays(paths)
       } else if (method.method.type == "general_path") {
         this.path_control.setMethod(method as AugmentedMethod<GenericPathMethod>)
         this.overlay_control.setIngameOverlays([

@@ -35,6 +35,10 @@ export namespace Observable {
       return this.changed.trigger({value: this._value, old: old_value})
     }
 
+    public observerCount(): number {
+      return this.changed.handlerCount()
+    }
+
     protected _set(v: T) {
       let old = this._value
       this._value = v

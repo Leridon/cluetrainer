@@ -4,10 +4,13 @@ import {TileHeightData} from "./TileHeightData";
 import {MeshBuilder} from "../overlay3d/meshes/MeshBuilder";
 import {MovementAbilities} from "../../lib/runescape/movement";
 import {Vector2} from "../../lib/math";
+import {chunksize, tilesize} from "../../lib/alt1/alt1gllib/ts/overlays/tilemarkers";
+import {SimpleGLOverlay} from "../overlay3d/SimpleGLOverlay";
+import {Mesh} from "../overlay3d/meshes/Mesh";
 import ColorRGBA = MeshBuilder.ColorRGBA;
 import Vector3 = MeshBuilder.Vector3;
 import Vertex = MeshBuilder.Vertex;
-import {chunksize, tilesize} from "../../lib/alt1/alt1gllib/ts/overlays/tilemarkers";
+import {PathOverlayControl} from "../overlay3d/PathOverlayControl";
 
 const CHUNK_SIZE = chunksize;
 const TILE_SIZE = tilesize;
@@ -190,7 +193,7 @@ async function drawLine(
 
   control_points = upperHull(control_points);
 
-  const vertex_pairs = control_points.map((point) : [Vertex, Vertex] => {
+  const vertex_pairs = control_points.map((point): [Vertex, Vertex] => {
     const v1 = builder.createVertex(Vector3.add(point, Vector3.scale(thickness, {x: -perpendicular.x, y: 0, z: -perpendicular.y})), color);
     const v2 = builder.createVertex(Vector3.add(point, Vector3.scale(thickness, {x: +perpendicular.x, y: 0, z: +perpendicular.y})), color);
 
@@ -325,10 +328,11 @@ export async function buildPathMesh(
       }
 
       case "teleport": {
-        if (step.spot) {
+        /*if (step.spot) {
           await drawTileMarker(builder, step.spot, COLORS.teleport);
         }
-        current_position_has_marker = !!step.spot
+        current_position_has_marker = !!step.spot*/
+        current_position_has_marker = false
         break;
       }
 
@@ -369,4 +373,25 @@ export async function buildPathMesh(
   }
 
   return builder
+}
+
+export async function buildPathsMesh(
+  paths: Path[],
+  builder: MeshBuilder = new MeshBuilder()
+): Promise<MeshBuilder> {
+  debugger
+  for (let path of paths) {
+    await buildPathMesh(path, builder)
+  }
+  return builder
+}
+
+export class PathOverlay3d extends SimpleGLOverlay {
+  constructor(public readonly paths: Path[], mesh: Mesh) {
+    super(mesh);
+  }
+
+  static async forPaths(paths: Path[]): Promise<PathOverlay3d> {
+    return new PathOverlay3d(paths, (await buildPathsMesh(paths)).finalize())
+  }
 }

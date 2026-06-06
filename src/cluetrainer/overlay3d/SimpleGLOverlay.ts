@@ -1,13 +1,13 @@
 import Behaviour from "../../lib/ui/Behaviour";
 import {Alt1GLOverlay} from "../../lib/alt1/alt1gl/overlay/Alt1GLOverlay";
-import {observe} from "../../lib/reactive";
+import {EwentHandler, observe} from "../../lib/reactive";
 import lodash from "lodash";
 import {mat4} from "gl-matrix";
 import {lazy} from "../../lib/Lazy";
 import {Alt1GLProgram} from "../../lib/alt1/alt1gl/overlay/Alt1GLProgram";
 import {Mesh} from "./meshes/Mesh";
 import {Alt1} from "../../lib/alt1/Alt1";
-import {GlProgram, RenderFilter, StreamRenderObject} from "../../lib/alt1/alt1gllib/ts/util/alt1gltypes";
+import {GlProgram, RenderFilter} from "../../lib/alt1/alt1gllib/ts/util/alt1gltypes";
 import {tilesize} from "../../lib/alt1/alt1gllib/ts/render/reflect3d";
 import {GL_FLOAT, GL_UNSIGNED_BYTE, UniformSnapshotBuilder} from "../../lib/alt1/alt1gllib/ts/overlays";
 import {Alt1GLCapturedFrame} from "../../lib/alt1/alt1gl/Alt1GLCapturedFrame";
@@ -68,9 +68,8 @@ export class SimpleGLOverlay extends Behaviour {
 
   protected begin() {
     // Subscribe to the observable triggers
-    SimpleGLOverlay.TriggerManagement.instance.active_triggers.subscribe(
+    SimpleGLOverlay.TriggerManagement.instance.subscribe(
       t => this.updateOverlays(t),
-      true,
       h => h.bindTo(this.lifetime_manager)
     )
   }
@@ -121,26 +120,30 @@ export namespace SimpleGLOverlay {
   })
 
   export class TriggerManagement extends Behaviour {
-    public readonly active_triggers = observe<RenderFilter[]>([]).structuralEquality();
+    private readonly active_triggers = observe<RenderFilter[]>([]).structuralEquality();
 
     private stream: Alt1GLFrameStream | null = null;
 
     constructor() {
       super()
-
-      // TODO: Only stream render calls when active_filters has at least one observer
     }
 
     end(): void {
-      console.log(`Trigger management end`)
       this.stream?.endLifetime();
+      this.stream = null
     }
 
     begin(): void {
 
-      console.log(`Trigger management begin ${Alt1.instance().featureGl}`)
+    }
 
-      if (Alt1.instance().featureGl) {
+    private updateStreamState() {
+      if (!Alt1.instance().featureGl) return // Silently fail if alt1gl is not available
+
+      const should_exist = this.active_triggers.observerCount() != 0
+      const exists = !!this.stream
+
+      if (should_exist && !exists) {
         this.stream = Alt1GLCapturedFrame.subscribe({
           features: ["uniforms"],
           framecooldown: 10000,
@@ -161,7 +164,15 @@ export namespace SimpleGLOverlay {
           this.active_triggers.set(new_triggers)
           console.log(`New trigger count ${new_triggers.length}`)
         });
+      } else if (!should_exist && exists) {
+        this.stream.endLifetime();
+        this.stream = null;
       }
+    }
+
+    public subscribe(f: (_: RenderFilter[]) => void, handler_f: (_: EwentHandler<any>) => void = null) {
+      this.active_triggers.subscribe(f, true, handler_f)
+      this.updateStreamState()
     }
 
     static _instance = lazy(() => new TriggerManagement().start())
