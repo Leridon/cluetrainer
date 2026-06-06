@@ -403,10 +403,19 @@ export namespace Changelog {
     .tap(builder => {
 
         builder.wip(76, "Clue Trainer NEXT")
-          .header("Changes to the beta from newest to oldest.")
+          .header("Patch 3")
           .list(l => l
+            .item("Fixed path overlays clipping terrain in many places.", new List()
+              .item("There is still an issue where height data is completely unavailable. This is waiting on a fix by Skillbert.")
+            )
             .item("Scans no longer render overlays for the entire scan tree.")
+          )
+          .header("Patch 2")
+          .list(l => l
             .item("Removed overlay render limit per frame to fix overlay flickers with low lighting details.")
+          )
+          .header("Patch 1")
+          .list(l => l
             .item("Added debug logging for invalid alt1 overlay calls.")
             .item("Better caching for tile height data.")
           )

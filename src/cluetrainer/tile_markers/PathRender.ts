@@ -10,7 +10,6 @@ import {Mesh} from "../overlay3d/meshes/Mesh";
 import ColorRGBA = MeshBuilder.ColorRGBA;
 import Vector3 = MeshBuilder.Vector3;
 import Vertex = MeshBuilder.Vertex;
-import {PathOverlayControl} from "../overlay3d/PathOverlayControl";
 
 const CHUNK_SIZE = chunksize;
 const TILE_SIZE = tilesize;
@@ -79,10 +78,24 @@ async function drawTileMarker(builder: MeshBuilder,
                               color: ColorRGBA,
                               height_data = TileHeightData.instance()
 ): Promise<void> {
-  const lx = tile.x;
-  const lz = tile.y;
+  const outer00 = builder.createVertex(await height_data.resolveTileCorner(tile, "sw", TILE_MARKER_VERTICAL_OFFSET), color)
+  const outer01 = builder.createVertex(await height_data.resolveTileCorner(tile, "nw", TILE_MARKER_VERTICAL_OFFSET), color)
+  const outer11 = builder.createVertex(await height_data.resolveTileCorner(tile, "ne", TILE_MARKER_VERTICAL_OFFSET), color)
+  const outer10 = builder.createVertex(await height_data.resolveTileCorner(tile, "se", TILE_MARKER_VERTICAL_OFFSET), color)
 
+  const inner00 = builder.createVertex(Vector3.add(outer00.pos, {x: TILE_MARKER_BORDER, y: 0, z: TILE_MARKER_BORDER}), color)
+  const inner01 = builder.createVertex(Vector3.add(outer01.pos, {x: TILE_MARKER_BORDER, y: 0, z: -TILE_MARKER_BORDER}), color)
+  const inner11 = builder.createVertex(Vector3.add(outer11.pos, {x: -TILE_MARKER_BORDER, y: 0, z: -TILE_MARKER_BORDER}), color)
+  const inner10 = builder.createVertex(Vector3.add(outer10.pos, {x: -TILE_MARKER_BORDER, y: 0, z: TILE_MARKER_BORDER}), color)
+
+  builder.quad(outer00, outer01, inner01, inner00)
+  builder.quad(outer01, outer11, inner11, inner01)
+  builder.quad(outer11, outer10, inner10, inner11)
+  builder.quad(outer10, outer00, inner00, inner10)
+
+  /*
   const drawBorderQuad = async (x0: number, z0: number, x1: number, z1: number): Promise<void> => {
+
     const v0 = builder.createVertex(await height_data.resolve({x: lx + x0, y: lz + z0, level: tile.level}, TILE_MARKER_VERTICAL_OFFSET), color);
     const v1 = builder.createVertex(await height_data.resolve({x: lx + x1, y: lz + z0, level: tile.level}, TILE_MARKER_VERTICAL_OFFSET), color);
     const v2 = builder.createVertex(await height_data.resolve({x: lx + x1, y: lz + z1, level: tile.level}, TILE_MARKER_VERTICAL_OFFSET), color);
@@ -95,7 +108,7 @@ async function drawTileMarker(builder: MeshBuilder,
   await drawBorderQuad(0, 0, 1, t);
   await drawBorderQuad(0, 1 - t, 1, 1);
   await drawBorderQuad(0, 0, t, 1);
-  await drawBorderQuad(1 - t, 0, 1, 1);
+  await drawBorderQuad(1 - t, 0, 1, 1);*/
 }
 
 export function squareCrossSectionVector(dir: Vector2): Vector2 {
@@ -108,6 +121,19 @@ export function squareCrossSectionVector(dir: Vector2): Vector2 {
   };
 }
 
+/**
+ * Draw a line marker on top of the terrain.
+ * @param builder The mesh accumulator
+ * @param from Origin of the line in tile coordinates
+ * @param to Target of the line in tile coordinates
+ * @param color Color of the line
+ * @param thickness Stroke width
+ * @param showArrow Whether the line should have an arrow tip
+ * @param startHasTile Whether the line starts at a tile that has a tile marker. If true, the start of the line is offset to the border of the tile.
+ * @param endHasTile Whether the line ends at a tile that has a tile marker. If true, the start of the line is offset to the border of the tile.
+ * @param upper_hull If true, the line does not strictly hug the terrain but skips pits.
+ * @param height_data The source of terrain height data.
+ */
 async function drawLine(
   builder: MeshBuilder,
   from: TileCoordinates,
@@ -117,6 +143,7 @@ async function drawLine(
   showArrow: boolean,
   startHasTile: boolean,
   endHasTile: boolean,
+  upper_hull: boolean,
   height_data = TileHeightData.instance()
 ): Promise<void> {
   const direction = Vector2.normalize(Vector2.sub(to, from));
@@ -124,13 +151,11 @@ async function drawLine(
 
   const modified_start = Vector2.add(
     from,
-    {x: 0.5, y: 0.5},
     startHasTile ? Vector2.scale(0.5, cross_section) : Vector2.ZERO
   );
 
   const modified_end = Vector2.add(
     to,
-    {x: 0.5, y: 0.5},
     endHasTile ? Vector2.scale(-0.5, cross_section) : Vector2.ZERO,
     showArrow ? Vector2.scale(-ARROW_HEAD_LENGTH, direction) : Vector2.ZERO
   )
@@ -191,7 +216,7 @@ async function drawLine(
     return hull.map(i => points[i]);
   }
 
-  control_points = upperHull(control_points);
+  if (upper_hull) control_points = upperHull(control_points);
 
   const vertex_pairs = control_points.map((point): [Vertex, Vertex] => {
     const v1 = builder.createVertex(Vector3.add(point, Vector3.scale(thickness, {x: -perpendicular.x, y: 0, z: -perpendicular.y})), color);
@@ -301,7 +326,7 @@ export async function buildPathMesh(
 
         const draw_target_tile = step.ability == "dive" && !step.is_far_dive
 
-        await drawLine(builder, step.from, step.to, color, 0.05, true, current_position_has_marker, draw_target_tile);
+        await drawLine(builder, step.from, step.to, color, 0.05, true, current_position_has_marker, draw_target_tile, true);
 
         // Mark target tile if it's a precise dive
         if (draw_target_tile) await drawTileMarker(builder, step.to, color);
@@ -319,7 +344,7 @@ export async function buildPathMesh(
 
           const segStartHasTile = j === 0 && current_position_has_marker;
 
-          await drawLine(builder, step.waypoints[j], step.waypoints[j + 1], COLORS.run, 0.04, is_last, segStartHasTile, is_last);
+          await drawLine(builder, step.waypoints[j], step.waypoints[j + 1], COLORS.run, 0.04, is_last, segStartHasTile, is_last, false);
         }
 
         await drawTileMarker(builder, step.waypoints[step.waypoints.length - 1], COLORS.run);
@@ -347,7 +372,7 @@ export async function buildPathMesh(
 
         // TODO: Highlight the thing that needs to be clicked.
 
-        await drawLine(builder, step.assumed_start, dest, COLORS.transport, 0.05, true, true, true);
+        await drawLine(builder, step.assumed_start, dest, COLORS.transport, 0.05, true, true, true, true);
 
         break;
       }

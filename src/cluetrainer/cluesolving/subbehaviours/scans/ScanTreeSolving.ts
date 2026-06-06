@@ -345,7 +345,7 @@ export class ScanTreeSolving extends ClueSolvingSubBehaviour {
     const overlay_relevant_nodes = [
       ...ScanTree.Augmentation.AugmentedScanTree.collect_parents(node),
       ...node.children.map(c => c.value).filter(n => is_triple_disambiguation || n.parent.key.pulse != 3)
-    ]
+    ] //ScanTree.Augmentation.AugmentedScanTree.collect_parents_and_children(node)
 
     PathOverlay3d.forPaths(overlay_relevant_nodes.map(n => n.raw.path)).then(overlay => {
       if (this.node != node) return // Check that the node is still active to prevent races

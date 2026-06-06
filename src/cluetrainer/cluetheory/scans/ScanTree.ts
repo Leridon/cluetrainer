@@ -465,6 +465,7 @@ export namespace ScanTree {
     }
 
     export namespace AugmentedScanTree {
+
       export function decision_string(node: AugmentedScanTreeNode): string {
 
         if (node.parent?.node?.parent?.key?.pulse == 3 && node.remaining_candidates.length == 1) return `Sp. ${spotNumber(node.root.raw, node.remaining_candidates[0])}`
@@ -510,6 +511,22 @@ export namespace ScanTree {
         if (include_node) par.push(node)
 
         return par
+      }
+
+      export function collect_children(node: AugmentedScanTreeNode, include_node: boolean = true): AugmentedScanTreeNode[] {
+        const acc: AugmentedScanTreeNode[] = []
+
+        traverse(node, n => acc.push(n), include_node)
+
+        return acc
+      }
+
+      export function collect_parents_and_children(node: AugmentedScanTreeNode): AugmentedScanTreeNode[] {
+        const nodes = collect_parents(node, false)
+
+        traverse(node, n => nodes.push(n), false)
+
+        return nodes
       }
 
       /**

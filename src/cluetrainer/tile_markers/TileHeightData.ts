@@ -16,9 +16,13 @@ export class TileHeightData {
   chunks: (TileHeightData.ChunkTileHeightData | Promise<TileHeightData.ChunkTileHeightData>)[][]
 
   private async fetch(file_x: number, file_z: number, level: floor_t): Promise<TileHeightData.ChunkTileHeightData> {
-    const HEIGHT_ENDPOINT = "https://runeapps.org/s3/map4/live/";
+    function file_url(file_x, file_z, level: floor_t): string {
+      //return `https://runeapps.org/maps/mapheightrender/height-${level}/${file_x}-${file_z}.bin.gz`; // Legacy
+      return `https://runeapps.org/s3/map4/live/heightmesh-${level}/${file_x}-${file_z}.bin`
+    }
+
     try {
-      const url = `${HEIGHT_ENDPOINT}heightmesh-${level}/${file_x}-${file_z}.bin`;
+      const url = file_url(file_x, file_z, level);
       const res = await fetch(url);
       if (!res.ok) return TileHeightData.ChunkTileHeightData.ZERO.get();
       const buffer = await res.arrayBuffer();
@@ -54,10 +58,18 @@ export class TileHeightData {
     ) + offset
   }
 
-  async resolve(coordinate: TileCoordinates, offset: number = 0): Promise<Vector3> {
-    return {
+  async resolveTileCorner(coordinate: TileCoordinates, corner: TileHeightData.SamplePoint, vertical_offset: number = 0): Promise<Vector3> {
+    return Vector3.add({
       x: coordinate.x,
       z: coordinate.y,
+      y: await this.getTile(coordinate, corner) + vertical_offset
+    }, TileHeightData.SamplePoint.coordinate_offset(corner))
+  }
+
+  async resolve(coordinate: TileCoordinates, offset: number = 0): Promise<Vector3> {
+    return {
+      x: coordinate.x + 0.5,
+      z: coordinate.y + 0.5,
       y: await this.getInterpolated(coordinate, offset)
     }
   }
@@ -81,6 +93,18 @@ export class TileHeightData {
 
 export namespace TileHeightData {
   export type SamplePoint = "ne" | "nw" | "se" | "sw"
+
+  export namespace SamplePoint {
+    export function coordinate_offset(point: SamplePoint): Vector3 {
+      return {
+        "ne": {x: 1, y: 0, z: 1},
+        "nw": {x: 0, y: 0, z: 1},
+        "sw": {x: 0, y: 0, z: 0},
+        "se": {x: 1, y: 0, z: 0},
+      }[point]
+    }
+  }
+
   const DATA_SCALE = 32
 
   export interface ChunkTileHeightData {
