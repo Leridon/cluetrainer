@@ -403,6 +403,10 @@ export namespace Changelog {
     .tap(builder => {
 
         builder.wip(76, "Clue Trainer NEXT")
+          .header("Patch 4")
+          .list(l => l
+            .item("Added an old api for the terrain height data as a fallback.")
+          )
           .header("Patch 3")
           .list(l => l
             .item("Fixed path overlays clipping terrain in many places.", new List()

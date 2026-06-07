@@ -16,21 +16,26 @@ export class TileHeightData {
   chunks: (TileHeightData.ChunkTileHeightData | Promise<TileHeightData.ChunkTileHeightData>)[][]
 
   private async fetch(file_x: number, file_z: number, level: floor_t): Promise<TileHeightData.ChunkTileHeightData> {
-    function file_url(file_x, file_z, level: floor_t): string {
-      //return `https://runeapps.org/maps/mapheightrender/height-${level}/${file_x}-${file_z}.bin.gz`; // Legacy
-      return `https://runeapps.org/s3/map4/live/heightmesh-${level}/${file_x}-${file_z}.bin`
-    }
+    type url_function = (file_x: number, file_z: number, level: floor_t) => string
+
+    const runeapps_url: url_function = (file_x, file_z, level) => `https://runeapps.org/s3/map4/live/heightmesh-${level}/${file_x}-${file_z}.bin`
+    const legacy: url_function = (file_x, file_z, level) => `https://runeapps.org/maps/mapheightrender/height-${level}/${file_x}-${file_z}.bin.gz`
 
     try {
-      const url = file_url(file_x, file_z, level);
-      const res = await fetch(url);
-      if (!res.ok) return TileHeightData.ChunkTileHeightData.ZERO.get();
-      const buffer = await res.arrayBuffer();
-      if (buffer.byteLength === 0 || buffer.byteLength % 2 !== 0) return TileHeightData.ChunkTileHeightData.ZERO.get();
-      return new TileHeightData.FetchedChunkTileHeightData(file_x, file_z, level, new Uint16Array(buffer));
-    } catch {
-      return TileHeightData.ChunkTileHeightData.ZERO.get();
+      for (const url_f of [runeapps_url, legacy]) {
+        const url = url_f(file_x, file_z, level);
+        const res = await fetch(url);
+        if (!res.ok) continue;
+        const buffer = await res.arrayBuffer();
+        if (buffer.byteLength === 0 || buffer.byteLength % 2 !== 0) continue
+
+        return new TileHeightData.FetchedChunkTileHeightData(file_x, file_z, level, new Uint16Array(buffer));
+      }
+    } catch (e) {
+
     }
+
+    return TileHeightData.ChunkTileHeightData.ZERO.get();
   }
 
   private constructor() {
