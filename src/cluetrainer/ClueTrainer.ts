@@ -36,6 +36,11 @@ import {ClueTrainerWiki} from "./wiki";
 import {ChatReader} from "../lib/alt1/readers/ChatReader";
 import {CaptureInterval} from "../lib/alt1/capture";
 import {NisModal} from "../lib/ui/NisModal";
+import {ClueTrainerMigrations} from "./migrations";
+import {PlayerStateTracking} from "./cluesolving/cluereader/PlayerPositionReader";
+import {TileHighlight} from "../lib/gamemap/defaultlayers/TileHighlightLayer";
+import {GameMapControl} from "../lib/gamemap/GameMapControl";
+import {Angles} from "../lib/math/Angles";
 import ActiveTeleportCustomization = Transportation.TeleportGroup.ActiveTeleportCustomization;
 import TeleportSettings = Settings.TeleportSettings;
 import inlineimg = C.inlineimg;
@@ -47,7 +52,10 @@ import staticentity = C.staticentity;
 import entity = C.entity;
 import notification = Notification.notification;
 import log = Log.log;
-import { ClueTrainerMigrations } from "./migrations";
+import div = C.div;
+import {CompassReader} from "./cluesolving/cluereader/CompassReader";
+import AngleResult = CompassReader.AngleResult;
+import UncertainAngle = Angles.UncertainAngle;
 
 declare global {
   var cluetrainer_build_environment: ClueTrainer.BuildEnvironment
@@ -403,6 +411,33 @@ export class ClueTrainer extends Behaviour {
             `)
         }
       }).show()
+
+      const position_highlight = new TileHighlight({x: 0, y: 0}, "#0929ce")
+
+      this.map.addLayer(position_highlight)
+
+      const status_widget = new GameMapControl({position: "bottom-left", type: "gapless"}, div())
+
+      this.map.addLayer(status_widget)
+
+      PlayerStateTracking.instance().framed_state.subscribe(state => {
+        if (state.value.position) {
+          position_highlight.setPosition(state.value.position.tile)
+        }
+
+        let text = ""
+
+        if (state.value.pulse_type != null) {
+          text += `Pulse: ${state.value.pulse_type}`
+        }
+        if (state.value.compass_angle != null) {
+          text += `Angle: ${UncertainAngle.toString(state.value.compass_angle.angle)}`
+        }
+
+        status_widget.content.text(text)
+
+        console.log(state)
+      })
     }
   }
 

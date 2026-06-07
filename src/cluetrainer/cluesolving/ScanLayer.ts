@@ -1,9 +1,8 @@
 import * as leaflet from "leaflet";
-import {TileCoordinates} from "../../lib/runescape/coordinates/TileCoordinates";
+import {TileCoordinates} from "../../lib/runescape/coordinates";
 import {GameMap, levelIcon} from "../../lib/gamemap/GameMap";
 import {ScanTree} from "../cluetheory/scans/ScanTree";
 import {Constants} from "../constants";
-import {TileMarker} from "../../lib/gamemap/TileMarker";
 import {ActiveOpacityGroup} from "../../lib/gamemap/layers/OpacityLayer";
 import {areaPolygon, boxPolygon} from "../ui/polygon_helpers";
 import {GameLayer} from "../../lib/gamemap/GameLayer";
@@ -75,8 +74,6 @@ export class ScanRegionPolygon extends ActiveOpacityGroup {
 }
 
 export class ScanRadiusMarker extends MapEntity {
-  private marker: TileMarker
-
   constructor(public spot: TileCoordinates,
               private range: number,
               private include_marker: boolean,
@@ -150,7 +147,7 @@ export class ScanRadiusMarker extends MapEntity {
       }).setStyle({color: ScanSolving.PulseColors.double.css_string, fillOpacity: 0, dashArray: [9, 9, 9, 18]}).addTo(this)
     }
 
-    return this.marker?.marker?.getElement()
+    return null
   }
 
   async contextMenu(event: GameMapContextMenuEvent): Promise<Menu | null> {

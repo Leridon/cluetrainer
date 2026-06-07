@@ -9,7 +9,7 @@ export class CapturedCompassGl implements CapturedCompass {
 
   }
 
-  getAngle(): CompassReader.AngleResult {
+  getAngle(): CompassReader.AngleResult.Success {
     const angle = Angles.normalizeAngle(Math.PI / 2 + this.mesh.position2d.yRotation)
 
     return {

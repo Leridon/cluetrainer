@@ -18,8 +18,8 @@ import {Alt1OverlayDrawCalls} from "../../../lib/alt1/overlay/Alt1OverlayDrawCal
 import {ClueTrainerWiki} from "../../wiki";
 import {Alt1GLCapturedFrame} from "../../../lib/alt1/alt1gl/Alt1GLCapturedFrame";
 import {CapturedCompassGl} from "./capture/CapturedCompassGl";
-import log = Log.log;
 import {lazy} from "../../../lib/Lazy";
+import log = Log.log;
 
 
 export namespace CompassReader {
@@ -374,21 +374,21 @@ export namespace CompassReader {
     }
 
     protected begin() {
-      this.lifetime_manager.bind(
-        Alt1.instance().capturing.subscribe({
-          options: () => {
-            return {
-              interval: CaptureInterval.fromApproximateInterval(50),
-              area: this.matched_ui ? this.matched_ui.body.screen_rectangle : null
-            }
-          },
-          handle: value => {
-            this.tick(value.value)
-          }
-        }))
 
-      /*
-      if (Alt1.instance().featureGl) {
+      if (!this.use_alt1gl_reader || !Alt1.instance().featureGl) {
+        this.lifetime_manager.bind(
+          Alt1.instance().capturing.subscribe({
+            options: () => {
+              return {
+                interval: CaptureInterval.fromApproximateInterval(50),
+                area: this.matched_ui ? this.matched_ui.body.screen_rectangle : null
+              }
+            },
+            handle: value => {
+              this.tick(value.value)
+            }
+          }))
+      } /*else {
         this.lifetime_manager.bind(
           Alt1GLCapturedFrame.subscribe({features: ["vertexarray", "uniforms"], framecooldown: 300}, frame => {
             const compass_mesh = CapturedCompassGl.findCompass(frame)
@@ -405,7 +405,8 @@ export namespace CompassReader {
             }
           })
         )
-      }*/
+      }
+    */
     }
 
     protected end() {

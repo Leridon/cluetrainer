@@ -5,16 +5,34 @@ import Behaviour from "../../../lib/ui/Behaviour";
 import {lazy} from "../../../lib/Lazy";
 import {Alt1GLCapturedFrame} from "../../../lib/alt1/alt1gl/Alt1GLCapturedFrame";
 import {Alt1GLFrameStream} from "../../../lib/alt1/alt1gl/Alt1GLFrameStream";
+import {getUniformValue} from "../../../lib/alt1/alt1gllib/ts/render/renderprogram";
+import {RenderRange} from "../../../lib/alt1/alt1gllib/ts/util/alt1gltypes";
+import {Alt1} from "../../../lib/alt1/Alt1";
+import {CapturedCompassGl} from "./capture/CapturedCompassGl";
+import {CompassReader} from "./CompassReader";
+import {Vector2} from "../../../lib/math";
 import Vector3 = MeshBuilder.Vector3;
 import PulseRing = Scans.PulseRing;
-import {BufferCache} from "../../../lib/alt1/alt1gllib/ts/programs/filteredstate";
-import {getProgramMeta, getRenderFunc, getUniformValue} from "../../../lib/alt1/alt1gllib/ts/render/renderprogram";
-import {RenderInvocation, RenderRange} from "../../../lib/alt1/alt1gllib/ts/util/alt1gltypes";
-import {Alt1} from "../../../lib/alt1/Alt1";
+
+export type TrackedPlayerPosition = {
+  position_3d: Vector3,
+  tile: Vector2
+}
+
+export namespace TrackedPlayerPosition {
+  export function fromPosition(pos: Vector3): TrackedPlayerPosition {
+    if (!pos) return null
+    return {
+      position_3d: pos,
+      tile: Vector2.snap({x: pos.x, y: pos.z})
+    }
+  }
+}
 
 export type PlayerState = {
-  position: Vector3;
-  pulse_type: PulseRing;
+  position: TrackedPlayerPosition;
+  pulse_type: PulseRing | null;
+  compass_angle: CompassReader.AngleResult.Success | null
 }
 
 export type FramedValue<T> = {
@@ -26,7 +44,6 @@ export class PlayerStateTracking extends Behaviour {
   public framed_state = observe<FramedValue<PlayerState>>(null).structuralEquality()
   public state = this.framed_state.map(v => v?.value).structuralEquality()
 
-  private cache: BufferCache = new BufferCache(null);
   private stream: Alt1GLFrameStream | undefined;
 
   constructor() {
@@ -50,8 +67,6 @@ export class PlayerStateTracking extends Behaviour {
         //console.log(`Got renders ${frame.renders.length}`)
         this.parsePlayerState(frame);
       });
-
-      console.log(this.stream)
     } else {
       console.log("Alt1GL not available, skipping player state tracking")
     }
@@ -64,154 +79,76 @@ export class PlayerStateTracking extends Behaviour {
   }
 
   private parsePlayerState(frame: Alt1GLCapturedFrame): void {
-    if (frame.renders.length == 0) {
-      console.log("No renders")
-      return;
-    }
+    console.log(`${frame.renders.length} Renders`)
 
-    // Look for player position
-    let position: Vector3 | null = this.detectPlayerPosition(frame);
-
-    let pulseRing: Scans.PulseRing | null = null;
-
-    for (const render of frame.renders) {
-      if (!render.raw.program || !render.raw.uniformState) continue;
-
-      let progmeta: ReturnType<typeof getProgramMeta>;
-
-      try {
-        progmeta = getProgramMeta(render.raw.program);
-      } catch {
-        continue;
-      }
-
-
-      // Look for pulse ring if we haven't found it yet
-      pulseRing = pulseRing ?? this.detectPulseRing(render.raw, progmeta);
-
-      // Exit if we found both
-      if (position != null && pulseRing != null) {
-        break;
-      }
-    }
+    const position = PlayerStateTracking.detectPlayerPosition(frame);
+    const scan_pulse = PlayerStateTracking.detectPulseRing(frame, position)
+    const compass = CapturedCompassGl.findCompass(frame)
 
     this.framed_state.set({
       frame: frame.frame_number,
       value: {
-        position: position,
-        pulse_type: pulseRing,
+        position: TrackedPlayerPosition.fromPosition(position),
+        pulse_type: scan_pulse,
+        compass_angle: compass?.getAngle()
       }
     })
   }
 
-  private detectPlayerPosition(frame: Alt1GLCapturedFrame): Vector3 {
-    const TILESIZE = 512;
-
-    const candidates: { render: Alt1GLCapturedFrame.Render, position: Vector3 }[] = [];
-
-    for (let render of frame.renders) {
-      const hasFrag = typeof render.raw.program.fragmentShader?.source === 'string';
-      const hasVert = typeof render.raw.program.vertexShader?.source === 'string';
-      if (!hasFrag || !hasVert) return null;
-
-      const progmeta = render.progmeta.get();
-
-      if (!progmeta.isTinted || !progmeta.uTint || !progmeta.uModelMatrix) return null;
-      if (!progmeta.isAnimated) return null;
-
-
-      try {
-        const tint = getUniformValue(render.raw.uniformState, progmeta.uTint)[0] as number[];
-        if (!tint || tint.length < 4) return null;
-
-        const rgbSum = Math.abs(tint[0]) + Math.abs(tint[1]) + Math.abs(tint[2]);
-        if (rgbSum > 0.1 || tint[3] > 0.6) return null;
-
-        const matrix = getUniformValue(render.raw.uniformState, progmeta.uModelMatrix)[0] as number[];
-        if (!matrix || matrix.length < 16) return null;
-
-        const x = matrix[12] / TILESIZE - 0.5;
-        const y = matrix[13] / TILESIZE;
-        const z = matrix[14] / TILESIZE - 0.5; // Translate so that .0 = center of tile
-
-        if (x === 0 && z === 0) continue;
-
-        candidates.push({render: render, position: {x, y, z}})
-      } catch (error) {
-        // ignore errors
-      }
-    }
-
-    console.log(candidates.length, "candidates found")
-    console.log(candidates)
-
-    return candidates[0]?.position ?? null;
-  }
-
-  private detectPulseRing(render: RenderInvocation, progmeta: ReturnType<typeof getProgramMeta>): Scans.PulseRing {
-    try {
-      // get vertex count from render ranges
-      const vertexCount = render.renderRanges?.reduce((sum: number, r: RenderRange) => sum + r.length, 0) || 0;
-
-      // Ring signature: the ring mesh has 576 verts, maybe we can find a better way ?
-      // 576 blue
-      // red 1728
-      // orange 864
-      if ((vertexCount === 576 || vertexCount === 1728 || vertexCount === 864) && progmeta.isAnimated && progmeta.isMainMesh) {
-        // Sample vertex colors to determine ring type
-        const renderfunc = getRenderFunc(render);
-        if (renderfunc.progmeta.aColor) {
-          const colorGetter = renderfunc.getters[renderfunc.progmeta.aColor.name];
-          // Sample first few vertices
-          let blueCount = 0;
-          let orangeCount = 0;
-          let redCount = 0;
-
-          const samplesToCheck = Math.min(10, renderfunc.nvertices);
-
-          for (let i = 0; i < samplesToCheck; i++) {
-            const r = colorGetter(i, 0) / 255;
-            const g = colorGetter(i, 1) / 255;
-            const b = colorGetter(i, 2) / 255;
-
-            // Blue ring: blue channel dominant
-            if (b > 0.3 && b > r * 1.5 && b > g * 1.5) {
-              blueCount++;
-            }
-            // Orange ring: red and green high, blue low
-            else if (r > 0.3 && g > 0.2 && r > b * 1.5 && g > b * 1.2) {
-              orangeCount++;
-            }
-            // Red ring: red channel dominant
-            else if (r > 0.3 && r > g * 1.5 && r > b * 1.5) {
-              redCount++;
-            }
-          }
-
-          // Check which color is most prominent (at least 75% of samples)
-          const threshold = samplesToCheck * 0.75;
-          if (blueCount >= threshold) {
-            console.info("[PlayerState] BLUE PULSE RING DETECTED: verts:", vertexCount, "blue samples:", blueCount + "/" + samplesToCheck);
-            return 1;
-          } else if (orangeCount >= threshold) {
-            console.info("[PlayerState] ORANGE PULSE RING DETECTED: verts:", vertexCount, "orange samples:", orangeCount + "/" + samplesToCheck);
-            return 2;
-          } else if (redCount >= threshold) {
-            console.info("[PlayerState] RED PULSE RING DETECTED: verts:", vertexCount, "red samples:", redCount + "/" + samplesToCheck);
-            return 3;
-          }
-        }
-      }
-    } catch {
-      // ignore errors
-    }
-
-    return null;
-  }
 
   static _instance = lazy(() => new PlayerStateTracking().start())
 
   public static instance() {
     return PlayerStateTracking._instance.get()
+  }
+}
+
+export namespace PlayerStateTracking {
+  export function detectPlayerPosition(frame: Alt1GLCapturedFrame): Vector3 {
+    const TILESIZE = 512;
+
+    for (let render of frame.renders) {
+
+      if (!render.progmeta.get().isTinted || !render.progmeta.get().uTint || !render.progmeta.get().uModelMatrix || !render.progmeta.get().isAnimated) continue;
+      if (typeof render.raw.program.fragmentShader?.source !== 'string') continue;
+      if (typeof render.raw.program.vertexShader?.source !== 'string') continue;
+      try {
+        const tint = getUniformValue(render.raw.uniformState, render.progmeta.get().uTint)[0] as number[];
+        if (!tint || tint.length < 4) continue;
+        if (Math.abs(tint[0]) + Math.abs(tint[1]) + Math.abs(tint[2]) > 0.1 || tint[3] > 0.6) continue;
+
+        const m = getUniformValue(render.raw.uniformState, render.progmeta.get().uModelMatrix)[0] as number[];
+        if (!m || m.length < 16) continue;
+        const x = m[12] / TILESIZE - 0.5, y = m[13] / TILESIZE, z = m[14] / TILESIZE - 0.5;
+        return (x === 0 && z === 0) ? null : {x, y, z};
+      } catch { }
+    }
+
+    return null
+  }
+
+  function toTile(worldCoord: number) {
+    return Math.floor(worldCoord / 512 + 1e-3);
+  }
+
+  /**
+   * Detects the current pulse ring from a captured frame.
+   * @param frame The frame to search in.
+   * @param position The already known player position. Required for filtering false positives.
+   */
+  export function detectPulseRing(frame: Alt1GLCapturedFrame, position: Vector3): PulseRing | null {
+    if (!position) return null
+    for (let render of frame.renders) {
+      if (!render.progmeta.get().isAnimated || !render.progmeta.get().isMainMesh) continue
+      try {
+        const verts = render.raw.renderRanges?.reduce((s: number, r: RenderRange) => s + r.length, 0) || 0;
+        const m = getUniformValue(render.raw.uniformState, render.progmeta.get().uModelMatrix)[0];
+        if (toTile(m[12]) !== position.x || toTile(m[14]) !== position.z) continue;
+        if (verts === 576) return 1;
+        if (verts === 864) return 2;
+        if (verts === 1728) return 3;
+      } catch {}
+    }
+    return null;
   }
 }

@@ -8,7 +8,7 @@ import {GameMap} from "../GameMap";
 export class TileHighlight extends leaflet.FeatureGroup {
   _polygon: leaflet.Polygon = null
 
-  constructor(private position: Vector2 = {x: 0, y: 0}) {
+  constructor(private position: Vector2 = {x: 0, y: 0}, private color: string = "#F0780C") {
     super()
 
     this.update()
@@ -31,8 +31,8 @@ export class TileHighlight extends leaflet.FeatureGroup {
     this._polygon = tilePolygon(this.position).setStyle({
       fillOpacity: 0.2,
       opacity: 0.8,
-      color: "#F0780C",
-      fillColor: "#F0780C",
+      color: this.color,
+      fillColor: this.color,
       interactive: false,
       pane: GameMap.objectPane
     }).addTo(this)
