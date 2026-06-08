@@ -402,7 +402,7 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
-        builder.wip(76, "Clue Trainer NEXT")
+        builder.wip(76, "Clue Trainer GL")
           .header("Patch 4")
           .list(l => l
             .item("Added an old api for the terrain height data as a fallback.")

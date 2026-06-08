@@ -6,11 +6,11 @@ import {lazy} from "../../../lib/Lazy";
 import {Alt1GLCapturedFrame} from "../../../lib/alt1/alt1gl/Alt1GLCapturedFrame";
 import {Alt1GLFrameStream} from "../../../lib/alt1/alt1gl/Alt1GLFrameStream";
 import {getUniformValue} from "../../../lib/alt1/alt1gllib/ts/render/renderprogram";
-import {RenderRange} from "../../../lib/alt1/alt1gllib/ts/util/alt1gltypes";
 import {Alt1} from "../../../lib/alt1/Alt1";
 import {CapturedCompassGl} from "./capture/CapturedCompassGl";
 import {CompassReader} from "./CompassReader";
 import {Vector2} from "../../../lib/math";
+import lodash from "lodash";
 import Vector3 = MeshBuilder.Vector3;
 import PulseRing = Scans.PulseRing;
 
@@ -61,12 +61,14 @@ export class PlayerStateTracking extends Behaviour {
       console.log("Starting player state tracking")
 
       this.stream = Alt1GLCapturedFrame.subscribe({
-        features: ["vertexarray", "uniforms"],
+        features: [/*"vertexarray", */"uniforms"],
         framecooldown: 600,
       }, (frame) => {
-        //console.log(`Got renders ${frame.renders.length}`)
-        this.parsePlayerState(frame);
+        console.log(`Got renders ${frame.renders.length}`)
+        this.framed_state.set(PlayerStateTracking.parsePlayerState(frame));
       });
+
+      this.lifetime_manager.bind(this.stream)
     } else {
       console.log("Alt1GL not available, skipping player state tracking")
     }
@@ -78,24 +80,6 @@ export class PlayerStateTracking extends Behaviour {
     this.stream = null
   }
 
-  private parsePlayerState(frame: Alt1GLCapturedFrame): void {
-    console.log(`${frame.renders.length} Renders`)
-
-    const position = PlayerStateTracking.detectPlayerPosition(frame);
-    const scan_pulse = PlayerStateTracking.detectPulseRing(frame, position)
-    const compass = CapturedCompassGl.findCompass(frame)
-
-    this.framed_state.set({
-      frame: frame.frame_number,
-      value: {
-        position: TrackedPlayerPosition.fromPosition(position),
-        pulse_type: scan_pulse,
-        compass_angle: compass?.getAngle()
-      }
-    })
-  }
-
-
   static _instance = lazy(() => new PlayerStateTracking().start())
 
   public static instance() {
@@ -104,6 +88,21 @@ export class PlayerStateTracking extends Behaviour {
 }
 
 export namespace PlayerStateTracking {
+  export function parsePlayerState(frame: Alt1GLCapturedFrame): FramedValue<PlayerState> {
+    const position = PlayerStateTracking.detectPlayerPosition(frame);
+    const scan_pulse = PlayerStateTracking.detectPulseRing(frame, position)
+    const compass = null // CapturedCompassGl.findCompass(frame)
+
+    return {
+      frame: frame.frame_number,
+      value: {
+        position: TrackedPlayerPosition.fromPosition(position),
+        pulse_type: scan_pulse,
+        compass_angle: compass?.getAngle()
+      }
+    }
+  }
+
   export function detectPlayerPosition(frame: Alt1GLCapturedFrame): Vector3 {
     const TILESIZE = 512;
 
@@ -138,10 +137,14 @@ export namespace PlayerStateTracking {
    */
   export function detectPulseRing(frame: Alt1GLCapturedFrame, position: Vector3): PulseRing | null {
     if (!position) return null
+
     for (let render of frame.renders) {
       if (!render.progmeta.get().isAnimated || !render.progmeta.get().isMainMesh) continue
+
       try {
-        const verts = render.raw.renderRanges?.reduce((s: number, r: RenderRange) => s + r.length, 0) || 0;
+        if (!render.raw.renderRanges) continue;
+
+        const verts = lodash.sumBy(render.raw.renderRanges, r => r.length);
         const m = getUniformValue(render.raw.uniformState, render.progmeta.get().uModelMatrix)[0];
         if (toTile(m[12]) !== position.x || toTile(m[14]) !== position.z) continue;
         if (verts === 576) return 1;
