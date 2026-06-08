@@ -26,6 +26,8 @@ export class Alt1GLCapturedFrame {
   static subscribe(options: RecordRenderOptions, handler: (_: Alt1GLCapturedFrame) => void): Alt1GLFrameStream {
     return new Alt1GLFrameStream(
       Alt1.instance().opengl.get().streamRenderCalls(options, renders => {
+        console.log(`captured ${renders.length} renders`)
+
         handler(new Alt1GLCapturedFrame(options, renders))
 
         // Immediately detach from renders invocations instead of waiting for them being garbage collected.

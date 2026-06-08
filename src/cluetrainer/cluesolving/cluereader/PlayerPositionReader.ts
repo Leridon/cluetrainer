@@ -64,7 +64,6 @@ export class PlayerStateTracking extends Behaviour {
         features: [/*"vertexarray", */"uniforms"],
         framecooldown: 600,
       }, (frame) => {
-        console.log(`Got renders ${frame.renders.length}`)
         this.framed_state.set(PlayerStateTracking.parsePlayerState(frame));
       });
 
