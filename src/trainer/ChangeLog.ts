@@ -408,6 +408,7 @@ export namespace Changelog {
           .item("Added new Havenhythe teleports on the Nature's sentinel outfit and updated menu hotkeys accordingly.")
           .item("Added new fairy ring (DLP) at Amberfell.")
           .item("Fixed inaccurate dig tile for an easy map clue near Falador.")
+          .item("Fixed a bug when setting a fairy ring favorite slot back to empty.")
         )
 
       builder.release(74, "Bug Fixes and Wendlewick Scan", date(2026, 5, 30))
