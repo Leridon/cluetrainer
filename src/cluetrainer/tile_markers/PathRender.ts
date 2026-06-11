@@ -248,66 +248,96 @@ async function drawLine(
   }
 }
 
-async function drawBeamMarker(builder: MeshBuilder,
-                              tile: TileCoordinates,
-                              color: ColorRGBA,
-                              height_data: TileHeightData = TileHeightData.instance()
+async function drawRedClickMarker(builder: MeshBuilder,
+                                 tile: TileCoordinates,
+                                 color: ColorRGBA, // Note: Hand-crafted palette is used instead, but kept for signature parity
+                                 height_data: TileHeightData = TileHeightData.instance(),
+                                 markerHeightOffset: number = 5
 ): Promise<void> {
   const lx = tile.x;
   const lz = tile.y;
 
-  const beamHeight = 15.0;
-  const bottomRadius = 0.8;
-  const topRadius = 0.02;
-  const segments = 12;
+  // Center of the tile
+  const cx = lx + 0.5;
+  const cz = lz + 0.5;
 
-  const tiltX = 0.15;
-  const tiltZ = 0.08;
+  // Arrow Dimensions
+  const shaftRadius = 0.12;
+  const headRadius = 0.30;
+  const totalHeight = 0.9;
+  const headHeight = 0.35;
 
-  const centerX = 0.5;
-  const centerZ = 0.5;
+  // Vertical positioning
+  const baseOffsetY = TILE_MARKER_VERTICAL_OFFSET + markerHeightOffset;
+  const tipY = baseOffsetY;
+  const junctionY = baseOffsetY + headHeight;
+  const topY = baseOffsetY + totalHeight;
 
-  const topCenterX = centerX + tiltX;
-  const topCenterZ = centerZ + tiltZ;
+  // --- Colors ---
+  const cBright: ColorRGBA = [255, 0, 0, 255];
+  const cMid: ColorRGBA    = [140, 0, 0, 255];
+  const cDark: ColorRGBA   = [60, 0, 0, 255];
+  const cDeep: ColorRGBA   = [20, 0, 0, 255];
 
-  const bottomColor: ColorRGBA = [255, 20, 20, 80];
-  const topColor: ColorRGBA = [255, 100, 100, 0];
+  // Pre-calculated trigonometric offsets for an 8-sided circle (45-degree increments)
+  // Indices: 0: +X, 1: +X+Z, 2: +Z, 3: -X+Z, 4: -X, 5: -X-Z, 6: -Z, 7: +X-Z
+  const cos8 = [1.0,  0.7071,  0.0, -0.7071, -1.0, -0.7071,  0.0,  0.7071];
+  const sin8 = [0.0,  0.7071,  1.0,  0.7071,  0.0, -0.7071, -1.0, -0.7071];
 
-  const bottomVerts: Vertex[] = [];
-  const topVerts: Vertex[] = [];
+  // Color palette assignment for each of the 8 directions to simulate depth/shading
+  const sideColors: ColorRGBA[] = [cMid, cBright, cBright, cMid, cMid, cDark, cDark, cDeep];
 
-  for (let i = 0; i < segments; i++) {
-    const angle = (i / segments) * 2 * Math.PI;
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
+  // Arrow Tip (Single point at the very bottom)
+  const tip = builder.createVertex(await height_data.resolve({x: cx, y: cz, level: tile.level}, tipY), cBright);
 
-    const bottomV = builder.createVertex(
-      await height_data.resolve({
-        x: lx + centerX + cos * bottomRadius,
-        y: lz + centerZ + sin * bottomRadius,
-        level: tile.level
-      }, FLOOR_OVERLAY_VERTICAL_OFFSET), bottomColor);
+  // Arrays to hold the ring vertices
+  const headBaseVertices: any[] = [];
+  const shaftBottomVertices: any[] = [];
+  const shaftTopVertices: any[] = [];
 
-    const topV = builder.createVertex(await height_data.resolve({
-      x: lx + topCenterX + cos * topRadius,
-      y: lz + topCenterZ + sin * topRadius,
-      level: tile.level
-    }, 0), topColor);
+  // Generate the 3 rings of 8 vertices each
+  for (let i = 0; i < 8; i++) {
+    const cos = cos8[i];
+    const sin = sin8[i];
+    const color = sideColors[i];
 
-    bottomVerts.push(bottomV);
-    topVerts.push(topV);
+    // Arrow Head Outer Rim
+    const hx = cx + headRadius * cos;
+    const hz = cz + headRadius * sin;
+    headBaseVertices.push(builder.createVertex(await height_data.resolve({x: hx, y: hz, level: tile.level}, junctionY), color));
+
+    // Shaft Bottom (Where shaft meets the cone head)
+    const sbx = cx + shaftRadius * cos;
+    const sbz = cz + shaftRadius * sin;
+    shaftBottomVertices.push(builder.createVertex(await height_data.resolve({x: sbx, y: sbz, level: tile.level}, junctionY), cDeep));
+
+    // Shaft Top (The flat back end of the arrow)
+    const stx = cx + shaftRadius * cos;
+    const stz = cz + shaftRadius * sin;
+    shaftTopVertices.push(builder.createVertex(await height_data.resolve({x: stx, y: stz, level: tile.level}, topY), color));
   }
 
-  for (let i = 0; i < segments; i++) {
-    const next = (i + 1) % segments;
-    builder.quad(bottomVerts[i], bottomVerts[next], topVerts[next], topVerts[i]);
+
+  for (let i = 0; i < 8; i++) {
+    const next = (i + 1) % 8; // Wrap around to close the circle
+
+    // Cone Tip (Connects Tip to the Outer Head Ring)
+    // Reversed order compared to your code if backface culling issues occur: (tip, headBaseVertices[next], headBaseVertices[i])
+    builder.triangle(tip, headBaseVertices[next], headBaseVertices[i]);
+
+    // Inner Collar Rim (The flat lip under the arrow head connecting outer head to inner shaft)
+    builder.triangle(headBaseVertices[i], shaftBottomVertices[i], headBaseVertices[next]);
+    builder.triangle(shaftBottomVertices[i], shaftBottomVertices[next], headBaseVertices[next]);
+
+    // Shaft Walls (The cylinder bodies)
+    builder.triangle(shaftBottomVertices[i], shaftTopVertices[i], shaftTopVertices[next]);
+    builder.triangle(shaftBottomVertices[i], shaftTopVertices[next], shaftBottomVertices[next]);
   }
 
-  const bottomCenter = builder.createVertex(await height_data.resolve({x: lx + centerX, y: lz + centerZ, level: tile.level}, beamHeight), [255, 0, 0, 100]);
-
-  for (let i = 0; i < segments; i++) {
-    const next = (i + 1) % segments;
-    builder.triangle(bottomCenter, bottomVerts[next], bottomVerts[i]);
+  // Flat Top Cap (Polygon fan closing the top back of the shaft)
+  // Uses vertex 0 as the root anchor for the triangle fan
+  for (let i = 1; i < 7; i++) {
+    builder.triangle(shaftTopVertices[0], shaftTopVertices[i], shaftTopVertices[i + 1]);
   }
 }
 
@@ -385,7 +415,7 @@ export async function buildPathMesh(
       }
 
       case "redclick": {
-        await drawBeamMarker(builder, step.where, COLORS.redclick);
+        await drawRedClickMarker(builder, step.where, COLORS.redclick);
 
         break;
       }
