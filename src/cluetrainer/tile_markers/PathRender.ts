@@ -250,7 +250,7 @@ async function drawLine(
 
 async function drawRedClickMarker(builder: MeshBuilder,
                                  tile: TileCoordinates,
-                                 color: ColorRGBA, // Note: Hand-crafted palette is used instead, but kept for signature parity
+                                 color: ColorRGBA,
                                  height_data: TileHeightData = TileHeightData.instance(),
                                  markerHeightOffset: number = 5
 ): Promise<void> {
