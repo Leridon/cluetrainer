@@ -291,9 +291,9 @@ async function drawRedClickMarker(builder: MeshBuilder,
   const tip = builder.createVertex(await height_data.resolve({x: cx, y: cz, level: tile.level}, tipY), cBright);
 
   // Arrays to hold the ring vertices
-  const headBaseVertices: any[] = [];
-  const shaftBottomVertices: any[] = [];
-  const shaftTopVertices: any[] = [];
+  const headBaseVertices: MeshBuilder.Vertex[] = [];
+  const shaftBottomVertices: MeshBuilder.Vertex[] = [];
+  const shaftTopVertices: MeshBuilder.Vertex[] = [];
 
   // Generate the 3 rings of 8 vertices each
   for (let i = 0; i < 8; i++) {
