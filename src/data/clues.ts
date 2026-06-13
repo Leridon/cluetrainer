@@ -1,5 +1,5 @@
-import {Clues, type ClueType} from "../cluetrainer/model/Clues";
-import {ClueIndex, ClueSpotIndex} from "../cluetrainer/model/clues/ClueIndex";
+import {Clues, ClueType} from "lib/runescape/clues"
+import {ClueIndex, ClueSpotIndex} from "../lib/runescape/clues/ClueIndex";
 
 export namespace clue_data {
   export const gielinor_compass: Clues.Compass =
