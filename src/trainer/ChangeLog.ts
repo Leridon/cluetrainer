@@ -410,6 +410,7 @@ export namespace Changelog {
           .item("Fixed inaccurate dig tile for an easy map clue near Falador.")
           .item("Fixed a bug when setting a fairy ring favorite slot back to empty.")
           .item("Fixed exact dig position for a hard clue.")
+          .item("Fixed unintended overwrites of method names when cloning a method.")
         )
 
       builder.release(74, "Bug Fixes and Wendlewick Scan", date(2026, 5, 30))
