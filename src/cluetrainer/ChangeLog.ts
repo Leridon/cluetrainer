@@ -403,6 +403,12 @@ export namespace Changelog {
     .tap(builder => {
 
         builder.wip(76, "Clue Trainer GL")
+          .header("Patch 5")
+          .list(l => l
+            .item("Updated redclick marker (by Spare).")
+            .item("Updated various broken methods (by Ngis).")
+            .item("Add background player position and scan pulse tracking. Neither is actually used for solving yet.")
+          )
           .header("Patch 4")
           .list(l => l
             .item("Added an old api for the terrain height data as a fallback.")
