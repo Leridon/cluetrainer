@@ -427,12 +427,16 @@ export namespace Changelog {
         function date(year: number, month: number, day: number): Date {
           return new Date(year, month - 1, day)
         }
-
-        builder.wip(75, "TBD")
-          .list(l => l
-            .item("Added new Havenhythe teleports on the Nature's sentinel outfit and updated menu hotkeys accordingly.")
-            .item("Added new fairy ring (DLP) at Amberfell.")
-          )
+      builder.wip(75, "TBD")
+        .list(l => l
+          .item("Added new Havenhythe teleports on the Nature's sentinel outfit and updated menu hotkeys accordingly.")
+          .item("Added new fairy ring (DLP) at Amberfell.")
+          .item("Fixed inaccurate dig tile for an easy map clue near Falador.")
+          .item("Fixed a bug when setting a fairy ring favorite slot back to empty.")
+          .item("Fixed exact dig position for a hard clue.")
+          .item("Fixed unintended overwrites of method names when cloning a method.")
+          .item("Updated various methods that broke due to updated environments.")
+        )
 
         builder.release(74, "Bug Fixes and Wendlewick Scan", date(2026, 5, 30))
           .list(l => l

@@ -143,7 +143,10 @@ export class NewMethodModal extends FormModal<{
             const meta = lodash.cloneDeep(this.edit.get())
 
             meta.assumptions = ClueAssumptions.filterWithRelevance(p.default_assumptions, ClueAssumptions.Relevance.forSpot(this.spot))
-            meta.name = p.default_method_name
+
+            if (!meta.name && p.default_method_name) {
+              meta.name = p.default_method_name
+            }
 
             this.edit.setValue(meta)
           }

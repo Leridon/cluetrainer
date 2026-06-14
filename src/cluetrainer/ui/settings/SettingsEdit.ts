@@ -322,7 +322,7 @@ class TeleportSettingsEdit extends AbstractSettingsEdit<Settings.TeleportSetting
         content: new FairyRingSelector()
           .set(e)
           .onSelection(s => {
-            active_preset.fairy_ring_favourites[i] = s.id
+            active_preset.fairy_ring_favourites[i] = s ? s.id : null
           })
       }
     }), 2))
