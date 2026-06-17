@@ -1,4 +1,4 @@
-import {Clues, type ClueType} from "lib/runescape/clues";
+import {Clues, ClueType} from "lib/runescape/clues"
 import {ClueIndex, ClueSpotIndex} from "../lib/runescape/clues/ClueIndex";
 
 export namespace clue_data {
@@ -2040,7 +2040,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "hard",
       "text": ["46 is my number. My body is the colour of burnt orange and crawls among those with eight. Three mouths I have, yet I cannot eat. My blinking blue eye hides my grave."],
-      "solution": {"type": "dig", "spot": {"x": 3169, "y": 3887, "level": 0}, "description": "on top of the sapphire spawn"}
+      "solution": {"type": "dig", "spot": {"x": 3170, "y": 3885, "level": 0}, "description": "on top of the sapphire spawn"}
     }, {
       "id": 219,
       "type": "cryptic",
