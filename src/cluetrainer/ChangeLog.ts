@@ -389,6 +389,10 @@ export namespace Changelog {
       return this.render(layout => layout.row(tap(new List(), f)))
     }
 
+    paragraph(text: string): this {
+      return this.render(layout => layout.paragraph(text))
+    }
+
     header(header: string): this {
       return this.render(layout => layout.header(header, "left"))
     }
@@ -402,6 +406,9 @@ export namespace Changelog {
   export const log: ChangeLog = new ChangelogBuilder()
     .tap(builder => {
 
+        function date(year: number, month: number, day: number): Date {
+          return new Date(year, month - 1, day)
+        }
         builder.wip(76, "Clue Trainer GL")
           .header("Patch 5")
           .list(l => l
@@ -430,19 +437,40 @@ export namespace Changelog {
             .item("Better caching for tile height data.")
           )
 
-        function date(year: number, month: number, day: number): Date {
-          return new Date(year, month - 1, day)
-        }
-      builder.wip(75, "TBD")
-        .list(l => l
-          .item("Added new Havenhythe teleports on the Nature's sentinel outfit and updated menu hotkeys accordingly.")
-          .item("Added new fairy ring (DLP) at Amberfell.")
-          .item("Fixed inaccurate dig tile for an easy map clue near Falador.")
-          .item("Fixed a bug when setting a fairy ring favorite slot back to empty.")
-          .item("Fixed exact dig position for a hard clue.")
-          .item("Fixed unintended overwrites of method names when cloning a method.")
-          .item("Updated various methods that broke due to updated environments.")
-        )
+        builder.release(75, "Fixes and Method Updates", date(2026, 6, 17))
+          .list(l => l
+            .item("Added new Havenhythe teleports on the Nature's sentinel outfit and updated menu hotkeys accordingly.")
+            .item("Updated archaeology teleport keybinds and added new Moonrise digsite and Artiefax collector.")
+            .item("Added new fairy ring (DLP) at Amberfell.")
+            .item("Fixed inaccurate dig tile for an easy map clue near Falador.")
+            .item("Fixed a bug when setting a fairy ring favorite slot back to empty.")
+            .item("Fixed exact dig position for a hard clue.")
+            .item("Fixed unintended overwrites of method names when cloning a method.")
+          ).header("Method updates")
+          .paragraph("Ngis has been hard at work to bring you a a bunch of new and updated paths. Some of them fix blocking issues that appeared due to environment updates in the game. See the full list below.")
+          .list(l => l
+            .item("Easies", new List()
+              .item("Added route for the Havenhythe upstairs barrel.")
+              .item("Fixed blocking for the southern Port Khazard clue.")
+            )
+            .item("Hards", new List()
+              .item("Added a lodestone method for the Fort Forinthry crate.")
+              .item("Updated path for the Lumbridge Castle 1st floor.")
+              .item("Updated path for the Uglug Naar anagram.")
+              .item("Updated path for the Rock crab beach coordinate clue.")
+              .item("Updated path for the Deserted Keep coordinate clue.")
+              .item("Fixed path for the Lumbridge windmill.")
+              .item("Fixed path for the cryptic clue in level 46 wilderness.")
+              .item("Fixed path for the Nature Grotto coordinate clue.")
+            )
+            .item("Elites", new List()
+              .item("Updated and fixed path for the compass spots 19, 27, 61, 98, 161, 338, 368, and 454.")
+            )
+            .item("Masters", new List()
+              .item("Updated path for the Sensei Seaworth anagram clue.")
+              .item("Fixed path for the Darkmeyer scan.")
+            )
+          )
 
         builder.release(74, "Bug Fixes and Wendlewick Scan", date(2026, 5, 30))
           .list(l => l
@@ -460,30 +488,6 @@ export namespace Changelog {
         builder.release(73, "Compass Fix", new Date(Date.parse("2026-05-04")))
           .list(l => l
             .item("Fixed a bug that messed up compass angles introduces in v72.")
-          )
-
-        builder.release(72, "Fixes and Methods", new Date(Date.parse("2026-05-04")))
-          .header("General")
-          .list(l => l
-            .item("Fixed that the weapon range assumption could not be set for method packs.")
-            .item("Fixed that non-default escape ranges were not shown in the assumption summary.")
-            .item("Updated challenge answer for Emissary of Zamorak medium clue.")
-            .item("Improved detection of meerkat and triple pulse for scan clues.")
-            .item("Fixed minimap detection for scan range overlay.")
-            .item("Fixed location of easy map clue west of the Champion's Guild.")
-            .item("Fixed a bug that caused orthogonal abilities of length 1 to not be rendered.")
-            .item("Added the Marigold Farm variant of the Wendlewick teleport.")
-            .item("Added an export option of advanced method analysis data to method packs.")
-          )
-          .header("Methods")
-          .list(l => l
-            .item("Updated method for the Easy Clue step west of Champions Guild to match the current dig location.")
-            .item("Updated two paths for elite compass spots that no longer worked due to updated blocking.")
-            .item("Added alternative methods for elite compass spots that exclusively relied on wicked hood teleports.", new List()
-              .item("3 spots near Mind Altar.")
-              .item("3 spots near Nature Altar.")
-              .item("2 spots near Earth Altar.")
-            )
           )
 
         builder.release(72, "Fixes and Methods", new Date(Date.parse("2026-05-04")))
