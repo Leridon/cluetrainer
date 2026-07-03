@@ -1,9 +1,9 @@
-import {TileCoordinates, TileRectangle} from "../../runescape/coordinates";
-import {TileArea} from "../../runescape/coordinates/TileArea";
-import {Rectangle} from "../../math";
+import {TileCoordinates, TileRectangle} from "../../lib/runescape/coordinates";
+import {TileArea} from "../../lib/runescape/coordinates/TileArea";
+import {Rectangle} from "../../lib/math";
 import {rangeRight} from "lodash";
-import {Scans} from "../../../cluetrainer/model/clues/Scans";
-import {ScanTree} from "../../../cluetrainer/cluetheory/scans/ScanTree";
+import {Scans} from "../model/clues/Scans";
+import {ScanTree} from "./scans/ScanTree";
 
 export namespace ScanTheory {
 

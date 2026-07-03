@@ -1,5 +1,4 @@
-import * as leaflet from "leaflet";
-import {floor_t, TileCoordinates} from "../../../lib/runescape/coordinates";
+import {floor_t, TileCoordinates, TileRectangle} from "../../../lib/runescape/coordinates";
 import {Raster} from "../../../lib/util/raster";
 import {Scans} from "../../model/clues/Scans";
 
@@ -73,29 +72,15 @@ export namespace ScanProfile {
         return
       }
 
-      let bounds = leaflet.bounds(this.options.candidates.map((c) => leaflet.point(c.x, c.y)))
+      const bounds = TileRectangle.translate(
+        TileRectangle.extend(TileRectangle.from(...this.options.candidates), (this.options.complement ? (this.options.range + 15) : (2 * this.options.range)) + 1),
+        {x: 0, y: this.options.complement ? 6400 : 0}
+      )
 
-      this.raster = new Raster<ScanProfileEquivalenceClass>(this.options.complement ?
-        {
-          topleft: {
-            x: bounds.getTopLeft().x - (this.options.range + 15),
-            y: ((bounds.getBottomLeft().y + (this.options.range + 15) + 1) + 6400) % 12800,    // the Y axis in leaflet.bounds is exactly opposite to what the map uses.
-          },
-          botright: {
-            x: bounds.getTopRight().x + (this.options.range + 15) + 1,
-            y: ((bounds.getTopLeft().y - (this.options.range + 15)) + 6400) % 12800
-          }
-        }
-        : {
-          topleft: {
-            x: bounds.getTopLeft().x - 2 * this.options.range,
-            y: bounds.getBottomLeft().y + 2 * this.options.range + 1,    // the Y axis in leaflet.bounds is exactly opposite to what the map uses.
-          },
-          botright: {
-            x: bounds.getTopRight().x + 2 * this.options.range,
-            y: bounds.getTopLeft().y - 2 * this.options.range
-          },
-        })
+      bounds.botright.y %= 12800
+      bounds.topleft.y %= 12800
+
+      this.raster = new Raster<ScanProfileEquivalenceClass>(bounds)
 
       this.equivalence_classes = []
 
