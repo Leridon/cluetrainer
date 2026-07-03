@@ -409,7 +409,8 @@ export namespace Changelog {
         function date(year: number, month: number, day: number): Date {
           return new Date(year, month - 1, day)
         }
-        builder.wip(76, "Clue Trainer GL")
+
+        /*builder.wip(76, "Clue Trainer GL")
           .header("Patch 5")
           .list(l => l
             .item("Updated redclick marker (by Spare).")
@@ -435,7 +436,7 @@ export namespace Changelog {
           .list(l => l
             .item("Added debug logging for invalid alt1 overlay calls.")
             .item("Better caching for tile height data.")
-          )
+          )*/
 
         builder.release(75, "Fixes and Method Updates", date(2026, 6, 17))
           .list(l => l

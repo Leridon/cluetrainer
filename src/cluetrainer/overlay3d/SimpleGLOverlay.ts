@@ -50,7 +50,7 @@ export class SimpleGLOverlay extends Behaviour {
       );
 
       this.overlays.push(new Alt1GLOverlay(
-        Alt1.instance().opengl,
+        Alt1.instance().opengl(),
         t,
         SimpleGLOverlay.program.get(),
         this.geometry.vertexArray(),
@@ -138,7 +138,7 @@ export namespace SimpleGLOverlay {
     }
 
     private updateStreamState() {
-      if (!Alt1.instance().featureGl) return // Silently fail if alt1gl is not available
+      if (!Alt1.instance().featureGL()) return // Silently fail if alt1gl is not available
 
       const should_exist = this.active_triggers.observerCount() != 0
       const exists = !!this.stream

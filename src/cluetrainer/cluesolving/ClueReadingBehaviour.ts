@@ -97,7 +97,7 @@ export class ClueReadingBehaviour extends Behaviour {
   setAutoSolve(v: boolean) {
     this.autoSolve = v
 
-    if (Alt1.instance().featureGl) {
+    if (Alt1.instance().featureGL()) {
       /*Alt1GLCapturedFrame.subscribe({
         features: ["full"]
       }, frame => {
@@ -116,7 +116,7 @@ export class ClueReadingBehaviour extends Behaviour {
 
       const found =
         (await (async () => {
-          if (!Alt1.instance().featureGl) return null
+          if (!Alt1.instance().featureGL()) return null
 
           return this.solveGL(await Alt1GLCapturedFrame.capture())
         })()) ??

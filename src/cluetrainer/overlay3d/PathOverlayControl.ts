@@ -8,7 +8,7 @@ export class PathOverlayControl extends Behaviour {
   private _overlay: SimpleGLOverlay[] = [];
 
   public async setIngameOverlays(paths: Path[]): Promise<void> {
-    if (!Alt1.instance().featureGl) return;
+    if (!Alt1.instance().featureGL()) return;
 
     this.reset()
 

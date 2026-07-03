@@ -29,7 +29,7 @@ export class Alt1GLOverlay extends Behaviour {
 
     console.log(`Starting overlay ${Alt1GLOverlay._active_overlays.length++}`)
 
-    this.overlayHandle = this.session.raw().beginOverlay(
+    this.overlayHandle = this.session.get().beginOverlay(
       this.renderFilter,
       this.program.get(),
       this.vertexObjectId.vertex_array,

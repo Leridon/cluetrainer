@@ -10,7 +10,7 @@ export class Alt1GLSession {
   }
 
   private refreshSession() {
-    if (!this.alt1.featureGl || !this.alt1.raw.permissionGLApi) {
+    if (!this.alt1.featureGL() || !this.alt1.raw.permissionGLApi) {
       return
     }
 
@@ -32,7 +32,8 @@ export class Alt1GLSession {
     return this.session
   }
 
-  public raw(): Alt1GlClient {
-    return this.session
+  public forceClose() {
+    this.session?.close()
+    this.session = undefined
   }
 }

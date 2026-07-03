@@ -12,9 +12,9 @@ import {Log} from "../util/Log";
 import log = Log.log;
 
 export class Alt1 {
-  public readonly raw: typeof globalThis.alt1 = alt1
+  public readonly raw: typeof globalThis.alt1 = globalThis.alt1
 
-  public readonly featureGl: boolean = alt1?.permissionGLApi != undefined
+  private _alt1gl_disabled: boolean = false
 
   public readonly mouse_tracking = new Alt1MouseTracking()
   public readonly main_hotkey = new Alt1MainHotkeyEvent()
@@ -22,16 +22,33 @@ export class Alt1 {
   public readonly tooltips = new Alt1TooltipManager()
   public readonly capturing = new Alt1ScreenCaptureService()
   public readonly overlays = new Alt1OverlayManager()
-  public readonly opengl = this.featureGl ? new Alt1GLSession(this) : undefined
+  private _opengl = this.featureGL() ? new Alt1GLSession(this) : undefined
 
   private static _instance = lazy(() => new Alt1())
 
   private constructor() {
-    this.raw.on("log", e => log().log(e.message, "Alt1"))
+    if (this.featureGL()) {
+      this.raw?.on("log", e => log().log(e.message, "Alt1"))
+    }
   }
 
   public static instance(): Alt1 {
     return this._instance.get()
+  }
+
+  public disableGLApi(): void {
+    this._alt1gl_disabled = true
+
+    this._opengl?.forceClose()
+    this._opengl = undefined
+  }
+
+  public featureGL(): boolean {
+    return !this._alt1gl_disabled && this.raw?.permissionGLApi != undefined
+  }
+
+  public opengl(): Alt1GLSession {
+    return this._opengl
   }
 
   public permissions(): Alt1.Permissions {

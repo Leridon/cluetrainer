@@ -57,7 +57,7 @@ export class PlayerStateTracking extends Behaviour {
 
   protected begin() {
 
-    if (Alt1.instance().featureGl) {
+    if (Alt1.instance().featureGL()) {
       console.log("Starting player state tracking")
 
       this.stream = Alt1GLCapturedFrame.subscribe({

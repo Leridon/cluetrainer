@@ -375,7 +375,7 @@ export namespace CompassReader {
 
     protected begin() {
 
-      if (!this.use_alt1gl_reader || !Alt1.instance().featureGl) {
+      if (!this.use_alt1gl_reader || !Alt1.instance().featureGL()) {
         this.lifetime_manager.bind(
           Alt1.instance().capturing.subscribe({
             options: () => {

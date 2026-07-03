@@ -1562,20 +1562,6 @@ class DataManagementEdit extends Widget {
   }
 }
 
-class ExperimentalSettingsEdit extends AbstractSettingsEdit<Settings.ExperimentalSettings> {
-  constructor(value: Settings.ExperimentalSettings) {
-    super(value);
-
-    this.render()
-  }
-
-  render() {
-    this.layout.empty()
-    this.layout.checkbox("Enable experimental Alt1GL features", this.value, "alt1gl_enabled")
-    this.layout.paragraph("Alt1GL features are highly experimental and may induce crashes of Clue Trainer, Alt1, or the entire game. It can cause performance issues with both Clue Trainer or the game, including memory leaks and a variety of other bugs. Use at your own risk. Requires Alt1GL api to be available.")
-  }
-}
-
 export class SettingsEdit extends Widget {
   value: Settings.Settings
 
@@ -1650,13 +1636,7 @@ export class SettingsEdit extends Widget {
             name: "Data Export",
             short_name: "Data",
             renderer: () => new DataManagementEdit()
-          }, {
-            id: "experimental",
-            name: "Experimental",
-            short_name: "Experimental",
-            renderer: () => new ExperimentalSettingsEdit(this.value.experimental)
-          }
-          ]
+          }]
         },
       ])
         .setActiveSection(start_section)
