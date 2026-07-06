@@ -424,6 +424,7 @@ export class ClueTrainer extends Behaviour {
 
       this.map.addLayer(status_widget)
 
+      /*
       PlayerStateTracking.instance().framed_state.subscribe(state => {
         if (state.value.position) {
           position_highlight.setPosition(state.value.position.tile)
@@ -441,7 +442,7 @@ export class ClueTrainer extends Behaviour {
         status_widget.content.text(text)
 
         console.log(state)
-      })
+      })*/
     }
   }
 
