@@ -32,11 +32,17 @@ import {SimpleScanSolving} from "./subbehaviours/scans/SimpleScanSolving";
 import {ScanSolving} from "./subbehaviours/scans/ScanSolving";
 import {Transportation} from "../../lib/runescape/transportation";
 import {SettingsNormalization} from "../../lib/util/SettingsNormalization";
-import {ScanTree} from "../cluetheory/scans/ScanTree";
 import {PathOverlayControl} from "../overlay3d/PathOverlayControl";
 import {ClueSolvingMapLayer} from "./ClueSolvingMapLayer";
 import {ClueReadingBehaviour} from "./ClueReadingBehaviour";
 import {AugmentedMethod} from "../model/MethodPack";
+import z from "zod";
+import {SC} from "../../lib/settings";
+import {MeshBuilder} from "../overlay3d/meshes/MeshBuilder";
+import {Alt1} from "../../lib/alt1/Alt1";
+import {drawTileArea} from "../tile_markers/PathRender";
+import {Mesh} from "../overlay3d/meshes/Mesh";
+import {SimpleGLOverlay} from "../overlay3d/SimpleGLOverlay";
 import span = C.span;
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import interactionMarker = RenderingUtility.interactionMarker;
@@ -55,8 +61,6 @@ import ClueSpot = Clues.ClueSpot;
 import log = Log.log;
 import default_interactive_area = Transportation.EntityTransportation.default_interactive_area;
 import digSpotArea = Clues.digSpotArea;
-import z from "zod";
-import {SC} from "../../lib/settings";
 
 /**
  * ClueSolvingBehaviour is the central coordinator for clue solving.
@@ -85,6 +89,8 @@ export default class ClueSolvingBehaviour extends Behaviour {
 
   // Component responsible for drawing and managing ingame path overlays using Alt1Gl
   private overlay_control: PathOverlayControl
+
+  private gl_overlay = this.withSub(new SingleBehaviour<SimpleGLOverlay>())
 
   constructor(public app: ClueTrainer, public tetracompass_only: boolean) {
     super();
@@ -565,6 +571,40 @@ export default class ClueSolvingBehaviour extends Behaviour {
 
       this.activateSubBehaviour(behaviour)
     }
+
+    // Render gl overlays
+    if (Alt1.instance().featureGL()) {
+      (async (): Promise<Mesh> => {
+        const builder = new MeshBuilder()
+
+        switch (step.step.type) {
+          case "emote":
+            await drawTileArea(builder, step.step.area, [255, 0, 255, 255])
+
+            step.step.area
+            break
+          case "map":
+          case "cryptic":
+          case "simple":
+          case "coordinates":
+            switch (step.step.solution.type) {
+              case "dig":
+                await drawTileArea(builder,
+                  digSpotArea(step.step.solution.spot),
+                  [100, 100, 100, 255]
+                )
+
+                break;
+            }
+        }
+
+        return builder.finalize()
+      })().then(mesh => {
+        if (state != this.state) return
+
+        this.gl_overlay.set(new SimpleGLOverlay(mesh))
+      })
+    }
   }
 
   /**
@@ -695,6 +735,7 @@ export default class ClueSolvingBehaviour extends Behaviour {
     this.method_selector.hide()
     this.state = null
     this.active_method = null
+    this.gl_overlay.set(null)
 
     log().log("Reset state", "Solving")
 

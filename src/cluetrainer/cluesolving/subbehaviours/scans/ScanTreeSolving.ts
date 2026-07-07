@@ -30,8 +30,10 @@ import {MinimapReader} from "../../../../lib/alt1/readers/MinimapReader";
 import {ClueTrainerWiki} from "../../../wiki";
 import {SettingsModal} from "../../../ui/settings/SettingsEdit";
 import {AugmentedMethod} from "../../../model/MethodPack";
-import {PathOverlay3d} from "../../../tile_markers/PathRender";
+import {drawTileArea, PathOverlay3d} from "../../../tile_markers/PathRender";
 import {SingleBehaviour} from "../../../../lib/ui/Behaviour";
+import {SimpleGLOverlay} from "../../../overlay3d/SimpleGLOverlay";
+import {MeshBuilder} from "../../../overlay3d/meshes/MeshBuilder";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
 import cls = C.cls;
@@ -119,6 +121,7 @@ export class ScanTreeSolving extends ClueSolvingSubBehaviour {
   tree_widget: Widget
 
   private overlay: SingleBehaviour<PathOverlay3d> = this.withSub(new SingleBehaviour<PathOverlay3d>())
+  private region_overlay: SingleBehaviour<SimpleGLOverlay> = this.withSub(new SingleBehaviour<SimpleGLOverlay>())
 
   constructor(parent: ClueSolvingBehaviour,
               public method: AugmentedMethod<ScanTreeMethod, Clues.Scan>,
@@ -342,9 +345,22 @@ export class ScanTreeSolving extends ClueSolvingSubBehaviour {
 
     const is_triple_disambiguation = node.children.every(c => c.key.pulse == 3)
 
+    {
+      const region = ScanTree.getTargetRegion(node)
+
+      const region_builder = new MeshBuilder()
+
+      drawTileArea(region_builder,
+        region.area,
+        [0, 255, 0, 50],
+      ).then(() => {
+        this.region_overlay.set(new SimpleGLOverlay(region_builder.finalize()))
+      })
+    }
+
     const overlay_relevant_nodes = [
       ...ScanTree.Augmentation.AugmentedScanTree.collect_parents(node),
-      ...node.children.map(c => c.value).filter(n => is_triple_disambiguation || n.parent.key.pulse != 3)
+      //...node.children.map(c => c.value).filter(n => is_triple_disambiguation || n.parent.key.pulse != 3)
     ] //ScanTree.Augmentation.AugmentedScanTree.collect_parents_and_children(node)
 
     PathOverlay3d.forPaths(overlay_relevant_nodes.map(n => n.raw.path)).then(overlay => {

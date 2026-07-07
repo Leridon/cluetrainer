@@ -7,6 +7,7 @@ import {Vector2} from "../../lib/math";
 import {chunksize, tilesize} from "../../lib/alt1/alt1gllib/ts/overlays/tilemarkers";
 import {SimpleGLOverlay} from "../overlay3d/SimpleGLOverlay";
 import {Mesh} from "../overlay3d/meshes/Mesh";
+import {TileArea} from "../../lib/runescape/coordinates/TileArea";
 import ColorRGBA = MeshBuilder.ColorRGBA;
 import Vector3 = MeshBuilder.Vector3;
 import Vertex = MeshBuilder.Vertex;
@@ -26,8 +27,9 @@ const ABILITY_COLORS: Record<MovementAbilities.movement_ability, MeshBuilder.Col
   barge: [150, 0, 255, 255],
 }
 
-const COLORS: Record<Path.Step["type"], MeshBuilder.ColorRGBA> = {
-  run: [100, 255, 100, 255],
+const COLORS: Record<Path.Step["type"] | "redclicked_run", MeshBuilder.ColorRGBA> = {
+  run: [255, 255, 255, 255],
+  redclicked_run: [255, 0, 0, 255],
   teleport: [255, 0, 255, 255],
   transport: [0, 255, 200, 255],
   powerburst: [255, 215, 0, 255],
@@ -73,15 +75,44 @@ export function getPathLevels(path: Path): Set<floor_t> {
   return levels;
 }
 
+export async function drawTileArea(builder: MeshBuilder,
+                                   area: TileArea,
+                                   color: ColorRGBA,
+                                   height_data = TileHeightData.instance()
+): Promise<void> {
+  const polygons = TileArea.activate(area).asMultipolygon()
+
+  const lines = polygons.flatMap(p => [p.outer])
+
+  for (let line of lines) {
+
+    for (let i = 1; i < line.length; i++) {
+      const from = line[i - 1]
+      const to = line[i]
+
+      await drawLine(builder,
+        TileCoordinates.lift(from, area.origin.level),
+        TileCoordinates.lift(to, area.origin.level),
+        color,
+        0.02,
+        false,
+        -.01, -.01, false,
+        height_data
+      )
+    }
+  }
+}
+
 async function drawTileMarker(builder: MeshBuilder,
                               tile: TileCoordinates,
                               color: ColorRGBA,
+                              inset: number = 0,
                               height_data = TileHeightData.instance()
 ): Promise<void> {
-  const outer00 = builder.createVertex(await height_data.resolveTileCorner(tile, "sw", TILE_MARKER_VERTICAL_OFFSET), color)
-  const outer01 = builder.createVertex(await height_data.resolveTileCorner(tile, "nw", TILE_MARKER_VERTICAL_OFFSET), color)
-  const outer11 = builder.createVertex(await height_data.resolveTileCorner(tile, "ne", TILE_MARKER_VERTICAL_OFFSET), color)
-  const outer10 = builder.createVertex(await height_data.resolveTileCorner(tile, "se", TILE_MARKER_VERTICAL_OFFSET), color)
+  const outer00 = builder.createVertex(Vector3.add(await height_data.resolveTileCorner(tile, "sw", TILE_MARKER_VERTICAL_OFFSET), {x: inset, y: 0, z: inset}), color)
+  const outer01 = builder.createVertex(Vector3.add(await height_data.resolveTileCorner(tile, "nw", TILE_MARKER_VERTICAL_OFFSET), {x: inset, y: 0, z: -inset}), color)
+  const outer11 = builder.createVertex(Vector3.add(await height_data.resolveTileCorner(tile, "ne", TILE_MARKER_VERTICAL_OFFSET), {x: -inset, y: 0, z: -inset}), color)
+  const outer10 = builder.createVertex(Vector3.add(await height_data.resolveTileCorner(tile, "se", TILE_MARKER_VERTICAL_OFFSET), {x: -inset, y: 0, z: inset}), color)
 
   const inner00 = builder.createVertex(Vector3.add(outer00.pos, {x: TILE_MARKER_BORDER, y: 0, z: TILE_MARKER_BORDER}), color)
   const inner01 = builder.createVertex(Vector3.add(outer01.pos, {x: TILE_MARKER_BORDER, y: 0, z: -TILE_MARKER_BORDER}), color)
@@ -92,23 +123,6 @@ async function drawTileMarker(builder: MeshBuilder,
   builder.quad(outer01, outer11, inner11, inner01)
   builder.quad(outer11, outer10, inner10, inner11)
   builder.quad(outer10, outer00, inner00, inner10)
-
-  /*
-  const drawBorderQuad = async (x0: number, z0: number, x1: number, z1: number): Promise<void> => {
-
-    const v0 = builder.createVertex(await height_data.resolve({x: lx + x0, y: lz + z0, level: tile.level}, TILE_MARKER_VERTICAL_OFFSET), color);
-    const v1 = builder.createVertex(await height_data.resolve({x: lx + x1, y: lz + z0, level: tile.level}, TILE_MARKER_VERTICAL_OFFSET), color);
-    const v2 = builder.createVertex(await height_data.resolve({x: lx + x1, y: lz + z1, level: tile.level}, TILE_MARKER_VERTICAL_OFFSET), color);
-    const v3 = builder.createVertex(await height_data.resolve({x: lx + x0, y: lz + z1, level: tile.level}, TILE_MARKER_VERTICAL_OFFSET), color);
-
-    builder.quad(v0, v1, v2, v3)
-  };
-
-  const t = TILE_MARKER_BORDER;
-  await drawBorderQuad(0, 0, 1, t);
-  await drawBorderQuad(0, 1 - t, 1, 1);
-  await drawBorderQuad(0, 0, t, 1);
-  await drawBorderQuad(1 - t, 0, 1, 1);*/
 }
 
 export function squareCrossSectionVector(dir: Vector2): Vector2 {
@@ -141,8 +155,8 @@ async function drawLine(
   color: ColorRGBA,
   thickness: number,
   showArrow: boolean,
-  startHasTile: boolean,
-  endHasTile: boolean,
+  startTileSize: number,
+  endTileSize: number,
   upper_hull: boolean,
   height_data = TileHeightData.instance()
 ): Promise<void> {
@@ -151,12 +165,12 @@ async function drawLine(
 
   const modified_start = Vector2.add(
     from,
-    startHasTile ? Vector2.scale(0.5, cross_section) : Vector2.ZERO
+    Vector2.scale(0.5 * startTileSize, cross_section)
   );
 
   const modified_end = Vector2.add(
     to,
-    endHasTile ? Vector2.scale(-0.5, cross_section) : Vector2.ZERO,
+    Vector2.scale(-0.5 * endTileSize, cross_section),
     showArrow ? Vector2.scale(-ARROW_HEAD_LENGTH, direction) : Vector2.ZERO
   )
 
@@ -249,10 +263,10 @@ async function drawLine(
 }
 
 async function drawRedClickMarker(builder: MeshBuilder,
-                                 tile: TileCoordinates,
-                                 color: ColorRGBA,
-                                 height_data: TileHeightData = TileHeightData.instance(),
-                                 markerHeightOffset: number = 5
+                                  tile: TileCoordinates,
+                                  color: ColorRGBA,
+                                  height_data: TileHeightData = TileHeightData.instance(),
+                                  markerHeightOffset: number = 5
 ): Promise<void> {
   const lx = tile.x;
   const lz = tile.y;
@@ -275,14 +289,14 @@ async function drawRedClickMarker(builder: MeshBuilder,
 
   // --- Colors ---
   const cBright: ColorRGBA = [255, 0, 0, 255];
-  const cMid: ColorRGBA    = [140, 0, 0, 255];
-  const cDark: ColorRGBA   = [60, 0, 0, 255];
-  const cDeep: ColorRGBA   = [20, 0, 0, 255];
+  const cMid: ColorRGBA = [140, 0, 0, 255];
+  const cDark: ColorRGBA = [60, 0, 0, 255];
+  const cDeep: ColorRGBA = [20, 0, 0, 255];
 
   // Pre-calculated trigonometric offsets for an 8-sided circle (45-degree increments)
   // Indices: 0: +X, 1: +X+Z, 2: +Z, 3: -X+Z, 4: -X, 5: -X-Z, 6: -Z, 7: +X-Z
-  const cos8 = [1.0,  0.7071,  0.0, -0.7071, -1.0, -0.7071,  0.0,  0.7071];
-  const sin8 = [0.0,  0.7071,  1.0,  0.7071,  0.0, -0.7071, -1.0, -0.7071];
+  const cos8 = [1.0, 0.7071, 0.0, -0.7071, -1.0, -0.7071, 0.0, 0.7071];
+  const sin8 = [0.0, 0.7071, 1.0, 0.7071, 0.0, -0.7071, -1.0, -0.7071];
 
   // Color palette assignment for each of the 8 directions to simulate depth/shading
   const sideColors: ColorRGBA[] = [cMid, cBright, cBright, cMid, cMid, cDark, cDark, cDeep];
@@ -345,7 +359,10 @@ export async function buildPathMesh(
   path: Path,
   builder: MeshBuilder = new MeshBuilder()
 ): Promise<MeshBuilder> {
-  let current_position_has_marker = false;
+  const MARKER_INSET = 0.1
+  const MARKER_SIZE = 1 - 2 * MARKER_INSET
+
+  let current_tile_marker_size = 0;
 
   for (let i = 0; i < path.length; i++) {
     const step = path[i];
@@ -356,12 +373,12 @@ export async function buildPathMesh(
 
         const draw_target_tile = step.ability == "dive" && !step.is_far_dive
 
-        await drawLine(builder, step.from, step.to, color, 0.05, true, current_position_has_marker, draw_target_tile, true);
+        await drawLine(builder, step.from, step.to, color, 0.05, true, current_tile_marker_size, draw_target_tile ? MARKER_SIZE : 0, true);
 
         // Mark target tile if it's a precise dive
-        if (draw_target_tile) await drawTileMarker(builder, step.to, color);
+        if (draw_target_tile) await drawTileMarker(builder, step.to, color, MARKER_INSET);
 
-        current_position_has_marker = draw_target_tile
+        current_tile_marker_size = draw_target_tile ? MARKER_SIZE : 0
 
         break;
       }
@@ -369,16 +386,19 @@ export async function buildPathMesh(
       case "run": {
         if (step.waypoints.length < 2) break;
 
+        const previous = path[i - 1]
+
+        const line_color = previous?.type == "redclick" && previous.target.kind == "npc" ? COLORS.redclicked_run : COLORS.run
+        const tile_color = previous?.type == "redclick"  ? COLORS.redclicked_run : COLORS.redclick
+
         for (let j = 0; j < step.waypoints.length - 1; j++) {
           const is_last = j === step.waypoints.length - 2;
 
-          const segStartHasTile = j === 0 && current_position_has_marker;
-
-          await drawLine(builder, step.waypoints[j], step.waypoints[j + 1], COLORS.run, 0.04, is_last, segStartHasTile, is_last, false);
+          await drawLine(builder, step.waypoints[j], step.waypoints[j + 1], line_color, 0.04, is_last, j === 0 ? current_tile_marker_size : 0, is_last ? MARKER_SIZE : 0, false);
         }
 
-        await drawTileMarker(builder, step.waypoints[step.waypoints.length - 1], COLORS.run);
-        current_position_has_marker = true
+        await drawTileMarker(builder, step.waypoints[step.waypoints.length - 1], tile_color, MARKER_INSET);
+        current_tile_marker_size = MARKER_SIZE
         break;
       }
 
@@ -387,29 +407,29 @@ export async function buildPathMesh(
           await drawTileMarker(builder, step.spot, COLORS.teleport);
         }
         current_position_has_marker = !!step.spot*/
-        current_position_has_marker = false
+        current_tile_marker_size = 0
         break;
       }
 
       case "transport": {
-        current_position_has_marker = step.is_arrival_only
+        current_tile_marker_size = step.is_arrival_only ? MARKER_SIZE : 0
 
         if (!step.is_arrival_only) break;
 
-        await drawTileMarker(builder, step.assumed_start, COLORS.transport);
+        await drawTileMarker(builder, step.assumed_start, COLORS.transport, MARKER_INSET);
 
         const dest = Path.ends_up([step])
 
         // TODO: Highlight the thing that needs to be clicked.
 
-        await drawLine(builder, step.assumed_start, dest, COLORS.transport, 0.05, true, true, true, true);
+        await drawLine(builder, step.assumed_start, dest, COLORS.transport, 0.05, true, 0, MARKER_SIZE, true);
 
         break;
       }
 
       case "powerburst": {
-        await drawTileMarker(builder, step.where, COLORS.powerburst);
-        current_position_has_marker = true
+        await drawTileMarker(builder, step.where, COLORS.powerburst, MARKER_INSET);
+        current_tile_marker_size = MARKER_SIZE
 
         break;
       }

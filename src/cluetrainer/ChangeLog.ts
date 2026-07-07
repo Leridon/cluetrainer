@@ -411,6 +411,15 @@ export namespace Changelog {
         }
 
         builder.wip(76, "Clue Trainer GL")
+          .header("Patch 7")
+          .list(l => l
+            .item("Added rendering for scan decision points.")
+            .item("Shrunk tile markers slightly so they don't overlap with scan decision points.")
+            .item("Removed rendering of next step paths for scans to reduce confusion.")
+            .item("Added rendering for dig spots for simple dig clues (not scans, not compasses).")
+            .item("Added emote area rendering.")
+            .item("Changed run tile marker to red when preceded by a redclick, and the line also to red when it's an npc redclick.")
+          )
           .header("Patch 6")
           .list(l => l
             .item("Improved color of escape rendering.")
