@@ -414,6 +414,7 @@ export namespace Changelog {
           .header("Patch 8")
           .list(l => l
             .item("Fixed coloring for non-redclick runs.")
+            .item("Fixed leaf paths of scan trees not rendering.")
           )
           .header("Patch 7")
           .list(l => l

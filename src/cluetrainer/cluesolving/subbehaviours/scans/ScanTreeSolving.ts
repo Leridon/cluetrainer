@@ -348,14 +348,17 @@ export class ScanTreeSolving extends ClueSolvingSubBehaviour {
     {
       const region = ScanTree.getTargetRegion(node)
 
-      const region_builder = new MeshBuilder()
+      if (region) {
+        const region_builder = new MeshBuilder()
 
-      drawTileArea(region_builder,
-        region.area,
-        [0, 255, 0, 50],
-      ).then(() => {
-        this.region_overlay.set(new SimpleGLOverlay(region_builder.finalize()))
-      })
+        drawTileArea(region_builder,
+          region.area,
+          [0, 255, 0, 50],
+        ).then(() => {
+          this.region_overlay.set(new SimpleGLOverlay(region_builder.finalize()))
+        })
+      }
+
     }
 
     const overlay_relevant_nodes = [
