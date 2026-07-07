@@ -1795,7 +1795,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "hard",
       "text": ["You will need to wash the old ash off of your spade when you dig here, but the only water nearby is stagnant."],
-      "solution": {"type": "dig", "spot": {"x": 2134, "y": 5162, "level": 0}, "description": "next to the puddle on top of the mountain on Braindeath Island"}
+      "solution": {"type": "dig", "spot": {"x": 2134, "y": 5163, "level": 0}, "description": "next to the puddle on top of the mountain on Braindeath Island"}
     }, {
       "id": 144,
       "type": "cryptic",
@@ -2058,7 +2058,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "hard",
       "text": ["And so on, and so on, and so on. Walking from the land of many unimportant things leads to a choice of paths."],
-      "solution": {"type": "dig", "spot": {"x": 2591, "y": 3879, "level": 0}, "description": "at the crossoads on Etceteria"}
+      "solution": {"type": "dig", "spot": {"x": 2592, "y": 3879, "level": 0}, "description": "at the crossoads on Etceteria"}
     }, {
       "id": 224,
       "type": "cryptic",
