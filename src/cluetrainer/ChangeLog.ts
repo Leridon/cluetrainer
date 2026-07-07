@@ -411,6 +411,10 @@ export namespace Changelog {
         }
 
         builder.wip(76, "Clue Trainer GL")
+          .header("Patch 8")
+          .list(l => l
+            .item("Fixed coloring for non-redclick runs.")
+          )
           .header("Patch 7")
           .list(l => l
             .item("Added rendering for scan decision points.")

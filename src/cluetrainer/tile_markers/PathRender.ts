@@ -389,7 +389,7 @@ export async function buildPathMesh(
         const previous = path[i - 1]
 
         const line_color = previous?.type == "redclick" && previous.target.kind == "npc" ? COLORS.redclicked_run : COLORS.run
-        const tile_color = previous?.type == "redclick"  ? COLORS.redclicked_run : COLORS.redclick
+        const tile_color = previous?.type == "redclick"  ? COLORS.redclicked_run : COLORS.run
 
         for (let j = 0; j < step.waypoints.length - 1; j++) {
           const is_last = j === step.waypoints.length - 2;
