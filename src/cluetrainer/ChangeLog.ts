@@ -438,6 +438,11 @@ export namespace Changelog {
             .item("Better caching for tile height data.")
           )*/
 
+        builder.wip(76, "TBD")
+          .list(l => l
+            .item("Fixed precise dig spot location of two hard clues.")
+          )
+
         builder.release(75, "Fixes and Method Updates", date(2026, 6, 17))
           .list(l => l
             .item("Added new Havenhythe teleports on the Nature's sentinel outfit and updated menu hotkeys accordingly.")
