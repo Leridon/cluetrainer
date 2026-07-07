@@ -415,6 +415,7 @@ export namespace Changelog {
           .list(l => l
             .item("Fixed coloring for non-redclick runs.")
             .item("Fixed leaf paths of scan trees not rendering.")
+            .item("Disabled rendering of 'past' paths in scan trees so they don't overlap.")
           )
           .header("Patch 7")
           .list(l => l

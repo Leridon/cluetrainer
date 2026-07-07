@@ -357,12 +357,14 @@ export class ScanTreeSolving extends ClueSolvingSubBehaviour {
         ).then(() => {
           this.region_overlay.set(new SimpleGLOverlay(region_builder.finalize()))
         })
+      } else {
+        this.region_overlay.set(null)
       }
-
     }
 
     const overlay_relevant_nodes = [
-      ...ScanTree.Augmentation.AugmentedScanTree.collect_parents(node),
+      node
+      //...ScanTree.Augmentation.AugmentedScanTree.collect_parents(node),
       //...node.children.map(c => c.value).filter(n => is_triple_disambiguation || n.parent.key.pulse != 3)
     ] //ScanTree.Augmentation.AugmentedScanTree.collect_parents_and_children(node)
 
