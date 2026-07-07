@@ -454,7 +454,6 @@ export async function buildPathsMesh(
   paths: Path[],
   builder: MeshBuilder = new MeshBuilder()
 ): Promise<MeshBuilder> {
-  debugger
   for (let path of paths) {
     await buildPathMesh(path, builder)
   }

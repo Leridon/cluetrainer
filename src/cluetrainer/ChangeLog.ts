@@ -410,7 +410,13 @@ export namespace Changelog {
           return new Date(year, month - 1, day)
         }
 
-        builder.wip(76, "Clue Trainer GL")
+        builder.wip(77, "Clue Trainer GL")
+          .header("Patch 9")
+          .list(l => l
+            .item("Tuned rendering of scan trees according to feedback.")
+            .item("Fixed dig area rendering for coordinate clues.")
+            .item("Added dig spot area rendering for remaining candidates in scan trees.")
+          )
           .header("Patch 8")
           .list(l => l
             .item("Fixed coloring for non-redclick runs.")

@@ -587,10 +587,12 @@ export default class ClueSolvingBehaviour extends Behaviour {
           case "cryptic":
           case "simple":
           case "coordinates":
-            switch (step.step.solution.type) {
+            const solution = Clues.Step.solution(step.step)
+
+            switch (solution.type) {
               case "dig":
                 await drawTileArea(builder,
-                  digSpotArea(step.step.solution.spot),
+                  digSpotArea(solution.spot),
                   [100, 100, 100, 255]
                 )
 
