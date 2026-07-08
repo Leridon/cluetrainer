@@ -441,6 +441,7 @@ export namespace Changelog {
         builder.wip(76, "TBD")
           .list(l => l
             .item("Fixed precise dig spot location of four hard clues.")
+            .item("Fixed broken zoom when a path contains an orientation step.")
           )
 
         builder.release(75, "Fixes and Method Updates", date(2026, 6, 17))

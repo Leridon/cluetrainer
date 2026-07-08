@@ -749,7 +749,7 @@ export namespace Path {
 
           return bounds
         case "orientation":
-          return Rectangle.from({x: 0, y: 0})
+          return null
         case "cosmetic":
           return Rectangle.from(step.position)
         default:
