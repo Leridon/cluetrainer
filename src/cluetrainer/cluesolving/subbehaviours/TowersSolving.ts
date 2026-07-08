@@ -206,7 +206,7 @@ class TowersSolvingProcess extends AbstractPuzzleProcess {
     }
   }
 
-  protected begin() {
+  protected override begin() {
     this.puzzle = this.parent.lockbox.reader.getPuzzle() // This should already be cached
 
     super.begin();
@@ -220,7 +220,7 @@ export class TowersSolving extends AbstractPuzzleSolving<ClueReader.Result.Puzzl
     super("Towers", parent, lockbox, deps().app.settings.settings.solving.puzzles.towers.autostart, "Towers Puzzle", "towers");
   }
 
-  protected begin() {
+  protected override begin() {
     super.begin();
 
     this.modal.setImage(this.lockbox.reader.puzzle_area.getData())
@@ -230,7 +230,7 @@ export class TowersSolving extends AbstractPuzzleSolving<ClueReader.Result.Puzzl
     return new TowersSolvingProcess(this)
   }
 
-  pausesClueReader(): boolean {
+  override pausesClueReader(): boolean {
     return this.process && !this.process.isSolved
   }
 }

@@ -142,7 +142,7 @@ class DrawRunInteractionInternal extends ValueInteraction<{
     return this.cached_pathfinding_state.value()
   }
 
-  eventClick(event: GameMapMouseEvent) {
+  override eventClick(event: GameMapMouseEvent) {
     event.onPost(async () => {
       event.stopAllPropagation()
 
@@ -168,7 +168,7 @@ class DrawRunInteractionInternal extends ValueInteraction<{
     })
   }
 
-  eventHover(event: GameMapMouseEvent) {
+  override eventHover(event: GameMapMouseEvent) {
     event.onPost(async () => {
       this.updatePreview(event.tile(), event.original.ctrlKey)
     })
@@ -192,7 +192,7 @@ class DrawRunInteractionInternal extends ValueInteraction<{
     }
   }
 
-  eventKeyDown(event: GameMapKeyboardEvent) {
+  override eventKeyDown(event: GameMapKeyboardEvent) {
     event.onPost(() => {
       if (event.original.key == "Control" && this.previewed_segment.value()) {
         event.stopAllPropagation()
@@ -212,7 +212,7 @@ class DrawRunInteractionInternal extends ValueInteraction<{
     })
   }
 
-  eventKeyUp(event: GameMapKeyboardEvent) {
+  override eventKeyUp(event: GameMapKeyboardEvent) {
     event.onPost(() => {
       if (event.original.key == "Control" && this.previewed_segment.value()) {
         event.stopAllPropagation()

@@ -177,7 +177,7 @@ class KnotSolvingProcess extends AbstractPuzzleProcess {
     }
   }
 
-  protected begin() {
+  protected override begin() {
     this.last_read_puzzle = this.puzzle = this.parent.knot.reader.readPuzzle() // This should already be cached
     super.begin()
   }
@@ -196,12 +196,12 @@ export class KnotSolving extends AbstractPuzzleSolving<
     return new KnotSolvingProcess(this)
   }
 
-  protected begin() {
+  protected override begin() {
     super.begin()
     this.modal.setImage(this.knot.reader.relevant_body.getData())
   }
 
-  pausesClueReader(): boolean {
+  override pausesClueReader(): boolean {
     return this.process && !this.process.isSolved && (Date.now() - this.process.last_successful_read) < 500
   }
 }

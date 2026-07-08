@@ -90,14 +90,14 @@ export class DrawTileAreaInteraction extends ValueInteraction<TileCoordinates[]>
     )
   }
 
-  onAdd(map: GameMap): this {
+  override onAdd(map: GameMap): this {
     super.onAdd(map)
 
     map.dragging.disable()
     return this
   }
 
-  onRemove(map: GameMap): this {
+  override onRemove(map: GameMap): this {
     super.onRemove(map)
     map.dragging.enable()
     return this
@@ -134,7 +134,7 @@ export class DrawTileAreaInteraction extends ValueInteraction<TileCoordinates[]>
 
   private activeRectangleDrawing: DrawArrowInteraction
 
-  eventMouseDown(event: GameMapMouseEvent) {
+  override eventMouseDown(event: GameMapMouseEvent) {
     super.eventMouseDown(event);
     event.onPost(() => {
 
@@ -180,7 +180,7 @@ export class DrawTileAreaInteraction extends ValueInteraction<TileCoordinates[]>
     })
   }
 
-  eventMouseUp(event: GameMapMouseEvent) {
+  override eventMouseUp(event: GameMapMouseEvent) {
 
     event.onPost(() => {
       this.drawing = null
@@ -189,7 +189,7 @@ export class DrawTileAreaInteraction extends ValueInteraction<TileCoordinates[]>
     })
   }
 
-  eventHover(event: GameMapMouseEvent) {
+  override eventHover(event: GameMapMouseEvent) {
     super.eventHover(event);
 
     event.onPost(() => {

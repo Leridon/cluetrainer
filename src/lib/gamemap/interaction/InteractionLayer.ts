@@ -49,7 +49,7 @@ export default class InteractionLayer extends GameLayer {
   started = ewent<InteractionLayer>()
   ended = ewent<InteractionLayer>()
 
-  onAdd(map: GameMap): this {
+  override onAdd(map: GameMap): this {
     super.onAdd(map)
 
     this.started.trigger(this)

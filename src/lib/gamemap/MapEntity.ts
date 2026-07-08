@@ -74,7 +74,7 @@ export abstract class MapEntity extends leaflet.FeatureGroup implements QuadTree
     return this.tooltip?.(this);
   }
 
-  remove(): this {
+  override remove(): this {
     if (this.parent) {
       this.parent.removeEntity(this)
     } else {

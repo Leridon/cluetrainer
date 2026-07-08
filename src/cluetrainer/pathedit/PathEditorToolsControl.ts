@@ -21,14 +21,13 @@ import Widget from "../../lib/ui/Widget";
 import {FormModal} from "../../lib/ui/controls/FormModal";
 import {BigNisButton} from "../ui/widgets/BigNisButton";
 import {Menu} from "../ui/widgets/ContextMenu";
-import * as assert from "assert";
+import assert from "assert";
 import {Notification} from "../ui/NotificationBar";
 import {util} from "../../lib/util/util";
 import movement_ability = MovementAbilities.movement_ability;
 import hboxl = C.hboxl;
 import hgrid = C.hgrid;
 import notification = Notification.notification;
-import profileAsync = util.profileAsync;
 
 class SpiderwebTool {
   private layer = observe<GameLayer>(null)
@@ -126,7 +125,7 @@ namespace SpiderwebTool {
       }
     }
 
-    render() {
+    override render() {
       super.render();
 
       const layout = new Properties()
@@ -183,7 +182,7 @@ namespace SpiderwebTool {
       })
     }
 
-    getButtons(): BigNisButton[] {
+    override getButtons(): BigNisButton[] {
       return [
         new BigNisButton("Confirm", "confirm").onClick(() => this.confirm_current()),
         new BigNisButton("Cancel", "cancel").onClick(() => this.cancel()),
@@ -197,7 +196,7 @@ namespace SpiderwebTool {
       super();
     }
 
-    eventContextMenu(event: GameMapContextMenuEvent) {
+    override eventContextMenu(event: GameMapContextMenuEvent) {
       event.onPost(e => {
         if (e.active_entity instanceof InversePathFindingResultEntity) {
           e.addForEntity(
@@ -259,7 +258,7 @@ namespace SpiderwebTool {
       })
     }
 
-    async contextMenu(event: GameMapContextMenuEvent): Promise<Menu | null> {
+    override async contextMenu(event: GameMapContextMenuEvent): Promise<Menu | null> {
       return {
         type: "submenu",
         text: "Calculated Path",

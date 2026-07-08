@@ -19,7 +19,7 @@ export class SliderShuffleAnalysis extends NisModal {
     this.title.set("Slider Analysis Modal")
   }
 
-  render() {
+  override render() {
     super.render();
 
     this.layout = new Properties().appendTo(this.body)

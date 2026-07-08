@@ -175,7 +175,7 @@ export class AStarSlideSolvingProcess extends Sliders.SolvingProcess {
     }
   }
 
-  stop() {
+  override stop() {
     super.stop()
     this.subprocess?.stop()
   }

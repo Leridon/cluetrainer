@@ -16,7 +16,7 @@ export default class ImportStringModal<T> extends FormModal<{
     super();
   }
 
-  render() {
+  override render() {
     super.render();
 
     this.title.set("Import")
@@ -34,7 +34,7 @@ export default class ImportStringModal<T> extends FormModal<{
     })
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     return [
       new BigNisButton("Cancel", "cancel").onClick(() => this.confirm(null)),
       this.import_button = new BigNisButton("Import", "confirm")

@@ -7,8 +7,6 @@ import { KnownBuffer, saveKnowBuffer } from "../render/assetcache";
 import { arrayEnum, mat3ToCtxArgs, newDragHandler } from "../util/util";
 import * as physics from "../programs/physicsmock";
 
-import "./reflect3d.scss";
-
 declare var requestIdleCallback: any;
 const spritePixelsPerUnit = 64 / tilesize;
 

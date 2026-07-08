@@ -20,7 +20,7 @@ export class DrawOffset extends ValueInteraction<DrawOffset.value_t> {
     }).setText("Click an interactive tile and draw an arrow to enter the transportation offset."))
   }
 
-  eventClick(event: GameMapMouseEvent) {
+  override eventClick(event: GameMapMouseEvent) {
     event.onPre(() => {
       event.stopAllPropagation()
 
@@ -40,7 +40,7 @@ export class DrawOffset extends ValueInteraction<DrawOffset.value_t> {
     })
   }
 
-  eventHover(event: GameMapMouseEvent) {
+  override eventHover(event: GameMapMouseEvent) {
     event.onPre(() => {
       if (this.value.value().value?.origin != null) {
         this.preview({

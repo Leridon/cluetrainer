@@ -22,7 +22,7 @@ export class Alt1Modal extends NisModal {
     }
   }
 
-  render() {
+  override render() {
     super.render()
 
     const layout = new Properties().appendTo(this.body)

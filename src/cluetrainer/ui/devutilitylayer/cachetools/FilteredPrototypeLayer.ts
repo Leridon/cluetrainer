@@ -234,7 +234,7 @@ export class PrototypeInstanceEntity extends MapEntity {
     return TileArea.toRect(this.instance.box);
   }
 
-  async contextMenu(event: GameMapContextMenuEvent): Promise<Menu | null> {
+  override async contextMenu(event: GameMapContextMenuEvent): Promise<Menu | null> {
     return {
       type: "submenu",
       text: () => PrototypeProperties.renderName(this.instance.prototype),

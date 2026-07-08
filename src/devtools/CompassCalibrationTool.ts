@@ -1240,7 +1240,7 @@ export class CompassCalibrationTool extends NisModal {
     return;
   }
 
-  render() {
+  override render() {
     super.render();
 
     this.title.set("Compass Calibration")
@@ -1458,7 +1458,7 @@ export namespace CalibrationTool {
       }
     }
 
-    eventClick(event: GameMapMouseEvent) {
+    override eventClick(event: GameMapMouseEvent) {
       event.onPost(() => {
         if (event.active_entity instanceof KnownMarker) {
           this.tool.reference.set(event.active_entity.spot)
@@ -1571,7 +1571,7 @@ export namespace CalibrationTool {
       }, c().css("padding", "2px"));
     }
 
-    eventHover(event: GameMapMouseEvent) {
+    override eventHover(event: GameMapMouseEvent) {
       function getcamerapos(coord: TileCoordinates): string {
         return `${coord.level},${~~(coord.x / 64)},${~~(coord.y / 64)},${coord.x % 64},${coord.y % 64}`
       }

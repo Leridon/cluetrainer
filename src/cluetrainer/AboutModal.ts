@@ -13,7 +13,7 @@ export class AboutModal extends NisModal {
     this.title.set("About Clue Trainer")
   }
 
-  render() {
+  override render() {
     super.render();
 
     const layout = new Properties().appendTo(this.body)

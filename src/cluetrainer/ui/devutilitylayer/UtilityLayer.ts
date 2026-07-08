@@ -90,7 +90,7 @@ export class HoverTileDisplay extends GameMapControl {
     }, c().css("padding", "2px"));
   }
 
-  eventHover(event: GameMapMouseEvent) {
+  override eventHover(event: GameMapMouseEvent) {
     event.onPre(() => {
       this.content.text(TileCoordinates.toString(event.tile()))
     })
@@ -251,7 +251,7 @@ class GeometryDrawing extends GameLayer {
       })
   }
 
-  eventKeyDown(event: GameMapKeyboardEvent) {
+  override eventKeyDown(event: GameMapKeyboardEvent) {
     event.onPost(() => {
       if (event.original.key.toLowerCase() == "t") {
         this.startSelectTile()
@@ -321,7 +321,7 @@ export default class UtilityLayer extends GameLayer {
     return this;
   }
 
-  eventViewChanged(event: GameMapViewChangedEvent) {
+  override eventViewChanged(event: GameMapViewChangedEvent) {
     super.eventViewChanged(event)
 
     event.onPre(() => {

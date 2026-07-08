@@ -51,7 +51,7 @@ export class LogViewer extends NisModal {
     }
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     return [
       new BigNisButton("Download file", "confirm").onClick(() => {
         const asjson = cleanedJSON(this.buffer)
@@ -65,7 +65,7 @@ export class LogViewer extends NisModal {
     ]
   }
 
-  render() {
+  override render() {
     super.render();
 
     this.renderLog()

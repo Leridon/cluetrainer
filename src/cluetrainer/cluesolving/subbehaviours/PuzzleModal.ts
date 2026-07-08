@@ -24,7 +24,7 @@ export class PuzzleModal extends NisModal {
     return this
   }
 
-  render() {
+  override render() {
     super.render();
 
     this.body.empty().append(

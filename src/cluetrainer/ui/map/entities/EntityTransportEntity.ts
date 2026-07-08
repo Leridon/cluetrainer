@@ -70,7 +70,7 @@ export class EntityTransportEntity extends MapEntity {
     return Transportation.bounds(this.shortcut)
   }
 
-  async contextMenu(event: GameMapContextMenuEvent): Promise<Menu | null> {
+  override async contextMenu(event: GameMapContextMenuEvent): Promise<Menu | null> {
     const shortcut = this.normalized_shortcut
 
     const remote_target: TileArea[] = shortcut.actions.flatMap(action =>

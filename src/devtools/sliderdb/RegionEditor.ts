@@ -51,7 +51,7 @@ class TileEditor extends AbstractEditWidget<Region.Tile> {
     }
   }
 
-  protected render() {
+  protected override render() {
     if (this.locked) {
       this.css("background-color", "gray")
     } else {
@@ -91,7 +91,7 @@ export class RegionEditor extends AbstractEditWidget<Region> {
     }
   }
 
-  protected render() {
+  protected override render() {
     super.render();
 
     this.empty()
@@ -180,7 +180,7 @@ export class RegionChainEditor extends AbstractEditWidget<Region[]> {
     )
   }
 
-  protected render() {
+  protected override render() {
     const chain = this.get()
 
     this.region_layout.empty()
@@ -255,7 +255,7 @@ export class PDBGeneratorWidget extends Widget {
             this.setTitle("Table Generation")
           }
 
-          render() {
+          override render() {
             super.render();
 
             new RegionChainGeneratorWidget(generator).appendTo(this.body)
@@ -353,7 +353,7 @@ export class StateIndexBenchmarkWidget extends Widget {
             })
           }
 
-          render() {
+          override render() {
             super.render();
           }
         })
@@ -437,7 +437,7 @@ export class RegionChainGeneratorWidget extends Widget {
 }
 
 export class PDBGeneratorModal extends NisModal {
-  render() {
+  override render() {
     super.render()
 
     this.setTitle("PDB Generation")
@@ -450,7 +450,7 @@ export class PDBGeneratorModal extends NisModal {
 }
 
 export class RegionIndexingModal extends NisModal {
-  render() {
+  override render() {
     super.render()
 
     this.setTitle("Index Benchmarking")

@@ -114,7 +114,7 @@ export type SliderSet = {
 export class SliderSetEdit extends AbstractEditWidget<SliderSet> {
   constructor(private max_count: number) {super(vbox());}
 
-  protected render() {
+  protected override render() {
     super.render();
 
     this.empty()
@@ -392,7 +392,7 @@ class BenchmarkRunner extends NisModal {
   }
 
 
-  render() {
+  override render() {
     super.render();
 
     this.setTitle("Running Benchmarks")
@@ -576,13 +576,13 @@ export class SliderBenchmarkModal extends NisModal {
     this.title.set("Slider Solving Benchmark")
   }
 
-  render() {
+  override render() {
     super.render()
 
     this.configuration = new BenchmarkConfigurator().appendTo(this.body)
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     return [
       new BigNisButton("Run", "confirm")
         .onClick(() => {

@@ -322,7 +322,7 @@ export namespace FontSheets {
       without_bearings: without_bearings,
       after_fontscript: after_font_script,
       font_meta: font.meta,
-      font_definition: OCR.loadFontImage(after_font_script, font.meta)
+      font_definition: OCR.loadFontImage(after_font_script, font.meta) as FontDefinition
     }
   }
 

@@ -75,7 +75,7 @@ export namespace RegionChainDistanceTable {
       this.withInterrupt(100, 1)
     }
 
-    public stop() {
+    public override stop() {
       super.stop();
 
       this.active_generator?.stop()

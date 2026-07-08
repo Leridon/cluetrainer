@@ -4,9 +4,26 @@
     "resolvePackageJsonExports": true,
     "module": "ESNext",
     "experimentalDecorators": true,
-    "noImplicitThis": true,
     "target": "ESNext",
+
+    "strict": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": false,
+    "useUnknownInCatchVariables": true,
+    "noImplicitThis": true,
     "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictFunctionTypes": false,
+
+    "noUncheckedSideEffectImports": true,
+    "verbatimModuleSyntax": false,
+    "isolatedModules": false,
+
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+
     "lib": [
       "ESNext",
       "dom"
@@ -16,8 +33,13 @@
       "src/*": [
         "./src/*"
       ]
-    }
+    },
+    "types": [
+      "node"
+    ]
   },
-  "include": ["src"],
+  "include": [
+    "src"
+  ],
   "allowTsInNodeModules": true
 }

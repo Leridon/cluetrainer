@@ -569,7 +569,7 @@ export namespace CompassReader {
               this.interactivity().main_hotkey_pressed.on(() => ClueTrainerWiki.openOnPage("compasssolveruncertainty"))
             }
 
-            protected renderWithBuilder(overlay_geometry: Alt1OverlayDrawCalls.GeometryBuilder) {
+            protected override renderWithBuilder(overlay_geometry: Alt1OverlayDrawCalls.GeometryBuilder) {
               super.renderWithBuilder(overlay_geometry);
 
               const state = self.service.state()
@@ -604,7 +604,7 @@ export namespace CompassReader {
         this.position.set(rect)
       }
 
-      protected renderWithBuilder(overlay_geometry: Alt1OverlayDrawCalls.GeometryBuilder) {
+      protected override renderWithBuilder(overlay_geometry: Alt1OverlayDrawCalls.GeometryBuilder) {
         super.renderWithBuilder(overlay_geometry);
 
         const state = this.service.state()

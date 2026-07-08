@@ -84,7 +84,7 @@ export namespace ClueTrainerWiki {
           this.setTitle("Cluepedia")
         }
 
-        render() {
+        override render() {
           super.render();
 
           this.body.css("padding", "0")

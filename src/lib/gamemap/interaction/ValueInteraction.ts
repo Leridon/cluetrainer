@@ -31,7 +31,7 @@ export class ValueInteraction<T> extends InteractionLayer {
     return this
   }
 
-  cancel() {
+  override cancel() {
     if (!this.value.value().committed) this.value.set({value: null, committed: true})
     super.cancel()
   }

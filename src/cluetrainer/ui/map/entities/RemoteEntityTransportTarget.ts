@@ -20,8 +20,8 @@ import EntityActionMovement = Transportation.EntityActionMovement;
 
 export class RemoteEntityTransportTarget extends MapEntity {
 
-  zoom_sensitivity_layers = MapEntity.default_zoom_scale_layers
-  floor_sensitivity_layers: FloorLevels<{ correct_level: boolean }> = undefined
+  override zoom_sensitivity_layers = MapEntity.default_zoom_scale_layers
+  override floor_sensitivity_layers: FloorLevels<{ correct_level: boolean }> = undefined
 
   constructor(    public transport: GeneralEntityTransportation,
                   public  action: EntityAction,
@@ -66,7 +66,7 @@ export class RemoteEntityTransportTarget extends MapEntity {
     return circle.getElement()
   }
 
-  async contextMenu(event: GameMapContextMenuEvent): Promise<Menu | null> {
+  override async contextMenu(event: GameMapContextMenuEvent): Promise<Menu | null> {
 
     event.addForEntity({
       type: "basic",

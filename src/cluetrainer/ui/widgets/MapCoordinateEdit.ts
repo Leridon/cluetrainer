@@ -56,7 +56,7 @@ export default class MapCoordinateEdit extends AbstractEditWidget<TileCoordinate
     this.setValue(lodash.clone(initial))
   }
 
-  protected render() {
+  protected override render() {
     let v = this.get()
 
     this.x.container.val(v.x)

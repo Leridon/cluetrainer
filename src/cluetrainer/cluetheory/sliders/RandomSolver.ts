@@ -17,7 +17,7 @@ export const RandomSolver: Sliders.Solver = new class extends Sliders.Solver {
 
     return new class extends Sliders.SolvingProcess {
       firstrun = true;
-      native_compression = false
+      override native_compression = false
 
       private step() {
         const first = this.firstrun;

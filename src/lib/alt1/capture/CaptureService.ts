@@ -32,7 +32,7 @@ export abstract class AbstractCaptureService<
           token.handle?.(value)
         }
 
-        isPaused(): boolean {
+        override isPaused(): boolean {
           return token.paused?.() ?? false
         }
 
@@ -40,7 +40,7 @@ export abstract class AbstractCaptureService<
           return token.options(time);
         }
 
-        isOneTime(): boolean {
+        override isOneTime(): boolean {
           if (token.isOneTime) return token.isOneTime()
           return false
         }
@@ -303,7 +303,7 @@ export abstract class DerivedCaptureService<
         return options(interested_in_this_tick)
       }*/
 
-      isPaused(): boolean {
+      override isPaused(): boolean {
         return self.interests.every(t => t.isPaused());
       }
     })

@@ -45,7 +45,7 @@ export default class TemplateStringEdit extends AbstractEditWidget<string> {
     this.render()
   }
 
-  public render(): void {
+  public override render(): void {
     this.empty()
     this.instruction_input = null
     this.preview_container = null

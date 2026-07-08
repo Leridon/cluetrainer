@@ -82,7 +82,7 @@ export namespace MethodNormalization {
 
   export function update_far_dives(): Normalizer {
     return new class extends Normalizer {
-      async step(step: Path.Step): Promise<Path.Step> {
+      override async step(step: Path.Step): Promise<Path.Step> {
         return await normalizeFarDive(step)
       }
     }
@@ -90,7 +90,7 @@ export namespace MethodNormalization {
 
   export function update_timings(): Normalizer {
     return new class extends Normalizer {
-      async method(method: AugmentedMethod): Promise<SolvingMethods.Method> {
+      override async method(method: AugmentedMethod): Promise<SolvingMethods.Method> {
 
         switch (method.method.type) {
           case "general_path":
@@ -113,7 +113,7 @@ export namespace MethodNormalization {
 
   export function chain(...normalizers: Normalizer[]) {
     return new class extends Normalizer {
-      async pack(pack: MethodPack): Promise<MethodPack> {
+      override async pack(pack: MethodPack): Promise<MethodPack> {
         return await normalizers.reduce(async (pack, normalizer) => await normalizer.pack(await pack), Promise.resolve(pack))
       }
     }
@@ -138,7 +138,7 @@ export namespace MethodNormalization {
       this.title.set("Normalize Method Pack")
     }
 
-    render() {
+    override render() {
       super.render()
 
       const layout = new Properties().appendTo(this.body)
@@ -187,7 +187,7 @@ export namespace MethodNormalization {
       this.remove()
     }
 
-    getButtons(): BigNisButton[] {
+    override getButtons(): BigNisButton[] {
       return [
         new BigNisButton("Cancel", "cancel").onClick(() => this.remove()),
         new BigNisButton("Confirm", "confirm").onClick(() => this.execute())

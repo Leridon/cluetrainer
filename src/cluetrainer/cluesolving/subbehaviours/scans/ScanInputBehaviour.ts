@@ -147,7 +147,7 @@ export namespace ScanControlPrototype {
 
     private pulse_buttons: Overlay.PulseButton[][] = []
 
-    protected begin() {
+    protected override begin() {
       super.begin();
 
       Overlay.registerActive(this)
@@ -346,7 +346,7 @@ export namespace ScanControlPrototype {
         this.relevant.subscribe(v => this.setVisible(v))
       }
 
-      renderWithBuilder(overlay: Alt1OverlayDrawCalls.GeometryBuilder) {
+      override renderWithBuilder(overlay: Alt1OverlayDrawCalls.GeometryBuilder) {
         super.renderWithBuilder(overlay);
 
         if (!this.area) return

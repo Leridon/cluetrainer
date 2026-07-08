@@ -165,7 +165,7 @@ class LockboxSolvingProcess extends AbstractPuzzleProcess {
     }
   }
 
-  protected begin() {
+  protected override begin() {
     this.puzzle = this.parent.lockbox.reader.getPuzzle() // This should already be cached
 
     super.begin()
@@ -183,13 +183,13 @@ export class LockboxSolving extends AbstractPuzzleSolving<ClueReader.Result.Puzz
     return new LockboxSolvingProcess(this)
   }
 
-  protected begin() {
+  protected override begin() {
     super.begin();
 
     this.modal.setImage(this.lockbox.reader.tile_area.getData())
   }
 
-  pausesClueReader(): boolean {
+  override pausesClueReader(): boolean {
     return this.process && !this.process?.isSolved
   }
 }

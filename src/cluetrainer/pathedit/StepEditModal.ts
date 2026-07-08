@@ -27,7 +27,7 @@ class StepDetailEdit extends AbstractEditWidget<Path.Step> {
     super();
   }
 
-  protected render() {
+  protected override render() {
     const value = this.get()
 
     if (!value) return
@@ -220,7 +220,7 @@ export class StepEditModal extends FormModal<{
     this.title.set("Edit Step Details")
   }
 
-  render() {
+  override render() {
     super.render()
 
     this.edit = new StepDetailEdit()
@@ -228,7 +228,7 @@ export class StepEditModal extends FormModal<{
       .appendTo(this.body)
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     return [
       new BigNisButton("Cancel", "cancel")
         .onClick(() => this.cancel())
@@ -238,7 +238,7 @@ export class StepEditModal extends FormModal<{
     ]
   }
 
-  protected getValueForCancel(): { new_version: Path.Step | null } {
+  protected override getValueForCancel(): { new_version: Path.Step | null } {
     return {new_version: null}
   }
 }

@@ -13,7 +13,7 @@ export default class NumberInput extends AbstractEditWidget<number> {
       })
   }
 
-  protected render() {
+  protected override render() {
     this.container.val(this.get())
   }
 }

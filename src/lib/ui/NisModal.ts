@@ -14,7 +14,7 @@ export class NisModal extends Modal2 {
 
   title = observe("")
 
-  constructor(protected options: NisModal.Options = {}) {
+  constructor(protected override options: NisModal.Options = {}) {
     super(options);
 
     this.title.subscribe(title => {

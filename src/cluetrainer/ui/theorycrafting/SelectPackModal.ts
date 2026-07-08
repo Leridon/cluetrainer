@@ -49,7 +49,7 @@ export default class SelectPackModal extends FormModal<{
     })
   }
 
-  render() {
+  override render() {
     super.render();
 
     this.renderSelectors(this.valid_packs.value())
@@ -92,7 +92,7 @@ export default class SelectPackModal extends FormModal<{
     })
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     return [
       new BigNisButton("Cancel", "cancel")
         .onClick(() => {

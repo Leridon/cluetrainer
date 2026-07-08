@@ -367,7 +367,7 @@ export class ScanTreeSolving extends ClueSolvingSubBehaviour {
     const self = this
 
     this.parent.map_layer.scan_layer.marker.add(this.handling_layer = new class extends GameLayer {
-      eventClick(event: GameMapMouseEvent) {
+      override eventClick(event: GameMapMouseEvent) {
         event.onPre(() => {
           if (event.active_entity instanceof ScanEditLayer.SpotMarker) {
             event.stopAllPropagation()

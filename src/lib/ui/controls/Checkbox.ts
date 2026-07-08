@@ -42,7 +42,7 @@ export class Checkbox extends AbstractEditWidget<boolean> {
     })
   }
 
-  protected render() {
+  protected override render() {
     this.new_box.toggleClass("checked", this.get())
   }
 

@@ -9,7 +9,7 @@ import jquery from "jquery";
 export default abstract class AbstractEditWidget<T, Element_T extends HTMLElement = HTMLElement> extends Widget<Element_T> {
   protected v: Observable<{
     committed: boolean,
-    value: T
+    value: T | null
   }> = observe({committed: false, value: null})
 
   protected constructor(container: JQuery | Widget = null) {

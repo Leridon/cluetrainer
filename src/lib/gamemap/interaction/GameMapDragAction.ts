@@ -10,18 +10,18 @@ export default class GameMapDragAction extends ValueInteraction<TileRectangle> {
 
   area = observe<{ area: TileRectangle, committed: boolean }>({area: null, committed: false})
 
-  constructor(public config: ValueInteraction.option_t<TileRectangle>) {
+  constructor(public override config: ValueInteraction.option_t<TileRectangle>) {
     super(config);
   }
 
-  onAdd(map: GameMap): this {
+  override onAdd(map: GameMap): this {
     super.onAdd(map)
 
     map.dragging.disable()
     return this
   }
 
-  onRemove(map: GameMap): this {
+  override onRemove(map: GameMap): this {
     super.onRemove(map)
     map.dragging.enable()
     return this
@@ -39,7 +39,7 @@ export default class GameMapDragAction extends ValueInteraction<TileRectangle> {
     this.area.set({area: null, committed: false})
   }
 
-  eventMouseDown(event: GameMapMouseEvent) {
+  override eventMouseDown(event: GameMapMouseEvent) {
     event.onPre(() => {
       if (!this.dragstart) {
         event.stopAllPropagation()
@@ -51,7 +51,7 @@ export default class GameMapDragAction extends ValueInteraction<TileRectangle> {
     })
   }
 
-  eventMouseUp(event: GameMapMouseEvent) {
+  override eventMouseUp(event: GameMapMouseEvent) {
     event.onPre(() => {
       if (this.dragstart) {
         event.stopAllPropagation()
@@ -61,7 +61,7 @@ export default class GameMapDragAction extends ValueInteraction<TileRectangle> {
     })
   }
 
-  eventClick(event: GameMapMouseEvent) {
+  override eventClick(event: GameMapMouseEvent) {
     // Capture and consume the click event, so it does not get sent to the default interaction
 
     event.onPre(() => {
@@ -72,7 +72,7 @@ export default class GameMapDragAction extends ValueInteraction<TileRectangle> {
     })
   }
 
-  eventHover(event: GameMapMouseEvent) {
+  override eventHover(event: GameMapMouseEvent) {
     event.onPre(() => {
       if (this.dragstart) {
         event.stopAllPropagation()

@@ -10,7 +10,7 @@ import {direction} from "../../../../lib/runescape/movement";
 import {Menu} from "../../widgets/ContextMenu";
 import {GameMapContextMenuEvent} from "../../../../lib/gamemap/MapEvents";
 import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
-import * as assert from "assert";
+import assert from "assert";
 import {areaPolygon} from "../../polygon_helpers";
 import {floor_t} from "../../../../lib/runescape/coordinates";
 import {FloorLevels, ZoomLevels} from "../../../../lib/gamemap/ZoomLevels";
@@ -21,8 +21,8 @@ import TeleportAccess = Transportation.TeleportAccess;
 
 export class TeleportSpotEntity extends MapEntity {
 
-  zoom_sensitivity_layers = MapEntity.default_zoom_scale_layers
-  floor_sensitivity_layers: FloorLevels<{ correct_level: boolean }> = undefined
+  override zoom_sensitivity_layers = MapEntity.default_zoom_scale_layers
+  override floor_sensitivity_layers: FloorLevels<{ correct_level: boolean }> = undefined
 
   constructor(public teleport: Transportation.TeleportGroup.Spot) {
     super();
@@ -72,7 +72,7 @@ export class TeleportSpotEntity extends MapEntity {
     return marker.getElement()
   }
 
-  async contextMenu(event: GameMapContextMenuEvent): Promise<Menu | null> {
+  override async contextMenu(event: GameMapContextMenuEvent): Promise<Menu | null> {
     const teleport = this.teleport;
 
     const jumpable_accesses: TeleportAccess[] = teleport.group.access.filter(a => a.type == "entity")
@@ -109,7 +109,7 @@ export namespace TeleportSpotEntity {
   import hbox = C.hbox;
 
   export class TeleportMapIcon extends leaflet.DivIcon {
-    createIcon(oldIcon?: HTMLElement): HTMLElement {
+    override createIcon(oldIcon?: HTMLElement): HTMLElement {
       const scale = this.scale
       const SIZE = 30
       return this.transformer(C.div(

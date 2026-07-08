@@ -9,7 +9,7 @@ import {NislIcon} from "../ui/nisl";
 import {PathStepEntity} from "../ui/map/entities/PathStepEntity";
 import {util} from "../../lib/util/util";
 import {TreeArray} from "../../lib/util/TreeArray";
-import * as assert from "assert";
+import assert from "assert";
 import {ewent, Observable, observe} from "../../lib/reactive";
 import {TemplateResolver} from "../../lib/util/TemplateResolver";
 import {GameLayer} from "../../lib/gamemap/GameLayer";

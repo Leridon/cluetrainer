@@ -31,7 +31,7 @@ export class MethodMetaEdit extends AbstractEditWidget<Method.Meta> {
     this.setValue(value)
   }
 
-  protected render() {
+  protected override render() {
     this.empty()
 
     const props = new Properties().appendTo(this)
@@ -75,7 +75,7 @@ class MethodPackSelector extends AbstractEditWidget<MethodPack> {
     super();
   }
 
-  async render() {
+  override async render() {
     this.empty()
 
     const val = this.get()
@@ -132,7 +132,7 @@ export class NewMethodModal extends FormModal<{
     super({size: "small"});
   }
 
-  render() {
+  override render() {
     super.render();
 
     new Properties().appendTo(this.body)
@@ -165,7 +165,7 @@ export class NewMethodModal extends FormModal<{
     }
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     return [
       new BigNisButton("Cancel", "cancel")
         .onClick(() => this.confirm(this.getValueForCancel())),
@@ -187,7 +187,7 @@ export class NewMethodModal extends FormModal<{
     ]
   }
 
-  protected getValueForCancel(): { created: AugmentedMethod } {
+  protected override getValueForCancel(): { created: AugmentedMethod } {
     return {created: null}
   }
 }
@@ -201,14 +201,14 @@ export class EditMethodMetaModal extends FormModal<{
     super({size: "small"});
   }
 
-  render() {
+  override render() {
     super.render();
 
     this.title.set("Edit Method Metainformation")
     this.edit = new MethodMetaEdit(this.spot, this.start_value, this.include_assumptions).appendTo(this.body)
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     return [
       new BigNisButton("Cancel", "cancel")
         .onClick(() => this.confirm(this.getValueForCancel())),
@@ -219,7 +219,7 @@ export class EditMethodMetaModal extends FormModal<{
     ]
   }
 
-  protected getValueForCancel(): { result: Method.Meta } {
+  protected override getValueForCancel(): { result: Method.Meta } {
     return {result: null}
   }
 }

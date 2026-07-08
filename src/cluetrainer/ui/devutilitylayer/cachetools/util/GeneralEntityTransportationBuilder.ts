@@ -61,8 +61,8 @@ export class EntityTransportationBuilder {
 
 export class GeneralEntityTransportationBuilder extends EntityTransportationBuilder {
   constructor(
-    public underlying: PrototypeInstance,
-    public value: GeneralEntityTransportation) {
+    public override underlying: PrototypeInstance,
+    public override value: GeneralEntityTransportation) {
 
     super(underlying, value)
   }

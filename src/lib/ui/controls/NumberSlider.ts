@@ -60,7 +60,7 @@ export default class NumberSlider extends AbstractEditWidget<number> {
     this.preview_container.text(res)
   }
 
-  protected render() {
+  protected override render() {
     this.updatePreview()
     this.input.container.val(this.get())
   }

@@ -30,7 +30,7 @@ export default class InteractionTopControl extends GameMapControl<ControlWithHea
     return this
   }
 
-  setContent(widget: Widget): this {
+  override setContent(widget: Widget): this {
     this.content.setContent(widget)
 
     return this
@@ -40,7 +40,7 @@ export default class InteractionTopControl extends GameMapControl<ControlWithHea
     return this.setContent(c().text(text))
   }
 
-  eventKeyDown(event: GameMapKeyboardEvent) {
+  override eventKeyDown(event: GameMapKeyboardEvent) {
     if (this._config.cancel_handler) {
 
       event.onPre(() => {

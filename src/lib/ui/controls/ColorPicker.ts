@@ -16,7 +16,7 @@ export class ColorPicker extends AbstractEditWidget<string> {
       .appendTo(this) as Widget<HTMLInputElement>
   }
 
-  protected render() {
+  protected override render() {
     this.input.raw().value = this.get()
   }
 }

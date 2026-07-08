@@ -13,7 +13,7 @@ export class PermissionChecker extends NisModal {
     this.title.set("Missing Permissions")
   }
 
-  render() {
+  override render() {
     super.render();
 
     const props = new Properties().appendTo(this.body)
@@ -33,7 +33,7 @@ export class PermissionChecker extends NisModal {
     props.paragraph("Click 'Check' below to check if permissions have correctly been set.")
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     return [
       new BigNisButton("Ignore", "cancel")
         .onClick(() => {
