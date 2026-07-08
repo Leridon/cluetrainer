@@ -30,6 +30,10 @@ import {CompassHandlingLayer} from "./CompassHandlingLayer";
 import {KnownCompassSpot} from "./KnownCompassSpot";
 import {CompassEntryWidget} from "./CompassEntryWidget";
 import {CapturedCompassClassic} from "../../cluereader/capture/CapturedCompassClassic";
+import {drawTileArea} from "../../../tile_markers/PathRender";
+import {MutableMesh} from "../../../overlay3d/meshes/MutableMesh";
+import {SingleBehaviour} from "../../../../lib/ui/Behaviour";
+import {SimpleGLOverlay} from "../../../overlay3d/SimpleGLOverlay";
 import cls = C.cls;
 import TeleportGroup = Transportation.TeleportGroup;
 import findBestMatch = util.findBestMatch;
@@ -66,6 +70,9 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
   selected_spot = observe<CompassSolving.SpotData>(null)
 
   first_confirmed_state: CompassReader.Service.State = undefined
+
+  private gl_spot_overlay: SingleBehaviour<SimpleGLOverlay> = this.withSub(new SingleBehaviour<SimpleGLOverlay>())
+
 
   constructor(parent: ClueSolvingBehaviour,
               public clue: Clues.Compass,
@@ -468,7 +475,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
       await this.setSelectedSpot(null, false)
     }
 
-    if (possible.length > 0 && possible.length <= 5) {
+    if (possible.length > 0 && possible.length <= FEW_CANDIDATES_THRESHOLD) {
       let area = TileRectangle.from(...possible.map(s => s.spot.spot))
 
       if (!this.clue.single_tile_target) area = TileRectangle.extend(area, 1)
@@ -499,6 +506,20 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
     await this.layer.updateOverlay()
 
     this.layer.rendering.unlock()
+
+    {
+      const builder = new MutableMesh()
+
+      if (possible.length < 10) {
+        for (let spot of possible) {
+          builder.add(
+            (await drawTileArea(digSpotArea(spot.spot.spot))).recolor([100, 100, 100, 255])
+          )
+        }
+      }
+
+      this.gl_spot_overlay.set(new SimpleGLOverlay(builder.finalize()))
+    }
   }
 
   private createEntry(entry: CompassSolving.Entry, dont_update_selection: boolean = false): CompassSolving.Entry {

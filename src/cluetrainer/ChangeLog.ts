@@ -411,6 +411,11 @@ export namespace Changelog {
         }
 
         builder.wip(77, "Clue Trainer GL")
+          .header("Patch 10")
+          .list(l => l
+            .item("Added entity highlights for search clues.")
+            .item("Added dig spot markers for compass clues.")
+          )
           .header("Patch 9")
           .list(l => l
             .item("Tuned rendering of scan trees according to feedback.")
