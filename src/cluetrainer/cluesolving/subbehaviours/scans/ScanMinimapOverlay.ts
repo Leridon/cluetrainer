@@ -17,7 +17,7 @@ export class ScanMinimapOverlay extends Alt1Overlay {
     super()
   }
 
-  protected begin() {
+  protected override begin() {
     super.begin()
 
     if (!deps().app.in_alt1) return
@@ -35,7 +35,7 @@ export class ScanMinimapOverlay extends Alt1Overlay {
     )
   }
 
-  protected end() {
+  protected override end() {
     super.end()
 
     if (!deps().app.in_alt1) return

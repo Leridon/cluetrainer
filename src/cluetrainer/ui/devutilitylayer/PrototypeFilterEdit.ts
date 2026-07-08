@@ -29,7 +29,7 @@ export class PrototypeFilterEdit extends AbstractEditWidget<PrototypeFilter.Conf
     this.commit(copy)
   }
 
-  protected render() {
+  protected override render() {
     this.empty()
 
     const filter = this.get()

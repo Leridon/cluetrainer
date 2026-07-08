@@ -38,7 +38,7 @@ export namespace TowersReader {
   const context_menu_anchor = new Lazy(() => NeedleImage.fromURL("/alt1anchors/contextborder.png"))
 
   import count = util.count;
-  const font: OCR.FontDefinition = ClueFont;
+  const font: OCR.FontDefinition = ClueFont as OCR.FontDefinition;
   const font_with_just_digits = {...font, chars: font.chars.filter(c => !isNaN(+c.chr))};
 
   export const TILE_SIZE = {x: 42, y: 42}

@@ -261,7 +261,7 @@ export class ParserPairingModal extends FormModal<{
 
   }
 
-  async show(): Promise<this> {
+  override async show(): Promise<this> {
     const promise = super.show();
 
     //setTimeout(() => this.edit.center_map(), 1000)
@@ -269,14 +269,14 @@ export class ParserPairingModal extends FormModal<{
     return promise
   }
 
-  render() {
+  override render() {
     super.render()
 
     this.edit = new ParserPairingEdit(this.loc, this.parsing_table, this.existing_pairing)
       .appendTo(this.body)
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     return [
       new BigNisButton("Cancel", "neutral")
         .onClick(() => this.confirm({type: "cancelled"})),
@@ -285,7 +285,7 @@ export class ParserPairingModal extends FormModal<{
     ]
   }
 
-  protected getValueForCancel(): { type: "cancelled" | "saved"; pairing: ParserPairing } {
+  protected override getValueForCancel(): { type: "cancelled" | "saved"; pairing: ParserPairing } {
     return {type: "cancelled", pairing: this.edit.get()}
   }
 }

@@ -149,7 +149,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
     }
   }
 
-  pausesClueReader(): boolean {
+  override pausesClueReader(): boolean {
     return this.angle_reading_service && this.angle_reading_service.last_read?.type == "success"
   }
 

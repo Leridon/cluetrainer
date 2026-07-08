@@ -14,7 +14,7 @@ export class EntityNameEdit extends AbstractEditWidget<EntityName> {
     super(vbox().container);
   }
 
-  protected render() {
+  protected override render() {
     this.empty()
     const specifics_container = hbox()
 

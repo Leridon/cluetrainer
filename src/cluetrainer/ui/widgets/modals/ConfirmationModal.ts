@@ -12,7 +12,7 @@ export class ConfirmationModal<T> extends FormModal<T> {
     super(options ?? {size: "small"});
   }
 
-  render() {
+  override render() {
     super.render();
 
     this.title.set(this.config.title || "Confirmation")
@@ -20,7 +20,7 @@ export class ConfirmationModal<T> extends FormModal<T> {
     this.explanation = c("<p></p>").text(this.config.body).appendTo(this.body)
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     return [
       ...this.config.options.map(o =>
         new BigNisButton(o.text, o.kind)
@@ -30,7 +30,7 @@ export class ConfirmationModal<T> extends FormModal<T> {
     ]
   }
 
-  protected getValueForCancel(): T {
+  protected override getValueForCancel(): T {
     return this.config.options.find(o => o.is_cancel)?.value
   }
 }

@@ -54,7 +54,7 @@ async function fix_path(p: Path): Promise<number> {
   return removed
 }
 
-async function fix_tree(tree: ScanTree.ScanTreeNode) {
+async function fix_tree(tree: ScanTree.ScanTreeNode): Promise<number> {
   return await fix_path(tree.path) +
     (tree.children
       ? lodash.sum(await Promise.all(tree.children.map(async c => await fix_tree(c.value))))

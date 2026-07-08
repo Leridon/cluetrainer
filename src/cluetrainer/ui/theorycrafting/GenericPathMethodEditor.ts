@@ -233,7 +233,7 @@ export class GenericPathMethodEditor extends MethodSubEditor {
     return editor
   }
 
-  protected async begin() {
+  protected override async begin() {
     super.begin()
 
     this.sidepanel_widget = c().appendTo(this.parent.sidebar.body)

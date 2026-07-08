@@ -42,7 +42,7 @@ export default class TextField extends AbstractEditWidget<string> {
     return this
   }
 
-  protected render() {
+  protected override render() {
     this.container.val(this.get())
   }
 }

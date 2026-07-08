@@ -73,7 +73,7 @@ export class CompassHandlingLayer extends GameLayer {
     })
   }
 
-  eventClick(event: GameMapMouseEvent) {
+  override eventClick(event: GameMapMouseEvent) {
     event.onPost(() => {
 
       if (event.active_entity instanceof TeleportSpotEntity) {

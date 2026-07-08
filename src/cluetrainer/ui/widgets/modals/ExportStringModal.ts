@@ -16,7 +16,7 @@ export default class ExportStringModal extends NisModal {
     super({force_footer: true});
   }
 
-  render() {
+  override render() {
     super.render();
 
     if (this.file_name) this.title.set(`Export ${this.file_name}`)
@@ -34,7 +34,7 @@ export default class ExportStringModal extends NisModal {
       .appendTo(this.body)
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     const buttons: BigNisButton[] = [
       new BigNisButton("Cancel", "cancel")
         .onClick(() => this.remove()),

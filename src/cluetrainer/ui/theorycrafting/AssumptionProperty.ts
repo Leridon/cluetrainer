@@ -16,7 +16,7 @@ export class AssumptionProperty extends AbstractEditWidget<ClueAssumptions> {
     super();
   }
 
-  protected render() {
+  protected override render() {
     this.empty()
 
     const relevant = this.relevant_assumptions

@@ -31,7 +31,7 @@ export default class TextArea extends AbstractEditWidget<string, HTMLTextAreaEle
     return this
   }
 
-  protected render() {
+  protected override render() {
     this.container.val(this.get())
   }
 }

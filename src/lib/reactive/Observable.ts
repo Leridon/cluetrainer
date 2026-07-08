@@ -119,7 +119,7 @@ export namespace Observable {
       base.subscribe((v) => this._set(f(v)), true, h => lifetime_manager?.bind(h))
     }
 
-    set(v: T): void {
+    override set(v: T): void {
       throw new TypeError("Set not supported on derived observable")
     }
   }

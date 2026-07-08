@@ -9,7 +9,7 @@ import {ClueTrainer} from "../ClueTrainer";
 export class Alt1UpdateNotice extends FormModal<number> {
   constructor(private app: ClueTrainer) {super();}
 
-  render() {
+  override render() {
     super.render();
 
     this.setTitle("You should update your Alt 1")
@@ -46,11 +46,11 @@ export class Alt1UpdateNotice extends FormModal<number> {
     layout.row(new BigNisButton("Export Data", "confirm").onClick(() => this.app.data_dump.dump()))
   }
 
-  protected getValueForCancel(): number {
+  protected override getValueForCancel(): number {
     return null
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     return [
       new BigNisButton("Remind me another time", "confirm")
         .onClick(() => this.confirm(21 * 24 * 60 * 60 * 1000))

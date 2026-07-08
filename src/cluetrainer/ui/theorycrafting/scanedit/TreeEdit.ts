@@ -11,7 +11,7 @@ import {ValueInteraction} from "../../../../lib/gamemap/interaction/ValueInterac
 import InteractionTopControl from "../../map/InteractionTopControl";
 import {C} from "../../../../lib/ui/constructors";
 import {Scans} from "../../../model/clues/Scans";
-import * as assert from "assert";
+import assert from "assert";
 import ScanEditor from "./ScanEditor";
 import ContextMenu, {MenuEntry} from "../../widgets/ContextMenu";
 import {FormModal} from "../../../../lib/ui/controls/FormModal";
@@ -225,14 +225,14 @@ class TreeNodeEdit extends Widget {
 
                 private edit: AbstractEditWidget<string>
 
-                getButtons(): BigNisButton[] {
+                override getButtons(): BigNisButton[] {
                   return [
                     new BigNisButton("Cancel", "cancel").onClick(() => this.cancel()),
                     new BigNisButton("Save", "confirm").onClick(() => this.confirm(this.edit.get())),
                   ]
                 }
 
-                render() {
+                override render() {
                   super.render();
 
                   new Properties().appendTo(this.body)
@@ -242,7 +242,7 @@ class TreeNodeEdit extends Widget {
                     )
                 }
 
-                protected getValueForCancel(): string {
+                protected override getValueForCancel(): string {
                   return undefined
                 }
               }).do()
@@ -468,7 +468,7 @@ class TreeNodeEdit extends Widget {
 
       private edit: AbstractEditWidget<string>
 
-      getButtons(): BigNisButton[] {
+      override getButtons(): BigNisButton[] {
         return [
           new BigNisButton("Cancel", "cancel").onClick(() => this.cancel()),
           new BigNisButton("Delete", "cancel").onClick(() => this.confirm("")),
@@ -476,7 +476,7 @@ class TreeNodeEdit extends Widget {
         ]
       }
 
-      render() {
+      override render() {
         super.render();
 
         this.edit = (new class extends AbstractEditWidget<string> {
@@ -494,7 +494,7 @@ class TreeNodeEdit extends Widget {
 
           instruction_input: Widget = null
 
-          protected render() {
+          protected override render() {
             this.empty()
 
             this.instruction_input = new TextArea({placeholder: "Enter text"})
@@ -538,7 +538,7 @@ class TreeNodeEdit extends Widget {
             .appendTo(this.body)*/
       }
 
-      protected getValueForCancel(): string {
+      protected override getValueForCancel(): string {
         return undefined
       }
     }).do()

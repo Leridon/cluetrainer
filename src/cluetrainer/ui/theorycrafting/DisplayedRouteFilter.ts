@@ -22,13 +22,13 @@ export class DisplayedRouteFilterEdit extends AbstractEditWidget<DisplayedRouteF
     super();
   }
 
-  setValue(v: DisplayedRouteFilter): this {
+  override setValue(v: DisplayedRouteFilter): this {
     if (!v) v = {type: "none"}
 
     return super.setValue(v)
   }
 
-  protected async render() {
+  protected override async render() {
     this.empty()
 
     const filter = this.get()

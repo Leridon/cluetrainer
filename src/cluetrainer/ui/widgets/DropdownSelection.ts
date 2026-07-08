@@ -11,7 +11,7 @@ export class DropdownSelection<T> extends AbstractDropdownSelection<T> {
     this.setItems(items)
   }
 
-  setItems(items: T[] | (() => Promise<T[]> | T[])): this {
+  override setItems(items: T[] | (() => Promise<T[]> | T[])): this {
     super.setItems(items)
 
     // TODO: What to do if current selection is not in new list?

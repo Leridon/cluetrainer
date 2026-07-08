@@ -1,7 +1,7 @@
-import {TileCoordinates, TileRectangle} from "../../../lib/runescape/coordinates";
+import {floor_t, TileCoordinates, TileRectangle} from "../../../lib/runescape/coordinates";
 import {util} from "../../../lib/util/util";
 import {Rectangle, Vector2} from "../../../lib/math";
-import * as assert from "assert";
+import assert from "assert";
 import {Clues} from "../Clues";
 import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
 import {rangeRight} from "lodash";
@@ -243,7 +243,7 @@ export namespace Scans {
           get_pulse(spot, TileRectangle.br(rectArea), range).pulse,
         )
 
-        pulses = rangeRight(min, max + 1, 1).map((p: 1 | 2 | 3) => {
+        pulses = (<PulseRing[]>rangeRight(min, max + 1, 1)).map((p: 1 | 2 | 3) => {
           return {
             pulse: p,
             different_level: spot.level != rectArea.level

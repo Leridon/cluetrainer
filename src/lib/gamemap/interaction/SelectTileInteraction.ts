@@ -4,7 +4,7 @@ import {TileCoordinates} from "../../runescape/coordinates";
 import InteractionTopControl from "../../../cluetrainer/ui/map/InteractionTopControl";
 
 export class SelectTileInteraction extends ValueInteraction<TileCoordinates> {
-  constructor(public config: ValueInteraction.option_t<TileCoordinates> = {}, protected conf: {
+  constructor(public override config: ValueInteraction.option_t<TileCoordinates> = {}, protected conf: {
     snap?: number,
     shift_snap?: number
   } = {snap: 1, shift_snap: 1}) {
@@ -17,7 +17,7 @@ export class SelectTileInteraction extends ValueInteraction<TileCoordinates> {
     return TileCoordinates.snap(event.coordinates, granularity)
   }
 
-  eventHover(event: GameMapMouseEvent) {
+  override eventHover(event: GameMapMouseEvent) {
     super.eventHover(event);
 
     event.onPre(() => {
@@ -25,7 +25,7 @@ export class SelectTileInteraction extends ValueInteraction<TileCoordinates> {
     })
   }
 
-  eventClick(event: GameMapMouseEvent) {
+  override eventClick(event: GameMapMouseEvent) {
     event.onPre(() => {
       event.stopAllPropagation()
 

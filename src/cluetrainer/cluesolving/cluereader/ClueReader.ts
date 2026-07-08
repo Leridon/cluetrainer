@@ -1,5 +1,3 @@
-import * as OCR from "alt1/ocr";
-import {FontDefinition} from "alt1/ocr";
 import {clue_data} from "../../../data/clues";
 import {Alt1Color} from "../../../lib/alt1/Alt1Color";
 import {CapturedImage} from "../../../lib/alt1/capture";
@@ -32,6 +30,7 @@ import log = Log.log;
 import cleanedJSON = util.cleanedJSON;
 import async_init = util.async_init;
 import AsyncInitialization = util.AsyncInitialization;
+import {OCR} from "../../../lib/alt1/OCR";
 
 const CLUEREADERDEBUG = false
 
@@ -466,8 +465,7 @@ export namespace ClueReader {
 
   export type Result = Result.TextClue | Result.ScanClue | Result.CompassClue | Result.Puzzle
 
-  export let CLUE_FONT: FontDefinition = ClueFont
-
+  export let CLUE_FONT: OCR.FontDefinition = ClueFont
   /**
    * Reads the text in the modal from a text clue.
    * Taken pretty much verbatim from skillbert's solver.

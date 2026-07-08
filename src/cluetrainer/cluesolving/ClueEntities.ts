@@ -24,7 +24,7 @@ export namespace ClueEntities {
 
   export class NpcEntity extends MapEntity {
 
-    floor_sensitivity_layers: FloorLevels<{ correct_level: boolean }> = FloorLevels.none
+    override floor_sensitivity_layers: FloorLevels<{ correct_level: boolean }> = FloorLevels.none
 
     constructor(protected name: string, protected range: TileArea) {
       super();
@@ -60,7 +60,7 @@ export namespace ClueEntities {
 
   export class ObjectEntity extends MapEntity {
 
-    floor_sensitivity_layers: FloorLevels<{ correct_level: boolean }> = FloorLevels.none
+    override floor_sensitivity_layers: FloorLevels<{ correct_level: boolean }> = FloorLevels.none
 
     constructor(protected name: string,
                 protected box: TileRectangle,
@@ -102,7 +102,7 @@ export namespace ClueEntities {
 
   export class TalkSolutionNpcEntity extends NpcEntity {
 
-    constructor(protected name: string, protected spot: TalkTo["spots"][number]) {
+    constructor(protected override name: string, protected spot: TalkTo["spots"][number]) {
       super(name, spot.range);
 
       this
@@ -142,7 +142,7 @@ export namespace ClueEntities {
   }
 
   export class DigSolutionEntity extends MapEntity {
-    floor_sensitivity_layers: FloorLevels<{ correct_level: boolean }> = FloorLevels.none
+    override floor_sensitivity_layers: FloorLevels<{ correct_level: boolean }> = FloorLevels.none
 
     constructor(protected sol: Solution.Dig) {
       super();
@@ -193,7 +193,7 @@ export namespace ClueEntities {
   }
 
   export class EmoteAreaEntity extends MapEntity {
-    floor_sensitivity_layers: FloorLevels<{ correct_level: boolean }> = FloorLevels.none
+    override floor_sensitivity_layers: FloorLevels<{ correct_level: boolean }> = FloorLevels.none
 
     constructor(protected clue: Clues.Emote) {
       super();

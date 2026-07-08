@@ -62,7 +62,7 @@ export default class Graticule extends leaflet.FeatureGroup {
     return this
   }
 
-  onRemove(map): this {
+  override onRemove(map): this {
     let self = this
 
     this._map.off('zoomend', self._hook)

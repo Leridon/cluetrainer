@@ -150,7 +150,7 @@ export class ScanRadiusMarker extends MapEntity {
     return null
   }
 
-  async contextMenu(event: GameMapContextMenuEvent): Promise<Menu | null> {
+  override async contextMenu(event: GameMapContextMenuEvent): Promise<Menu | null> {
     return {
       type: "submenu",
       text: "",
@@ -248,7 +248,7 @@ export class AdaptiveScanRadiusMarker extends GameLayer {
     this.manualMarker.set(null)
   }
 
-  eventClick(event: GameMapMouseEvent) {
+  override eventClick(event: GameMapMouseEvent) {
     event.onPost(() => {
       if (this.canBeManuallySet.value()) {
         if ((this.custom_marker && event.active_entity == this.custom_marker) || TileCoordinates.eq2(event.tile(), this.manualMarker.value())) {
@@ -260,7 +260,7 @@ export class AdaptiveScanRadiusMarker extends GameLayer {
     })
   }
 
-  eventHover(event: GameMapMouseEvent) {
+  override eventHover(event: GameMapMouseEvent) {
     event.onPost(() => {
       if (this.followCursor.value()) {
         this.cursorMarker.set(event.tile())
@@ -268,7 +268,7 @@ export class AdaptiveScanRadiusMarker extends GameLayer {
     })
   }
 
-  eventContextMenu(event: GameMapContextMenuEvent) {
+  override eventContextMenu(event: GameMapContextMenuEvent) {
     event.onPre(() => {
       if (event.active_entity instanceof ScanRadiusMarker && event.active_entity == this.custom_marker) {
         event.addForEntity({

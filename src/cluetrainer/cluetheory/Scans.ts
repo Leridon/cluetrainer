@@ -12,6 +12,7 @@ export namespace ScanTheory {
   import get_pulse = Scans.get_pulse;
   import complementSpot = Scans.complementSpot;
   import distance = Scans.distance;
+  import PulseRing = Scans.PulseRing;
 
   export type PulseInformation = Scans.Pulse & ({
     pulse: 3
@@ -97,7 +98,7 @@ export namespace ScanTheory {
           get_pulse(spot, TileRectangle.br(rectArea), range).pulse,
         )
 
-        pulses = rangeRight(min, max + 1, 1).map((p: 1 | 2 | 3) => {
+        pulses = (rangeRight(min, max + 1, 1) as PulseRing[]).map((p: 1 | 2 | 3) => {
           return {
             pulse: p,
             different_level: spot.level != rectArea.level

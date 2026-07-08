@@ -40,7 +40,7 @@ export class DevelopmentModal extends NisModal {
     this.setTitle("Super Secret Development Menu")
   }
 
-  render() {
+  override render() {
     super.render();
 
     const layout = new Properties().appendTo(this.body)
@@ -189,7 +189,7 @@ export class DevelopmentModal extends NisModal {
         await (new class extends NisModal {
           constructor() {super({size: "fullscreen"});}
 
-          render() {
+          override render() {
             super.render();
 
             this.title.set("Font Sheet Creator")

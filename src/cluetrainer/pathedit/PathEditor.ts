@@ -11,7 +11,7 @@ import {DrawAbilityInteraction} from "./interactions/DrawAbilityInteraction";
 import PathEditActionBar from "./PathEditActionBar";
 import InteractionLayer, {InteractionGuard} from "../../lib/gamemap/interaction/InteractionLayer";
 import {TileCoordinates} from "../../lib/runescape/coordinates";
-import * as assert from "assert";
+import assert from "assert";
 import lodash from "lodash";
 import {Menu, MenuEntry} from "../ui/widgets/ContextMenu";
 import PlaceRedClickInteraction from "./interactions/PlaceRedClickInteraction";
@@ -76,7 +76,7 @@ class PathEditorGameLayer extends GameLayer {
     if (add_transport_layer) new TransportLayer(true).addTo(this)
   }
 
-  eventContextMenu(event: GameMapContextMenuEvent) {
+  override eventContextMenu(event: GameMapContextMenuEvent) {
 
     event.onPost(() => {
       if (this.editor.isActive()) {
@@ -283,7 +283,7 @@ class PathEditorGameLayer extends GameLayer {
     })
   }
 
-  eventKeyDown(event: GameMapKeyboardEvent) {
+  override eventKeyDown(event: GameMapKeyboardEvent) {
     event.onPost(() => {
       const e = event.original
       const handled = ((): boolean => {

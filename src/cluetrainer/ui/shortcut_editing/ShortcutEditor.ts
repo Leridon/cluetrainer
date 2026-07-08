@@ -80,7 +80,7 @@ export class ShortcutEditGameLayer extends GameLayer {
     this.view = new ShortcutViewLayer(this.editor.data).addTo(this)
   }
 
-  eventClick(event: GameMapMouseEvent) {
+  override eventClick(event: GameMapMouseEvent) {
     event.onPost(() => {
       let shortcuts = this.editor.data.value().filter(s => {
         return !s.value().is_builtin && Rectangle.containsTile(Transportation.bounds(s.value()), event.coordinates)
@@ -103,7 +103,7 @@ export class ShortcutEditGameLayer extends GameLayer {
     })
   }
 
-  eventContextMenu(event: GameMapContextMenuEvent) {
+  override eventContextMenu(event: GameMapContextMenuEvent) {
     event.onPost(() => {
       let shortcuts = this.editor.data.value().filter(s => {
         return Rectangle.containsTile(Transportation.bounds(s.value()), event.coordinates)

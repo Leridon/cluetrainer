@@ -14,7 +14,7 @@ import {Transportation} from "../lib/runescape/transportation";
 import jquery from "jquery";
 import lodash from "lodash";
 import {Settings} from "./ui/settings/Settings";
-import * as assert from "assert";
+import assert from "assert";
 import {TextRendering} from "./ui/TextRendering";
 import {TransportData} from "../data/transports";
 import {PathGraphics} from "./ui/path_graphics";
@@ -37,10 +37,10 @@ import {ChatReader} from "../lib/alt1/readers/ChatReader";
 import {CaptureInterval} from "../lib/alt1/capture";
 import {NisModal} from "../lib/ui/NisModal";
 import {ClueTrainerMigrations} from "./migrations";
-import {PlayerStateTracking} from "./cluesolving/cluereader/PlayerPositionReader";
 import {TileHighlight} from "../lib/gamemap/defaultlayers/TileHighlightLayer";
 import {GameMapControl} from "../lib/gamemap/GameMapControl";
 import {Angles} from "../lib/math/Angles";
+import {CompassReader} from "./cluesolving/cluereader/CompassReader";
 import ActiveTeleportCustomization = Transportation.TeleportGroup.ActiveTeleportCustomization;
 import TeleportSettings = Settings.TeleportSettings;
 import inlineimg = C.inlineimg;
@@ -53,9 +53,6 @@ import entity = C.entity;
 import notification = Notification.notification;
 import log = Log.log;
 import div = C.div;
-import {CompassReader} from "./cluesolving/cluereader/CompassReader";
-import AngleResult = CompassReader.AngleResult;
-import UncertainAngle = Angles.UncertainAngle;
 
 declare global {
   var cluetrainer_build_environment: ClueTrainer.BuildEnvironment
@@ -387,7 +384,7 @@ export class ClueTrainer extends Behaviour {
       })
     }
 
-    if(this.version.build_info?.build_type != "openglbeta") {
+    if (this.version.build_info?.build_type != "openglbeta") {
       Alt1.instance().featureGL()
     }
 

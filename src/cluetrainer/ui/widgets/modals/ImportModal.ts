@@ -32,7 +32,7 @@ export class ImportModal<T, U> extends FormModal<{
     if ((await this.handler(processed)) ?? true) this.confirm({imported: processed})
   }
 
-  render() {
+  override render() {
     super.render();
 
     this.title.set("Import")
@@ -101,7 +101,7 @@ export class ImportModal<T, U> extends FormModal<{
     }
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     return [
       new BigNisButton("Cancel", "cancel").onClick(() => this.confirm(null)),
       this.import_button = new BigNisButton("Import", "confirm")

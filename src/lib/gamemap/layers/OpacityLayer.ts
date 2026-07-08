@@ -48,7 +48,7 @@ export class OpacityGroup extends leaflet.FeatureGroup {
     }
   }[] = []
 
-  addLayer(layer: Layer): this {
+  override addLayer(layer: Layer): this {
     super.addLayer(layer);
 
     function get(): {
@@ -79,7 +79,7 @@ export class OpacityGroup extends leaflet.FeatureGroup {
     return this
   }
 
-  removeLayer(layer: number | Layer): this {
+  override removeLayer(layer: number | Layer): this {
     super.removeLayer(layer)
 
     this.children.splice(this.children.findIndex(c => c.layer == layer))

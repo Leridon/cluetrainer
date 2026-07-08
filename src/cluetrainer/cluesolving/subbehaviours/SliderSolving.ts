@@ -81,7 +81,7 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
     )
   }
 
-  capturingPaused(): boolean {
+  override capturingPaused(): boolean {
     return !this.solution && this.active_solving_process != null
   }
 
@@ -623,7 +623,7 @@ class SliderGuideProcess extends AbstractPuzzleProcess {
       .setCombineStraights(this.settings.mode == "mouse" || this.settings.mode == "hybrid")
   }
 
-  protected end() {
+  protected override end() {
     super.end();
 
     this.move_overlay?.hide()
@@ -799,7 +799,7 @@ export class SliderSolving extends AbstractPuzzleSolving<
   ClueReader.Result.Puzzle.Slider,
   SliderGuideProcess
 > {
-  constructor(parent: ClueSolvingBehaviour, public readonly puzzle: ClueReader.Result.Puzzle.Slider) {
+  constructor(parent: ClueSolvingBehaviour, public override readonly puzzle: ClueReader.Result.Puzzle.Slider) {
     super("Slider", parent,
       puzzle,
       deps().app.settings.settings.solving.puzzles.sliders.autostart,
@@ -842,13 +842,13 @@ export class SliderSolving extends AbstractPuzzleSolving<
     return process
   }
 
-  protected begin() {
+  protected override begin() {
     super.begin();
 
     this.modal.setImage(this.puzzle.reader.body.getData())
   }
 
-  pausesClueReader(): boolean {
+  override pausesClueReader(): boolean {
     return this.process && !this.process.isDone()
   }
 }

@@ -23,7 +23,7 @@ export default class BaseTileLayer extends leaflet.TileLayer {
     return this.zoomurls.find((level) => (level.from ?? -Infinity) <= zoom && (level.to ?? Infinity) >= zoom)
   }
 
-  getTileUrl(coords: leaflet.Coords, retrycount = 0) {
+  override getTileUrl(coords: leaflet.Coords, retrycount = 0) {
     let cnf = this.getZoomConfig(coords.z);
     let url = cnf?.urls[retrycount] ?? "";
     return leaflet.Util.template(url, {x: coords.x, y: coords.y, z: coords.z});

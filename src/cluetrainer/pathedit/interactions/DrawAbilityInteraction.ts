@@ -118,7 +118,7 @@ export class DrawAbilityInteraction extends ValueInteraction<Path.step_ability> 
     }
   }
 
-  eventClick(event: GameMapMouseEvent) {
+  override eventClick(event: GameMapMouseEvent) {
     event.onPost(async () => {
       event.stopAllPropagation()
 
@@ -157,13 +157,13 @@ export class DrawAbilityInteraction extends ValueInteraction<Path.step_ability> 
     })
   }
 
-  eventHover(event: GameMapMouseEvent) {
+  override eventHover(event: GameMapMouseEvent) {
     event.onPre(() => {
       this.current_target.set({tile: event.tile(), forced: event.original.shiftKey})
     })
   }
 
-  eventKeyDown(event: GameMapKeyboardEvent) {
+  override eventKeyDown(event: GameMapKeyboardEvent) {
     event.onPre(() => {
       if (this.start_position.value() != null && event.original.key == "Backspace") {
         event.stopAllPropagation()
@@ -178,7 +178,7 @@ export class DrawAbilityInteraction extends ValueInteraction<Path.step_ability> 
     })
   }
 
-  eventKeyUp(event: GameMapKeyboardEvent) {
+  override eventKeyUp(event: GameMapKeyboardEvent) {
     event.onPost(() => {
       if (event.original.key == "Shift") this.current_target.update(c => {
         if (c) c.forced = false

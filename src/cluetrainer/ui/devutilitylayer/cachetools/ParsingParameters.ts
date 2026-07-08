@@ -541,7 +541,7 @@ export namespace ParsingParameter {
             this.update_render()
           }
 
-          activate() {
+          override activate() {
             const editor = this
 
             if (this.interaction) {

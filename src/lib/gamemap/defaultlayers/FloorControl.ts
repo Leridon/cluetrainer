@@ -42,13 +42,13 @@ export default class FloorControl extends GameMapControl {
     this.parent.getMap().floor.set(floor_t.clamp((this.parent.getMap().floor.value() - 1)))
   }
 
-  onAdd(map: GameMap) {
+  override onAdd(map: GameMap) {
     map.floor.subscribe((f) => this.current.text(`Floor ${f}`))
 
     return super.onAdd(map)
   }
 
-  eventKeyDown(event: GameMapKeyboardEvent) {
+  override eventKeyDown(event: GameMapKeyboardEvent) {
 
     event.onPre(() => {
       if (event.leaflet.originalEvent.key == "PageUp") {

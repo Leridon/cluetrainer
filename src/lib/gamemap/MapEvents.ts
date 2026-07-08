@@ -50,7 +50,7 @@ export abstract class GameMapEvent<LeafletT extends leaflet.LeafletEvent, Origin
 export class GameMapMouseEvent extends GameMapEvent<leaflet.LeafletMouseEvent, MouseEvent> {
   constructor(
     map: GameMap,
-    public leaflet: leaflet.LeafletMouseEvent,
+    public override leaflet: leaflet.LeafletMouseEvent,
     public coordinates: TileCoordinates) {
     super(map, leaflet, leaflet.originalEvent);
   }
@@ -63,7 +63,7 @@ export class GameMapMouseEvent extends GameMapEvent<leaflet.LeafletMouseEvent, M
 export class GameMapKeyboardEvent extends GameMapEvent<leaflet.LeafletKeyboardEvent, KeyboardEvent> {
   constructor(
     map: GameMap,
-    public leaflet: leaflet.LeafletKeyboardEvent) {
+    public override leaflet: leaflet.LeafletKeyboardEvent) {
     super(map, leaflet, leaflet.originalEvent);
   }
 }
@@ -75,7 +75,7 @@ export class GameMapContextMenuEvent extends GameMapEvent<leaflet.LeafletMouseEv
   private for_entity_entries: MenuEntry[] = []
 
   constructor(map: GameMap,
-              public leaflet: leaflet.LeafletMouseEvent,
+              public override leaflet: leaflet.LeafletMouseEvent,
               public coordinates: TileCoordinates
   ) {
     super(map, leaflet, leaflet.originalEvent);

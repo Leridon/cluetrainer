@@ -60,7 +60,7 @@ export class DrawArrowInteraction extends ValueInteraction<[TileCoordinates, Til
     return this
   }
 
-  eventClick(event: GameMapMouseEvent) {
+  override eventClick(event: GameMapMouseEvent) {
     event.onPost(async () => {
       event.stopAllPropagation()
 
@@ -73,7 +73,7 @@ export class DrawArrowInteraction extends ValueInteraction<[TileCoordinates, Til
     })
   }
 
-  eventHover(event: GameMapMouseEvent) {
+  override eventHover(event: GameMapMouseEvent) {
     event.onPost(() => {
       if (this.start_position.value()) {
         this.previewed_target_position.set(event.coordinates)
@@ -81,7 +81,7 @@ export class DrawArrowInteraction extends ValueInteraction<[TileCoordinates, Til
     })
   }
 
-  eventKeyDown(event: GameMapKeyboardEvent) {
+  override eventKeyDown(event: GameMapKeyboardEvent) {
     event.onPre(() => {
       if (this.start_position.value() != null && event.original.key == "Backspace") {
         event.stopAllPropagation()
@@ -96,7 +96,7 @@ export class DrawArrowInteraction extends ValueInteraction<[TileCoordinates, Til
     }
   }
 
-  eventKeyUp(event: GameMapKeyboardEvent) {
+  override eventKeyUp(event: GameMapKeyboardEvent) {
     if(this.allow_off_grid) {
       event.onPost(() => {
         if (event.original.key == "Shift") this.snap_target_position.set(true)

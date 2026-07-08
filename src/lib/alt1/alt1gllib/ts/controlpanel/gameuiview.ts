@@ -1,7 +1,6 @@
 import { RenderRect } from "../reflect2d/reflect2d";
 
 
-import "./reflect3d.scss";
 import { TextureSnapshot } from "../util/alt1gltypes";
 import { ReffingMap } from "../util/disposehelpers";
 

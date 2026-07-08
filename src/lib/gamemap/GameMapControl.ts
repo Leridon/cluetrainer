@@ -17,7 +17,7 @@ export namespace GameMapControl {
 }
 
 export class GameMapControl<content_t extends Widget = Widget> extends GameLayer {
-  parent: GameLayer | null = null
+  override parent: GameLayer | null = null
 
   constructor(public config: GameMapControl.config_t,
               public content: content_t) {
@@ -39,14 +39,14 @@ export class GameMapControl<content_t extends Widget = Widget> extends GameLayer
     this.content.container.on("contextmenu blur change click dblclick error focus focusin focusout hover keydown keypress keyup load mousedown mouseenter mouseleave mouseout mouseover resize select submit mousewheel", (e) => e.stopPropagation())
   }
 
-  onAdd(map: GameMap) {
+  override onAdd(map: GameMap) {
     map.addControl(this)
 
     return super.onAdd(map)
   }
 
 
-  onRemove(map: GameMap): this {
+  override onRemove(map: GameMap): this {
     this.content.detach()
 
     return super.onRemove(map);

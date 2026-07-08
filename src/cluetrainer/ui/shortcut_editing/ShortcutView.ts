@@ -19,7 +19,7 @@ export class ShortcutViewLayer extends GameLayer {
     })
   }
 
-  onAdd(map: GameMap): this {
+  override onAdd(map: GameMap): this {
     map.floor.subscribe((floor) => {
       this.eachLayer((l: ShortcutViewLayer.ShortcutPolygon) => {
         l.style.update2(s => s.viewed_floor = floor)
@@ -33,7 +33,7 @@ export class ShortcutViewLayer extends GameLayer {
     return this
   }
 
-  eventHover(event: GameMapMouseEvent) {
+  override eventHover(event: GameMapMouseEvent) {
 
     this.eachLayer((l: ShortcutViewLayer.ShortcutPolygon) => {
       l.style.update2(s => {

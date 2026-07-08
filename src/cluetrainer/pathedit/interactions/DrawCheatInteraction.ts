@@ -21,7 +21,7 @@ export class DrawCheatInteraction extends ValueInteraction<Path.step_cheat> {
     )
   }
 
-  eventClick(event: GameMapMouseEvent) {
+  override eventClick(event: GameMapMouseEvent) {
     event.onPost(async () => {
       event.stopAllPropagation()
 
@@ -41,7 +41,7 @@ export class DrawCheatInteraction extends ValueInteraction<Path.step_cheat> {
     })
   }
 
-  eventHover(event: GameMapMouseEvent) {
+  override eventHover(event: GameMapMouseEvent) {
     this.preview({
       type: "cheat",
       assumed_start: this.start_from,

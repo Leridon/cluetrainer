@@ -11,7 +11,7 @@ export class SmallImageButton extends Button {
     }
   }
 
-  setEnabled(enabled: boolean): this {
+  override setEnabled(enabled: boolean): this {
     super.setEnabled(enabled)
 
     if (enabled) this.container.removeClass("disabled")

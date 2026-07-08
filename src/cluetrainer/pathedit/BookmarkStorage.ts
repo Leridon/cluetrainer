@@ -69,7 +69,7 @@ export namespace BookmarkStorage {
       }
     }
 
-    render() {
+    override render() {
       super.render()
 
       const props = new Properties().appendTo(this.body)
@@ -86,7 +86,7 @@ export namespace BookmarkStorage {
       )
     }
 
-    getButtons(): BigNisButton[] {
+    override getButtons(): BigNisButton[] {
       return [
         new BigNisButton("Cancel", "cancel")
           .onClick(() => this.cancel()),
@@ -95,7 +95,7 @@ export namespace BookmarkStorage {
       ]
     }
 
-    protected getValueForCancel(): BookmarkStorage.Bookmark {
+    protected override getValueForCancel(): BookmarkStorage.Bookmark {
       return null
     }
   }

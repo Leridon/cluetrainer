@@ -36,7 +36,7 @@ export class PlaceShortcut extends ValueInteraction<Transportation.EntityTranspo
     )
   }
 
-  eventHover(event: GameMapMouseEvent) {
+  override eventHover(event: GameMapMouseEvent) {
     event.onPre(() => {
       this.final_translation_transform = TileTransform.translation(event.tile(), event.tile().level)
       this.updatePreview()
@@ -52,7 +52,7 @@ export class PlaceShortcut extends ValueInteraction<Transportation.EntityTranspo
     ))
   }
 
-  eventKeyDown(event: GameMapKeyboardEvent) {
+  override eventKeyDown(event: GameMapKeyboardEvent) {
     event.onPost(() => {
       if (event.original.key.toLowerCase() == "r") {
         this.transform = TileTransform.chain(
@@ -70,7 +70,7 @@ export class PlaceShortcut extends ValueInteraction<Transportation.EntityTranspo
     })
   }
 
-  eventClick(event: GameMapMouseEvent) {
+  override eventClick(event: GameMapMouseEvent) {
     event.onPre(() => {
       event.stopAllPropagation()
 

@@ -70,7 +70,7 @@ class PlacePrototypeInteraction extends ValueInteraction<ProcessedCacheTypes.Ins
     }
   }
 
-  eventKeyDown(event: GameMapKeyboardEvent) {
+  override eventKeyDown(event: GameMapKeyboardEvent) {
     event.onPre(() => {
       if (event.original.key.toLowerCase() == "r") {
         const offset = event.original.shiftKey ? -1 : 1
@@ -82,7 +82,7 @@ class PlacePrototypeInteraction extends ValueInteraction<ProcessedCacheTypes.Ins
     })
   }
 
-  eventHover(event: GameMapMouseEvent) {
+  override eventHover(event: GameMapMouseEvent) {
     event.onPre(() => {
       this.last_hover = event.tile()
 
@@ -90,7 +90,7 @@ class PlacePrototypeInteraction extends ValueInteraction<ProcessedCacheTypes.Ins
     })
   }
 
-  eventClick(event: GameMapMouseEvent) {
+  override eventClick(event: GameMapMouseEvent) {
     event.onPre(() => {
       this.commit(this.get(event.tile()))
     })
@@ -235,7 +235,7 @@ export class ParserManagementLayer extends GameLayer {
     if (resultpair.group && resultpair.group.name != "") this.recents.use(resultpair.group.id)
   }
 
-  eventContextMenu(event: GameMapContextMenuEvent) {
+  override eventContextMenu(event: GameMapContextMenuEvent) {
 
     event.onPre(() => {
       if (event.active_entity instanceof PrototypeInstanceEntity) {

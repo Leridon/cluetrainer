@@ -1,4 +1,4 @@
-import * as jquery from 'jquery';
+import jquery from 'jquery';
 import * as tippy from 'tippy.js';
 import {C} from "./constructors";
 import type * as CSS from 'csstype';

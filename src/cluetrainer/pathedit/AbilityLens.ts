@@ -130,7 +130,7 @@ export class StatefulAbilityLens extends GameLayer {
     ).addTo(this)
   }
 
-  eventHover(event: GameMapMouseEvent) {
+  override eventHover(event: GameMapMouseEvent) {
     event.onPre(() => {
       if (!this.static.value()) {
         this.render_for_state.set({

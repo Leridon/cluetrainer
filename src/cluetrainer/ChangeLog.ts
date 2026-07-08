@@ -1575,7 +1575,7 @@ export namespace Changelog {
       this.setTitle(`Changelog (${Version.asString(log.latest_patch.version)})`)
     }
 
-    render() {
+    override render() {
       super.render();
 
       const layout = new Properties().appendTo(this.body)

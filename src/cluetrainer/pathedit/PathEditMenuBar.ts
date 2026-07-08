@@ -107,7 +107,7 @@ export class PathEditMenuBar extends Widget {
                       this.setTitle("Edit assumptions")
                     }
 
-                    public render() {
+                    public override render() {
                       super.render()
 
                       const assumptions = self.editor.options.start_state.assumptions
@@ -123,7 +123,7 @@ export class PathEditMenuBar extends Widget {
                       )
                     }
 
-                    getButtons(): BigNisButton[] {
+                    override getButtons(): BigNisButton[] {
                       return [
                         new BigNisButton("Save", "confirm").onClick(() => this.confirm(this.property.get())),
                         new BigNisButton("Cancel", "cancel").onClick(() => this.cancel()),

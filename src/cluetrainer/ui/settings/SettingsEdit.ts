@@ -265,7 +265,7 @@ class TeleportSettingsEdit extends AbstractSettingsEdit<Settings.TeleportSetting
 
                 input: TextField
 
-                render() {
+                override render() {
                   super.render();
 
                   new Properties().named("New Name",
@@ -274,7 +274,7 @@ class TeleportSettingsEdit extends AbstractSettingsEdit<Settings.TeleportSetting
                   ).appendTo(this.body)
                 }
 
-                getButtons(): BigNisButton[] {
+                override getButtons(): BigNisButton[] {
                   return [
                     new BigNisButton("Cancel", "neutral")
                       .onClick(() => this.cancel()),
@@ -544,7 +544,7 @@ export class ScanInputOverlayConfigModal extends FormModal<ScanControlPrototype.
     })
   }
 
-  render() {
+  override render() {
     super.render();
 
     const layout = new SettingsLayout()
@@ -582,7 +582,7 @@ export class ScanInputOverlayConfigModal extends FormModal<ScanControlPrototype.
     layout.appendTo(this.body)
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     return [
       new BigNisButton("Cancel", "cancel").onClick(() => this.cancel()),
       new BigNisButton("Confirm", "confirm").onClick(() => this.confirm(this.value.value())),
@@ -1403,16 +1403,22 @@ class CompassSettingsEdit extends AbstractSettingsEdit<CompassSolving.Settings> 
                       "overflow": "hidden",
                       "text-overflow": "ellipsis"
                     })
-                } else {
-                  return `${v.x} | ${v.y} | ${v.level}`
-                }
+                } else return TileCoordinates.toString(v)
               }
             },
-            search_term: (t: Transportation.TeleportGroup.Spot) => t.hover()
+            search_term: (t: Transportation.TeleportGroup.Spot | TileCoordinates) => {
+              if (t instanceof Transportation.TeleportGroup.Spot) return t.hover()
+              else return TileCoordinates.toString(t)
+            }
           }, TransportData.getAllTeleportSpots())
-            .onSelection((s: TeleportGroup.Spot) => {
-              point.teleport = s.id()
-              point.tile = undefined
+            .onSelection((s: T) => {
+              if(s instanceof Transportation.TeleportGroup.Spot) {
+                point.teleport = s.id()
+                point.tile = undefined
+              } else {
+                point.teleport = undefined
+                point.tile = s
+              }
             })
             .css("flex-grow", "1")
 
@@ -1437,7 +1443,7 @@ class CompassSettingsEdit extends AbstractSettingsEdit<CompassSolving.Settings> 
                       })
                     }
 
-                    render() {
+                    override render() {
                       super.render()
 
                       this.body.append(this.map = new GameMapMiniWidget()
@@ -1454,7 +1460,7 @@ class CompassSettingsEdit extends AbstractSettingsEdit<CompassSolving.Settings> 
 
                             }
 
-                            eventClick(event: GameMapMouseEvent) {
+                            override eventClick(event: GameMapMouseEvent) {
                               event.onPre(() => {
                                 if (event.active_entity instanceof TeleportSpotEntity) {
                                   this.commit(event.active_entity.teleport)
@@ -1474,14 +1480,14 @@ class CompassSettingsEdit extends AbstractSettingsEdit<CompassSolving.Settings> 
                       )
                     }
 
-                    getButtons(): BigNisButton[] {
+                    override getButtons(): BigNisButton[] {
                       return [
                         new BigNisButton("Cancel", "neutral")
                           .onClick(() => this.cancel())
                       ]
                     }
 
-                    protected getValueForCancel(): T {
+                    protected override getValueForCancel(): T {
                       return null
                     }
                   })
@@ -1678,7 +1684,7 @@ export class SettingsModal extends FormModal<{
     return !lodash.isEqual(deps().app.settings.settings, this.edit.value)
   }
 
-  protected getValueForCancel(): { saved: boolean; value: Settings.Settings } {
+  protected override getValueForCancel(): { saved: boolean; value: Settings.Settings } {
     return {saved: !!this.last_saved_value, value: this.last_saved_value}
   }
 
@@ -1709,7 +1715,7 @@ export class SettingsModal extends FormModal<{
     return SettingsModal.instance.do()
   }
 
-  protected onClose() {
+  protected override onClose() {
     this.maybeCancel()
   }
 
@@ -1742,7 +1748,7 @@ export class SettingsModal extends FormModal<{
     }
   }
 
-  render() {
+  override render() {
     super.render()
 
     this.body.css("padding", "0")
@@ -1750,7 +1756,7 @@ export class SettingsModal extends FormModal<{
     this.body.append(this.edit = new SettingsEdit(deps().app, this.start_section))
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     return [
       new BigNisButton("Cancel", "cancel")
         .onClick(() => this.maybeCancel()),

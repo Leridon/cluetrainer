@@ -165,7 +165,7 @@ export default class PathEditActionBar extends GameMapControl<ControlWithHeader>
     this.buttons.powerburst.cooldown.set(Math.max(state.acceleration_activation_tick + 120 - state.tick, 0))
   }
 
-  eventKeyDown(event: GameMapKeyboardEvent) {
+  override eventKeyDown(event: GameMapKeyboardEvent) {
     event.onPre(() => {
       const e = event.original
 

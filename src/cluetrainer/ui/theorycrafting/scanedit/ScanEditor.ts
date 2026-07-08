@@ -243,7 +243,7 @@ export namespace ScanEditLayer {
       this.timing_information = timing
     }
 
-    async contextMenu(event: GameMapContextMenuEvent): Promise<Menu | null> {
+    override async contextMenu(event: GameMapContextMenuEvent): Promise<Menu | null> {
       if (this.is_complement) {
         event.addForEntity({
           type: "basic",
@@ -498,7 +498,7 @@ export default class ScanEditor extends MethodSubEditor {
   public builder: ScanTreeBuilder
   candidates_at_active_node: Observable<TileCoordinates[]>
 
-  layer: ScanEditLayer = undefined
+  override layer: ScanEditLayer = undefined
   interaction_guard: InteractionGuard
   tree_edit: TreeEdit
   tools: ScanTools
@@ -509,7 +509,7 @@ export default class ScanEditor extends MethodSubEditor {
   path_editor: SingleBehaviour<PathEditor>
 
   constructor(
-    public parent: MethodEditor,
+    public override parent: MethodEditor,
     public app: ClueTrainer,
     public value: AugmentedMethod<ScanTreeMethod, Clues.Scan>,
     public side_panel: Widget
@@ -538,7 +538,7 @@ export default class ScanEditor extends MethodSubEditor {
     const self = this
 
     this.layer.add(new class extends GameLayer {
-      eventContextMenu(event: GameMapContextMenuEvent) {
+      override eventContextMenu(event: GameMapContextMenuEvent) {
         event.onPre(() => {
           if (event.active_entity instanceof ScanEditLayer.SpotMarker) {
             const spot = event.active_entity.spot
@@ -556,7 +556,7 @@ export default class ScanEditor extends MethodSubEditor {
                     this.title.set("Set spot number")
                   }
 
-                  render() {
+                  override render() {
                     super.render();
 
                     const props = new Properties().appendTo(this.body)
@@ -568,14 +568,14 @@ export default class ScanEditor extends MethodSubEditor {
                     this.input.raw().focus()
                   }
 
-                  getButtons(): BigNisButton[] {
+                  override getButtons(): BigNisButton[] {
                     return [
                       new BigNisButton("Cancel", "cancel").onClick(() => this.cancel()),
                       new BigNisButton("Save", "confirm").onClick(() => this.confirm(this.input.get() - 1)),
                     ]
                   }
 
-                  protected getValueForCancel(): number {
+                  protected override getValueForCancel(): number {
                     return undefined
                   }
                 }).do()
@@ -635,7 +635,7 @@ export default class ScanEditor extends MethodSubEditor {
     )
   }
 
-  begin() {
+  override begin() {
     super.begin()
 
     this.layer.setSpotOrder(this.value.method.tree.ordered_spots)

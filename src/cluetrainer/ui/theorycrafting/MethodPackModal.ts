@@ -25,7 +25,7 @@ export class MethodPackMetaEdit extends AbstractEditWidget<MethodPack.Meta> {
     this.setValue(value)
   }
 
-  protected render() {
+  protected override render() {
     this.empty()
 
     const props = new Properties().appendTo(this)
@@ -78,7 +78,7 @@ export class NewMethodPackModal extends FormModal<{
     super({size: "small"});
   }
 
-  render() {
+  override render() {
     super.render();
 
     if (this.clone_from) {
@@ -97,7 +97,7 @@ export class NewMethodPackModal extends FormModal<{
     }
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     return [
       new BigNisButton("Cancel", "cancel")
         .onClick(() => this.hide()),
@@ -125,7 +125,7 @@ export class NewMethodPackModal extends FormModal<{
     ]
   }
 
-  protected getValueForCancel(): { created: MethodPack } {
+  protected override getValueForCancel(): { created: MethodPack } {
     return {created: null}
   }
 }
@@ -139,7 +139,7 @@ export class EditMethodPackModal extends FormModal<{
     super({size: "small"});
   }
 
-  render() {
+  override render() {
     super.render();
 
     this.title.set("Edit Method Pack")
@@ -147,7 +147,7 @@ export class EditMethodPackModal extends FormModal<{
     this.edit = new MethodPackMetaEdit(MethodPack.meta(this.pack)).appendTo(this.body)
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     return [
       new BigNisButton("Cancel", "cancel")
         .onClick(() => this.hide()),
@@ -166,7 +166,7 @@ export class EditMethodPackModal extends FormModal<{
     ]
   }
 
-  protected getValueForCancel(): { saved: boolean } {
+  protected override getValueForCancel(): { saved: boolean } {
     return {saved: false}
   }
 }
