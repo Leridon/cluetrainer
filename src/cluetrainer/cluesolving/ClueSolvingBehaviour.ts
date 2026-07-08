@@ -583,29 +583,28 @@ export default class ClueSolvingBehaviour extends Behaviour {
               (await drawTileArea(step.step.area))
                 .recolor([255, 0, 255, 255])
             )
-
-            step.step.area
             break
         }
 
         const solution = Clues.Step.solution(step.step)
 
-        switch (solution.type) {
-          case "dig":
-            builder.add(
-              (await drawTileArea(digSpotArea(solution.spot))).recolor([100, 100, 100, 255])
-            )
+        if (solution) {
+          switch (solution.type) {
+            case "dig":
+              builder.add(
+                (await drawTileArea(digSpotArea(solution.spot))).recolor([100, 100, 100, 255])
+              )
 
-            break;
-          case "search":
-            builder.add(
-              (await drawTileArea(TileArea.fromRect(solution.spot))).recolor([0, 255, 255, 255]).translate({x: 0, y: 0.25, z: 0}),
-              (await drawTileArea(TileArea.fromRect(solution.spot))).recolor([0, 255, 255, 255]).translate({x: 0, y: 0.75, z: 0}),
-            )
+              break;
+            case "search":
+              builder.add(
+                (await drawTileArea(TileArea.fromRect(solution.spot))).recolor([0, 255, 255, 255]).translate({x: 0, y: 0.25, z: 0}),
+                (await drawTileArea(TileArea.fromRect(solution.spot))).recolor([0, 255, 255, 255]).translate({x: 0, y: 0.75, z: 0}),
+              )
 
-            break;
+              break;
+          }
         }
-
 
         return builder.finalize()
       })().then(mesh => {
