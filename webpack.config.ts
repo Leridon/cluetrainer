@@ -10,7 +10,7 @@ const ProvidePlugin = webpack.ProvidePlugin;
 
 const build_type = process.env.NODE_ENV
 
-if (!["production", "development", "beta", "openglbeta"].includes(build_type)) {
+if (!build_type || !["production", "development", "beta", "openglbeta"].includes(build_type)) {
   console.log(`Unknown build type ${build_type}`);
   throw ""
 }
