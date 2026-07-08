@@ -93,7 +93,7 @@ export function filedownload(filename: string, url: string) {
 }
 
 export type DragHandlerState = { x: number, y: number, dx: number, dy: number, sx: number, sy: number, end: boolean, start: boolean };
-export function newDragHandler(startevent: MouseEvent | React.MouseEvent | Touch | TouchEvent, movefunc?: (state: DragHandlerState, end: boolean) => any, mindist = 0) {
+export function newDragHandler(startevent: MouseEvent | Touch | TouchEvent, movefunc?: (state: DragHandlerState, end: boolean) => any, mindist = 0) {
 	var locked = mindist != 0;
 	var mouseloc: DragHandlerState;
 	//type juggling because firefox doesnt know what touchevent is

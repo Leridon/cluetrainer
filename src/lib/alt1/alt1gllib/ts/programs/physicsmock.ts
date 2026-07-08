@@ -104,7 +104,7 @@ export type WorldUIApi = {
     refresh: () => void,
     addKeyListener: (cb: (e: KeyboardEvent) => boolean) => void,
     removeKeyListener: (cb: (e: KeyboardEvent) => boolean) => void,
-    showModal: (jsx: JSX.Element) => () => void
+    showModal: () => () => void
 }
 
 export function renderWorld(ctx: CanvasRenderingContext2D, map: World, background = true) {

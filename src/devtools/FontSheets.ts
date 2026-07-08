@@ -195,7 +195,7 @@ export namespace FontSheets {
     without_bearings: ImageData,
     after_fontscript: ImageData,
     font_meta: GenerateFontMeta,
-    font_definition: FontDefinition
+    font_definition: OCR.FontDefinition
   }
 
   export type GlyphPlacement = { bearing: number, padleft: number, padright: number }
