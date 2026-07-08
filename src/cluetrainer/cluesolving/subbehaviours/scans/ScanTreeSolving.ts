@@ -33,7 +33,8 @@ import {AugmentedMethod} from "../../../model/MethodPack";
 import {drawTileArea, PathOverlay3d} from "../../../tile_markers/PathRender";
 import {SingleBehaviour} from "../../../../lib/ui/Behaviour";
 import {SimpleGLOverlay} from "../../../overlay3d/SimpleGLOverlay";
-import {MeshBuilder} from "../../../overlay3d/meshes/MeshBuilder";
+import {MutableMesh} from "../../../overlay3d/meshes/MutableMesh";
+import {Mesh} from "../../../overlay3d/meshes/Mesh";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
 import cls = C.cls;
@@ -44,7 +45,6 @@ import digSpotArea = Clues.digSpotArea;
 import hbox = C.hbox;
 import spacer = C.spacer;
 import inlineimg = C.inlineimg;
-import {Mesh} from "../../../overlay3d/meshes/Mesh";
 
 function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): AugmentedScanTreeNode {
   function searchDown(node: AugmentedScanTreeNode): AugmentedScanTreeNode {
@@ -350,20 +350,16 @@ export class ScanTreeSolving extends ClueSolvingSubBehaviour {
       const region = ScanTree.getTargetRegion(node);
 
       (async (): Promise<Mesh> => {
-        const builder = new MeshBuilder()
+        const builder = new MutableMesh()
 
         if (region && !is_triple_disambiguation) {
-          await drawTileArea(builder,
-            region.area,
-            [0, 255, 0, 50],
+          builder.add(
+            (await drawTileArea(region.area)).recolor([0, 255, 0, 50])
           )
         }
 
         for (let remainingCandidate of node.remaining_candidates) {
-          await drawTileArea(builder,
-            digSpotArea(remainingCandidate),
-            [100, 100, 100, 255]
-          )
+          builder.add((await drawTileArea(digSpotArea(remainingCandidate))).recolor([100, 100, 100, 255]))
         }
 
         return builder.finalize()

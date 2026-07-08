@@ -243,6 +243,8 @@ export namespace TileArea {
       while (segments.length > 0) {
         const [line] = segments.splice(0, 1)
 
+        // TODO: Optimize line construction so that continuous segments going in the same direction are joined
+
         while (segments.length > 0) {
           const cursor = util.index(line, -1)
 

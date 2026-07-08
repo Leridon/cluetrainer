@@ -1,7 +1,7 @@
 import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
 import {Lazy, lazy} from "../../lib/Lazy";
-import {MeshBuilder} from "../overlay3d/meshes/MeshBuilder";
-import Vector3 = MeshBuilder.Vector3;
+import Vector3 = Mesh.Vector3;
+import {Mesh} from "../overlay3d/meshes/Mesh";
 
 const meta = {
   chunks_per_file: 1,

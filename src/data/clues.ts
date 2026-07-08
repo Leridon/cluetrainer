@@ -1085,7 +1085,7 @@ export namespace clue_data {
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crates near the Lumbridge Market."],
-      "solution": {"type": "search", "entity": "Crates", "spot": {"level": 0, "topleft": {"x": 3192, "y": 3257}, "botright": {"x": 3192, "y": 3257}}}
+      "solution": {"type": "search", "entity": "Crates", "spot": {"level": 0, "topleft": {"x": 3191, "y": 3257}, "botright": {"x": 3192, "y": 3257}}}
     }, {
       "id": 121,
       "type": "simple",

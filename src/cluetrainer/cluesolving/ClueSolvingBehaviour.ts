@@ -38,7 +38,7 @@ import {ClueReadingBehaviour} from "./ClueReadingBehaviour";
 import {AugmentedMethod} from "../model/MethodPack";
 import z from "zod";
 import {SC} from "../../lib/settings";
-import {MeshBuilder} from "../overlay3d/meshes/MeshBuilder";
+import {MutableMesh} from "../overlay3d/meshes/MutableMesh";
 import {Alt1} from "../../lib/alt1/Alt1";
 import {drawTileArea} from "../tile_markers/PathRender";
 import {Mesh} from "../overlay3d/meshes/Mesh";
@@ -575,30 +575,37 @@ export default class ClueSolvingBehaviour extends Behaviour {
     // Render gl overlays
     if (Alt1.instance().featureGL()) {
       (async (): Promise<Mesh> => {
-        const builder = new MeshBuilder()
+        const builder = new MutableMesh()
 
         switch (step.step.type) {
           case "emote":
-            await drawTileArea(builder, step.step.area, [255, 0, 255, 255])
+            builder.add(
+              (await drawTileArea(step.step.area))
+                .recolor([255, 0, 255, 255])
+            )
 
             step.step.area
             break
-          case "map":
-          case "cryptic":
-          case "simple":
-          case "coordinates":
-            const solution = Clues.Step.solution(step.step)
-
-            switch (solution.type) {
-              case "dig":
-                await drawTileArea(builder,
-                  digSpotArea(solution.spot),
-                  [100, 100, 100, 255]
-                )
-
-                break;
-            }
         }
+
+        const solution = Clues.Step.solution(step.step)
+
+        switch (solution.type) {
+          case "dig":
+            builder.add(
+              (await drawTileArea(digSpotArea(solution.spot))).recolor([100, 100, 100, 255])
+            )
+
+            break;
+          case "search":
+            builder.add(
+              (await drawTileArea(TileArea.fromRect(solution.spot))).recolor([0, 255, 255, 255]).translate({x: 0, y: 0.25, z: 0}),
+              (await drawTileArea(TileArea.fromRect(solution.spot))).recolor([0, 255, 255, 255]).translate({x: 0, y: 0.75, z: 0}),
+            )
+
+            break;
+        }
+
 
         return builder.finalize()
       })().then(mesh => {

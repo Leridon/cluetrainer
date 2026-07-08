@@ -1,33 +1,29 @@
 import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
 import {Path} from "../../lib/runescape/pathing";
 import {TileHeightData} from "./TileHeightData";
-import {MeshBuilder} from "../overlay3d/meshes/MeshBuilder";
+import {MutableMesh} from "../overlay3d/meshes/MutableMesh";
 import {MovementAbilities} from "../../lib/runescape/movement";
 import {Vector2} from "../../lib/math";
-import {chunksize, tilesize} from "../../lib/alt1/alt1gllib/ts/overlays/tilemarkers";
 import {SimpleGLOverlay} from "../overlay3d/SimpleGLOverlay";
 import {Mesh} from "../overlay3d/meshes/Mesh";
 import {TileArea} from "../../lib/runescape/coordinates/TileArea";
-import ColorRGBA = MeshBuilder.ColorRGBA;
-import Vector3 = MeshBuilder.Vector3;
-import Vertex = MeshBuilder.Vertex;
+import ColorRGBA = Mesh.ColorRGBA;
+import Vector3 = Mesh.Vector3;
 
-const CHUNK_SIZE = chunksize;
-const TILE_SIZE = tilesize;
 const ARROW_HEAD_LENGTH = 0.3;
 
 const FLOOR_OVERLAY_VERTICAL_OFFSET = 0.12;
 const TILE_MARKER_VERTICAL_OFFSET = 0.15;
 const TILE_MARKER_BORDER = 0.08;
 
-const ABILITY_COLORS: Record<MovementAbilities.movement_ability, MeshBuilder.ColorRGBA> = {
+const ABILITY_COLORS: Record<MovementAbilities.movement_ability, Mesh.ColorRGBA> = {
   surge: [0, 100, 255, 255],
   escape: [33, 110, 4, 255],
   dive: [255, 220, 0, 255],
   barge: [150, 0, 255, 255],
 }
 
-const COLORS: Record<Path.Step["type"] | "redclicked_run", MeshBuilder.ColorRGBA> = {
+const COLORS: Record<Path.Step["type"] | "redclicked_run", Mesh.ColorRGBA> = {
   run: [255, 255, 255, 255],
   redclicked_run: [255, 0, 0, 255],
   teleport: [255, 0, 255, 255],
@@ -75,11 +71,11 @@ export function getPathLevels(path: Path): Set<floor_t> {
   return levels;
 }
 
-export async function drawTileArea(builder: MeshBuilder,
-                                   area: TileArea,
-                                   color: ColorRGBA,
+export async function drawTileArea(area: TileArea,
                                    height_data = TileHeightData.instance()
-): Promise<void> {
+): Promise<MutableMesh> {
+  const builder = new MutableMesh()
+
   const polygons = TileArea.activate(area).asMultipolygon()
 
   const lines = polygons.flatMap(p => [p.outer])
@@ -90,39 +86,44 @@ export async function drawTileArea(builder: MeshBuilder,
       const from = line[i - 1]
       const to = line[i]
 
-      await drawLine(builder,
-        TileCoordinates.lift(from, area.origin.level),
-        TileCoordinates.lift(to, area.origin.level),
-        color,
-        0.02,
-        false,
-        -.01, -.01, false,
-        height_data
+      builder.add(
+        await drawLine(
+          TileCoordinates.lift(from, area.origin.level),
+          TileCoordinates.lift(to, area.origin.level),
+          0.02,
+          false,
+          -.01, -.01, false,
+          height_data
+        )
       )
     }
   }
+
+  return builder
 }
 
-async function drawTileMarker(builder: MeshBuilder,
-                              tile: TileCoordinates,
-                              color: ColorRGBA,
+async function drawTileMarker(tile: TileCoordinates,
                               inset: number = 0,
                               height_data = TileHeightData.instance()
-): Promise<void> {
-  const outer00 = builder.createVertex(Vector3.add(await height_data.resolveTileCorner(tile, "sw", TILE_MARKER_VERTICAL_OFFSET), {x: inset, y: 0, z: inset}), color)
-  const outer01 = builder.createVertex(Vector3.add(await height_data.resolveTileCorner(tile, "nw", TILE_MARKER_VERTICAL_OFFSET), {x: inset, y: 0, z: -inset}), color)
-  const outer11 = builder.createVertex(Vector3.add(await height_data.resolveTileCorner(tile, "ne", TILE_MARKER_VERTICAL_OFFSET), {x: -inset, y: 0, z: -inset}), color)
-  const outer10 = builder.createVertex(Vector3.add(await height_data.resolveTileCorner(tile, "se", TILE_MARKER_VERTICAL_OFFSET), {x: -inset, y: 0, z: inset}), color)
+): Promise<MutableMesh> {
+  const mesh = new MutableMesh()
 
-  const inner00 = builder.createVertex(Vector3.add(outer00.pos, {x: TILE_MARKER_BORDER, y: 0, z: TILE_MARKER_BORDER}), color)
-  const inner01 = builder.createVertex(Vector3.add(outer01.pos, {x: TILE_MARKER_BORDER, y: 0, z: -TILE_MARKER_BORDER}), color)
-  const inner11 = builder.createVertex(Vector3.add(outer11.pos, {x: -TILE_MARKER_BORDER, y: 0, z: -TILE_MARKER_BORDER}), color)
-  const inner10 = builder.createVertex(Vector3.add(outer10.pos, {x: -TILE_MARKER_BORDER, y: 0, z: TILE_MARKER_BORDER}), color)
+  const outer00 = mesh.createVertex(Vector3.add(await height_data.resolveTileCorner(tile, "sw", TILE_MARKER_VERTICAL_OFFSET), {x: inset, y: 0, z: inset}))
+  const outer01 = mesh.createVertex(Vector3.add(await height_data.resolveTileCorner(tile, "nw", TILE_MARKER_VERTICAL_OFFSET), {x: inset, y: 0, z: -inset}))
+  const outer11 = mesh.createVertex(Vector3.add(await height_data.resolveTileCorner(tile, "ne", TILE_MARKER_VERTICAL_OFFSET), {x: -inset, y: 0, z: -inset}))
+  const outer10 = mesh.createVertex(Vector3.add(await height_data.resolveTileCorner(tile, "se", TILE_MARKER_VERTICAL_OFFSET), {x: -inset, y: 0, z: inset}))
 
-  builder.quad(outer00, outer01, inner01, inner00)
-  builder.quad(outer01, outer11, inner11, inner01)
-  builder.quad(outer11, outer10, inner10, inner11)
-  builder.quad(outer10, outer00, inner00, inner10)
+  const inner00 = mesh.createVertex(Vector3.add(outer00.vertex.pos, {x: TILE_MARKER_BORDER, y: 0, z: TILE_MARKER_BORDER}))
+  const inner01 = mesh.createVertex(Vector3.add(outer01.vertex.pos, {x: TILE_MARKER_BORDER, y: 0, z: -TILE_MARKER_BORDER}))
+  const inner11 = mesh.createVertex(Vector3.add(outer11.vertex.pos, {x: -TILE_MARKER_BORDER, y: 0, z: -TILE_MARKER_BORDER}))
+  const inner10 = mesh.createVertex(Vector3.add(outer10.vertex.pos, {x: -TILE_MARKER_BORDER, y: 0, z: TILE_MARKER_BORDER}))
+
+  mesh.quad(outer00, outer01, inner01, inner00)
+  mesh.quad(outer01, outer11, inner11, inner01)
+  mesh.quad(outer11, outer10, inner10, inner11)
+  mesh.quad(outer10, outer00, inner00, inner10)
+
+  return mesh
 }
 
 export function squareCrossSectionVector(dir: Vector2): Vector2 {
@@ -137,29 +138,27 @@ export function squareCrossSectionVector(dir: Vector2): Vector2 {
 
 /**
  * Draw a line marker on top of the terrain.
- * @param builder The mesh accumulator
  * @param from Origin of the line in tile coordinates
  * @param to Target of the line in tile coordinates
- * @param color Color of the line
  * @param thickness Stroke width
  * @param showArrow Whether the line should have an arrow tip
- * @param startHasTile Whether the line starts at a tile that has a tile marker. If true, the start of the line is offset to the border of the tile.
- * @param endHasTile Whether the line ends at a tile that has a tile marker. If true, the start of the line is offset to the border of the tile.
+ * @param startTileSize Size of the tile marker at the start tile to adjust the line start position
+ * @param endTileSize Size of the tile marker at the target tile to adjust the line start position
  * @param upper_hull If true, the line does not strictly hug the terrain but skips pits.
  * @param height_data The source of terrain height data.
  */
 async function drawLine(
-  builder: MeshBuilder,
   from: TileCoordinates,
   to: TileCoordinates,
-  color: ColorRGBA,
   thickness: number,
   showArrow: boolean,
   startTileSize: number,
   endTileSize: number,
   upper_hull: boolean,
   height_data = TileHeightData.instance()
-): Promise<void> {
+): Promise<MutableMesh> {
+  const builder = new MutableMesh()
+
   const direction = Vector2.normalize(Vector2.sub(to, from));
   const cross_section = squareCrossSectionVector(direction);
 
@@ -232,9 +231,9 @@ async function drawLine(
 
   if (upper_hull) control_points = upperHull(control_points);
 
-  const vertex_pairs = control_points.map((point): [Vertex, Vertex] => {
-    const v1 = builder.createVertex(Vector3.add(point, Vector3.scale(thickness, {x: -perpendicular.x, y: 0, z: -perpendicular.y})), color);
-    const v2 = builder.createVertex(Vector3.add(point, Vector3.scale(thickness, {x: +perpendicular.x, y: 0, z: +perpendicular.y})), color);
+  const vertex_pairs = control_points.map((point): [MutableMesh.VertexRef, MutableMesh.VertexRef] => {
+    const v1 = builder.createVertex(Vector3.add(point, Vector3.scale(thickness, {x: -perpendicular.x, y: 0, z: -perpendicular.y})));
+    const v2 = builder.createVertex(Vector3.add(point, Vector3.scale(thickness, {x: +perpendicular.x, y: 0, z: +perpendicular.y})));
 
     return [v1, v2]
   })
@@ -254,15 +253,17 @@ async function drawLine(
 
     const tip = Vector2.add(modified_end, Vector2.scale(ARROW_HEAD_LENGTH, direction));
 
-    const v0 = builder.createVertex(await height_data.resolve(TileCoordinates.lift(base1, to.level), FLOOR_OVERLAY_VERTICAL_OFFSET), color);
-    const v1 = builder.createVertex(await height_data.resolve(TileCoordinates.lift(base2, to.level), FLOOR_OVERLAY_VERTICAL_OFFSET), color);
-    const v2 = builder.createVertex(await height_data.resolve(TileCoordinates.lift(tip, to.level), FLOOR_OVERLAY_VERTICAL_OFFSET), color);
+    const v0 = builder.createVertex(await height_data.resolve(TileCoordinates.lift(base1, to.level), FLOOR_OVERLAY_VERTICAL_OFFSET));
+    const v1 = builder.createVertex(await height_data.resolve(TileCoordinates.lift(base2, to.level), FLOOR_OVERLAY_VERTICAL_OFFSET));
+    const v2 = builder.createVertex(await height_data.resolve(TileCoordinates.lift(tip, to.level), FLOOR_OVERLAY_VERTICAL_OFFSET));
 
     builder.triangle(v0, v1, v2);
   }
+
+  return builder
 }
 
-async function drawRedClickMarker(builder: MeshBuilder,
+async function drawRedClickMarker(builder: MutableMesh,
                                   tile: TileCoordinates,
                                   color: ColorRGBA,
                                   height_data: TileHeightData = TileHeightData.instance(),
@@ -305,9 +306,9 @@ async function drawRedClickMarker(builder: MeshBuilder,
   const tip = builder.createVertex(await height_data.resolve({x: cx, y: cz, level: tile.level}, tipY), cBright);
 
   // Arrays to hold the ring vertices
-  const headBaseVertices: MeshBuilder.Vertex[] = [];
-  const shaftBottomVertices: MeshBuilder.Vertex[] = [];
-  const shaftTopVertices: MeshBuilder.Vertex[] = [];
+  const headBaseVertices: MutableMesh.VertexRef[] = [];
+  const shaftBottomVertices: MutableMesh.VertexRef[] = [];
+  const shaftTopVertices: MutableMesh.VertexRef[] = [];
 
   // Generate the 3 rings of 8 vertices each
   for (let i = 0; i < 8; i++) {
@@ -357,8 +358,8 @@ async function drawRedClickMarker(builder: MeshBuilder,
 
 export async function buildPathMesh(
   path: Path,
-  builder: MeshBuilder = new MeshBuilder()
-): Promise<MeshBuilder> {
+  builder: MutableMesh = new MutableMesh()
+): Promise<MutableMesh> {
   const MARKER_INSET = 0.1
   const MARKER_SIZE = 1 - 2 * MARKER_INSET
 
@@ -373,10 +374,18 @@ export async function buildPathMesh(
 
         const draw_target_tile = step.ability == "dive" && !step.is_far_dive
 
-        await drawLine(builder, step.from, step.to, color, 0.05, true, current_tile_marker_size, draw_target_tile ? MARKER_SIZE : 0, true);
+        builder.add(
+          (await drawLine(step.from, step.to, 0.05, true, current_tile_marker_size, draw_target_tile ? MARKER_SIZE : 0, true))
+            .recolor(color)
+        )
 
         // Mark target tile if it's a precise dive
-        if (draw_target_tile) await drawTileMarker(builder, step.to, color, MARKER_INSET);
+        if (draw_target_tile) {
+          builder.add(
+            (await drawTileMarker(step.to, MARKER_INSET))
+              .recolor(color)
+          )
+        }
 
         current_tile_marker_size = draw_target_tile ? MARKER_SIZE : 0
 
@@ -389,15 +398,21 @@ export async function buildPathMesh(
         const previous = path[i - 1]
 
         const line_color = previous?.type == "redclick" && previous.target.kind == "npc" ? COLORS.redclicked_run : COLORS.run
-        const tile_color = previous?.type == "redclick"  ? COLORS.redclicked_run : COLORS.run
+        const tile_color = previous?.type == "redclick" ? COLORS.redclicked_run : COLORS.run
 
         for (let j = 0; j < step.waypoints.length - 1; j++) {
           const is_last = j === step.waypoints.length - 2;
 
-          await drawLine(builder, step.waypoints[j], step.waypoints[j + 1], line_color, 0.04, is_last, j === 0 ? current_tile_marker_size : 0, is_last ? MARKER_SIZE : 0, false);
+          builder.add(
+            (await drawLine(step.waypoints[j], step.waypoints[j + 1], 0.04, is_last, j === 0 ? current_tile_marker_size : 0, is_last ? MARKER_SIZE : 0, false))
+              .recolor(line_color)
+          )
         }
 
-        await drawTileMarker(builder, step.waypoints[step.waypoints.length - 1], tile_color, MARKER_INSET);
+        builder.add(
+          (await drawTileMarker(step.waypoints[step.waypoints.length - 1], MARKER_INSET)).recolor(tile_color)
+        )
+
         current_tile_marker_size = MARKER_SIZE
         break;
       }
@@ -416,19 +431,29 @@ export async function buildPathMesh(
 
         if (!step.is_arrival_only) break;
 
-        await drawTileMarker(builder, step.assumed_start, COLORS.transport, MARKER_INSET);
+        builder.add(
+          (await drawTileMarker(step.assumed_start, MARKER_INSET))
+            .recolor(COLORS.transport)
+        )
 
         const dest = Path.ends_up([step])
 
         // TODO: Highlight the thing that needs to be clicked.
 
-        await drawLine(builder, step.assumed_start, dest, COLORS.transport, 0.05, true, 0, MARKER_SIZE, true);
+        builder.add(
+          (await drawLine(step.assumed_start, dest, 0.05, true, 0, MARKER_SIZE, true))
+            .recolor(COLORS.transport)
+        )
 
         break;
       }
 
       case "powerburst": {
-        await drawTileMarker(builder, step.where, COLORS.powerburst, MARKER_INSET);
+        builder.add(
+          (await drawTileMarker(step.where, MARKER_INSET))
+            .recolor(COLORS.powerburst)
+        )
+
         current_tile_marker_size = MARKER_SIZE
 
         break;
@@ -452,8 +477,8 @@ export async function buildPathMesh(
 
 export async function buildPathsMesh(
   paths: Path[],
-  builder: MeshBuilder = new MeshBuilder()
-): Promise<MeshBuilder> {
+  builder: MutableMesh = new MutableMesh()
+): Promise<MutableMesh> {
   for (let path of paths) {
     await buildPathMesh(path, builder)
   }

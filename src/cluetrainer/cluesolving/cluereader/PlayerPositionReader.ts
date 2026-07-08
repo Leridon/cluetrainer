@@ -1,18 +1,18 @@
 import {observe} from "../../../lib/reactive";
 import {Scans} from "../../model/clues/Scans";
-import {MeshBuilder} from "../../overlay3d/meshes/MeshBuilder";
+import {MutableMesh} from "../../overlay3d/meshes/MutableMesh";
 import Behaviour from "../../../lib/ui/Behaviour";
 import {lazy} from "../../../lib/Lazy";
 import {Alt1GLCapturedFrame} from "../../../lib/alt1/alt1gl/Alt1GLCapturedFrame";
 import {Alt1GLFrameStream} from "../../../lib/alt1/alt1gl/Alt1GLFrameStream";
 import {getUniformValue} from "../../../lib/alt1/alt1gllib/ts/render/renderprogram";
 import {Alt1} from "../../../lib/alt1/Alt1";
-import {CapturedCompassGl} from "./capture/CapturedCompassGl";
 import {CompassReader} from "./CompassReader";
 import {Vector2} from "../../../lib/math";
 import lodash from "lodash";
-import Vector3 = MeshBuilder.Vector3;
+import Vector3 = Mesh.Vector3;
 import PulseRing = Scans.PulseRing;
+import {Mesh} from "../../overlay3d/meshes/Mesh";
 
 export type TrackedPlayerPosition = {
   position_3d: Vector3,
