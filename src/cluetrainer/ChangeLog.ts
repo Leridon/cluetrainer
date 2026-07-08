@@ -411,6 +411,10 @@ export namespace Changelog {
         }
 
         builder.wip(77, "Clue Trainer GL")
+          .header("Patch 11")
+          .list(l => l
+            .item("Added cages for NPC roaming areas.")
+          )
           .header("Patch 10")
           .list(l => l
             .item("Added entity highlights for search clues.")

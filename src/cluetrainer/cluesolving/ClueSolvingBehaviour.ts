@@ -603,6 +603,16 @@ export default class ClueSolvingBehaviour extends Behaviour {
               )
 
               break;
+            case "talkto":
+              for (let spot of solution.spots) {
+                builder.add(
+                  (await drawTileArea(spot.range)).recolor([255, 255, 0, 255]).translate({x: 0, y: 0.5, z: 0}),
+                  (await drawTileArea(spot.range)).recolor([255, 255, 0, 255]).translate({x: 0, y: 1.0, z: 0}),
+                  (await drawTileArea(spot.range)).recolor([255, 255, 0, 255]).translate({x: 0, y: 1.5, z: 0}),
+                )
+
+              }
+              break;
           }
         }
 

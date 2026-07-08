@@ -208,7 +208,7 @@ export namespace ClueEntities {
         if (clue.double_agent) {
           layout.paragraph(`Perform the ${clue.emotes.length > 1 ? "emotes" : "emote"} here. Kill the double agent to summon and talk to Uri.`)
         } else {
-          layout.paragraph(`Perform the ${clue.emotes.length > 1 ? "emotes" : "emote"} here summon and talk to Uri.`)
+          layout.paragraph(`Perform the ${clue.emotes.length > 1 ? "emotes" : "emote"} here to summon and talk to Uri.`)
         }
 
         {

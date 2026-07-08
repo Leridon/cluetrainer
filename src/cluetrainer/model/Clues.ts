@@ -72,14 +72,12 @@ export namespace Clues {
   export type Solution = Solution.TalkTo | Solution.Dig | Solution.Search
 
   export namespace Solution {
-    // The area for npcs should include all tiles they can be talked to from, so one tile bigger than their wander range
     export type TalkTo = {
       type: "talkto",
       npc: string
       spots: {
         id?: string,
-        range: TileArea,
-        exclusive?: boolean,
+        range: TileArea, // Should cover exactly the roaming range
         note?: string,  // Describing conditions for the npc to be at that spot, such as "After completing quest X"
         description: string // Strings like "in City of Um", "at the Bank" etc.
       }[],
@@ -87,7 +85,7 @@ export namespace Clues {
     export type Dig = {
       type: "dig",
       spot: TileCoordinates
-      description: string | null// Strings like "on top of the fern", "next to the window" etc.
+      description: string | null // Strings like "on top of the fern", "next to the window" etc.
     }
     export type Search = {
       type: "search",

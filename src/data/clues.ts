@@ -3137,10 +3137,12 @@ export namespace clue_data {
       "type": "anagram",
       "tier": "medium",
       "text": ["This anagram reveals who to speak to next: Iz A Ammo Load For Mrs Yakkers"],
-      "challenge": [{"type": "challengescroll", "question": "How many bottles are there on the stall to the east of Mr Ex?", "answers": [
-        {"answer": 5, "note": "Edgeville intact"},
-        {"answer": 3, "note": "Edgeville destroyed"},
-        ]}],
+      "challenge": [{
+        "type": "challengescroll", "question": "How many bottles are there on the stall to the east of Mr Ex?", "answers": [
+          {"answer": 5, "note": "Edgeville intact"},
+          {"answer": 3, "note": "Edgeville destroyed"},
+        ]
+      }],
       "solution": {
         "type": "talkto",
         "npc": "Moldark, Emissary of Zamorak",
@@ -3213,7 +3215,7 @@ export namespace clue_data {
       "challenge": [{"type": "slider"}],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 3420, "y": 2926, "level": 0}, "size": {"x": 11, "y": 5}}, "description": "in Nardah"}],
+        "spots": [{"range": {"origin": {"x": 3420, "y": 2925, "level": 0}, "size": {"x": 11, "y": 7}, "data": "8Jvf//3v///PDA=="}, "description": "in Nardah"}],
         "npc": "Shiratti the Custodian"
       },
       "anagram": ["I Eat Its Chart Hints Do U"]
@@ -3250,7 +3252,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Gnome Coach",
-        "spots": [{"range": {"origin": {"x": 2405, "y": 3497, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "north-east of the gnomeball field"}]
+        "spots": [{"range": {"origin": {"x": 2406, "y": 3498, "level": 0}}, "description": "north-east of the gnomeball field"}]
       },
       "anagram": ["C On Game Hoc"]
     }, {
@@ -3273,7 +3275,10 @@ export namespace clue_data {
       "challenge": [{"type": "slider"}],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 3103, "y": 3146, "level": 0}, "size": {"x": 12, "y": 20}}, "description": "on the ground floor of Wizard's Tower"}],
+        "spots": [{
+          "range": {"origin": {"x": 3101, "y": 3148, "level": 0}, "size": {"x": 14, "y": 20}, "data": "/8f/8//9////////////////////////9//8B//Bf/AP/AE="},
+          "description": "on the ground floor of Wizard's Tower"
+        }],
         "npc": "Professor Onglewip"
       },
       "anagram": ["Profs Lose Wrong Pie"]
