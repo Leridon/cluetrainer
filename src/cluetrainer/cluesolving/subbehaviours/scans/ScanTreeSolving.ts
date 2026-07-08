@@ -168,11 +168,11 @@ export class ScanTreeSolving extends ClueSolvingSubBehaviour {
 
     bounds.fixLevel()
 
+    bounds.setDistanceLimit(320)
+
     //2. If no children: All Candidates
     if (node.children.length == 0)
       node.remaining_candidates.forEach((c) => bounds.addTile(c))
-
-    bounds.setDistanceLimit(320)
 
     if (this.settings.value().zoom_behaviour_include_triples || node.children.every(c => c.key.pulse == 3)) {
       // Add triple spots

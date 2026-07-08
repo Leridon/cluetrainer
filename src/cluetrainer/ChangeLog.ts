@@ -471,7 +471,10 @@ export namespace Changelog {
 
         builder.wip(76, "TBD")
           .list(l => l
-            .item("Fixed precise dig spot location of two hard clues.")
+            .item("Fixed precise dig spot location of four hard clues.")
+            .item("Fixed broken zoom when a path contains an orientation step.")
+            .item("Fixed an issue that caused the map to zoom unreasonably far out in certain edge conditions in scans.")
+            .item("Fixed inaccurate dig tile for an easy map clue near Falador.")
           )
 
         builder.release(75, "Fixes and Method Updates", date(2026, 6, 17))
