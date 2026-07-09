@@ -479,6 +479,7 @@ export namespace Changelog {
             .item("Fixed broken zoom when a path contains an orientation step.")
             .item("Fixed an issue that caused the map to zoom unreasonably far out in certain edge conditions in scans.")
             .item("Fixed inaccurate dig tile for an easy map clue near Falador.")
+            .item("Fixed precise NPC roaming ranges for numerous clue steps.")
           )
 
         builder.release(75, "Fixes and Method Updates", date(2026, 6, 17))
