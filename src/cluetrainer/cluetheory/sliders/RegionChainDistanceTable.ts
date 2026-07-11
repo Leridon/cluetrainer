@@ -4,6 +4,7 @@ import {Region} from "./Region";
 import {Observable, observe} from "../../../lib/reactive";
 import lodash from "lodash";
 import RegionGraph = RegionDistanceTable.RegionGraph;
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 export class RegionChainDistanceTable {
   public tables: RegionDistanceTable[]
@@ -33,7 +34,7 @@ export namespace RegionChainDistanceTable {
 
   export namespace Description {
     export function bytesize(desc: Description) {
-      return lodash.sumBy(desc.regions, r => RegionDistanceTable.Description.byteSize(new Region.Indexing(r)))
+      return FakeLodash.sumBy(desc.regions, r => RegionDistanceTable.Description.byteSize(new Region.Indexing(r)))
     }
   }
 
@@ -97,7 +98,7 @@ export namespace RegionChainDistanceTable {
         this.solved_nodes += generator.region.size
       }
 
-      const sum = lodash.sumBy(generated_regions, r => r.byte_size)
+      const sum = FakeLodash.sumBy(generated_regions, r => r.byte_size)
 
       const total = new Uint8Array(sum)
 

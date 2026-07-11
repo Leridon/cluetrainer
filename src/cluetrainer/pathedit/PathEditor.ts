@@ -59,6 +59,7 @@ import {LeafletUtils} from "../../lib/gamemap/LeafletUtils";
 import {LeafletPolygonConstructors} from "../../lib/gamemap/LeafletPolygonConstructors";
 import areaPolygon = LeafletPolygonConstructors.areaPolygon;
 import tilePolygon = LeafletPolygonConstructors.tilePolygon;
+import {FakeLodash} from "../../lib/coreutil/FakeLodash";
 
 function needRepairing(state: movement_state, shortcut: Path.step_transportation): boolean {
   return state.position.tile
@@ -261,8 +262,8 @@ class PathEditorGameLayer extends GameLayer {
 
                 assumed_start ??= await findAsync(TileArea.activate(target).getTiles(), t => HostedMapCollisionData.get().isAccessible(t))
 
-                let clone = lodash.cloneDeep(s)
-                clone.actions = [lodash.cloneDeep(a)]
+                let clone = FakeLodash.cloneDeep(s)
+                clone.actions = [FakeLodash.cloneDeep(a)]
 
                 this.editor.value.add(...steps, {
                   type: "transport",
@@ -356,7 +357,7 @@ export class PathEditor extends Behaviour {
 
     this.value = new PathBuilder({
       target: this.options.target,
-      start_state: lodash.cloneDeep(this.options.start_state),
+      start_state: FakeLodash.cloneDeep(this.options.start_state),
     }, options.initial)
 
     this.handler_layer.add(this.value.preview_layer)

@@ -8,6 +8,7 @@ import NumberSlider from "../../../lib/ui/controls/NumberSlider";
 import ClueAssumptions = SolvingMethods.ClueAssumptions;
 import vbox = C.vbox;
 import hbox = C.hbox;
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 export class AssumptionProperty extends AbstractEditWidget<ClueAssumptions> {
   relevant_assumptions: ClueAssumptions.Relevance = ClueAssumptions.Relevance.all
@@ -82,7 +83,7 @@ export class AssumptionProperty extends AbstractEditWidget<ClueAssumptions> {
   }
 
   private updateAssumptions(f: (_: ClueAssumptions) => void) {
-    const cp = lodash.cloneDeep(this.get())
+    const cp = FakeLodash.cloneDeep(this.get())
 
     f(cp)
 

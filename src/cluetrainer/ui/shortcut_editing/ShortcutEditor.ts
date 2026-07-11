@@ -20,6 +20,7 @@ import {ShortcutEdit} from "./ShortcutEdit";
 import ContextMenu, {Menu} from "../widgets/ContextMenu";
 import ControlWithHeader from "../map/ControlWithHeader";
 import {ClueTrainer} from "../../ClueTrainer";
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 class EditControl extends GameMapControl<ControlWithHeader> {
   private remove_handler: EwentHandler<any> = null
@@ -173,7 +174,7 @@ export class ShortcutEditor extends Behaviour {
     super();
 
     this.data = observeArray([].concat(
-      //shortcuts.map(s => Object.assign(lodash.cloneDeep(s), {is_builtin: true})),
+      //shortcuts.map(s => Object.assign(FakeLodash.cloneDeep(s), {is_builtin: true})),
       this.storage.get().map(s => Object.assign(s, {is_builtin: false}))
     ))
 
@@ -195,7 +196,7 @@ export class ShortcutEditor extends Behaviour {
   }
 
   public createNew(shortcut: Transportation.EntityTransportation) {
-    this.editControl.shortcut.set(this.data.add(Object.assign(lodash.cloneDeep(shortcut), {is_builtin: false})))
+    this.editControl.shortcut.set(this.data.add(Object.assign(FakeLodash.cloneDeep(shortcut), {is_builtin: false})))
   }
 }
 

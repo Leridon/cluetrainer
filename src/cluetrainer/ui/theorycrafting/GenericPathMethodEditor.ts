@@ -28,6 +28,7 @@ import span = C.span;
 import collect_issues = Path.collect_issues;
 import default_interactive_area = Transportation.EntityTransportation.default_interactive_area;
 import {AugmentedMethod} from "../../model/MethodPack";
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 function getSection(method: GenericPathMethod, section: "pre" | "post" | "main"): Path {
   switch (section) {
@@ -288,7 +289,7 @@ export class GenericPathMethodEditor extends MethodSubEditor {
 
   private async propagateState() {
     const end_state = await this.sequence.reduce<Promise<movement_state>>(async (old_state, section) => {
-      let state: movement_state = lodash.cloneDeep(await old_state)
+      let state: movement_state = FakeLodash.cloneDeep(await old_state)
 
       if (section.path) {
         const section_path = getSection(this.value.method, section.path.section)
@@ -297,7 +298,7 @@ export class GenericPathMethodEditor extends MethodSubEditor {
 
         section.edit.renderValue(augmented)
 
-        state = lodash.cloneDeep(augmented.post_state)
+        state = FakeLodash.cloneDeep(augmented.post_state)
       }
 
       if (section.ticks) state.tick += section.ticks
@@ -428,14 +429,14 @@ export namespace GenericPathMethodEditor {
     const sequence = await getSequence(value.clue, value.method.assumptions)
 
     return await sequence.reduce<Promise<movement_state>>(async (old_state, section) => {
-      let state: movement_state = lodash.cloneDeep(await old_state)
+      let state: movement_state = FakeLodash.cloneDeep(await old_state)
 
       if (section.path) {
         const section_path = getSection(value.method, section.path.section)
 
         const augmented = await Path.augment(section_path, state, section.path.target)
 
-        state = lodash.cloneDeep(augmented.post_state)
+        state = FakeLodash.cloneDeep(augmented.post_state)
       }
 
       if (section.ticks) state.tick += section.ticks

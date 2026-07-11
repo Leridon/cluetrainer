@@ -2,6 +2,7 @@ import lodash from "lodash";
 import {ewent, Ewent} from "./Ewent";
 import {EwentHandler, observe} from "./index";
 import {LifetimeManager} from "../lifetime/LifetimeManager";
+import {FakeLodash} from "../coreutil/FakeLodash";
 
 export interface Observable<T> {
   changed: Ewent<{ value: T, old?: T }>
@@ -69,7 +70,7 @@ export namespace Observable {
     }
 
     update2(f: (v: T) => void): void {
-      let old = lodash.cloneDeep(this._value)
+      let old = FakeLodash.cloneDeep(this._value)
 
       f(this._value)
 

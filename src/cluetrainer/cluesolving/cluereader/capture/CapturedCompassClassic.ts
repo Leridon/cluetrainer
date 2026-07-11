@@ -17,6 +17,7 @@ import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
 import log = Log.log;
 import AntialiasingType = CompassReader.AntialiasingType;
 import {CapturedCompass} from "./CapturedCompass";
+import {FakeLodash} from "../../../../lib/coreutil/FakeLodash";
 
 export class CapturedCompassClassic implements CapturedCompass {
   private readonly anchor_area: CapturedImage
@@ -263,8 +264,8 @@ export class CapturedCompassClassic implements CapturedCompass {
     }
 
     const center_of_mass: Vector2 = {
-      x: lodash.sumBy(rectangle_samples, v => v.x) / rectangle_samples.length,
-      y: lodash.sumBy(rectangle_samples, v => v.y) / rectangle_samples.length
+      x: FakeLodash.sumBy(rectangle_samples, v => v.x) / rectangle_samples.length,
+      y: FakeLodash.sumBy(rectangle_samples, v => v.y) / rectangle_samples.length
     }
 
     const center_of_area: Vector2 = Rectangle.center(Rectangle.from(...rectangle_samples), false)
@@ -296,10 +297,9 @@ export class CapturedCompassClassic implements CapturedCompass {
     })
 
     const angle_after_rectangle_sample = Angles.normalizeAngle(Math.atan2(
-      lodash.sum(angle_samples.map(a => a.weight * Math.sin(a.angle))),
-      lodash.sum(angle_samples.map(a => a.weight * Math.cos(a.angle))),
+      FakeLodash.sum(angle_samples.map(a => a.weight * Math.sin(a.angle))),
+      FakeLodash.sum(angle_samples.map(a => a.weight * Math.cos(a.angle))),
     ))
-
 
     const calibration_mode: CompassReader.AntialiasingType = antialiasing_detected ? "msaa" : "off"
 

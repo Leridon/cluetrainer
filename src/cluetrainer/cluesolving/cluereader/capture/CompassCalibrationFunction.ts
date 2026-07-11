@@ -9,6 +9,7 @@ import index = util.index;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
 import UncertainAngle = Angles.UncertainAngle;
 import Order = util.Order;
+import {FakeLodash} from "../../../../lib/coreutil/FakeLodash";
 
 export interface CompassCalibrationFunction {
   apply(read_angle: number): UncertainAngle
@@ -173,7 +174,7 @@ export namespace FullCompassCalibrationFunction {
   }
 
   export function combine(samples: CalibrationTool.RawSample[]): CombinedSample[] {
-    const sorted_samples = lodash.sortBy(samples, s => CalibrationTool.shouldAngle(s.position))
+    const sorted_samples = FakeLodash.sortBy(samples, s => CalibrationTool.shouldAngle(s.position))
 
     let i = 0;
 
@@ -301,7 +302,7 @@ export class AngularKeyframeFunction implements CompassCalibrationFunction {
                       private base_f: (_: number) => number = () => 0,
                       private epsilon: number
   ) {
-    this.keyframes = lodash.sortBy(keyframes, e => e.angle)
+    this.keyframes = FakeLodash.sortBy(keyframes, e => e.angle)
   }
 
   apply(read_angle: number): UncertainAngle {
@@ -401,7 +402,7 @@ export class AngularKeyframeFunction implements CompassCalibrationFunction {
 
           const phase = Angles.circularMean(hill_samples)
 
-          //const phase = lodash.maxBy(keyframes, k => k.value).angle
+          //const phase = FakeLodash.maxBy(keyframes, k => k.value).angle
 
           return (x) => amplitude * Math.cos(PHASES * (x - phase)) + offset
       }

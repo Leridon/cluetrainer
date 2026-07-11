@@ -17,6 +17,7 @@ import ClueSpot = Clues.ClueSpot;
 import ClueAssumptions = SolvingMethods.ClueAssumptions;
 import copyUpdate = util.copyUpdate;
 import {AugmentedMethod, MethodPack} from "../../model/MethodPack";
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 export class MethodMetaEdit extends AbstractEditWidget<Method.Meta> {
 
@@ -140,7 +141,7 @@ export class NewMethodModal extends FormModal<{
         .setValue(this.clone_from && MethodPack.isEditable(this.clone_from.pack) ? this.clone_from.pack : null)
         .onCommit(p => {
           if (p) {
-            const meta = lodash.cloneDeep(this.edit.get())
+            const meta = FakeLodash.cloneDeep(this.edit.get())
 
             meta.assumptions = ClueAssumptions.filterWithRelevance(p.default_assumptions, ClueAssumptions.Relevance.forSpot(this.spot))
 

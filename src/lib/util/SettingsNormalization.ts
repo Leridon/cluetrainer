@@ -1,4 +1,4 @@
-import lodash from "lodash"
+import {FakeLodash} from "../coreutil/FakeLodash";
 
 export namespace SettingsNormalization {
   export type NormalizationFunction<T> = (_: T) => T
@@ -9,7 +9,7 @@ export namespace SettingsNormalization {
   export const number: WithDefault<number> = (def) => (old) => typeof old == "number" ? old : def
 
   export function clamp(lowest: number, highest: number): NormalizationFunction<number> {
-    return (old) => lodash.clamp(old, lowest, highest)
+    return (old) => FakeLodash.clamp(old, lowest, highest)
   }
 
   export const str: WithDefault<string> = (def) => (old) => old ?? def

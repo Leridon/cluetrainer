@@ -7,6 +7,7 @@ import {ewent} from "../lib/reactive";
 import todo = util.todo;
 import ClueSpot = Clues.ClueSpot;
 import {AugmentedMethod} from "./model/MethodPack";
+import {FakeLodash} from "../lib/coreutil/FakeLodash";
 
 export class FavoriteIndex {
   public method_favourite_changed = ewent<{
@@ -74,11 +75,11 @@ export class FavoriteIndex {
       const c1 = candidates.find(c => c.pack.type == "default" && c.method.is_default_override)
       if (c1) return c1
 
-      const c2 = lodash.minBy(candidates.filter(c => c.pack.type == "default"), c => c.method.expected_time)
+      const c2 = FakeLodash.minBy(candidates.filter(c => c.pack.type == "default"), c => c.method.expected_time)
 
       if (c2) return c2
 
-      return lodash.minBy(candidates, c => c.method.expected_time)
+      return FakeLodash.minBy(candidates, c => c.method.expected_time)
     }
 
     if (!entry) return undefined
@@ -103,7 +104,7 @@ export class FavoriteIndex {
         : null
     } else {
       this.data.value.methods.push({
-        spot: lodash.cloneDeep(step),
+        spot: FakeLodash.cloneDeep(step),
         method: method
           ? {local_pack_id: method.pack.local_id, method_id: method.method.id}
           : null

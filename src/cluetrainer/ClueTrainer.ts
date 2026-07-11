@@ -53,6 +53,7 @@ import entity = C.entity;
 import notification = Notification.notification;
 import log = Log.log;
 import div = C.div;
+import {FakeLodash} from "../lib/coreutil/FakeLodash";
 
 declare global {
   var cluetrainer_build_environment: ClueTrainer.BuildEnvironment
@@ -105,7 +106,7 @@ export class SettingsManagement {
   }
 
   update(f: (_: Settings.Settings) => void) {
-    const clone = lodash.cloneDeep(this.settings)
+    const clone = FakeLodash.cloneDeep(this.settings)
     f(clone)
     this.set(clone)
   }
@@ -290,7 +291,7 @@ export class ClueTrainer extends Behaviour {
     this.startup_settings.update(s => s.last_loaded_version = Changelog.log.latest_patch.version)
 
     const logDiagnostics = () => {
-      log().log("Current settings", "General", {type: "object", value: lodash.cloneDeep(this.settings.settings)})
+      log().log("Current settings", "General", {type: "object", value: FakeLodash.cloneDeep(this.settings.settings)})
 
       if (Alt1.exists()) {
         try {

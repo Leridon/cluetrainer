@@ -16,6 +16,7 @@ import {Alt1Color} from "../../../lib/alt1/Alt1Color";
 import log = Log.log;
 import async_init = util.async_init;
 import {Alt1OverlayDrawCalls} from "../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 class LockboxSolvingProcess extends AbstractPuzzleProcess {
 
@@ -215,7 +216,7 @@ export namespace LockboxSolving {
       if (typeof settings.overlay_color != "number") settings.overlay_color = DEFAULT.overlay_color
       if (typeof settings.two_click_factor != "number") settings.two_click_factor = DEFAULT.two_click_factor
 
-      settings.two_click_factor = lodash.clamp(settings.two_click_factor, 1, 5)
+      settings.two_click_factor = FakeLodash.clamp(settings.two_click_factor, 1, 5)
 
       return settings
     }

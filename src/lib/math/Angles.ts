@@ -1,5 +1,5 @@
-import lodash from "lodash";
 import {util} from "../util/util";
+import {FakeLodash} from "../coreutil/FakeLodash";
 
 export namespace Angles {
   import positive_mod = util.positive_mod;
@@ -30,7 +30,7 @@ export namespace Angles {
   }
 
   export function circularMean(angles: number[]): number {
-    return Math.atan2(lodash.sum(angles.map(Math.sin)), lodash.sum(angles.map(Math.cos)))
+    return Math.atan2(FakeLodash.sum(angles.map(Math.sin)), FakeLodash.sum(angles.map(Math.cos)))
   }
 
   /**

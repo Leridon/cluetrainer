@@ -1,7 +1,6 @@
 import {MethodPackManager} from "../../MethodPackManager";
 import MethodPackWidget from "./MethodPackWidget";
 import {Observable, observe} from "../../../lib/reactive";
-import lodash from "lodash";
 import Button from "../../../lib/ui/controls/Button";
 import {BigNisButton} from "../widgets/BigNisButton";
 import {FormModal} from "../../../lib/ui/controls/FormModal";
@@ -9,6 +8,7 @@ import LightButton from "../widgets/LightButton";
 import {NewMethodPackModal} from "./MethodPackModal";
 import ButtonRow from "../../../lib/ui/ButtonRow";
 import {MethodPack} from "../../model/MethodPack";
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 export default class SelectPackModal extends FormModal<{
   pack: MethodPack
@@ -44,7 +44,7 @@ export default class SelectPackModal extends FormModal<{
       this.valid_packs.set(packs.filter(p => this.types.includes(p.type)))
 
       if (auto_select) {
-        this.selected.set(lodash.maxBy(this.valid_packs.value(), p => p.timestamp))
+        this.selected.set(FakeLodash.maxBy(this.valid_packs.value(), p => p.timestamp))
       }
     })
   }

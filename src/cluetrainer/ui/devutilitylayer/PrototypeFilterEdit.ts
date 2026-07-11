@@ -7,6 +7,7 @@ import {PrototypeFilter} from "./cachetools/FilteredPrototypeLayer";
 import {storage} from "lib/util/storage";
 import AbstractEditWidget from "../widgets/AbstractEditWidget";
 import lodash from "lodash";
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 
 export class PrototypeFilterEdit extends AbstractEditWidget<PrototypeFilter.Config> {
@@ -22,7 +23,7 @@ export class PrototypeFilterEdit extends AbstractEditWidget<PrototypeFilter.Conf
 
   private update(f: (_: PrototypeFilter.Config) => void) {
 
-    const copy = lodash.cloneDeep(this.get())
+    const copy = FakeLodash.cloneDeep(this.get())
 
     f(copy)
 

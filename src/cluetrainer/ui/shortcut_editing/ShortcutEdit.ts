@@ -146,7 +146,7 @@ export class ShortcutEdit extends Widget {
                                     this.config.interaction_guard.set(
                                         new GameMapDragAction({
                                             preview_render: (area) => {
-                                                let copy = lodash.cloneDeep(this.config.value.value())
+                                                let copy = FakeLodash.cloneDeep(this.config.value.value())
                                                 assert(copy.type == "entity")
 
                                                 copy.clickable_area = TileRectangle.extend(area, 0.5)
@@ -212,7 +212,7 @@ export class ShortcutEdit extends Widget {
                                     this.config.interaction_guard.set(
                                         new GameMapDragAction({
                                             preview_render: (area) => {
-                                                let copy = lodash.cloneDeep(this.config.value.value())
+                                                let copy = FakeLodash.cloneDeep(this.config.value.value())
                                                 assert(copy.type == "entity")
                                                 copy.actions[action_i].interactive_area = area
                                                 return new ShortcutPolygon(observe(copy))
@@ -278,7 +278,7 @@ export class ShortcutEdit extends Widget {
                                             this.config.interaction_guard.set(
                                                 new DrawOffset({
                                                     preview_render: (offset) => {
-                                                        let copy = lodash.cloneDeep(this.config.value.value())
+                                                        let copy = FakeLodash.cloneDeep(this.config.value.value())
 
                                                         assert(copy.type == "entity")
                                                         let a = copy.actions[action_i]
@@ -311,7 +311,7 @@ export class ShortcutEdit extends Widget {
                                 action.movement.target,
                                 () => this.config.interaction_guard.set(new SelectTileInteraction({
                                         preview_render: (target) => {
-                                            let copy = lodash.cloneDeep(this.config.value.value())
+                                            let copy = FakeLodash.cloneDeep(this.config.value.value())
                                             assert(copy.type == "entity")
                                             let a = copy.actions[action_i]
                                             assert(a.movement.type == "fixed")

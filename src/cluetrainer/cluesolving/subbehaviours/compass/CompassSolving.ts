@@ -46,6 +46,7 @@ import vbox = C.vbox;
 import log = Log.log;
 import UncertainAngle = Angles.UncertainAngle;
 import degreesToRadians = Angles.degreesToRadians;
+import {FakeLodash} from "../../../../lib/coreutil/FakeLodash";
 
 const DEBUG_ANGLE_OVERRIDE: UncertainAngle = null // degreesToRadians(206.87152474371157)
 const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = null // {origin: {x: 3214, y: 3376, level: 0}}
@@ -193,7 +194,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
   }
 
   private setSelection(i: number) {
-    i = lodash.clamp(i, 0, this.entries.length - 1)
+    i = FakeLodash.clamp(i, 0, this.entries.length - 1)
 
     this.entry_selection_index = i
 
@@ -446,7 +447,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
     })
 
     // Get a list of possible spots, sorted ascendingly by how far they are away from the angle lines. possible[0] is the closest.
-    const possible = lodash.sortBy(this.spots.filter(s => s.isPossible), p =>
+    const possible = FakeLodash.sortBy(this.spots.filter(s => s.isPossible), p =>
       Math.max(...information.map(info =>
           UncertainAngle.meanDifference(UncertainAngle.fromAngle(Compasses.getExpectedAngle(
             info.modified_origin,
@@ -760,7 +761,7 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
 
         if (this.settings.read_chat_for_sextant_message) {
           ChatReader.instance().new_message_bulk.on(async e => {
-            const trigger_message = lodash.maxBy(e.filter(m => stringSimilarity(m.text, "The sextant displays") > 0.8), m => m.timestamp)
+            const trigger_message = FakeLodash.maxBy(e.filter(m => stringSimilarity(m.text, "The sextant displays") > 0.8), m => m.timestamp)
 
             if (!trigger_message) {
               return

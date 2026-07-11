@@ -10,6 +10,7 @@ import {util} from "../../../lib/util/util";
 import SliderPuzzle = Sliders.SliderPuzzle;
 import log = Log.log;
 import findBestMatch = util.findBestMatch;
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 export class SliderReader {
   constructor(private references: Record<string, Sliders.SliderPuzzle>,
@@ -60,7 +61,7 @@ export class SliderReader {
         match: (typeof tile_scores)[number][]
       }
     }[] = Object.entries(grouped).map(([theme, tile_matches]) => {
-      const sorted = lodash.sortBy(tile_matches, e => -e.score)
+      const sorted = FakeLodash.sortBy(tile_matches, e => -e.score)
 
       const matched_tiles: (typeof tile_scores)[number][] = new Array(25).fill(null)
 
@@ -80,7 +81,7 @@ export class SliderReader {
         tiles_used[match.reference_tile.position] = true
       }
 
-      if (SlideReader.DEBUG_SLIDE_READER) console.log(`Matched ${theme}, total score ${lodash.sumBy(matched_tiles, t => t.score).toFixed(3)}`)
+      if (SlideReader.DEBUG_SLIDE_READER) console.log(`Matched ${theme}, total score ${FakeLodash.sumBy(matched_tiles, t => t.score).toFixed(3)}`)
 
       if (SlideReader.DEBUG_SLIDE_READER) {
         const debug_for: number[] = []
@@ -88,7 +89,7 @@ export class SliderReader {
         for (let ref_tile of debug_for) {
           console.log(`Similarity to reference tile ${ref_tile}`)
 
-          const tiles = lodash.sortBy(tile_matches.filter(m => m.reference_tile.position == ref_tile), e => e.tile.position)
+          const tiles = FakeLodash.sortBy(tile_matches.filter(m => m.reference_tile.position == ref_tile), e => e.tile.position)
 
           for (let y = 0; y < 5; y++) {
             console.log(tiles.slice(y * 5, (y + 1) * 5).map(t => t.score.toFixed(2)).join(", "));
@@ -108,13 +109,13 @@ export class SliderReader {
         theme: theme,
         all_match_pairs: tile_matches,
         preliminary_best_matching: {
-          score: lodash.sumBy(matched_tiles, e => e.score) / matched_tiles.length,
+          score: FakeLodash.sumBy(matched_tiles, e => e.score) / matched_tiles.length,
           match: matched_tiles
         }
       }
     })
 
-    const greedy_best = lodash.maxBy(matches, m => m.preliminary_best_matching.score)
+    const greedy_best = FakeLodash.maxBy(matches, m => m.preliminary_best_matching.score)
 
     if (SlideReader.DEBUG_SLIDE_READER) {
       const perfect_pairs = greedy_best.all_match_pairs.filter(e => e.score == 1)

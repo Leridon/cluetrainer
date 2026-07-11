@@ -9,6 +9,7 @@ import {TileArea} from "../../lib/runescape/coordinates/TileArea";
 import movement_state = Path.movement_state;
 import copyUpdate = util.copyUpdate;
 import {MovementAssumptions} from "../../lib/runescape/movement";
+import {FakeLodash} from "../../lib/coreutil/FakeLodash";
 
 export class PathBuilder {
   private commit_lock: Promise<void> = Promise.resolve()
@@ -152,7 +153,7 @@ export class PathBuilder {
   }
 
   updateCopy(index: number, f: (_: Path.Step) => void): this {
-    const copy = lodash.cloneDeep(this.path[index])
+    const copy = FakeLodash.cloneDeep(this.path[index])
 
     f(copy)
 
@@ -163,7 +164,7 @@ export class PathBuilder {
     this.commit(
       undefined,
       copyUpdate(this.path, path => {
-        path[index] = lodash.cloneDeep(step)
+        path[index] = FakeLodash.cloneDeep(step)
       })
     )
 
@@ -188,7 +189,7 @@ export class PathBuilder {
   copyState(): PathBuilder.SavedState {
     return {
       cursor: this.cursor,
-      path: lodash.cloneDeep(this.path)
+      path: FakeLodash.cloneDeep(this.path)
     }
   }
 

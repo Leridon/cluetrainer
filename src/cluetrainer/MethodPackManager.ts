@@ -13,6 +13,7 @@ import ClueSpot = Clues.ClueSpot;
 import uuid = util.uuid;
 import log = Log.log;
 import {AugmentedMethod, MethodPack} from "./model/MethodPack";
+import {FakeLodash} from "../lib/coreutil/FakeLodash";
 
 export type LocalMethodId = { local_pack_id: string, method_id: string }
 
@@ -107,7 +108,7 @@ export class MethodPackManager {
    * @param keep_identity
    */
   async create(pack: MethodPack, keep_identity: boolean = false): Promise<MethodPack> {
-    pack = lodash.cloneDeep(pack)
+    pack = FakeLodash.cloneDeep(pack)
 
     pack.is_real_default = undefined
 
@@ -137,7 +138,7 @@ export class MethodPackManager {
    * @param keep_identity
    */
   async import(pack: MethodPack, keep_identity: boolean = false): Promise<MethodPack> {
-    pack = lodash.cloneDeep(pack)
+    pack = FakeLodash.cloneDeep(pack)
 
     if (!keep_identity) {
       pack.local_id = uuid()

@@ -12,6 +12,7 @@ import copyUpdate = util.copyUpdate;
 import {Notification} from "../NotificationBar";
 import notification = Notification.notification;
 import {MethodPack} from "../../model/MethodPack";
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 export class MethodPackMetaEdit extends AbstractEditWidget<MethodPack.Meta> {
 
@@ -106,7 +107,7 @@ export class NewMethodPackModal extends FormModal<{
 
           const pack = await MethodPackManager.instance().create(
             this.clone_from
-              ? {...lodash.cloneDeep(this.clone_from), ...this.edit.get()}
+              ? {...FakeLodash.cloneDeep(this.clone_from), ...this.edit.get()}
               : {
                 ...this.edit.get(),
                 type: "local",

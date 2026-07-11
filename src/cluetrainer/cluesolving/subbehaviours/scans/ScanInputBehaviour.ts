@@ -16,6 +16,7 @@ import {Alt1OverlayButton} from "../../../../lib/alt1/overlay/Alt1OverlayButton"
 import {Alt1OverlayDrawCalls} from "../../../../lib/alt1/overlay/Alt1OverlayDrawCalls";
 import Behaviour from "../../../../lib/ui/Behaviour";
 import AugmentedScanTreeNode = ScanTree.Augmentation.AugmentedScanTreeNode;
+import {FakeLodash} from "../../../../lib/coreutil/FakeLodash";
 
 export class ScanControlPrototype extends Behaviour {
   private actual_overlay: ScanControlPrototype.Overlay
@@ -288,7 +289,7 @@ export namespace ScanControlPrototype {
     }
 
     setConfig(config: Overlay.Config) {
-      this.config = lodash.cloneDeep(config)
+      this.config = FakeLodash.cloneDeep(config)
 
       this.rerender()
     }

@@ -10,6 +10,7 @@ import {CapturedImage} from "../../../lib/alt1/capture";
 import {CapturedModal} from "./capture/CapturedModal";
 import {async_lazy, lazy} from "../../../lib/Lazy";
 import {Alt1Color} from "../../../lib/alt1/Alt1Color";
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 export class KnotReader {
   constructor(private rune_references: ImageFingerprint[]) {}
@@ -19,7 +20,7 @@ export class KnotReader {
       return {id: i, certainty: ImageFingerprint.similarity(img, r)}
     })
 
-    const best = lodash.maxBy(similarities, e => e.certainty)
+    const best = FakeLodash.maxBy(similarities, e => e.certainty)
 
     if (best && best.certainty > 0.9) {
       return best.id
@@ -153,7 +154,7 @@ export namespace KnotReader {
       [144, 131, 79]
     ]
 
-    return lodash.max(samples.map(s => rgbSimilarity(s, color))) > 0.9
+    return Math.max(...samples.map(s => rgbSimilarity(s, color))) > 0.9
   }
 
 
@@ -189,9 +190,9 @@ export namespace KnotReader {
         {track_id: 4, colors: [[95, 89, 76], [123, 116, 98], [30, 28, 24]]}, // gray
       ]
 
-    const res = lodash.maxBy(refs.map(r => ({
+    const res = FakeLodash.maxBy(refs.map(r => ({
       lane_id: r.track_id,
-      certainty: lodash.sum(samples.map(col => lodash.max(r.colors.map(ref_color => rgbSimilarity(ref_color, col))))) / samples.length
+      certainty: FakeLodash.sum(samples.map(col => Math.max(...r.colors.map(ref_color => rgbSimilarity(ref_color, col))))) / samples.length
     })), e => e.certainty)
 
     if (res.certainty > 0.8) return res
@@ -262,8 +263,8 @@ export namespace KnotReader {
   }
 
   function isMatchingIntersection(samples: [number, number, number][]): boolean {
-    const match_score = lodash.sum(samples.map(col => lodash.max(intersection_sample_colors.match.map(ref_color => rgbSimilarity(ref_color, col)))))
-    const nomatch_score = lodash.sum(samples.map(col => lodash.max(intersection_sample_colors.nomatch.map(ref_color => rgbSimilarity(ref_color, col)))))
+    const match_score = FakeLodash.sum(samples.map(col => Math.max(...intersection_sample_colors.match.map(ref_color => rgbSimilarity(ref_color, col)))))
+    const nomatch_score = FakeLodash.sum(samples.map(col => Math.max(...intersection_sample_colors.nomatch.map(ref_color => rgbSimilarity(ref_color, col)))))
 
     return match_score > nomatch_score
   }

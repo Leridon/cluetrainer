@@ -4,6 +4,7 @@ import {ScreenRectangle} from "../ScreenRectangle";
 import {Circle} from "../../math/Circle";
 import lodash from "lodash";
 import {Log} from "../../util/Log";
+import {FakeLodash} from "../../coreutil/FakeLodash";
 
 export namespace Alt1OverlayDrawCalls {
   import log = Log.log;
@@ -175,14 +176,13 @@ export namespace Alt1OverlayDrawCalls {
       const start = Vector2.add(center, {x: -Math.floor(length / 2), y: 0},)
 
       const end = Vector2.add(start, {x: length, y: 0})
-      const mid = Vector2.snap(Vector2.add(start, {x: lodash.clamp(progress, 0, 1) * length, y: 0}))
+      const mid = Vector2.snap(Vector2.add(start, {x: FakeLodash.clamp(progress, 0, 1) * length, y: 0}))
 
       this.line(Vector2.add(start, {x: -contrast_border, y: 0}), Vector2.add(end, {x: contrast_border, y: 0}),
         {color: Alt1Color.black, width: thickness + 2 * contrast_border})
       this.line(start, mid, {color: done_color, width: thickness})
       this.line(mid, end, {color: remaining_color, width: thickness})
     }
-
 
     text(text: string, position: Vector2,
          options: Alt1OverlayDrawCalls.TextOptions = Alt1OverlayDrawCalls.TextOptions.DEFAULT): this {

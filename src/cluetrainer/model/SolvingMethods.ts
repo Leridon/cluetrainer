@@ -4,6 +4,7 @@ import {Clues} from "./Clues";
 import {util} from "../../lib/util/util";
 import lodash from "lodash";
 import {MovementAssumptions} from "../../lib/runescape/movement";
+import {FakeLodash} from "../../lib/coreutil/FakeLodash";
 
 export namespace SolvingMethods {
   import timestamp = util.timestamp;
@@ -30,7 +31,7 @@ export namespace SolvingMethods {
     }
 
     export function filterWithRelevance(assumptions: ClueAssumptions, relevance: Relevance): ClueAssumptions {
-      const copy = lodash.cloneDeep(assumptions)
+      const copy = FakeLodash.cloneDeep(assumptions)
 
       for (let key of Object.keys(copy)) {
         if (!relevance.includes(key as keyof ClueAssumptions)) copy[key] = undefined
@@ -106,7 +107,7 @@ export namespace SolvingMethods {
     export function setMeta<T extends Method>(method: T, meta: Meta): T {
       method.name = meta.name
       method.description = meta.description
-      method.assumptions = lodash.cloneDeep(meta.assumptions)
+      method.assumptions = FakeLodash.cloneDeep(meta.assumptions)
 
       return method
     }
@@ -169,7 +170,7 @@ export namespace SolvingMethods {
   }
 
   export function clone<T extends Method>(method: T): T {
-    const clone = lodash.cloneDeep(method)
+    const clone = FakeLodash.cloneDeep(method)
 
     clone.id = uuid()
 

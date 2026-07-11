@@ -53,11 +53,11 @@ export default class ShortcutEditSidePanel extends MapSideBar {
     hboxc(
       new LightButton("Edit Builtins")
         .onClick(() => {
-          //this.editor.data.setTo(shortcuts.map(s => Object.assign(lodash.cloneDeep(s), {is_builtin: false})))
+          //this.editor.data.setTo(shortcuts.map(s => Object.assign(FakeLodash.cloneDeep(s), {is_builtin: false})))
         }),
       new LightButton("Delete Local")
         .onClick(() => {
-          // this.editor.data.setTo(shortcuts.map(s => Object.assign(lodash.cloneDeep(s), {is_builtin: true})))
+          // this.editor.data.setTo(shortcuts.map(s => Object.assign(FakeLodash.cloneDeep(s), {is_builtin: true})))
         }),
     ).addClass("ctr-button-container").appendTo(this.search_container)
 

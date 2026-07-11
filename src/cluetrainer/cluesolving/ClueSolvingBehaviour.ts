@@ -61,6 +61,7 @@ import ClueSpot = Clues.ClueSpot;
 import log = Log.log;
 import default_interactive_area = Transportation.EntityTransportation.default_interactive_area;
 import digSpotArea = Clues.digSpotArea;
+import {FakeLodash} from "../../lib/coreutil/FakeLodash";
 
 /**
  * ClueSolvingBehaviour is the central coordinator for clue solving.
@@ -845,7 +846,7 @@ export namespace ClueSolving {
       }
 
       export function normalize(settings: Puzzles): Puzzles {
-        if (!settings) return lodash.cloneDeep(DEFAULT)
+        if (!settings) return FakeLodash.cloneDeep(DEFAULT)
 
         settings.sliders = SlideGuider.Settings.normalize(settings.sliders)
         settings.knots = KnotSolving.Settings.normalize(settings.knots)
@@ -924,7 +925,7 @@ export namespace ClueSolving {
       export const DEFAULT = REDUCED
 
       export function normalize(settings: InfoPanel): InfoPanel {
-        if (!settings) return lodash.cloneDeep(DEFAULT)
+        if (!settings) return FakeLodash.cloneDeep(DEFAULT)
 
         if (!["full", "hide", "abridged"].includes(settings.clue_text)) settings.clue_text = DEFAULT.clue_text
         if (!["show", "hide", "transcript"].includes(settings.map_image)) settings.map_image = DEFAULT.map_image

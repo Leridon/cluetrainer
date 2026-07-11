@@ -1,12 +1,12 @@
-import {clamp, identity} from "lodash";
 import {Vector2} from "./Vector2";
 import {Transform} from "./Transform";
+import {FakeLodash} from "../coreutil/FakeLodash";
 
 export type Rectangle = { topleft: Vector2, botright: Vector2 }
 
 export namespace Rectangle {
   export function from(...points: Vector2[]): Rectangle {
-    points = points.filter(identity)
+    points = points.filter(p => p)
 
     if (points.length == 0) return null
 
@@ -62,8 +62,8 @@ export namespace Rectangle {
 
   export function clampInto(pos: Vector2, area: Rectangle): Vector2 {
     return {
-      x: clamp(pos.x, area.topleft.x, area.botright.x),
-      y: clamp(pos.y, area.botright.y, area.topleft.y),
+      x: FakeLodash.clamp(pos.x, area.topleft.x, area.botright.x),
+      y: FakeLodash.clamp(pos.y, area.botright.y, area.topleft.y),
     }
   }
 

@@ -1,5 +1,6 @@
 import lodash from "lodash";
 import {Rectangle, Vector2} from "./math";
+import {FakeLodash} from "./coreutil/FakeLodash";
 
 export class QuadTree<T extends QuadTree.Element<T>> {
   elements: T[] = []
@@ -118,7 +119,7 @@ export class QuadTree<T extends QuadTree.Element<T>> {
   }
 
   bounds(): Rectangle {
-    return lodash.cloneDeep(this.rect)
+    return FakeLodash.cloneDeep(this.rect)
   }
 
   isCulled(): boolean {

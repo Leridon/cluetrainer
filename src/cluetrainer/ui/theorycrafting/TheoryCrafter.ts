@@ -6,6 +6,7 @@ import {MethodPackManager} from "../../MethodPackManager";
 import MethodEditor from "./MethodEditor";
 import lodash from "lodash";
 import {AugmentedMethod} from "../../model/MethodPack";
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 export default class TheoryCrafter extends Behaviour {
   sidebar: TheoryCraftingSidebar
@@ -57,7 +58,7 @@ export default class TheoryCrafter extends Behaviour {
     let copy: AugmentedMethod = {
       clue: method.clue,
       pack: method.pack,
-      method: lodash.cloneDeep(method.method)
+      method: FakeLodash.cloneDeep(method.method)
     }
 
     const really = await (async (): Promise<boolean> => {

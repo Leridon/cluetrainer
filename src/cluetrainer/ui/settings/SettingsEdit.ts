@@ -62,6 +62,7 @@ import span = C.span;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import Appendable = C.Appendable;
 import notification = Notification.notification;
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 export class SettingsLayout extends Properties {
   constructor() {super();}
@@ -504,7 +505,7 @@ export class ScanInputOverlayConfigModal extends FormModal<ScanControlPrototype.
 
     this.setTitle("Interactive Scan Tree Overlay Configuration")
 
-    this.value = observe(lodash.cloneDeep(value))
+    this.value = observe(FakeLodash.cloneDeep(value))
       .structuralEquality()
       .subscribe(change => {
         this.overlay.setConfig(change)
@@ -1138,7 +1139,7 @@ class InterfaceSettingsEdit extends AbstractSettingsEdit<ClueSolving.Settings.In
     this.layout.row(
       new LightButton("Everything")
         .onClick(() => {
-          Object.assign(this.value, lodash.cloneDeep(ClueSolving.Settings.InfoPanel.EVERYTHING))
+          Object.assign(this.value, FakeLodash.cloneDeep(ClueSolving.Settings.InfoPanel.EVERYTHING))
 
           this.render()
         }))
@@ -1146,7 +1147,7 @@ class InterfaceSettingsEdit extends AbstractSettingsEdit<ClueSolving.Settings.In
     this.layout.row(
       new LightButton("Reduced (Recommended)")
         .onClick(() => {
-          Object.assign(this.value, lodash.cloneDeep(ClueSolving.Settings.InfoPanel.REDUCED))
+          Object.assign(this.value, FakeLodash.cloneDeep(ClueSolving.Settings.InfoPanel.REDUCED))
 
           this.render()
         }))
@@ -1154,7 +1155,7 @@ class InterfaceSettingsEdit extends AbstractSettingsEdit<ClueSolving.Settings.In
     this.layout.row(
       new LightButton("Nothing")
         .onClick(() => {
-          Object.assign(this.value, lodash.cloneDeep(ClueSolving.Settings.InfoPanel.NOTHING))
+          Object.assign(this.value, FakeLodash.cloneDeep(ClueSolving.Settings.InfoPanel.NOTHING))
 
           this.render()
         }))
@@ -1576,7 +1577,7 @@ export class SettingsEdit extends Widget {
   constructor(app: ClueTrainer, start_section: SettingsEdit.section_id) {
     super();
 
-    this.value = lodash.cloneDeep(app.settings.settings)
+    this.value = FakeLodash.cloneDeep(app.settings.settings)
 
     this.init(
       this.section_control = new SectionControl<SettingsEdit.section_id>([
@@ -1690,7 +1691,7 @@ export class SettingsModal extends FormModal<{
 
   private save() {
     if (this.hasUnsavedChanges()) {
-      this.last_saved_value = lodash.cloneDeep(this.edit.value)
+      this.last_saved_value = FakeLodash.cloneDeep(this.edit.value)
       deps().app.settings.set(this.last_saved_value)
 
       notification("Changes to settings saved.").setDuration(3000).show()

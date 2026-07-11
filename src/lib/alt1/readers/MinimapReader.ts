@@ -11,6 +11,7 @@ import {Alt1} from "../Alt1";
 import {Angles} from "../../math/Angles";
 import over = LegacyOverlayGeometry.over;
 import log = Log.log;
+import {FakeLodash} from "../../coreutil/FakeLodash";
 
 export class MinimapReader extends DerivedCaptureService<MinimapReader.Options, MinimapReader.CapturedMinimap> {
 
@@ -176,8 +177,8 @@ export namespace MinimapReader {
       const CALIBRATION = Angles.degreesToRadians(-1.2541083)
 
       const average_angle = Angles.normalizeAngle(Math.atan2(
-        lodash.sum(angle_samples.map(a => Math.sin(a))),
-        lodash.sum(angle_samples.map(a => Math.cos(a))),
+        FakeLodash.sum(angle_samples.map(a => Math.sin(a))),
+        FakeLodash.sum(angle_samples.map(a => Math.cos(a))),
       ))
 
       return average_angle + CALIBRATION

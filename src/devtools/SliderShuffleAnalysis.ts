@@ -9,6 +9,7 @@ import SliderState = Sliders.SliderState;
 import hbox = C.hbox;
 import spacer = C.spacer;
 import hgrid = C.hgrid;
+import {FakeLodash} from "../lib/coreutil/FakeLodash";
 
 export class SliderShuffleAnalysis extends NisModal {
   layout: Properties
@@ -70,8 +71,8 @@ export class SliderShuffleAnalysis extends NisModal {
     }
 
     function heatMapColorforValue(value: number) {
-      const r_value = lodash.clamp((1 - value) * 510, 0, 255)
-      const g_value = lodash.clamp(value * 510, 0, 255)
+      const r_value = FakeLodash.clamp((1 - value) * 510, 0, 255)
+      const g_value = FakeLodash.clamp(value * 510, 0, 255)
 
       return `rgb(${r_value.toFixed(0)}, ${g_value.toFixed(0)}, 0)`
 

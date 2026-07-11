@@ -1,5 +1,6 @@
 import lodash from "lodash"
 import {util} from "../../lib/util/util";
+import {FakeLodash} from "../../lib/coreutil/FakeLodash";
 
 export namespace CelticKnots {
   export type Element = { value: number, type: "is" | "isnot" }
@@ -308,7 +309,7 @@ export namespace CelticKnots {
       }
     })
 
-    const preferred = lodash.minBy(real_solutions, s => s.moves.map(m => Math.abs(m.offset))) ?? (maybe_solutions.length == 1 ? maybe_solutions[0] : undefined)
+    const preferred = FakeLodash.minBy(real_solutions, s => FakeLodash.sum(s.moves.map(m => Math.abs(m.offset)))) ?? (maybe_solutions.length == 1 ? maybe_solutions[0] : undefined)
 
     return {real: real_solutions, maybe: maybe_solutions, preferred: preferred}
   }

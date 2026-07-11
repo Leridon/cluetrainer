@@ -1,11 +1,9 @@
 import {Path} from "../lib/runescape/pathing";
 import {TileArea} from "../lib/runescape/coordinates/TileArea";
 import {ScanTree} from "./cluetheory/scans/ScanTree";
-import lodash from "lodash"
 import {MovementAbilities} from "../lib/runescape/movement";
-import {FontSheets} from "../devtools/FontSheets";
-import {ImageDetect} from "alt1";
 import {clue_data} from "../data/clues";
+import {FakeLodash} from "../lib/coreutil/FakeLodash";
 
 async function fix_path(p: Path): Promise<number> {
   if (!p) return
@@ -57,7 +55,7 @@ async function fix_path(p: Path): Promise<number> {
 async function fix_tree(tree: ScanTree.ScanTreeNode): Promise<number> {
   return await fix_path(tree.path) +
     (tree.children
-      ? lodash.sum(await Promise.all(tree.children.map(async c => await fix_tree(c.value))))
+      ? FakeLodash.sum(await Promise.all(tree.children.map(async c => await fix_tree(c.value))))
       : 0)
 }
 

@@ -6,6 +6,7 @@ import lodash from "lodash";
 import {direction} from "../movement";
 import {TileTransform} from "./TileTransform";
 import {util} from "../../util/util";
+import {FakeLodash} from "../../coreutil/FakeLodash";
 
 export type TileArea = {
   origin: TileCoordinates,
@@ -23,7 +24,7 @@ export namespace TileArea {
     origin: TileCoordinates
 
     constructor(public parent: TileArea) {
-      this.size = lodash.cloneDeep(parent.size) ?? {x: 1, y: 1}
+      this.size = FakeLodash.cloneDeep(parent.size) ?? {x: 1, y: 1}
 
       if (parent.data) {
         this.data = base64ToBytes(parent.data)
@@ -31,7 +32,7 @@ export namespace TileArea {
         this.data = new Uint8Array(Math.ceil(this.size.x * this.size.y / 8)).fill(255)
       }
 
-      this.origin = lodash.cloneDeep(parent.origin)
+      this.origin = FakeLodash.cloneDeep(parent.origin)
     }
 
     save(): this {
@@ -59,10 +60,10 @@ export namespace TileArea {
       if (this.size.x == 1 && this.size.y == 1) {
         this.parent.size = undefined
       } else {
-        this.parent.size = lodash.cloneDeep(this.size)
+        this.parent.size = FakeLodash.cloneDeep(this.size)
       }
 
-      this.parent.origin = lodash.cloneDeep(this.origin)
+      this.parent.origin = FakeLodash.cloneDeep(this.origin)
 
       return this
     }

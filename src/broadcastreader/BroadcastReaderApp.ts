@@ -33,6 +33,7 @@ import Message = MessageBuffer.Message;
 import renderTimespan = util.renderTimespan;
 import spacer = C.spacer;
 import log = Log.log;
+import {FakeLodash} from "../lib/coreutil/FakeLodash";
 
 const item_mapping: {
   item: string,
@@ -265,7 +266,7 @@ namespace EventBuffer {
     if (is_new) {
       buffer.detected.push(detection)
 
-      buffer.detected = lodash.sortBy(buffer.detected, e => -e.message_timestamp)
+      buffer.detected = FakeLodash.sortBy(buffer.detected, e => -e.message_timestamp)
     }
 
     return is_new

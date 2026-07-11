@@ -34,6 +34,7 @@ import copyUpdate = util.copyUpdate;
 import hboxl = C.hboxl;
 import space = C.space;
 import median = util.median;
+import {FakeLodash} from "../lib/coreutil/FakeLodash";
 
 export type SliderDataEntry = {
   id: number,
@@ -71,7 +72,7 @@ type SimulationResult = {
 function variance(list: number[]): number {
   const mean = avg(...list)
 
-  return lodash.sum(list.map(element => Math.pow(element - mean, 2))) / list.length
+  return FakeLodash.sum(list.map(element => Math.pow(element - mean, 2))) / list.length
 }
 
 export function stddev(list: number[]): number {
@@ -79,7 +80,7 @@ export function stddev(list: number[]): number {
 }
 
 function doStatistics(res: SimulationResult[number]["candidates"][number]): Statistics {
-  const sorted_lengths = lodash.sortBy(res.tests.filter(t => t.moves).map(t => t.moves.length))
+  const sorted_lengths = FakeLodash.sort(res.tests.filter(t => t.moves).map(t => t.moves.length))
 
   return {
     average: avg(...sorted_lengths),

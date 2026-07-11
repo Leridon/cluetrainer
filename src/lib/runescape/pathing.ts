@@ -12,6 +12,7 @@ import {EntityName} from "./EntityName";
 import {TransportData} from "../../data/transports";
 import {CTRIcon} from "../../cluetrainer/CTRIcon";
 import movement_ability = MovementAbilities.movement_ability;
+import {FakeLodash} from "../coreutil/FakeLodash";
 
 export type Path = Path.raw;
 
@@ -152,7 +153,7 @@ export namespace Path {
     }
 
     export function nextAvailableCharge(state: movement_state, ability: movement_ability): { charge: AbilityCharge, remaining_cooldown: number } {
-      const charge = lodash.minBy(state.cooldowns[ability], c => c.on_cooldown_till_tick)
+      const charge = FakeLodash.minBy(state.cooldowns[ability], c => c.on_cooldown_till_tick)
 
       return {
         charge,
@@ -314,7 +315,7 @@ export namespace Path {
 
     if (!start_state) start_state = movement_state.start({})
 
-    let state: movement_state = lodash.cloneDeep(start_state)
+    let state: movement_state = FakeLodash.cloneDeep(start_state)
 
     // null positions are a pain, replace with position with unknown tile and direction
     state.position ||= {tile: null, direction: null}
@@ -323,7 +324,7 @@ export namespace Path {
       let step = path[i]
 
       let augmented: augmented_step = {
-        pre_state: lodash.cloneDeep(state),
+        pre_state: FakeLodash.cloneDeep(state),
         post_state: null,
         issues: [],
         section: 0,
@@ -370,7 +371,7 @@ export namespace Path {
             } else {
 
               // if there is no previous position, at least assume the defined start position
-              const assumed_pos = lodash.cloneDeep(state.position)
+              const assumed_pos = FakeLodash.cloneDeep(state.position)
 
               assumed_pos.tile ||= step.from
 
@@ -614,7 +615,7 @@ export namespace Path {
           break
       }
 
-      augmented.post_state = lodash.cloneDeep(state)
+      augmented.post_state = FakeLodash.cloneDeep(state)
 
       augmented_steps.push(augmented)
     }

@@ -2,6 +2,7 @@ import * as a1lib from "alt1";
 import lodash from "lodash";
 import {Vector2} from "../math";
 import {EwentHandler} from "../reactive";
+import {FakeLodash} from "../coreutil/FakeLodash";
 
 export class Alt1MainHotkeyEvent {
   private handlers: Alt1MainHotkeyEvent.Handler[] = []
@@ -14,7 +15,7 @@ export class Alt1MainHotkeyEvent {
 
       const event = new Alt1MainHotkeyEvent.Event(e)
 
-      const sorted = lodash.sortBy(this.handlers.filter(h => h.isAlive()), h => -h.priority)
+      const sorted = FakeLodash.sortBy(this.handlers.filter(h => h.isAlive()), h => -h.priority)
 
       for (const handler of sorted) {
         handler.apply(event)

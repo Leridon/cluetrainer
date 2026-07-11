@@ -14,6 +14,7 @@ import {IssueWidget} from "../cluetrainer/pathedit/EditedPathOverview";
 import {ClueReader} from "../cluetrainer/cluesolving/cluereader/ClueReader";
 import {SettingsLayout} from "../cluetrainer/ui/settings/SettingsEdit";
 import {storage} from "../lib/util/storage";
+import {FakeLodash} from "../lib/coreutil/FakeLodash";
 
 export namespace FontSheets {
 
@@ -247,7 +248,7 @@ export namespace FontSheets {
 
     const glyph_height = Math.max(...font.glyphs.map(c => c.sprite.size.y + c.placement.bearing))
 
-    const width = lodash.sum(font.glyphs.map(c => {
+    const width = FakeLodash.sum(font.glyphs.map(c => {
       const left = c.placement.padleft
       const right = c.placement.padright
 

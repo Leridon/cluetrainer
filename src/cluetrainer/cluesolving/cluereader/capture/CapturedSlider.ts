@@ -8,6 +8,7 @@ import {SliderReader} from "../SliderReader";
 import {Sliders} from "../../../cluetheory/Sliders";
 import rgbSimilarity = util.rgbSimilarity;
 import SliderPuzzle = Sliders.SliderPuzzle;
+import {FakeLodash} from "../../../../lib/coreutil/FakeLodash";
 
 export class CapturedSliderInterface {
   public readonly body: CapturedImage
@@ -48,7 +49,7 @@ export class CapturedSliderInterface {
     if (include_checkbox == this.image_includes_checkbox) {
       return this.image.screenRectangle()
     } else if (include_checkbox) {
-      const body_rect: ScreenRectangle = lodash.cloneDeep(this.body.screenRectangle())
+      const body_rect: ScreenRectangle = FakeLodash.cloneDeep(this.body.screenRectangle())
 
       body_rect.origin.x += CapturedSliderInterface.INVERTED_CHECKBOX_OFFSET_FROM_TL.x
       body_rect.size.x += -CapturedSliderInterface.INVERTED_CHECKBOX_OFFSET_FROM_TL.x

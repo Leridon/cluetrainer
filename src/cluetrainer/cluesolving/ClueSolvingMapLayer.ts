@@ -24,6 +24,7 @@ import {clue_data} from "../../data/clues";
 import {Alt1Modal} from "../Alt1Modal";
 import {SettingsModal} from "../ui/settings/SettingsEdit";
 import {Alt1} from "../../lib/alt1/Alt1";
+import {FakeLodash} from "../../lib/coreutil/FakeLodash";
 
 export class ClueSolvingMapLayer extends GameLayer {
   public solution_container: Widget
@@ -92,7 +93,7 @@ export class ClueSolvingMapLayer extends GameLayer {
       })()
     }
 
-    let copy = lodash.cloneDeep(view)
+    let copy = FakeLodash.cloneDeep(view)
 
     let padding: [number, number] = null
 

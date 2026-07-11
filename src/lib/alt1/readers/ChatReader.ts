@@ -20,6 +20,7 @@ import log = Log.log;
 import AsyncInitialization = util.AsyncInitialization;
 import async_init = util.async_init;
 import Message = MessageBuffer.Message;
+import {FakeLodash} from "../../coreutil/FakeLodash";
 
 /**
  * A service class to read chat messages. It will search for chat boxes periodically, so it will find the chat
@@ -305,7 +306,7 @@ export namespace ChatReader {
       today.setSeconds(seconds)
       today.setMilliseconds(0)
 
-      const date = lodash.minBy([today, addDays(today, -1), addDays(today, 1)], date => Math.abs(now - date.valueOf()))
+      const date = FakeLodash.minBy([today, addDays(today, -1), addDays(today, 1)], date => Math.abs(now - date.valueOf()))
 
       return this.buffer.add({
         local_timestamp: {

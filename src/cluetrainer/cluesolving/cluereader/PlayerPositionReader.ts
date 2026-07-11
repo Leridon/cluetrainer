@@ -1,6 +1,5 @@
 import {observe} from "../../../lib/reactive";
 import {Scans} from "../../cluetheory/Scans";
-import {MutableMesh} from "../../overlay3d/meshes/MutableMesh";
 import Behaviour from "../../../lib/ui/Behaviour";
 import {lazy} from "../../../lib/Lazy";
 import {Alt1GLCapturedFrame} from "../../../lib/alt1/alt1gl/Alt1GLCapturedFrame";
@@ -9,10 +8,10 @@ import {getUniformValue} from "../../../lib/alt1/alt1gllib/ts/render/renderprogr
 import {Alt1} from "../../../lib/alt1/Alt1";
 import {CompassReader} from "./CompassReader";
 import {Vector2} from "../../../lib/math";
-import lodash from "lodash";
 import Vector3 = Mesh.Vector3;
 import PulseRing = Scans.PulseRing;
 import {Mesh} from "../../overlay3d/meshes/Mesh";
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 export type TrackedPlayerPosition = {
   position_3d: Vector3,
@@ -143,7 +142,7 @@ export namespace PlayerStateTracking {
       try {
         if (!render.raw.renderRanges) continue;
 
-        const verts = lodash.sumBy(render.raw.renderRanges, r => r.length);
+        const verts = FakeLodash.sumBy(render.raw.renderRanges, r => r.length);
         const m = getUniformValue(render.raw.uniformState, render.progmeta.get().uModelMatrix)[0];
         if (toTile(m[12]) !== position.x || toTile(m[14]) !== position.z) continue;
         if (verts === 576) return 1;

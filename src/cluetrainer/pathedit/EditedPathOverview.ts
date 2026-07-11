@@ -13,6 +13,7 @@ import {PathStepHeader} from "../ui/pathing/PathStepHeader";
 import lodash from "lodash";
 import vbox = C.vbox;
 import spacer = C.spacer;
+import {FakeLodash} from "../../lib/coreutil/FakeLodash";
 
 export class IssueWidget extends Widget {
   constructor(issue: Path.issue) {
@@ -45,7 +46,7 @@ export class AggregatedIssueWidget extends Widget {
       display: "flex"
     })
 
-    const grouped = lodash.sortBy(Object.entries(lodash.groupBy(issues, i => i.level)), e => e[0])
+    const grouped = FakeLodash.sortBy(Object.entries(lodash.groupBy(issues, i => i.level)), e => e[1].length)
 
     grouped.forEach(([key, issues]) => {
       this.append(

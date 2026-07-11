@@ -1,4 +1,5 @@
 import lodash from "lodash";
+import {FakeLodash} from "../../lib/coreutil/FakeLodash";
 
 export namespace Lockboxes {
   export type Tile = 0 // Sword
@@ -64,13 +65,13 @@ export namespace Lockboxes {
     export function chain(...moves: MoveMap[]): MoveMap {
       return None.map((row, row_i) => {
         return row.map((_, col_i) => {
-          return lodash.sumBy(moves, m => m[row_i][col_i]) % 3 as Tile
+          return FakeLodash.sumBy(moves, m => m[row_i][col_i]) % 3 as Tile
         })
       })
     }
 
     export function scoring(profile: [number, number, number]): (_: MoveMap) => number {
-      return m => lodash.sum(m.flat().map(m => profile[m]))
+      return m => FakeLodash.sum(m.flat().map(m => profile[m]))
     }
 
     export const clickScore = scoring([0, 1, 2])
@@ -108,7 +109,7 @@ export namespace Lockboxes {
     }
 
     export function minimize(map: MoveMap, by: (_: MoveMap) => number = MoveMap.clickScore): MoveMap {
-      return lodash.minBy(getEquivalents(map), by)
+      return FakeLodash.minBy(getEquivalents(map), by)
     }
 
     export function fromClick(row: number, column: number): MoveMap {
@@ -288,6 +289,6 @@ export namespace Lockboxes {
 
     const cost = options.minimize ? (options.minimize_by ?? MoveMap.clickScore) : () => 0
 
-    return lodash.minBy(candidate_solutions, s => cost(s.moves))
+    return FakeLodash.minBy(candidate_solutions, s => cost(s.moves))
   }
 }

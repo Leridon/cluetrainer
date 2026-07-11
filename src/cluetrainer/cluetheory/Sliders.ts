@@ -3,6 +3,7 @@ import lodash from "lodash";
 import {Process} from "../../lib/Process";
 import {util} from "../../lib/util/util";
 import {ImageFingerprint} from "../../lib/util/ImageFingerprint";
+import {FakeLodash} from "../../lib/coreutil/FakeLodash";
 
 export namespace Sliders {
   export type SliderPuzzle = { tiles: Tile[], theme?: string, match_score?: number }
@@ -98,11 +99,11 @@ export namespace Sliders {
     }
 
     export function sumManhattenDistance(state: SliderState): number {
-      return lodash.sumBy(state.map((target, position) =>
+      return FakeLodash.sumBy(state, (target, position) =>
         target == 24 ? 0 :
           Math.abs(target % 5 - position % 5)
           + Math.abs(Math.floor(target / 5) - Math.floor(position / 5))
-      ))
+      )
     }
 
     export function permutation_parity(state: SliderState): number {
@@ -173,7 +174,7 @@ export namespace Sliders {
     }
 
     export function copy(state: SlideStateWithBlank): SlideStateWithBlank {
-      return lodash.cloneDeep(state)
+      return FakeLodash.cloneDeep(state)
     }
   }
 

@@ -20,6 +20,7 @@ import async_init = util.async_init;
 import observe_combined = Observable.observe_combined;
 import {Log} from "../../../../lib/util/Log";
 import log = Log.log;
+import {FakeLodash} from "../../../../lib/coreutil/FakeLodash";
 
 export class ScanCaptureService extends DerivedCaptureService<ScanCaptureService.Options, CapturedScan> {
   private debug: boolean = false
@@ -215,7 +216,7 @@ export class ScanPanelOverlay extends Alt1Overlay {
       handle: s => {
         this.has_successful_read.set(service.lastSuccessfulReadTime() > Date.now() - 1000)
 
-        this.setState(lodash.cloneDeep(service.getState()))
+        this.setState(FakeLodash.cloneDeep(service.getState()))
 
         this.setPosition(s.value?.center_of_text?.get())
       }

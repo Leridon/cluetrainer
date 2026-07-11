@@ -57,6 +57,7 @@ import index = util.index;
 import {HostedMapCollisionData, TileCollisionData} from "../lib/runescape/CollisionData";
 import {LeafletUtils} from "../lib/gamemap/LeafletUtils";
 import {LeafletPolygonConstructors} from "../lib/gamemap/LeafletPolygonConstructors";
+import {FakeLodash} from "../lib/coreutil/FakeLodash";
 
 type Fraction = Vector2
 
@@ -247,7 +248,7 @@ class SampleSetBuilder {
   }
 
   private sort() {
-    this.state.samples = lodash.sortBy(this.state.samples, s => CalibrationTool.shouldAngle(s.position))
+    this.state.samples = FakeLodash.sortBy(this.state.samples, s => CalibrationTool.shouldAngle(s.position))
   }
 
   record(offset: Vector2, state: CompassReader.Service.State.Normal) {
@@ -399,7 +400,7 @@ class TravellingSalesmanProblem<T> {
   }
 
   private _evaluateComeFrom(come_from_solution: number[]): number {
-    return lodash.sum(come_from_solution.map((come_from, pos) => this.getDistance(come_from, pos)))
+    return FakeLodash.sum(come_from_solution.map((come_from, pos) => this.getDistance(come_from, pos)))
   }
 
   private _optimize_by_pairwise_exchange() {
@@ -687,7 +688,7 @@ function approximateFractionAsRationaleNumber(max_denominator: number,
 
       // if the denominator is too big, return the closest of lower or higher
       if (mediant.x > max_denominator) {
-        return lodash.minBy([lower, higher], frac => Math.abs(target_number - Fraction.value(frac)))
+        return FakeLodash.minBy([lower, higher], frac => Math.abs(target_number - Fraction.value(frac)))
       }
 
       // adjust the interval:
@@ -870,7 +871,7 @@ namespace CalibrationQueue {
 
       backlog.forEach(offsetSelection => self.queue.splice(self.queue.indexOf(offsetSelection), 1))
 
-      const sorted_by_should_angle = lodash.sortBy(self.queue, s => CalibrationTool.shouldAngle(s.offset))
+      const sorted_by_should_angle = FakeLodash.sortBy(self.queue, s => CalibrationTool.shouldAngle(s.offset))
 
       self.queue = await new TravellingSalesmanProblem(sorted_by_should_angle,
         //new TravellingSalesmanProblem.PathFindingDistanceFunction()
@@ -885,7 +886,7 @@ namespace CalibrationQueue {
         )
 
 
-      self.queue.push(...lodash.sortBy(backlog, s => CalibrationTool.shouldAngle(s.offset)))
+      self.queue.push(...FakeLodash.sortBy(backlog, s => CalibrationTool.shouldAngle(s.offset)))
     }
   }
 }
@@ -914,7 +915,7 @@ class CalibrationQueueView extends Widget {
 
     this.props.named("Type", head?.filler ? head.filler.name : "")
     this.props.named("Size", hgrid(head_size.toString(), new LightButton("Pop").setEnabled(!!this.queue.head()).slim().onClick(() => this.queue.pop())))
-    this.props.named("Backlog", hgrid((lodash.sumBy(this.queue._backlog, l => l.queue.length) - head_size).toString(), new LightButton("Clear").slim().onClick(() => this.queue.clear())))
+    this.props.named("Backlog", hgrid((FakeLodash.sumBy(this.queue._backlog, l => l.queue.length) - head_size).toString(), new LightButton("Clear").slim().onClick(() => this.queue.clear())))
   }
 }
 
@@ -1295,7 +1296,7 @@ export class CompassCalibrationTool extends NisModal {
         this.sample_set.set(await response.json())
       }),
       new LightButton("Load MSAA").onClick(() => {
-        this.sample_set.set(lodash.cloneDeep(CompassReader.msaa_samples))
+        this.sample_set.set(FakeLodash.cloneDeep(CompassReader.msaa_samples))
       }),
       new LightButton("Reset").onClick(() => {
         this.sample_set.set([])
@@ -1356,7 +1357,7 @@ export namespace CalibrationTool {
 
   export function cleanExport(samples: RawSample[]): string {
     return "[\n" +
-      lodash.sortBy(samples, s => Vector2.angle(ANGLE_REFERENCE_VECTOR, {x: -s.position.x, y: -s.position.y})).map(s => cleanedJSON(s, undefined)).join(",\n")
+      FakeLodash.sortBy(samples, s => Vector2.angle(ANGLE_REFERENCE_VECTOR, {x: -s.position.x, y: -s.position.y})).map(s => cleanedJSON(s, undefined)).join(",\n")
       + "\n]"
   }
 

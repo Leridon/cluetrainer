@@ -7,6 +7,7 @@ import TextField from "../../../lib/ui/controls/TextField";
 import lodash from "lodash";
 import vbox = C.vbox;
 import hbox = C.hbox;
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 
 export class EntityNameEdit extends AbstractEditWidget<EntityName> {
@@ -40,7 +41,7 @@ export class EntityNameEdit extends AbstractEditWidget<EntityName> {
       const group = new Checkbox.Group<EntityName.Kind>(buttons, false)
         .setValue(this.get()?.kind || "static")
         .onChange(v => {
-          const copy = lodash.cloneDeep(this.get())
+          const copy = FakeLodash.cloneDeep(this.get())
           if (copy) {
             copy.kind = v
             this.commit(copy)
@@ -58,7 +59,7 @@ export class EntityNameEdit extends AbstractEditWidget<EntityName> {
       .onCommit(v => {
         if (!v) this.commit(null)
         else {
-          let copy = lodash.cloneDeep(this.get())
+          let copy = FakeLodash.cloneDeep(this.get())
 
           if (!copy) {
             copy = {name: "", kind: group?.get() ?? copy.kind}

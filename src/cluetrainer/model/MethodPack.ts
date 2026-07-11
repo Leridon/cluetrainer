@@ -5,6 +5,7 @@ import {LocalMethodId} from "../MethodPackManager";
 import lodash from "lodash";
 import {Clues} from "./Clues";
 import ClueSpot = Clues.ClueSpot;
+import {FakeLodash} from "../../lib/coreutil/FakeLodash";
 
 export type MethodPack = MethodPack.Meta & {
   is_real_default?: boolean
@@ -29,7 +30,7 @@ export namespace MethodPack {
     pack.author = meta.author
     pack.description = meta.description
     pack.name = meta.name
-    pack.default_assumptions = lodash.cloneDeep(meta.default_assumptions)
+    pack.default_assumptions = FakeLodash.cloneDeep(meta.default_assumptions)
     pack.default_method_name = meta.default_method_name
   }
 
@@ -38,7 +39,7 @@ export namespace MethodPack {
       name: pack.name,
       author: pack.author,
       description: pack.description,
-      default_assumptions: lodash.cloneDeep(pack.default_assumptions),
+      default_assumptions: FakeLodash.cloneDeep(pack.default_assumptions),
       default_method_name: pack.default_method_name
     }
   }

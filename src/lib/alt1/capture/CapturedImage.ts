@@ -7,6 +7,7 @@ import {NeedleImage} from "./NeedleImage";
 import lodash from "lodash";
 import {Alt1Color} from "../Alt1Color";
 import {Alt1OverlayDrawCalls} from "../overlay/Alt1OverlayDrawCalls";
+import {FakeLodash} from "../../coreutil/FakeLodash";
 
 export class CapturedImage {
   private _name: string = undefined
@@ -123,7 +124,7 @@ export class CapturedImage {
   getScreenSection(absolute_area: ScreenRectangle): CapturedImage {
     return new CapturedImage(
       this.root().capture,
-      lodash.cloneDeep(absolute_area),
+      FakeLodash.cloneDeep(absolute_area),
       this.root()
     )
   }

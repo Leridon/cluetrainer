@@ -32,6 +32,7 @@ import AnnotatedMoveList = Sliders.AnnotatedMoveList;
 import over = LegacyOverlayGeometry.over;
 import Move = Sliders.Move;
 import MoveList = Sliders.MoveList;
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 
 class SliderGuideProcess extends AbstractPuzzleProcess {
@@ -889,7 +890,7 @@ export namespace SlideGuider {
     }
 
     export function normalize(settings: Settings): Settings {
-      if (!settings) return lodash.cloneDeep(DEFAULT)
+      if (!settings) return FakeLodash.cloneDeep(DEFAULT)
 
       if (!["keyboard", "mouse", "hybrid"].includes(settings.mode)) settings.mode = DEFAULT.mode
       if (![true, false].includes(settings.autostart)) settings.autostart = DEFAULT.autostart
@@ -906,7 +907,7 @@ export namespace SlideGuider {
       if (![true, false].includes(settings.improve_slider_matches_backtracking)) settings.improve_slider_matches_backtracking = DEFAULT.improve_slider_matches_backtracking
       if (![true, false].includes(settings.continue_solving_after_initial_solve)) settings.continue_solving_after_initial_solve = DEFAULT.continue_solving_after_initial_solve
 
-      settings.solve_time_ms = lodash.clamp(settings.solve_time_ms, 100, 5000)
+      settings.solve_time_ms = FakeLodash.clamp(settings.solve_time_ms, 100, 5000)
 
       return settings
     }

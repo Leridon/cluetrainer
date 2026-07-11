@@ -50,6 +50,7 @@ import {AugmentedMethod} from "../../../model/MethodPack";
 import {LeafletUtils} from "../../../../lib/gamemap/LeafletUtils";
 import {LeafletPolygonConstructors} from "../../../../lib/gamemap/LeafletPolygonConstructors";
 import areaToPolygon = LeafletPolygonConstructors.areaToPolygon;
+import {FakeLodash} from "../../../../lib/coreutil/FakeLodash";
 
 export class ScanEditLayer extends GameLayer {
   marker: AdaptiveScanRadiusMarker
@@ -518,7 +519,7 @@ export default class ScanEditor extends MethodSubEditor {
     super(parent);
 
     this.builder = new ScanTreeBuilder(value.clue.clue)
-    this.builder.assumptions.set(lodash.cloneDeep(value.method.assumptions))
+    this.builder.assumptions.set(FakeLodash.cloneDeep(value.method.assumptions))
 
     this.builder.augmented.subscribe((t) => {
       this.layer.setTiming(t.state.timing_analysis)
@@ -608,7 +609,7 @@ export default class ScanEditor extends MethodSubEditor {
     this.assumptions.subscribe((v) => {
       this.value.method.tree.assumed_range = this.value.clue.clue.range + (v.meerkats_active ? 5 : 0)
 
-      this.builder.assumptions.set(lodash.cloneDeep(v))
+      this.builder.assumptions.set(FakeLodash.cloneDeep(v))
 
       this.layer.marker.setRadius(this.value.method.tree.assumed_range, v.meerkats_active)
     })

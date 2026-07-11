@@ -9,6 +9,7 @@ import {PathingGraphics} from "../../ui/path_graphics";
 import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
 import {MovementAssumptions} from "../../../lib/runescape/movement";
 import {Scans} from "../Scans";
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 /**
  * Scan Trees are decision trees used to solve scan clues efficiently.
@@ -221,7 +222,7 @@ export namespace ScanTree {
             : node.region?.area ? [TileArea.activate(node.region.area)] : [])
 
         if (node.children.length > 0) {
-          let cloned_state = lodash.cloneDeep(node.path.post_state)
+          let cloned_state = FakeLodash.cloneDeep(node.path.post_state)
           cloned_state.tick += 1 // Assume 1 tick reaction time between steps. Approximation, but may help to make timings and cooldowns more realistic
 
           await Promise.all(node.children.map(c => helper(c.value, cloned_state)))

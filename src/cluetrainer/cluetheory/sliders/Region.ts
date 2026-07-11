@@ -3,6 +3,7 @@ import {OptimizedSliderState} from "./OptimizedSliderState";
 import {Sliders} from "../Sliders";
 import {util} from "../../../lib/util/util";
 import factorial = util.factorial;
+import {FakeLodash} from "../../../lib/coreutil/FakeLodash";
 
 const n_choose_k_table: number[][] = (() => {
   function choose(n: number, k: number): number {
@@ -100,7 +101,7 @@ export namespace Region {
       this.size = factorial(this.freedom, Math.max(2, this.freedom - this.current))
 
       {
-        this.combination_relevant_indices = lodash.sortBy(region.map((tile, i) => [tile, i]).filter(e => e[0] != Tile.FIXED), e => -e[0]).map(e => e[1])
+        this.combination_relevant_indices = FakeLodash.sortBy(region.map((tile, i) => [tile, i]).filter(e => e[0] != Tile.FIXED), e => -e[0]).map(e => e[1])
 
         this.relevant_tile_numbers = region.map((tile, index) => tile == Tile.CURRENT || index == SliderState.BLANK_TILE)
       }

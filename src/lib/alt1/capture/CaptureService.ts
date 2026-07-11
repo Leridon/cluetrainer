@@ -6,6 +6,7 @@ import {LifetimeManager} from "../../lifetime/LifetimeManager";
 import {LifetimeManaged} from "../../lifetime/LifetimeManaged";
 import TimedValue = AbstractCaptureService.TimedValue;
 import CaptureTime = AbstractCaptureService.CaptureTime;
+import {FakeLodash} from "../../coreutil/FakeLodash";
 
 export type InterestedToken<InterestOptionsT extends AbstractCaptureService.Options = AbstractCaptureService.Options, ValueT = any> = {
   token: AbstractCaptureService.InterestToken<InterestOptionsT, ValueT>,
@@ -289,7 +290,7 @@ export abstract class DerivedCaptureService<
 
         return {
           ...compound_options,
-          interval: lodash.minBy([CaptureInterval.level(200), ...interested_in_this_tick.map(t => t.options.interval)], t => t.tick_modulo),
+          interval: FakeLodash.minBy([CaptureInterval.level(200), ...interested_in_this_tick.map(t => t.options.interval)], t => t.tick_modulo),
           original_interests: interested_in_this_tick
         }
       }

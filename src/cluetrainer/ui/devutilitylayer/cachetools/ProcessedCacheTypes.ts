@@ -5,6 +5,7 @@ import lodash from "lodash";
 import {CacheTypes} from "./CacheTypes";
 import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
 import {TileTransform} from "../../../../lib/runescape/coordinates/TileTransform";
+import { FakeLodash } from "lib/coreutil/FakeLodash";
 
 export namespace ProcessedCacheTypes {
 
@@ -104,8 +105,8 @@ export namespace ProcessedCacheTypes {
 
       data.forEach(group => group.forEach(data => {
         const hash = PrototypeID.hash(data.id)
-        if (!combined[hash]) combined[hash] = lodash.cloneDeep(data)
-        else combined[hash].instances.push(...lodash.cloneDeep(data.instances))
+        if (!combined[hash]) combined[hash] = FakeLodash.cloneDeep(data)
+        else combined[hash].instances.push(...FakeLodash.cloneDeep(data.instances))
       }))
 
       return Object.values(combined)
