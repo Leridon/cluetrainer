@@ -7,8 +7,8 @@ import {util} from "../../../lib/util/util";
 import {TileCoordinates} from "../../../lib/runescape/coordinates";
 import {PathingGraphics} from "../../ui/path_graphics";
 import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
-import {Scans} from "../../model/clues/Scans";
 import {MovementAssumptions} from "../../../lib/runescape/movement";
+import {Scans} from "../Scans";
 
 /**
  * Scan Trees are decision trees used to solve scan clues efficiently.

@@ -10,7 +10,7 @@ import {observe} from "../../../../lib/reactive";
 import {ValueInteraction} from "../../../../lib/gamemap/interaction/ValueInteraction";
 import InteractionTopControl from "../../map/InteractionTopControl";
 import {C} from "../../../../lib/ui/constructors";
-import {Scans} from "../../../model/clues/Scans";
+import {Scans} from "../../../cluetheory/Scans";
 import assert from "assert";
 import ScanEditor from "./ScanEditor";
 import ContextMenu, {MenuEntry} from "../../widgets/ContextMenu";

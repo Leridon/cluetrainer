@@ -25,7 +25,7 @@ import {PathStepEntity} from "../../map/entities/PathStepEntity";
 import {GameLayer} from "../../../../lib/gamemap/GameLayer";
 import {MapEntity} from "../../../../lib/gamemap/MapEntity";
 import {Rectangle, Vector2} from "../../../../lib/math";
-import {Scans} from "../../../model/clues/Scans";
+import {Scans} from "../../../cluetheory/Scans";
 import {levelIcon} from "../../../../lib/gamemap/GameMap";
 import Properties from "../../widgets/Properties";
 import {TextRendering} from "../../TextRendering";
@@ -34,7 +34,6 @@ import {FormModal} from "../../../../lib/ui/controls/FormModal";
 import NumberInput from "../../../../lib/ui/controls/NumberInput";
 import {BigNisButton} from "../../widgets/BigNisButton";
 import {Menu} from "../../widgets/ContextMenu";
-import {NisModal} from "../../../../lib/ui/NisModal";
 
 import ControlWithHeader from "../../map/ControlWithHeader";
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;

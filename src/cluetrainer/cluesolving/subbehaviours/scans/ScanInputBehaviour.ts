@@ -3,7 +3,7 @@ import {ewent, Observable, observe} from "../../../../lib/reactive";
 import {ScanCaptureService} from "./ScanPanelReader";
 import {Circle} from "../../../../lib/math/Circle";
 import {ScanTree} from "../../../cluetheory/scans/ScanTree";
-import {Scans} from "../../../model/clues/Scans";
+import {Scans} from "../../../cluetheory/Scans";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
 import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
 import lodash from "lodash";

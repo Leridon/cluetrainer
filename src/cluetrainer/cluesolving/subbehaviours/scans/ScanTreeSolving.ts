@@ -8,7 +8,7 @@ import {Rectangle} from "../../../../lib/math";
 import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
 import {ScanRegionPolygon} from "../../ScanLayer";
 import {PathStepEntity} from "../../../ui/map/entities/PathStepEntity";
-import {Scans} from "../../../model/clues/Scans";
+import {Scans} from "../../../cluetheory/Scans";
 import PulseButton from "./PulseButton";
 import ClueSolvingBehaviour from "../../ClueSolvingBehaviour";
 import {TemplateResolver} from "../../../../lib/util/TemplateResolver";

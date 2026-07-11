@@ -2,7 +2,7 @@ import {ClueSolvingSubBehaviour} from "../../ClueSolvingSubBehaviour";
 import ClueSolvingBehaviour from "../../ClueSolvingBehaviour";
 import {Clues} from "../../../model/Clues";
 import {CapturedScan} from "../../cluereader/capture/CapturedScan";
-import {Scans} from "../../../model/clues/Scans";
+import {Scans} from "../../../cluetheory/Scans";
 import {deps} from "../../../dependencies";
 import {ScanSolving} from "./ScanSolving";
 import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";

@@ -1,5 +1,5 @@
 import {observe} from "../../../lib/reactive";
-import {Scans} from "../../model/clues/Scans";
+import {Scans} from "../../cluetheory/Scans";
 import {MutableMesh} from "../../overlay3d/meshes/MutableMesh";
 import Behaviour from "../../../lib/ui/Behaviour";
 import {lazy} from "../../../lib/Lazy";

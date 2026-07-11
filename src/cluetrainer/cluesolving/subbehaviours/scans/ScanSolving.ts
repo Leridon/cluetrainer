@@ -4,7 +4,7 @@ import {util} from "../../../../lib/util/util";
 import {SettingsNormalization} from "../../../../lib/util/SettingsNormalization";
 import {ScanControlPrototype} from "./ScanInputBehaviour";
 import {Alt1Color} from "../../../../lib/alt1/Alt1Color";
-import {Scans} from "../../../model/clues/Scans";
+import {Scans} from "../../../cluetheory/Scans";
 import {ScanPanelOverlay} from "./ScanPanelReader";
 
 export namespace ScanSolving {

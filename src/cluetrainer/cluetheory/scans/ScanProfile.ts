@@ -1,6 +1,6 @@
 import {floor_t, TileCoordinates, TileRectangle} from "../../../lib/runescape/coordinates";
 import {Raster} from "../../../lib/util/raster";
-import {Scans} from "../../model/clues/Scans";
+import {Scans} from "../Scans";
 
 export type ScanProfile = number[]
 

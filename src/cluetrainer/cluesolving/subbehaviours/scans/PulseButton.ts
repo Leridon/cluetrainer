@@ -1,5 +1,5 @@
 import LightButton from "../../../ui/widgets/LightButton";
-import {Scans} from "../../../model/clues/Scans";
+import {Scans} from "../../../cluetheory/Scans";
 import {TextRendering} from "../../../ui/TextRendering";
 import {C} from "../../../../lib/ui/constructors";
 import Widget from "../../../../lib/ui/Widget";
