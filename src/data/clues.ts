@@ -1,4 +1,4 @@
-import {Clues, type ClueType} from "../cluetrainer/model/Clues";
+import {Clues} from "../cluetrainer/model/Clues";
 import {ClueIndex, ClueSpotIndex} from "../cluetrainer/model/clues/ClueIndex";
 
 export namespace clue_data {
@@ -1758,7 +1758,7 @@ export namespace clue_data {
       "text": ["I am head of the abbey with a cold breeze from the west.", "'A bag belt only?' he asked his balding brothers"],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 3055, "y": 3482, "level": 0}, "size": {"x": 5, "y": 6}}, "description": "at the Edgeville Monastery"}],
+        "spots": [{"range": {"origin": {"x": 3055, "y": 3482, "level": 0}, "size": {"x": 5, "y": 6}, "data": "73+MMQ=="}, "description": "at the Edgeville Monastery"}],
         "npc": "Abbot Langley"
       }
     }, {
@@ -3093,7 +3093,11 @@ export namespace clue_data {
         "question": "I have 16 kebabs, I eat one myself and share the rest equally between 3 friends. How many do they have each?",
         "answers": [{"answer": 5}]
       }],
-      "solution": {"type": "talkto", "npc": "Karim", "spots": [{"range": {"origin":{"x":3269,"y":3181,"level":0},"size":{"x":3,"y":4},"data":"/g8="}, "description": "in Al Kharid"}]},
+      "solution": {
+        "type": "talkto",
+        "npc": "Karim",
+        "spots": [{"range": {"origin": {"x": 3269, "y": 3181, "level": 0}, "size": {"x": 3, "y": 4}, "data": "/g8="}, "description": "in Al Kharid"}]
+      },
       "anagram": ["R Ak Mi"]
     }, {
       "id": 336,
@@ -3289,7 +3293,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Cap'n Izzy No-Beard",
-        "spots": [{"range": {"origin":{"x":2807,"y":3190,"level":0},"size":{"x":1,"y":2}}, "description": "at the Agility Arena"}]
+        "spots": [{"range": {"origin": {"x": 2807, "y": 3190, "level": 0}, "size": {"x": 1, "y": 2}}, "description": "at the Agility Arena"}]
       },
       "anagram": ["O Birdz A Zany En Pc"]
     }, {
@@ -3325,7 +3329,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Bolkoy",
-        "spots": [{"range": {"origin":{"x":2525,"y":3158,"level":1},"size":{"x":8,"y":7},"data":"wMD//x8fHw=="}, "description": "in Tree Gnome Village"}]
+        "spots": [{"range": {"origin": {"x": 2525, "y": 3158, "level": 1}, "size": {"x": 8, "y": 7}, "data": "wMD//x8fHw=="}, "description": "in Tree Gnome Village"}]
       },
       "anagram": ["By Look"]
     }, {
@@ -5191,9 +5195,4 @@ export namespace clue_data {
   export const index = ClueIndex.simple(all)
 
   export const spot_index = ClueSpotIndex.simple(index)
-}
-
-
-export function byType(type: ClueType): Clues.Step[] {
-  return clue_data.all.filter((e) => e.type == type)
 }

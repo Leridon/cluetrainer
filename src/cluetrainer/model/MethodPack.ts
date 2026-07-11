@@ -1,7 +1,7 @@
 import {clue_data} from "../../data/clues";
 import {SolvingMethods} from "./SolvingMethods";
 import Method = SolvingMethods.Method;
-import {LocalMethodId, Pack} from "../MethodPackManager";
+import {LocalMethodId} from "../MethodPackManager";
 import lodash from "lodash";
 import {Clues} from "./Clues";
 import ClueSpot = Clues.ClueSpot;
@@ -61,9 +61,9 @@ export namespace AugmentedMethod {
   import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
   import GenericPathMethod = SolvingMethods.GenericPathMethod;
 
-  export function create(method: ScanTreeMethod, pack: Pack): AugmentedMethod<ScanTreeMethod, Clues.Scan>
-  export function create(method: GenericPathMethod, pack: Pack): AugmentedMethod<GenericPathMethod>
-  export function create(method: Method, pack: Pack): AugmentedMethod
+  export function create(method: ScanTreeMethod, pack: MethodPack): AugmentedMethod<ScanTreeMethod, Clues.Scan>
+  export function create(method: GenericPathMethod, pack: MethodPack): AugmentedMethod<GenericPathMethod>
+  export function create(method: Method, pack: MethodPack): AugmentedMethod
   export function create<
     method_t extends Method = Method,
     step_t extends Clues.Step = Clues.Step

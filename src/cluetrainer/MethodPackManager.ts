@@ -14,52 +14,6 @@ import uuid = util.uuid;
 import log = Log.log;
 import {AugmentedMethod, MethodPack} from "./model/MethodPack";
 
-export type Pack = Pack.Meta & {
-  is_real_default?: boolean
-  type: "default" | "local" | "imported"
-  local_id: string,
-  original_id: string,
-  timestamp: number,
-  methods: Method[],
-}
-
-export namespace Pack {
-  import ClueAssumptions = SolvingMethods.ClueAssumptions;
-  export type Meta = {
-    author: string,
-    name: string,
-    description: string,
-    default_assumptions: ClueAssumptions,
-    default_method_name: string
-  }
-
-  export function setMeta(pack: Pack, meta: Meta): void {
-    pack.author = meta.author
-    pack.description = meta.description
-    pack.name = meta.name
-    pack.default_assumptions = lodash.cloneDeep(meta.default_assumptions)
-    pack.default_method_name = meta.default_method_name
-  }
-
-  export function meta(pack: Pack): Meta {
-    return {
-      name: pack.name,
-      author: pack.author,
-      description: pack.description,
-      default_assumptions: lodash.cloneDeep(pack.default_assumptions),
-      default_method_name: pack.default_method_name
-    }
-  }
-
-  export function isEditable(pack: Pack): boolean {
-    return pack.type == "local" || isEditableDefault(pack)
-  }
-
-  export function isEditableDefault(pack: Pack): boolean {
-    return (pack.type == "default" && !pack.is_real_default)
-  }
-}
-
 export type LocalMethodId = { local_pack_id: string, method_id: string }
 
 export namespace LocalMethodId {
