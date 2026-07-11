@@ -385,7 +385,7 @@ export class ClueTrainer extends Behaviour {
     }
 
     if (this.version.build_info?.build_type != "openglbeta") {
-      Alt1.instance().featureGL()
+      Alt1.instance().disableGLApi()
     }
 
     if (this.version.build_info?.build_type == "openglbeta" || (Alt1.exists() && Alt1.instance().featureGL())) {

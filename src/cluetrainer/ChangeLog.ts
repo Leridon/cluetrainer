@@ -3,6 +3,11 @@ import {NisModal} from "../lib/ui/NisModal";
 import {List} from "../lib/ui/List";
 import {C} from "../lib/ui/constructors";
 import {util} from "../lib/util/util";
+import {ClueTrainer} from "./ClueTrainer";
+
+declare global {
+  var cluetrainer_build_environment: ClueTrainer.BuildEnvironment
+}
 
 export namespace Changelog {
 
@@ -410,68 +415,70 @@ export namespace Changelog {
           return new Date(year, month - 1, day)
         }
 
-        builder.wip(77, "Clue Trainer GL")
-          .header("Patch 11")
-          .list(l => l
-            .item("Added cages for NPC roaming areas.")
-          )
-          .header("Patch 10")
-          .list(l => l
-            .item("Added entity highlights for search clues.")
-            .item("Added dig spot markers for compass clues.")
-          )
-          .header("Patch 9")
-          .list(l => l
-            .item("Tuned rendering of scan trees according to feedback.")
-            .item("Fixed dig area rendering for coordinate clues.")
-            .item("Added dig spot area rendering for remaining candidates in scan trees.")
-          )
-          .header("Patch 8")
-          .list(l => l
-            .item("Fixed coloring for non-redclick runs.")
-            .item("Fixed leaf paths of scan trees not rendering.")
-            .item("Disabled rendering of 'past' paths in scan trees so they don't overlap.")
-          )
-          .header("Patch 7")
-          .list(l => l
-            .item("Added rendering for scan decision points.")
-            .item("Shrunk tile markers slightly so they don't overlap with scan decision points.")
-            .item("Removed rendering of next step paths for scans to reduce confusion.")
-            .item("Added rendering for dig spots for simple dig clues (not scans, not compasses).")
-            .item("Added emote area rendering.")
-            .item("Changed run tile marker to red when preceded by a redclick, and the line also to red when it's an npc redclick.")
-          )
-          .header("Patch 6")
-          .list(l => l
-            .item("Improved color of escape rendering.")
-            .item("Disable background player state tracking (for now).")
-          )
-          .header("Patch 5")
-          .list(l => l
-            .item("Updated redclick marker (by Spare).")
-            .item("Updated various broken methods (by Ngis).")
-            .item("Add background player position and scan pulse tracking. Neither is actually used for solving yet.")
-          )
-          .header("Patch 4")
-          .list(l => l
-            .item("Added an old api for the terrain height data as a fallback.")
-          )
-          .header("Patch 3")
-          .list(l => l
-            .item("Fixed path overlays clipping terrain in many places.", new List()
-              .item("There is still an issue where height data is completely unavailable. This is waiting on a fix by Skillbert.")
+        if (cluetrainer_build_environment.build_type == "openglbeta") {
+          builder.wip(77, "Clue Trainer GL")
+            .header("Patch 11")
+            .list(l => l
+              .item("Added cages for NPC roaming areas.")
             )
-            .item("Scans no longer render overlays for the entire scan tree.")
-          )
-          .header("Patch 2")
-          .list(l => l
-            .item("Removed overlay render limit per frame to fix overlay flickers with low lighting details.")
-          )
-          .header("Patch 1")
-          .list(l => l
-            .item("Added debug logging for invalid alt1 overlay calls.")
-            .item("Better caching for tile height data.")
-          )
+            .header("Patch 10")
+            .list(l => l
+              .item("Added entity highlights for search clues.")
+              .item("Added dig spot markers for compass clues.")
+            )
+            .header("Patch 9")
+            .list(l => l
+              .item("Tuned rendering of scan trees according to feedback.")
+              .item("Fixed dig area rendering for coordinate clues.")
+              .item("Added dig spot area rendering for remaining candidates in scan trees.")
+            )
+            .header("Patch 8")
+            .list(l => l
+              .item("Fixed coloring for non-redclick runs.")
+              .item("Fixed leaf paths of scan trees not rendering.")
+              .item("Disabled rendering of 'past' paths in scan trees so they don't overlap.")
+            )
+            .header("Patch 7")
+            .list(l => l
+              .item("Added rendering for scan decision points.")
+              .item("Shrunk tile markers slightly so they don't overlap with scan decision points.")
+              .item("Removed rendering of next step paths for scans to reduce confusion.")
+              .item("Added rendering for dig spots for simple dig clues (not scans, not compasses).")
+              .item("Added emote area rendering.")
+              .item("Changed run tile marker to red when preceded by a redclick, and the line also to red when it's an npc redclick.")
+            )
+            .header("Patch 6")
+            .list(l => l
+              .item("Improved color of escape rendering.")
+              .item("Disable background player state tracking (for now).")
+            )
+            .header("Patch 5")
+            .list(l => l
+              .item("Updated redclick marker (by Spare).")
+              .item("Updated various broken methods (by Ngis).")
+              .item("Add background player position and scan pulse tracking. Neither is actually used for solving yet.")
+            )
+            .header("Patch 4")
+            .list(l => l
+              .item("Added an old api for the terrain height data as a fallback.")
+            )
+            .header("Patch 3")
+            .list(l => l
+              .item("Fixed path overlays clipping terrain in many places.", new List()
+                .item("There is still an issue where height data is completely unavailable. This is waiting on a fix by Skillbert.")
+              )
+              .item("Scans no longer render overlays for the entire scan tree.")
+            )
+            .header("Patch 2")
+            .list(l => l
+              .item("Removed overlay render limit per frame to fix overlay flickers with low lighting details.")
+            )
+            .header("Patch 1")
+            .list(l => l
+              .item("Added debug logging for invalid alt1 overlay calls.")
+              .item("Better caching for tile height data.")
+            )
+        }
 
         builder.wip(76, "TBD")
           .list(l => l
