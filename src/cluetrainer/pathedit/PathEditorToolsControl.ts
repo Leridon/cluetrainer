@@ -9,7 +9,6 @@ import {MapEntity} from "../../lib/gamemap/MapEntity";
 import {GameLayer} from "../../lib/gamemap/GameLayer";
 import {Rectangle} from "../../lib/math";
 import {PathFindingLite} from "./PathFindingLite";
-import {tilePolygon} from "../ui/polygon_helpers";
 import {observe} from "../../lib/reactive";
 import {PathStepEntity} from "../ui/map/entities/PathStepEntity";
 import {DrawTileAreaInteraction} from "../ui/devutilitylayer/DrawTileAreaInteraction";
@@ -23,11 +22,11 @@ import {BigNisButton} from "../ui/widgets/BigNisButton";
 import {Menu} from "../ui/widgets/ContextMenu";
 import assert from "assert";
 import {Notification} from "../ui/NotificationBar";
-import {util} from "../../lib/util/util";
 import movement_ability = MovementAbilities.movement_ability;
 import hboxl = C.hboxl;
 import hgrid = C.hgrid;
 import notification = Notification.notification;
+import {LeafletPolygonConstructors} from "../../lib/gamemap/LeafletPolygonConstructors";
 
 class SpiderwebTool {
   private layer = observe<GameLayer>(null)
@@ -92,6 +91,7 @@ namespace SpiderwebTool {
   import inlineimg = C.inlineimg;
   import hbox = C.hbox;
   import vbox = C.vbox;
+  import tilePolygon = LeafletPolygonConstructors.tilePolygon;
 
   type area_type = "pathtarget" | "cursorposition" | "custom"
 

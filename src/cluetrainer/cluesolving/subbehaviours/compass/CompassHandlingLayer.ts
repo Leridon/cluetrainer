@@ -13,6 +13,7 @@ import activate = TileArea.activate;
 import {Clues} from "../../../model/Clues";
 import digSpotArea = Clues.digSpotArea;
 import {TileRectangle} from "../../../../lib/runescape/coordinates";
+import {LeafletUtils} from "../../../../lib/gamemap/LeafletUtils";
 
 export class CompassHandlingLayer extends GameLayer {
   private lines: {
@@ -57,12 +58,12 @@ export class CompassHandlingLayer extends GameLayer {
       return {
         line:
           leaflet.featureGroup([
-            leaflet.polyline([Vector2.toLatLong(from), Vector2.toLatLong(to)], {color: this.solving.settings.beam_color}),
+            leaflet.polyline([LeafletUtils.latLongFromVector2(from), LeafletUtils.latLongFromVector2(to)], {color: this.solving.settings.beam_color}),
             leaflet.polygon([
-              Vector2.toLatLong(corner_near_left),
-              Vector2.toLatLong(corner_near_right),
-              Vector2.toLatLong(corner_far_right),
-              Vector2.toLatLong(corner_far_left),
+              LeafletUtils.latLongFromVector2(corner_near_left),
+              LeafletUtils.latLongFromVector2(corner_near_right),
+              LeafletUtils.latLongFromVector2(corner_far_right),
+              LeafletUtils.latLongFromVector2(corner_far_left),
             ]).setStyle({
               stroke: false,
               fillOpacity: 0.2,

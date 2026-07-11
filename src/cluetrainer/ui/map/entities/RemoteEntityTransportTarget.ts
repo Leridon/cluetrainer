@@ -17,6 +17,7 @@ import entity = C.entity;
 import GeneralEntityTransportation = Transportation.GeneralEntityTransportation;
 import EntityAction = Transportation.EntityAction;
 import EntityActionMovement = Transportation.EntityActionMovement;
+import {LeafletUtils} from "../../../../lib/gamemap/LeafletUtils";
 
 export class RemoteEntityTransportTarget extends MapEntity {
 
@@ -56,7 +57,7 @@ export class RemoteEntityTransportTarget extends MapEntity {
   protected async render_implementation(props: MapEntity.RenderProps): Promise<Element> {
     const scale = (props.highlight ? 1.5 : (this.zoom_sensitivity_layers.get(props.zoom_group_index).value.scale))
 
-    const circle = leaflet.circle(Vector2.toLatLong(TileArea.activate(TileArea.normalize(this.movement.fixed_target.target)).center()), {
+    const circle = leaflet.circle(LeafletUtils.latLongFromVector2(TileArea.activate(TileArea.normalize(this.movement.fixed_target.target)).center()), {
       color: COLORS.target_area,
       weight: 2,
       radius: scale * 0.4,

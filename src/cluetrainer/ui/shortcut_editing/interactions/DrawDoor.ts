@@ -3,12 +3,13 @@ import InteractionLayer from "lib/gamemap/interaction/InteractionLayer";
 import InteractionTopControl from "../../map/InteractionTopControl";
 import {Transportation} from "../../../../lib/runescape/transportation";
 import {Rectangle} from "lib/math"
-import {boxPolygon} from "../../polygon_helpers";
 import {TileRectangle} from "lib/runescape/coordinates/TileRectangle";
 import ContextMenu from "../../widgets/ContextMenu";
 import {ShortcutViewLayer} from "../ShortcutView";
 import {observe} from "../../../../lib/reactive";
 import {direction} from "../../../../lib/runescape/movement";
+import {LeafletPolygonConstructors} from "../../../../lib/gamemap/LeafletPolygonConstructors";
+import boxPolygon = LeafletPolygonConstructors.boxPolygon;
 
 export class DrawDoor extends InteractionLayer {
 

@@ -3,7 +3,6 @@ import {Path} from "../../lib/runescape/pathing";
 import {util} from "../../lib/util/util";
 import Behaviour from "../../lib/ui/Behaviour";
 import {Transportation} from "../../lib/runescape/transportation";
-import {Vector2} from "../../lib/math";
 import {TemplateResolver} from "../../lib/util/TemplateResolver";
 import {GameMapContextMenuEvent, GameMapKeyboardEvent} from "../../lib/gamemap/MapEvents";
 import {GameLayer} from "../../lib/gamemap/GameLayer";
@@ -23,7 +22,6 @@ import {PathStepEntity} from "../ui/map/entities/PathStepEntity";
 import TransportLayer from "../ui/map/TransportLayer";
 import {TileArea} from "../../lib/runescape/coordinates/TileArea";
 import {CursorType} from "../../lib/runescape/CursorType";
-import {areaPolygon, tilePolygon} from "../ui/polygon_helpers";
 import {TeleportSpotEntity} from "../ui/map/entities/TeleportSpotEntity";
 import {EntityTransportEntity} from "../ui/map/entities/EntityTransportEntity";
 import {GameMapControl} from "../../lib/gamemap/GameMapControl";
@@ -57,6 +55,10 @@ import findAsync = util.findAsync;
 import {ConfirmBeforeUnload} from "../../lib/util/ConfirmBeforeUnload";
 import {PathOverlayControl} from "../overlay3d/PathOverlayControl";
 import {HostedMapCollisionData} from "../../lib/runescape/CollisionData";
+import {LeafletUtils} from "../../lib/gamemap/LeafletUtils";
+import {LeafletPolygonConstructors} from "../../lib/gamemap/LeafletPolygonConstructors";
+import areaPolygon = LeafletPolygonConstructors.areaPolygon;
+import tilePolygon = LeafletPolygonConstructors.tilePolygon;
 
 function needRepairing(state: movement_state, shortcut: Path.step_transportation): boolean {
   return state.position.tile
@@ -368,7 +370,7 @@ export class PathEditor extends Behaviour {
       }
 
       if (state.position.tile) {
-        this.you_are_here_marker = leaflet.marker(Vector2.toLatLong(state.position.tile), {
+        this.you_are_here_marker = leaflet.marker(LeafletUtils.latLongFromVector2(state.position.tile), {
           icon: leaflet.icon({
             iconUrl: "/assets/icons/youarehere.png",
             iconSize: [25, 25],

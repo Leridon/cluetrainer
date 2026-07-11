@@ -15,7 +15,6 @@ import {TileCoordinates, TileRectangle} from "../lib/runescape/coordinates";
 import * as leaflet from "leaflet";
 import {GameLayer} from "../lib/gamemap/GameLayer";
 import {GameMapMouseEvent} from "../lib/gamemap/MapEvents";
-import {tilePolygon} from "../cluetrainer/ui/polygon_helpers";
 import {CompassReader} from "../cluetrainer/cluesolving/cluereader/CompassReader";
 import {Compasses} from "../cluetrainer/cluetheory/Compasses";
 import {util} from "../lib/util/util";
@@ -56,6 +55,8 @@ import profileAsync = util.profileAsync;
 import hgrid = C.hgrid;
 import index = util.index;
 import {HostedMapCollisionData, TileCollisionData} from "../lib/runescape/CollisionData";
+import {LeafletUtils} from "../lib/gamemap/LeafletUtils";
+import {LeafletPolygonConstructors} from "../lib/gamemap/LeafletPolygonConstructors";
 
 type Fraction = Vector2
 
@@ -1351,6 +1352,7 @@ export class CompassCalibrationTool extends NisModal {
 export namespace CalibrationTool {
   import gielinor_compass = clue_data.gielinor_compass;
   import arrow = PathGraphics.arrow;
+  import tilePolygon = LeafletPolygonConstructors.tilePolygon;
 
   export function cleanExport(samples: RawSample[]): string {
     return "[\n" +
@@ -1394,7 +1396,7 @@ export namespace CalibrationTool {
 
       const scale = (this.active ? 1 : 0.5) * (props.highlight ? 1.5 : 1)
 
-      const marker = leaflet.marker(Vector2.toLatLong(this.spot), {
+      const marker = leaflet.marker(LeafletUtils.latLongFromVector2(this.spot), {
         icon: levelIcon(this.spot.level, scale),
         opacity: opacity,
         interactive: true,
@@ -1553,7 +1555,7 @@ export namespace CalibrationTool {
 
       if (!queue.filler.show_line) {
         leaflet.polyline(
-            queue.queue.map(s => Vector2.toLatLong(Vector2.add(this.tool.reference.value(), OffsetSelection.activeOffset(s))))
+            queue.queue.map(s => LeafletUtils.latLongFromVector2(Vector2.add(this.tool.reference.value(), OffsetSelection.activeOffset(s))))
           )
           .setStyle({color: "#ffff00", weight: 3})
           .addTo(this.queue_view)

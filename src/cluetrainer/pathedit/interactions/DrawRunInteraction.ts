@@ -14,6 +14,7 @@ import index = util.index;
 import observe_combined = Observable.observe_combined;
 import arrow = PathGraphics.arrow;
 import createX = PathGraphics.createX;
+import {LeafletUtils} from "../../../lib/gamemap/LeafletUtils";
 
 class DrawRunInteractionInternal extends ValueInteraction<{
   path: TileCoordinates[],
@@ -64,8 +65,8 @@ class DrawRunInteractionInternal extends ValueInteraction<{
             )
           } else {
             leaflet.polyline(
-              //lines.map((t) => .map(Vector2.toLatLong)),
-              v.path.map(Vector2.toLatLong),
+              //lines.map((t) => .map(LeafletUtils.latLongFromVector2)),
+              v.path.map(LeafletUtils.latLongFromVector2),
               {
                 color: "#b4b4b4",
                 weight: 3,

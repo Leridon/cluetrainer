@@ -6,7 +6,6 @@ import Widget from "../../../lib/ui/Widget";
 import ControlWithHeader from "../map/ControlWithHeader";
 import {ActionBar} from "../map/ActionBar";
 import {DrawRegionAction} from "../theorycrafting/scanedit/TreeEdit";
-import {areaPolygon, tilePolygon} from "../polygon_helpers";
 import LightButton from "../widgets/LightButton";
 import {floor_t, TileCoordinates} from "../../../lib/runescape/coordinates";
 import {GameMapControl} from "../../../lib/gamemap/GameMapControl";
@@ -16,7 +15,6 @@ import {GameMapKeyboardEvent, GameMapMouseEvent, GameMapViewChangedEvent} from "
 import {C} from "../../../lib/ui/constructors";
 import {Checkbox} from "../../../lib/ui/controls/Checkbox";
 import Graticule from "../../../lib/gamemap/defaultlayers/Graticule";
-import {deps} from "../../dependencies";
 import {DrawTileAreaInteraction} from "./DrawTileAreaInteraction";
 import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
 import {util} from "../../../lib/util/util";
@@ -30,6 +28,9 @@ import spacer = C.spacer;
 import cleanedJSON = util.cleanedJSON;
 import {Notification} from "../NotificationBar";
 import notification = Notification.notification;
+import {LeafletPolygonConstructors} from "../../../lib/gamemap/LeafletPolygonConstructors";
+import tilePolygon = LeafletPolygonConstructors.tilePolygon;
+import areaPolygon = LeafletPolygonConstructors.areaPolygon;
 
 class ChunkGridGraticule extends Graticule {
   constructor() {

@@ -2,7 +2,6 @@ import {TileCoordinates} from "../../../../lib/runescape/coordinates";
 import Behaviour, {SingleBehaviour} from "../../../../lib/ui/Behaviour";
 import {lazy, Lazy} from "../../../../lib/Lazy";
 import * as leaflet from "leaflet";
-import {areaToPolygon} from "../../polygon_helpers";
 import {type ClueTrainer} from "../../../ClueTrainer";
 import {AdaptiveScanRadiusMarker, ScanRegionPolygon} from "../../../cluesolving/ScanLayer";
 import {PathEditor} from "../../../pathedit/PathEditor";
@@ -48,6 +47,9 @@ import ScanEquivalenceClassOptions = ScanProfile.ScanEquivalenceClassOptions;
 import ScanEquivalenceClasses = ScanProfile.ScanEquivalenceClasses;
 import ScanProfileEquivalenceClass = ScanProfile.ScanProfileEquivalenceClass;
 import {AugmentedMethod} from "../../../model/MethodPack";
+import {LeafletUtils} from "../../../../lib/gamemap/LeafletUtils";
+import {LeafletPolygonConstructors} from "../../../../lib/gamemap/LeafletPolygonConstructors";
+import areaToPolygon = LeafletPolygonConstructors.areaToPolygon;
 
 export class ScanEditLayer extends GameLayer {
   marker: AdaptiveScanRadiusMarker
@@ -211,7 +213,7 @@ export namespace ScanEditLayer {
     }
 
     protected async render_implementation(props: MapEntity.RenderProps): Promise<Element> {
-      const marker = leaflet.marker(Vector2.toLatLong(this.spot_on_map), {
+      const marker = leaflet.marker(LeafletUtils.latLongFromVector2(this.spot_on_map), {
         icon: levelIcon(this.spot.level, props.highlight ? 1.5 : 1),
         opacity: props.opacity
       }).addTo(this)

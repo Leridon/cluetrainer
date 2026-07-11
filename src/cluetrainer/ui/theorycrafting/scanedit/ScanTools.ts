@@ -10,6 +10,7 @@ import {Checkbox} from "../../../../lib/ui/controls/Checkbox";
 import hboxc = C.hboxc;
 import centered = C.centered;
 import span = C.span;
+import {LeafletUtils} from "../../../../lib/gamemap/LeafletUtils";
 
 export default class ScanTools extends Widget {
   normal = observe(false)
@@ -27,7 +28,7 @@ export default class ScanTools extends Widget {
           .onClick(() => {
             let bounds = leaflet.latLngBounds([])
 
-            this.editor.value.clue.clue.spots.forEach((c) => bounds.extend(Vector2.toLatLong(c)))
+            this.editor.value.clue.clue.spots.forEach((c) => bounds.extend(LeafletUtils.latLongFromVector2(c)))
 
             bounds.pad(0.1)
 
@@ -38,7 +39,7 @@ export default class ScanTools extends Widget {
             let bounds = leaflet.latLngBounds([])
 
             this.editor.value.clue.clue.spots.forEach((c) => {
-              bounds.extend(Vector2.toLatLong({
+              bounds.extend(LeafletUtils.latLongFromVector2({
                 x: c.x,
                 y: (c.y < 6400 ? c.y + 6400 : c.y - 6400)
               }))

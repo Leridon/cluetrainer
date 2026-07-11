@@ -1,9 +1,10 @@
 import {GameLayer} from "../GameLayer";
 import * as leaflet from "leaflet";
 import {Vector2} from "../../math";
-import {tilePolygon} from "../../../cluetrainer/ui/polygon_helpers";
 import {GameMapMouseEvent} from "../MapEvents";
 import {GameMap} from "../GameMap";
+import {LeafletPolygonConstructors} from "../LeafletPolygonConstructors";
+import tilePolygon = LeafletPolygonConstructors.tilePolygon;
 
 export class TileHighlight extends leaflet.FeatureGroup {
   _polygon: leaflet.Polygon = null

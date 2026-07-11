@@ -2,7 +2,6 @@ import {ValueInteraction} from "../../../lib/gamemap/interaction/ValueInteractio
 import {TileCoordinates, TileRectangle} from "../../../lib/runescape/coordinates";
 import {GameMapMouseEvent} from "../../../lib/gamemap/MapEvents";
 import * as leaflet from "leaflet"
-import {boxPolygon, tilePolygon} from "../polygon_helpers";
 import InteractionTopControl from "../map/InteractionTopControl";
 import {GameMap} from "../../../lib/gamemap/GameMap";
 import ButtonRow from "../../../lib/ui/ButtonRow";
@@ -14,6 +13,9 @@ import {DrawArrowInteraction} from "../../pathedit/interactions/DrawArrowInterac
 import {Rectangle} from "../../../lib/math";
 import cleanedJSON = util.cleanedJSON;
 import notification = Notification.notification;
+import {LeafletPolygonConstructors} from "../../../lib/gamemap/LeafletPolygonConstructors";
+import boxPolygon = LeafletPolygonConstructors.boxPolygon;
+import tilePolygon = LeafletPolygonConstructors.tilePolygon;
 
 export class DrawTileAreaInteraction extends ValueInteraction<TileCoordinates[]> {
   drawing: {

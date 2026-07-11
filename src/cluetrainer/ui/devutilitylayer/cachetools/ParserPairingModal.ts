@@ -21,6 +21,7 @@ import {ProcessedCacheTypes} from "./ProcessedCacheTypes";
 import PrototypeInstance = ProcessedCacheTypes.PrototypeInstance;
 import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
 import {PrototypeInstanceEntity} from "./FilteredPrototypeLayer";
+import {LeafletUtils} from "../../../../lib/gamemap/LeafletUtils";
 
 export class ParserPairingEdit extends Widget {
   map: GameMapMiniWidget
@@ -42,7 +43,7 @@ export class ParserPairingEdit extends Widget {
     new PrototypeInstanceEntity(this.loc, null)
       .addTo(this.map.main_layer)
 
-    leaflet.marker(Vector2.toLatLong(TileRectangle.center(TileArea.toRect(this.loc.box), false)), {
+    leaflet.marker(LeafletUtils.latLongFromVector2(TileRectangle.center(TileArea.toRect(this.loc.box), false)), {
       icon: leaflet.divIcon({
         iconSize: [33, 33],
         iconAnchor: [16, 16],

@@ -9,7 +9,6 @@ import {Menu} from "../../widgets/ContextMenu";
 import {C} from "../../../../lib/ui/constructors";
 import {CursorType} from "../../../../lib/runescape/CursorType";
 import * as leaflet from "leaflet";
-import {areaPolygon} from "../../polygon_helpers";
 import {ShortcutViewLayer} from "../../shortcut_editing/ShortcutView";
 import Properties from "../../widgets/Properties";
 import TeleportAccess = Transportation.TeleportAccess;
@@ -17,6 +16,9 @@ import entity = C.entity;
 import COLORS = ShortcutViewLayer.COLORS;
 import TeleportGroup = Transportation.TeleportGroup;
 import vbox = C.vbox;
+import {LeafletUtils} from "../../../../lib/gamemap/LeafletUtils";
+import {LeafletPolygonConstructors} from "../../../../lib/gamemap/LeafletPolygonConstructors";
+import areaPolygon = LeafletPolygonConstructors.areaPolygon;
 
 
 export class TeleportAccessEntity extends MapEntity {
@@ -29,12 +31,11 @@ export class TeleportAccessEntity extends MapEntity {
   }
 
   protected async render_implementation(options: MapEntity.RenderProps): Promise<Element> {
-    const teleport = this.teleport;
     const access = this.access
 
     const scale = (options.highlight ? 1.5 : this.zoom_sensitivity_layers.get(options.zoom_group_index).value.scale)
 
-    const marker = leaflet.marker(Vector2.toLatLong(Rectangle.center(TileArea.toRect(access.clickable_area), true)), {
+    const marker = leaflet.marker(LeafletUtils.latLongFromVector2(Rectangle.center(TileArea.toRect(access.clickable_area), true)), {
       icon: leaflet.icon({
         iconUrl: CursorType.meta(access.cursor ?? "generic").icon_url,
         iconSize: CursorType.iconSize(scale),

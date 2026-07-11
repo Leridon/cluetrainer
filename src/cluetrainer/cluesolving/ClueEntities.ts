@@ -1,7 +1,6 @@
 import {Rectangle} from "../../lib/math";
 import {MapEntity} from "../../lib/gamemap/MapEntity";
 import {TileArea} from "../../lib/runescape/coordinates/TileArea";
-import {areaPolygon, boxPolygon, tilePolygon} from "../ui/polygon_helpers";
 import {RenderingUtility} from "../ui/map/RenderingUtility";
 import {TileCoordinates, TileRectangle} from "../../lib/runescape/coordinates";
 import {CursorType} from "../../lib/runescape/CursorType";
@@ -10,6 +9,7 @@ import Properties from "../ui/widgets/Properties";
 import {C} from "../../lib/ui/constructors";
 import {Clues} from "../model/Clues";
 import {GameMap} from "../../lib/gamemap/GameMap";
+import {LeafletPolygonConstructors} from "../../lib/gamemap/LeafletPolygonConstructors";
 
 export namespace ClueEntities {
 
@@ -21,6 +21,8 @@ export namespace ClueEntities {
   import Solution = Clues.Solution;
   import item = C.item;
   import hbox = C.hbox;
+  import areaPolygon = LeafletPolygonConstructors.areaPolygon;
+  import boxPolygon = LeafletPolygonConstructors.boxPolygon;
 
   export class NpcEntity extends MapEntity {
 
@@ -181,6 +183,8 @@ export namespace ClueEntities {
   }
 
   export namespace DigSolutionEntity {
+    import tilePolygon = LeafletPolygonConstructors.tilePolygon;
+
     export function areaGraphics(spot: TileCoordinates, single_tile: boolean = false) {
       return (single_tile ? tilePolygon(spot) : boxPolygon(digSpotRect(spot)))
         .setStyle({
@@ -272,7 +276,7 @@ export namespace ClueEntities {
         .addTo(this)
 
 
-      /*const marker = leaflet.marker(Vector2.toLatLong(Rectangle.center(TileArea.toRect(this.clue.area))), {
+      /*const marker = leaflet.marker(LeafletUtils.latLongFromVector2(Rectangle.center(TileArea.toRect(this.clue.area))), {
         icon: leaflet.icon({
           iconUrl: "/assets/icons/emotes.png",
           iconSize: [scale * 24, scale * 30],

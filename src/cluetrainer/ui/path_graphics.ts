@@ -8,6 +8,7 @@ import * as leaflet from "leaflet"
 import {Path} from "../../lib/runescape/pathing";
 import {TransportData} from "../../data/transports";
 import {CursorType} from "../../lib/runescape/CursorType";
+import {LeafletUtils} from "../../lib/gamemap/LeafletUtils";
 
 export namespace PathGraphics {
 
@@ -80,7 +81,7 @@ export namespace PathGraphics {
       "yellow": "/assets/icons/yellowclick.png",
     }
 
-    return leaflet.marker(Vector2.toLatLong(coordinate), {
+    return leaflet.marker(LeafletUtils.latLongFromVector2(coordinate), {
       icon: leaflet.icon({
         iconUrl: click_icons[color],
         iconSize: [size, size],
@@ -158,15 +159,15 @@ export namespace PathGraphics {
       }
     }
 
-    return leaflet.polyline(segments.map(l => l.map(Vector2.toLatLong))).setStyle({
+    return leaflet.polyline(segments.map(l => l.map(LeafletUtils.latLongFromVector2))).setStyle({
       interactive: true
     })
 
     /*
         return leaflet.polyline([
-              [Vector2.toLatLong(from), Vector2.toLatLong(to)],
-              [tip, Vector2.toLatLong(Vector2.add(to, arm1_offset))],
-              [tip, Vector2.toLatLong(Vector2.add(to, arm2_offset))],
+              [LeafletUtils.latLongFromVector2(from), LeafletUtils.latLongFromVector2(to)],
+              [tip, LeafletUtils.latLongFromVector2(Vector2.add(to, arm1_offset))],
+              [tip, LeafletUtils.latLongFromVector2(Vector2.add(to, arm2_offset))],
             ]
           )
           .setStyle({
@@ -182,8 +183,8 @@ export namespace PathGraphics {
         let arm2_offset = Vector2.scale(0.7, Vector2.rotate(direction, -Math.PI / 4))
 
         return leaflet.polyline([
-            [Vector2.toLatLong(position), Vector2.toLatLong(Vector2.add(position, arm1_offset))],
-            [Vector2.toLatLong(position), Vector2.toLatLong(Vector2.add(position, arm2_offset))],
+            [LeafletUtils.latLongFromVector2(position), LeafletUtils.latLongFromVector2(Vector2.add(position, arm1_offset))],
+            [LeafletUtils.latLongFromVector2(position), LeafletUtils.latLongFromVector2(Vector2.add(position, arm2_offset))],
           ]
         )
     }

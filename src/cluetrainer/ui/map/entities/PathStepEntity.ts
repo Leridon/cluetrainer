@@ -17,11 +17,14 @@ import {Transportation} from "../../../../lib/runescape/transportation";
 import {PathGraphics} from "../../path_graphics";
 import {MapIcon} from "../MapIcon";
 import {CTRIcon} from "../../../CTRIcon";
-import {areaPolygon, tilePolygon} from "../../polygon_helpers";
 import {GameMap} from "../../../../lib/gamemap/GameMap";
 import arrow = PathGraphics.arrow;
 import createX = PathGraphics.createX;
 import ArrowHeadOptions = PathGraphics.ArrowHeadOptions;
+import {LeafletUtils} from "../../../../lib/gamemap/LeafletUtils";
+import {LeafletPolygonConstructors} from "../../../../lib/gamemap/LeafletPolygonConstructors";
+import areaPolygon = LeafletPolygonConstructors.areaPolygon;
+import tilePolygon = LeafletPolygonConstructors.tilePolygon;
 
 
 function offsetTowards(from: Vector2, to: Vector2, scale: number): Vector2 {
@@ -90,13 +93,6 @@ export class PathStepEntity extends MapEntity {
               pane: GameMap.pathArrowPane,
             }).addTo(this)
 
-          /*const marker = new MapIcon(Vector2.scale(1 / 2, Vector2.add(step.from, step.to)), {
-            icon: CTRIcon.get(meta[step.ability].icon),
-            scale: scale,
-            cls: cls,
-            opacity
-          }).addTo(this)*/
-
           return arro.getElement()
         }
         case "run": {
@@ -116,10 +112,10 @@ export class PathStepEntity extends MapEntity {
           }
 
           const line = leaflet.polyline(
-            //lines.map((t) => .map(Vector2.toLatLong)),
+            //lines.map((t) => .map(LeafletUtils.latLongFromVector2)),
             step.waypoints
               .map((w, i) => i == 0 && step.waypoints.length >= 2 ? offsetTowards(w, step.waypoints[1], 0.2) : w)
-              .map(Vector2.toLatLong),
+              .map(LeafletUtils.latLongFromVector2),
             {
               color: "#b4b4b4",
               weight: weight,
@@ -141,7 +137,7 @@ export class PathStepEntity extends MapEntity {
             pane: GameMap.pathArrowPane
           }).addTo(this)
 
-          /*leaflet.circle(Vector2.toLatLong(step.waypoints[step.waypoints.length - 1]), {
+          /*leaflet.circle(LeafletUtils.latLongFromVector2(step.waypoints[step.waypoints.length - 1]), {
             radius: 0.2,
             fillOpacity: 1,
             color: "#b0e019",
@@ -160,7 +156,7 @@ export class PathStepEntity extends MapEntity {
         case "teleport": {
           let teleport = TransportData.resolveTeleport(step.id)
 
-          const marker = leaflet.marker(Vector2.toLatLong(step.spot ?? teleport.centerOfTarget()), {
+          const marker = leaflet.marker(LeafletUtils.latLongFromVector2(step.spot ?? teleport.centerOfTarget()), {
             icon: new TeleportSpotEntity.TeleportMapIcon(teleport, scale, w => w.addClass(cls)),
             riseOnHover: true,
             zIndexOffset: 1,
@@ -225,7 +221,7 @@ export class PathStepEntity extends MapEntity {
 
           if (step.is_arrival_only || Vector2.eq(step.assumed_start, ends_up) || is_too_far_for_arrow) {
             leaflet.circle(
-              Vector2.toLatLong(ends_up), {radius: 0.1}
+              LeafletUtils.latLongFromVector2(ends_up), {radius: 0.1}
             ).setStyle({
               color: "#069334",
               weight: weight,
@@ -273,7 +269,7 @@ export class PathStepEntity extends MapEntity {
               }).addTo(this)
           } else {
             leaflet.circle(
-              Vector2.toLatLong(step.target), {radius: 0.1}
+              LeafletUtils.latLongFromVector2(step.target), {radius: 0.1}
             ).setStyle({
               color: "#069334",
               weight: weight,

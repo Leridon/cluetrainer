@@ -9,6 +9,7 @@ import {GameMap} from "../../../lib/gamemap/GameMap";
 import {GameMapMouseEvent} from "../../../lib/gamemap/MapEvents";
 import {TileArea} from "../../../lib/runescape/coordinates/TileArea";
 import {PathGraphics} from "../path_graphics";
+import {LeafletUtils} from "../../../lib/gamemap/LeafletUtils";
 
 export class ShortcutViewLayer extends GameLayer {
   constructor(public data: ObservableArray<Transportation.Transportation>, private simplified: boolean = false) {
@@ -175,7 +176,7 @@ export namespace ShortcutViewLayer {
 
               case "fixed":
                   if (render_main || action.movement.target.level == floor) {
-                      leaflet.circle(Vector2.toLatLong(action.movement.target), {
+                      leaflet.circle(LeafletUtils.latLongFromVector2(action.movement.target), {
                           color: COLORS.target_area,
                           weight: 2,
                           radius: 0.4,
@@ -240,7 +241,7 @@ export namespace ShortcutViewLayer {
 
     if (level_offset != 0) {
 
-      leaflet.marker(Vector2.toLatLong(to), {
+      leaflet.marker(LeafletUtils.latLongFromVector2(to), {
         icon: leaflet.icon({
           iconUrl: level_offset < 0 ? "/assets/icons/down.png" : "/assets/icons/up.png",
           iconSize: [14, 16],

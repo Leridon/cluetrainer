@@ -11,13 +11,15 @@ import {Menu} from "../../widgets/ContextMenu";
 import {GameMapContextMenuEvent} from "../../../../lib/gamemap/MapEvents";
 import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
 import assert from "assert";
-import {areaPolygon} from "../../polygon_helpers";
 import {floor_t} from "../../../../lib/runescape/coordinates";
 import {FloorLevels, ZoomLevels} from "../../../../lib/gamemap/ZoomLevels";
 import TeleportIcon from "../../widgets/TeleportIcon";
 import vbox = C.vbox;
 import entity = C.entity;
 import TeleportAccess = Transportation.TeleportAccess;
+import {LeafletUtils} from "../../../../lib/gamemap/LeafletUtils";
+import {LeafletPolygonConstructors} from "../../../../lib/gamemap/LeafletPolygonConstructors";
+import areaPolygon = LeafletPolygonConstructors.areaPolygon;
 
 export class TeleportSpotEntity extends MapEntity {
 
@@ -49,7 +51,7 @@ export class TeleportSpotEntity extends MapEntity {
 
     const scale = (options.highlight ? 1.5 : (this.zoom_sensitivity_layers.get(options.zoom_group_index).value.scale))
 
-    const marker = leaflet.marker(Vector2.toLatLong(this.teleport.spot.icon_position_override ?? this.teleport.centerOfTarget()), {
+    const marker = leaflet.marker(LeafletUtils.latLongFromVector2(this.teleport.spot.icon_position_override ?? this.teleport.centerOfTarget()), {
       icon: new TeleportSpotEntity.TeleportMapIcon(this.teleport, scale, w => {
         if (!floor_group.value.correct_level) w.css("filter", "grayscale(1) brightness(0.5)")
 

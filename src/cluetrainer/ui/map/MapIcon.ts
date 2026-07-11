@@ -2,6 +2,7 @@ import * as leaflet from "leaflet";
 import {Vector2} from "../../../lib/math";
 import {CTRIcon} from "../../CTRIcon";
 import {CursorType} from "../../../lib/runescape/CursorType";
+import {LeafletUtils} from "../../../lib/gamemap/LeafletUtils";
 
 
 export class MapIcon extends leaflet.Marker {
@@ -18,7 +19,7 @@ export class MapIcon extends leaflet.Marker {
       ? Vector2.scale(0.5, sz)
       : Vector2.scale(options.scale ?? 1, options.icon.map_anchor)
 
-    super(Vector2.toLatLong(position), {
+    super(LeafletUtils.latLongFromVector2(position), {
       icon: leaflet.icon({
         iconUrl: `assets/icons/${options.icon.file_name}`,
         iconSize: Vector2.asTuple(sz),

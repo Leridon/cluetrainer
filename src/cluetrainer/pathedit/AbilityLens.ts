@@ -2,7 +2,6 @@ import * as leaflet from "leaflet";
 import {TileCoordinates} from "../../lib/runescape/coordinates";
 import {direction, MovementAbilities, MovementAssumptions, PlayerPosition} from "../../lib/runescape/movement";
 import {Vector2} from "../../lib/math";
-import {tileHalfPolygons, tilePolygon} from "../ui/polygon_helpers";
 import {GameLayer} from "../../lib/gamemap/GameLayer";
 import {Observable, observe} from "../../lib/reactive";
 import {PathBuilder} from "./PathBuilder";
@@ -12,6 +11,9 @@ import possibility_raster = MovementAbilities.possibility_raster;
 import observe_combined = Observable.observe_combined;
 import eqWithNull = util.eqWithNull;
 import {HostedMapCollisionData} from "../../lib/runescape/CollisionData";
+import {LeafletPolygonConstructors} from "../../lib/gamemap/LeafletPolygonConstructors";
+import tileHalfPolygons = LeafletPolygonConstructors.tileHalfPolygons;
+import tilePolygon = LeafletPolygonConstructors.tilePolygon;
 
 export class AbilityLens extends leaflet.FeatureGroup {
   constructor(private tile: TileCoordinates, private assumptions: MovementAssumptions, private surge_escape_for: direction[] = []) {

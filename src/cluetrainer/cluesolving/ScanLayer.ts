@@ -4,7 +4,6 @@ import {GameMap, levelIcon} from "../../lib/gamemap/GameMap";
 import {ScanTree} from "../cluetheory/scans/ScanTree";
 import {Constants} from "../constants";
 import {ActiveOpacityGroup} from "../../lib/gamemap/layers/OpacityLayer";
-import {areaPolygon, boxPolygon} from "../ui/polygon_helpers";
 import {GameLayer} from "../../lib/gamemap/GameLayer";
 import {GameMapContextMenuEvent, GameMapMouseEvent} from "../../lib/gamemap/MapEvents";
 import {Observable, observe} from "../../lib/reactive";
@@ -15,6 +14,10 @@ import Properties from "../ui/widgets/Properties";
 import ScanRegion = ScanTree.ScanRegion;
 import observe_combined = Observable.observe_combined;
 import {ScanSolving} from "./subbehaviours/scans/ScanSolving";
+import {LeafletUtils} from "../../lib/gamemap/LeafletUtils";
+import {LeafletPolygonConstructors} from "../../lib/gamemap/LeafletPolygonConstructors";
+import areaPolygon = LeafletPolygonConstructors.areaPolygon;
+import boxPolygon = LeafletPolygonConstructors.boxPolygon;
 
 export class ScanRegionPolygon extends ActiveOpacityGroup {
   polygon: leaflet.Polygon
@@ -114,7 +117,7 @@ export class ScanRadiusMarker extends MapEntity {
 
   protected async render_implementation(props: MapEntity.RenderProps): Promise<Element> {
     if (this.include_marker) {
-      leaflet.marker(Vector2.toLatLong(this.spot), {
+      leaflet.marker(LeafletUtils.latLongFromVector2(this.spot), {
         icon: levelIcon(this.spot.level, props.highlight ? 1.5 : 1),
         opacity: props.opacity,
         interactive: true,

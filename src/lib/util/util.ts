@@ -1,5 +1,3 @@
-import * as L from "leaflet"
-import * as leaflet from "leaflet"
 import {v4 as uuidv4} from 'uuid';
 import lodash from "lodash";
 import {levenshteinEditDistance} from "levenshtein-edit-distance";
@@ -121,13 +119,6 @@ export namespace util {
     else res.push(`${f(start_range)} - ${f(last)}`)
 
     return res
-  }
-
-  export function convert_bounds(bounds: L.Bounds): L.LatLngBounds {
-    return leaflet.latLngBounds([
-      [bounds.getTopLeft().y, bounds.getTopLeft().x],
-      [bounds.getBottomRight().y, bounds.getBottomRight().x],
-    ])
   }
 
   export function compose<T>(fn1: (a: T) => T, ...fns: Array<(a: T) => T>) {

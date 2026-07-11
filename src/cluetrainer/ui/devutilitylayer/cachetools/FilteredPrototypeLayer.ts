@@ -2,7 +2,6 @@ import {GameLayer} from "../../../../lib/gamemap/GameLayer";
 import {ProcessedCacheTypes} from "./ProcessedCacheTypes";
 import {ewent} from "../../../../lib/reactive";
 import {MapEntity} from "../../../../lib/gamemap/MapEntity";
-import {areaPolygon} from "../../polygon_helpers";
 import {Rectangle, Vector2} from "../../../../lib/math";
 import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
 import {PrototypeInstanceProperties, PrototypeProperties} from "./PrototypeExplorer";
@@ -13,6 +12,9 @@ import * as leaflet from "leaflet";
 import {LocParsingTable} from "./ParsingTable";
 import PrototypeInstance = ProcessedCacheTypes.PrototypeInstance;
 import Prototype = ProcessedCacheTypes.Prototype;
+import {LeafletUtils} from "../../../../lib/gamemap/LeafletUtils";
+import {LeafletPolygonConstructors} from "../../../../lib/gamemap/LeafletPolygonConstructors";
+import areaPolygon = LeafletPolygonConstructors.areaPolygon;
 
 export abstract class PrototypeFilter {
 
@@ -223,7 +225,7 @@ export class PrototypeInstanceEntity extends MapEntity {
         break
     }
 
-    leaflet.polyline(true_west.map(Vector2.toLatLong), {
+    leaflet.polyline(true_west.map(LeafletUtils.latLongFromVector2), {
       color: "red"
     }).addTo(this)
 

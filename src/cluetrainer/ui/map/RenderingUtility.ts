@@ -1,6 +1,7 @@
 import * as leaflet from "leaflet";
 import {Vector2} from "lib/math";
 import {CursorType} from "../../../lib/runescape/CursorType";
+import {LeafletUtils} from "../../../lib/gamemap/LeafletUtils";
 
 export namespace RenderingUtility {
 
@@ -21,7 +22,7 @@ export namespace RenderingUtility {
   ): leaflet.Marker {
     let icon = interactionIcon(how, scale, centered, cls)
 
-    return leaflet.marker(Vector2.toLatLong(where), {
+    return leaflet.marker(LeafletUtils.latLongFromVector2(where), {
       icon: icon,
       interactive: true,
     })

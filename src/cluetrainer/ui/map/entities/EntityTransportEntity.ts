@@ -5,7 +5,6 @@ import {Rectangle, Vector2} from "../../../../lib/math";
 import {OpacityGroup} from "../../../../lib/gamemap/layers/OpacityLayer";
 import * as leaflet from "leaflet";
 import {CursorType} from "../../../../lib/runescape/CursorType";
-import {areaPolygon, boxPolygon2} from "../../polygon_helpers";
 import {floor_t, TileCoordinates} from "../../../../lib/runescape/coordinates";
 import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
 import Properties from "../../widgets/Properties";
@@ -20,6 +19,10 @@ import entity = C.entity;
 import isLocal = Transportation.EntityTransportation.Movement.isLocal;
 import arrow = PathGraphics.arrow;
 import defaultInteractiveArea = Transportation.EntityTransportation.defaultInteractiveArea;
+import {LeafletUtils} from "../../../../lib/gamemap/LeafletUtils";
+import {LeafletPolygonConstructors} from "../../../../lib/gamemap/LeafletPolygonConstructors";
+import areaPolygon = LeafletPolygonConstructors.areaPolygon;
+import boxPolygon2 = LeafletPolygonConstructors.boxPolygon2;
 
 export class EntityTransportEntity extends MapEntity {
   private normalized_shortcut: GeneralEntityTransportation
@@ -118,7 +121,7 @@ export class EntityTransportEntity extends MapEntity {
 
       if (level_offset != 0) {
 
-        leaflet.marker(Vector2.toLatLong(to), {
+        leaflet.marker(LeafletUtils.latLongFromVector2(to), {
           icon: leaflet.icon({
             iconUrl: level_offset < 0 ? "/assets/icons/down.png" : "/assets/icons/up.png",
             iconSize: [14, 16],
@@ -134,7 +137,7 @@ export class EntityTransportEntity extends MapEntity {
     const scale = (options.highlight ? 1.5 : this.zoom_sensitivity_layers.get(options.zoom_group_index).value.scale)
 
     // Render main marker
-    const marker = leaflet.marker(Vector2.toLatLong(Rectangle.center(shortcut.clickable_area, false)), {
+    const marker = leaflet.marker(LeafletUtils.latLongFromVector2(Rectangle.center(shortcut.clickable_area, false)), {
       icon: leaflet.icon({
         iconUrl: CursorType.meta(shortcut.actions[0]?.cursor ?? "generic").icon_url,
         iconSize: CursorType.iconSize(scale),
@@ -178,7 +181,7 @@ export class EntityTransportEntity extends MapEntity {
             const targe = TileArea.normalize(movement.fixed_target.target)
 
             if (targe.origin.level == this.parent.getMap().floor.value()) {
-              leaflet.circle(Vector2.toLatLong(TileArea.activate(targe).center()), {
+              leaflet.circle(LeafletUtils.latLongFromVector2(TileArea.activate(targe).center()), {
                   color: COLORS.target_area,
                   weight: 2,
                   radius: 0.4,

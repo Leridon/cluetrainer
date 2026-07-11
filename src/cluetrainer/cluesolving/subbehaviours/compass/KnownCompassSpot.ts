@@ -8,6 +8,7 @@ import {TextRendering} from "../../../ui/TextRendering";
 import render_digspot = TextRendering.render_digspot;
 import {ClueEntities} from "../../ClueEntities";
 import DigSolutionEntity = ClueEntities.DigSolutionEntity;
+import {LeafletUtils} from "../../../../lib/gamemap/LeafletUtils";
 
 export class KnownCompassSpot extends MapEntity {
   constructor(public readonly spot: CompassSolving.SpotData) {
@@ -57,7 +58,7 @@ export class KnownCompassSpot extends MapEntity {
 
     const scale = (this.active ? 1 : 0.5) * (props.highlight ? 1.5 : 1)
 
-    const marker = leaflet.marker(Vector2.toLatLong(this.spot.spot.spot), {
+    const marker = leaflet.marker(LeafletUtils.latLongFromVector2(this.spot.spot.spot), {
       icon: levelIcon(this.spot.spot.spot.level, scale),
       opacity: opacity,
       interactive: true,
