@@ -1,11 +1,10 @@
 import {floor_t, TileCoordinates} from "../../lib/runescape/coordinates";
 import {Path} from "../../lib/runescape/pathing";
 import {TileHeightData} from "./TileHeightData";
-import {MutableMesh} from "../overlay3d/meshes/MutableMesh";
+import {MutableMesh} from "./meshes/MutableMesh";
 import {MovementAbilities} from "../../lib/runescape/movement";
 import {Vector2} from "../../lib/math";
-import {SimpleGLOverlay} from "../overlay3d/SimpleGLOverlay";
-import {Mesh} from "../overlay3d/meshes/Mesh";
+import {Mesh} from "./meshes/Mesh";
 import {TileArea} from "../../lib/runescape/coordinates/TileArea";
 import ColorRGBA = Mesh.ColorRGBA;
 import Vector3 = Mesh.Vector3;
@@ -34,41 +33,6 @@ const COLORS: Record<Path.Step["type"] | "redclicked_run", Mesh.ColorRGBA> = {
   cheat: [0, 255, 200, 255],
   cosmetic: [0, 0, 0, 0],
   orientation: [0, 0, 0, 0],
-}
-
-export function getPathLevels(path: Path): Set<floor_t> {
-  const levels = new Set<floor_t>();
-
-  for (const step of path) {
-    switch (step.type) {
-      case "teleport":
-        if (step.spot) levels.add(step.spot.level);
-        break;
-      case "ability":
-        if (step.from) levels.add(step.from.level);
-        if (step.to) levels.add(step.to.level);
-        break;
-      case "run":
-        if (step.waypoints) {
-          for (const wp of step.waypoints) levels.add(wp.level);
-        }
-        break;
-      case "transport":
-        if (step.assumed_start) levels.add(step.assumed_start.level);
-        break;
-      case "powerburst":
-        if (step.where) levels.add(step.where.level);
-        break;
-      case "redclick":
-        if (step.where) levels.add(step.where.level);
-        break;
-      case "cheat":
-        if (step.assumed_start) levels.add(step.assumed_start.level);
-        if (step.target) levels.add(step.target.level);
-        break;
-    }
-  }
-  return levels;
 }
 
 export async function drawTileArea(area: TileArea,
@@ -483,14 +447,4 @@ export async function buildPathsMesh(
     await buildPathMesh(path, builder)
   }
   return builder
-}
-
-export class PathOverlay3d extends SimpleGLOverlay {
-  constructor(public readonly paths: Path[], mesh: Mesh) {
-    super(mesh);
-  }
-
-  static async forPaths(paths: Path[]): Promise<PathOverlay3d> {
-    return new PathOverlay3d(paths, (await buildPathsMesh(paths)).finalize())
-  }
 }

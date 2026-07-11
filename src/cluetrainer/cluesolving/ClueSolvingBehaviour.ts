@@ -40,7 +40,7 @@ import z from "zod";
 import {SC} from "../../lib/settings";
 import {MutableMesh} from "../overlay3d/meshes/MutableMesh";
 import {Alt1} from "../../lib/alt1/Alt1";
-import {drawTileArea} from "../tile_markers/PathRender";
+import {drawTileArea} from "../overlay3d/PathRender";
 import {Mesh} from "../overlay3d/meshes/Mesh";
 import {SimpleGLOverlay} from "../overlay3d/SimpleGLOverlay";
 import span = C.span;

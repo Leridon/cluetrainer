@@ -1,7 +1,7 @@
 import Behaviour from "../../lib/ui/Behaviour";
 import {Path} from "../../lib/runescape/pathing";
 import {SimpleGLOverlay} from "./SimpleGLOverlay";
-import {buildPathMesh} from "../tile_markers/PathRender";
+import {buildPathMesh} from "./PathRender";
 import {Alt1} from "../../lib/alt1/Alt1";
 
 export class PathOverlayControl extends Behaviour {

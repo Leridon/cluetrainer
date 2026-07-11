@@ -30,7 +30,7 @@ import {MinimapReader} from "../../../../lib/alt1/readers/MinimapReader";
 import {ClueTrainerWiki} from "../../../wiki";
 import {SettingsModal} from "../../../ui/settings/SettingsEdit";
 import {AugmentedMethod} from "../../../model/MethodPack";
-import {drawTileArea, PathOverlay3d} from "../../../tile_markers/PathRender";
+import {drawTileArea} from "../../../overlay3d/PathRender";
 import {SingleBehaviour} from "../../../../lib/ui/Behaviour";
 import {SimpleGLOverlay} from "../../../overlay3d/SimpleGLOverlay";
 import {MutableMesh} from "../../../overlay3d/meshes/MutableMesh";
@@ -45,6 +45,7 @@ import digSpotArea = Clues.digSpotArea;
 import hbox = C.hbox;
 import spacer = C.spacer;
 import inlineimg = C.inlineimg;
+import {PathOverlay3d} from "../../../overlay3d/PathOverlay3D";
 
 function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): AugmentedScanTreeNode {
   function searchDown(node: AugmentedScanTreeNode): AugmentedScanTreeNode {

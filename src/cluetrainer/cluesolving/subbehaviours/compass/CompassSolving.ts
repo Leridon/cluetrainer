@@ -30,7 +30,7 @@ import {CompassHandlingLayer} from "./CompassHandlingLayer";
 import {KnownCompassSpot} from "./KnownCompassSpot";
 import {CompassEntryWidget} from "./CompassEntryWidget";
 import {CapturedCompassClassic} from "../../cluereader/capture/CapturedCompassClassic";
-import {drawTileArea} from "../../../tile_markers/PathRender";
+import {drawTileArea} from "../../../overlay3d/PathRender";
 import {MutableMesh} from "../../../overlay3d/meshes/MutableMesh";
 import {SingleBehaviour} from "../../../../lib/ui/Behaviour";
 import {SimpleGLOverlay} from "../../../overlay3d/SimpleGLOverlay";
