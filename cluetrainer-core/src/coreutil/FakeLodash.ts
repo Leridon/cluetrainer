@@ -116,7 +116,7 @@ export namespace FakeLodash {
   }[] {
     const length = Math.max(...arrays.map(a => a.length), 0);
 
-    return Array.from({ length }, (_, i) =>
+    return Array.from({length}, (_, i) =>
       arrays.map(a => a[i]) as {
         [K in keyof T]: T[K] extends readonly (infer U)[] ? U | undefined : never;
       }
@@ -124,9 +124,7 @@ export namespace FakeLodash {
   }
 
   export function isEqual(a: unknown, b: unknown): boolean {
-    if (Object.is(a, b)) {
-      return true;
-    }
+    if (a === b) return true;
 
     if (
       a === null || b === null ||
@@ -162,7 +160,7 @@ export namespace FakeLodash {
     }
 
     return aKeys.every(
-      key => Object.hasOwn(bObj, key) && isEqual(aObj[key], bObj[key])
+      key => bKeys.includes(key) && isEqual(aObj[key], bObj[key])
     );
   }
 }

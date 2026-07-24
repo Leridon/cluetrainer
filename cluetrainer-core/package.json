@@ -19,7 +19,7 @@
   "scripts": {
     "clean": "rimraf dist dist-lua",
     "build:js": "tsc",
-    "build:lua": "tstl",
+    "build:lua": "tstl -p tsconfig.lua.json",
     "build": "npm run clean && run-p --continue-on-error build:js build:lua",
     "prepare": "npm run build"
   },

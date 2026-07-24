@@ -1,5 +1,5 @@
-import { FakeLodash } from "../coreutil/FakeLodash"
-import { Order } from "./Order"
+import {FakeLodash} from "../coreutil/FakeLodash"
+import {Order} from "./Order"
 
 export namespace util {
 
@@ -18,6 +18,7 @@ export namespace util {
 
     return s
   }
+
   export function capitalize(s: string): string {
     return s ? s[0].toUpperCase() + s.slice(1) : ""
   }
@@ -266,7 +267,7 @@ export namespace util {
   }
 
   export function numberWithCommas(x: number) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return x.toString().replace(new RegExp("/\B(?=(\d{3})+(?!\d))", "g"), ",");
   }
 
   export function padInteger(n: number, length: number): string {
