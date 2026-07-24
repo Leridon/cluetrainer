@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "outDir": "dist",
+    "rootDir": "src",
+    "skipLibCheck": true,
+    "declarationDir": "dist",
+    "declaration": true,
+    "strict": false
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["dist", "node_modules"],
+  "tstl": {
+    "luaTarget": "5.4",
+    "luaOutDir": "dist-lua",
+    "buildMode": "library"
+  }
+}

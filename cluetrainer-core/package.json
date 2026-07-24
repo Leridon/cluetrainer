@@ -1,0 +1,32 @@
+{
+  "name": "cluetrainer-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js"
+    }
+  },
+  "scripts": {
+    "clean": "rimraf dist dist-lua",
+    "build:js": "tsc",
+    "build:lua": "tstl",
+    "build": "npm run clean && run-p --continue-on-error build:js build:lua",
+    "prepare": "npm run build"
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^6.1.3",
+    "typescript": "^6.0.2",
+    "typescript-to-lua": "^1.37.1"
+  }
+}
