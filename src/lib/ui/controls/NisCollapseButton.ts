@@ -1,6 +1,6 @@
 import {ExpansionBehaviour} from "../ExpansionBehaviour";
 import Button from "./Button";
-import * as jquery from "jquery";
+import jquery from "jquery";
 
 export default class NisCollapseButton extends Button {
 

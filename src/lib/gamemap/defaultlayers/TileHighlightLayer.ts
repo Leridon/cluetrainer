@@ -1,14 +1,15 @@
 import {GameLayer} from "../GameLayer";
 import * as leaflet from "leaflet";
 import {Vector2} from "../../math";
-import {tilePolygon} from "../../../trainer/ui/polygon_helpers";
 import {GameMapMouseEvent} from "../MapEvents";
 import {GameMap} from "../GameMap";
+import {LeafletPolygonConstructors} from "../LeafletPolygonConstructors";
+import tilePolygon = LeafletPolygonConstructors.tilePolygon;
 
 export class TileHighlight extends leaflet.FeatureGroup {
   _polygon: leaflet.Polygon = null
 
-  constructor(private position: Vector2 = {x: 0, y: 0}) {
+  constructor(private position: Vector2 = {x: 0, y: 0}, private color: string = "#F0780C") {
     super()
 
     this.update()
@@ -31,8 +32,8 @@ export class TileHighlight extends leaflet.FeatureGroup {
     this._polygon = tilePolygon(this.position).setStyle({
       fillOpacity: 0.2,
       opacity: 0.8,
-      color: "#F0780C",
-      fillColor: "#F0780C",
+      color: this.color,
+      fillColor: this.color,
       interactive: false,
       pane: GameMap.objectPane
     }).addTo(this)
@@ -42,7 +43,7 @@ export class TileHighlight extends leaflet.FeatureGroup {
 export default class TileHighlightLayer extends GameLayer {
   private tile_highlight: TileHighlight = new TileHighlight({x: 0, y: 0}).addTo(this)
 
-  eventHover(event: GameMapMouseEvent) {
+  override eventHover(event: GameMapMouseEvent) {
     event.onPre(() => {
       this.tile_highlight.setPosition(event.tile())
     })

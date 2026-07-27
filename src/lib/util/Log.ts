@@ -52,13 +52,13 @@ export namespace Log {
   import index = util.index;
 
   export class Void extends Log {
-    protected _log(message: Message): void {
+    protected override _log(message: Message): void {
       super._log(message)
     }
   }
 
   export class Console extends Log {
-    _log(message: Message): void {
+    override _log(message: Message): void {
       super._log(message)
       console.log(Message.toString(message))
     }
@@ -90,7 +90,7 @@ export namespace Log {
       message: Message
     }[] = []
 
-    _log(message: Message) {
+    override _log(message: Message) {
       super._log(message)
       if (this.entries.length > 0 && Message.equals(message, index(this.entries, -1).message)) {
         index(this.entries, -1).timestamps.push(Date.now())
@@ -111,7 +111,7 @@ export namespace Log {
   export class DoubleBuffered extends Log {
     private buffers: [SingleBuffered, SingleBuffered] = [new SingleBuffered(), new SingleBuffered()]
 
-    protected _log(message: Message) {
+    protected override _log(message: Message) {
       super._log(message)
       this.buffers[0]._log(message)
 
@@ -125,7 +125,7 @@ export namespace Log {
       return [...this.buffers[1].entries, ...this.buffers[0].entries]
     }
 
-    toString(): string {
+    override toString(): string {
       return Buffer.toString(this.get())
     }
   }

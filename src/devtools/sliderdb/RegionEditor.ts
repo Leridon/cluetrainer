@@ -1,18 +1,18 @@
-import AbstractEditWidget from "../../trainer/ui/widgets/AbstractEditWidget";
-import {Region} from "../../lib/cluetheory/sliders/Region";
+import AbstractEditWidget from "../../cluetrainer/ui/widgets/AbstractEditWidget";
+import {Region} from "../../cluetrainer/cluetheory/sliders/Region";
 import {C} from "../../lib/ui/constructors";
 import Widget from "../../lib/ui/Widget";
 import {util} from "../../lib/util/util";
-import Properties from "../../trainer/ui/widgets/Properties";
-import LightButton from "../../trainer/ui/widgets/LightButton";
+import Properties from "../../cluetrainer/ui/widgets/Properties";
+import LightButton from "../../cluetrainer/ui/widgets/LightButton";
 import {Checkbox} from "../../lib/ui/controls/Checkbox";
-import {NislIcon} from "../../trainer/ui/nisl";
-import {RegionChainDistanceTable} from "../../lib/cluetheory/sliders/RegionChainDistanceTable";
+import {NislIcon} from "../../cluetrainer/ui/nisl";
+import {RegionChainDistanceTable} from "../../cluetrainer/cluetheory/sliders/RegionChainDistanceTable";
 import {NisModal} from "../../lib/ui/NisModal";
-import {BigNisButton} from "../../trainer/ui/widgets/BigNisButton";
+import {BigNisButton} from "../../cluetrainer/ui/widgets/BigNisButton";
 import {deflate} from "pako";
-import ExportStringModal from "../../trainer/ui/widgets/modals/ExportStringModal";
-import ImportStringModal from "../../trainer/ui/widgets/modals/ImportStringModal";
+import ExportStringModal from "../../cluetrainer/ui/widgets/modals/ExportStringModal";
+import ImportStringModal from "../../cluetrainer/ui/widgets/modals/ImportStringModal";
 import {ExportImport} from "../../lib/util/exportString";
 import hbox = C.hbox;
 import numberWithCommas = util.numberWithCommas;
@@ -23,8 +23,8 @@ import downloadBinaryFile = util.downloadBinaryFile;
 import cleanedJSON = util.cleanedJSON;
 import imp = ExportImport.imp;
 import {Process} from "../../lib/Process";
-import {MoveTable} from "../../lib/cluetheory/sliders/MoveTable";
-import {OptimizedSliderState} from "../../lib/cluetheory/sliders/OptimizedSliderState";
+import {MoveTable} from "../../cluetrainer/cluetheory/sliders/MoveTable";
+import {OptimizedSliderState} from "../../cluetrainer/cluetheory/sliders/OptimizedSliderState";
 import {observe} from "../../lib/reactive";
 import Indexing = Region.Indexing;
 import hgrid = C.hgrid;
@@ -51,7 +51,7 @@ class TileEditor extends AbstractEditWidget<Region.Tile> {
     }
   }
 
-  protected render() {
+  protected override render() {
     if (this.locked) {
       this.css("background-color", "gray")
     } else {
@@ -91,7 +91,7 @@ export class RegionEditor extends AbstractEditWidget<Region> {
     }
   }
 
-  protected render() {
+  protected override render() {
     super.render();
 
     this.empty()
@@ -180,7 +180,7 @@ export class RegionChainEditor extends AbstractEditWidget<Region[]> {
     )
   }
 
-  protected render() {
+  protected override render() {
     const chain = this.get()
 
     this.region_layout.empty()
@@ -255,7 +255,7 @@ export class PDBGeneratorWidget extends Widget {
             this.setTitle("Table Generation")
           }
 
-          render() {
+          override render() {
             super.render();
 
             new RegionChainGeneratorWidget(generator).appendTo(this.body)
@@ -353,7 +353,7 @@ export class StateIndexBenchmarkWidget extends Widget {
             })
           }
 
-          render() {
+          override render() {
             super.render();
           }
         })
@@ -437,7 +437,7 @@ export class RegionChainGeneratorWidget extends Widget {
 }
 
 export class PDBGeneratorModal extends NisModal {
-  render() {
+  override render() {
     super.render()
 
     this.setTitle("PDB Generation")
@@ -450,7 +450,7 @@ export class PDBGeneratorModal extends NisModal {
 }
 
 export class RegionIndexingModal extends NisModal {
-  render() {
+  override render() {
     super.render()
 
     this.setTitle("Index Benchmarking")

@@ -1,4 +1,4 @@
-import * as jquery from 'jquery';
+import jquery from 'jquery';
 import * as tippy from 'tippy.js';
 import {C} from "./constructors";
 import type * as CSS from 'csstype';
@@ -118,6 +118,14 @@ export default class Widget<T extends HTMLElement = HTMLElement> {
     else this.container.hide()
 
     return this
+  }
+
+  show(): this {
+    return this.setVisible(true)
+  }
+
+  hide(): this {
+    return this.setVisible(false)
   }
 
   toggleClass(cls: string, value: boolean = null): this {

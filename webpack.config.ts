@@ -8,12 +8,20 @@ const webpack = require("webpack")
 const DefinePlugin = webpack.DefinePlugin;
 const ProvidePlugin = webpack.ProvidePlugin;
 
-const development_mode = process.env.NODE_ENV == "development"
+const build_type = process.env.NODE_ENV
+
+if (!build_type || !["production", "development", "beta", "openglbeta"].includes(build_type)) {
+  console.log(`Unknown build type ${build_type}`);
+  throw ""
+}
+
+const is_beta = build_type == "beta" || build_type == "openglbeta"
+const development_mode = build_type == "development" || is_beta
 
 type BuildEnvironment = {
-  is_beta_build: boolean,
   commit_sha: string,
   build_timestamp: number,
+  build_type: string
 }
 
 type PassedEnvironment = {
@@ -25,13 +33,12 @@ let commitHash = require('child_process')
   .toString()
   .trim();
 
-const is_beta = process.env.NODE_ENV == "beta"
 
 const passed_environment: PassedEnvironment = {
   cluetrainer_build_environment: {
     commit_sha: commitHash,
     build_timestamp: Date.now().valueOf(),
-    is_beta_build: is_beta
+    build_type: build_type,
   }
 }
 
@@ -60,7 +67,7 @@ module.exports = {
     // library means that the exports from the entry file can be accessed from outside, in this case from the global scope as window.vos
     library: {type: 'umd', name: 'vos'},
   },
-  devtool: false,
+  devtool: development_mode ? "source-map" : false,
   mode: development_mode ? "development" : "production",
   // prevent webpack from bundling these imports (alt1 libs can use them when running in nodejs)
   externals: ['sharp', 'canvas', 'electron/common'],

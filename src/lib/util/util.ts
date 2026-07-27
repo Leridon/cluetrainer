@@ -1,9 +1,8 @@
-import * as L from "leaflet"
-import * as leaflet from "leaflet"
 import {v4 as uuidv4} from 'uuid';
 import lodash from "lodash";
 import {levenshteinEditDistance} from "levenshtein-edit-distance";
 import {Vector2} from "../math";
+import {FakeLodash} from "../coreutil/FakeLodash";
 
 export namespace util {
 
@@ -123,13 +122,6 @@ export namespace util {
     return res
   }
 
-  export function convert_bounds(bounds: L.Bounds): L.LatLngBounds {
-    return leaflet.latLngBounds([
-      [bounds.getTopLeft().y, bounds.getTopLeft().x],
-      [bounds.getBottomRight().y, bounds.getBottomRight().x],
-    ])
-  }
-
   export function compose<T>(fn1: (a: T) => T, ...fns: Array<(a: T) => T>) {
     return fns.reduce((prevFn, nextFn) => value => nextFn(prevFn(value)), fn1);
   }
@@ -214,7 +206,7 @@ export namespace util {
   }
 
   export function copyUpdate<T>(value: T, updater: (_: T) => void): T {
-    const copy = lodash.cloneDeep(value)
+    const copy = FakeLodash.cloneDeep(value)
 
     updater(copy)
 
@@ -304,11 +296,11 @@ export namespace util {
     const elements = collection.map(e => ({value: e, score: score_f(e)}))
 
     if (inverted) {
-      const e = lodash.minBy(elements, e => e.score)
+      const e = FakeLodash.minBy(elements, e => e.score)
       if (min_score != undefined && e.score > min_score) return null
       else return e
     } else {
-      const e = lodash.maxBy(elements, e => e.score)
+      const e = FakeLodash.maxBy(elements, e => e.score)
       if (min_score != undefined && e.score < min_score) return null
       else return e
     }
@@ -442,7 +434,7 @@ export namespace util {
   export function median(list: number[]): number {
     if (list.length == 0) return Number.NaN
 
-    const sorted = lodash.sortBy(list, Order.natural_order)
+    const sorted = FakeLodash.sortByComparator(list, Order.natural_order)
 
     const mid = ~~(sorted.length / 2)
 

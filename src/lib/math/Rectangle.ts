@@ -1,14 +1,12 @@
-import {clamp, identity} from "lodash";
-import * as leaflet from "leaflet";
 import {Vector2} from "./Vector2";
 import {Transform} from "./Transform";
-import {RectLike} from "alt1";
+import {FakeLodash} from "../coreutil/FakeLodash";
 
 export type Rectangle = { topleft: Vector2, botright: Vector2 }
 
 export namespace Rectangle {
   export function from(...points: Vector2[]): Rectangle {
-    points = points.filter(identity)
+    points = points.filter(p => p)
 
     if (points.length == 0) return null
 
@@ -23,10 +21,6 @@ export namespace Rectangle {
       origin,
       Vector2.add(origin, size, {x: -1, y: -1})
     )
-  }
-
-  export function fromRectLike(rect: RectLike): Rectangle {
-    return fromOriginAndSize({x: rect.x, y: rect.y}, {x: rect.width, y: rect.height})
   }
 
   export function containsTile(box: Rectangle, tile: Vector2) {
@@ -68,8 +62,8 @@ export namespace Rectangle {
 
   export function clampInto(pos: Vector2, area: Rectangle): Vector2 {
     return {
-      x: clamp(pos.x, area.topleft.x, area.botright.x),
-      y: clamp(pos.y, area.botright.y, area.topleft.y),
+      x: FakeLodash.clamp(pos.x, area.topleft.x, area.botright.x),
+      y: FakeLodash.clamp(pos.y, area.botright.y, area.topleft.y),
     }
   }
 
@@ -81,13 +75,6 @@ export namespace Rectangle {
 
     if (snap) return Vector2.snap(c)
     else return c
-  }
-
-  export function toBounds(box: Rectangle) {
-    let tl = leaflet.point(box.topleft)
-    let br = leaflet.point(box.botright)
-
-    return leaflet.bounds(tl, br)
   }
 
   export function left(rect: Rectangle): Rectangle {

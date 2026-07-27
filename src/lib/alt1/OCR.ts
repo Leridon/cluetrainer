@@ -5,8 +5,9 @@
 
 
 import {ImageData, Rect, RectLike} from "alt1";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {util} from "../util/util";
+import {FakeLodash} from "../coreutil/FakeLodash";
 
 export namespace OCR {
 
@@ -325,7 +326,7 @@ export namespace OCR {
       return score
     })
 
-    return lodash.maxBy(scored_colors, c => c.score).value
+    return FakeLodash.maxBy(scored_colors, c => c.score).value
     /*
         for (let col of colors) {
           let score = 0;
@@ -539,7 +540,7 @@ export namespace OCR {
       candidate_scores.push({score: score, sizescore: score - chrobj.bonus, chr: chrobj})
     }
 
-    const winchr = lodash.minBy(candidate_scores, s => s.sizescore)
+    const winchr = FakeLodash.minBy(candidate_scores, s => s.sizescore)
 
     if (!winchr || winchr.score > DETECTION_THRESHOLD) { return null; }
 

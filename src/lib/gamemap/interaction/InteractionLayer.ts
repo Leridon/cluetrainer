@@ -1,7 +1,7 @@
 import {GameLayer} from "../GameLayer";
 import {GameMap} from "../GameMap";
 
-import InteractionTopControl from "../../../trainer/ui/map/InteractionTopControl";
+import InteractionTopControl from "../../../cluetrainer/ui/map/InteractionTopControl";
 import {ewent} from "../../reactive";
 
 export class InteractionGuard {
@@ -49,7 +49,7 @@ export default class InteractionLayer extends GameLayer {
   started = ewent<InteractionLayer>()
   ended = ewent<InteractionLayer>()
 
-  onAdd(map: GameMap): this {
+  override onAdd(map: GameMap): this {
     super.onAdd(map)
 
     this.started.trigger(this)

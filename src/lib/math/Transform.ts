@@ -85,8 +85,10 @@ export namespace Transform {
   }
 
   export function mult(a: Transform, b: Transform): Transform {
-    return [0, 1, 2].map((r: 0 | 1 | 2) =>
-      [0, 1, 2].map((c: 0 | 1 | 2) =>
+    const indices: [0, 1, 2] = [0, 1, 2]
+
+    return indices.map(r =>
+      indices.map(c =>
         mul(row(a, r), col(b, c))
       )
     ) as Matrix

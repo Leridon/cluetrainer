@@ -1,12 +1,13 @@
 import {Rectangle, Vector2} from "../math";
 import {util} from "../util/util";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {ScreenRectangle} from "./ScreenRectangle";
 import {Circle} from "../math/Circle";
 import {Alt1Color} from "./Alt1Color";
 import uuid = util.uuid;
 import { Alt1OverlayDrawCalls } from "./overlay/Alt1OverlayDrawCalls";
 import {Alt1} from "./Alt1";
+import {FakeLodash} from "../coreutil/FakeLodash";
 
 export class LegacyOverlayGeometry {
   private is_frozen = false
@@ -90,7 +91,7 @@ export class LegacyOverlayGeometry {
     const start = Vector2.add(center, {x: -Math.floor(length / 2), y: 0},)
 
     const end = Vector2.add(start, {x: length, y: 0})
-    const mid = Vector2.snap(Vector2.add(start, {x: lodash.clamp(progress, 0, 1) * length, y: 0}))
+    const mid = Vector2.snap(Vector2.add(start, {x: FakeLodash.clamp(progress, 0, 1) * length, y: 0}))
 
     this.line(Vector2.add(start, {x: -contrast_border, y: 0}), Vector2.add(end, {x: contrast_border, y: 0}),
       {color: Alt1Color.black, width: thickness + 2 * contrast_border})

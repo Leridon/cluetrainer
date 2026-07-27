@@ -7,36 +7,35 @@ import {Alt1} from "../lib/alt1/Alt1";
 import {Rectangle, Vector2} from "../lib/math";
 import {GameMapMiniWidget, levelIcon} from "../lib/gamemap/GameMap";
 import ButtonRow from "../lib/ui/ButtonRow";
-import LightButton from "../trainer/ui/widgets/LightButton";
-import ImportStringModal from "../trainer/ui/widgets/modals/ImportStringModal";
-import ExportStringModal from "../trainer/ui/widgets/modals/ExportStringModal";
+import LightButton from "../cluetrainer/ui/widgets/LightButton";
+import ImportStringModal from "../cluetrainer/ui/widgets/modals/ImportStringModal";
+import ExportStringModal from "../cluetrainer/ui/widgets/modals/ExportStringModal";
 import {MapEntity} from "../lib/gamemap/MapEntity";
 import {TileCoordinates, TileRectangle} from "../lib/runescape/coordinates";
 import * as leaflet from "leaflet";
 import {GameLayer} from "../lib/gamemap/GameLayer";
 import {GameMapMouseEvent} from "../lib/gamemap/MapEvents";
-import {tilePolygon} from "../trainer/ui/polygon_helpers";
-import {CompassReader} from "../trainer/ui/neosolving/cluereader/CompassReader";
-import {Compasses} from "../lib/cluetheory/Compasses";
+import {CompassReader} from "../cluetrainer/cluesolving/cluereader/CompassReader";
+import {Compasses} from "../cluetrainer/cluetheory/Compasses";
 import {util} from "../lib/util/util";
 import {clue_data} from "../data/clues";
-import Properties from "../trainer/ui/widgets/Properties";
+import Properties from "../cluetrainer/ui/widgets/Properties";
 import {C} from "../lib/ui/constructors";
-import {Notification} from "../trainer/ui/NotificationBar";
-import {FullCompassCalibrationFunction} from "trainer/ui/neosolving/cluereader/capture/CompassCalibrationFunction";
+import {Notification} from "../cluetrainer/ui/NotificationBar";
+import {FullCompassCalibrationFunction} from "../cluetrainer/cluesolving/cluereader/capture/CompassCalibrationFunction";
 import {Angles} from "../lib/math/Angles";
 import {storage} from "../lib/util/storage";
 import KeyValueStore from "../lib/util/KeyValueStore";
-import {ConfirmationModal} from "../trainer/ui/widgets/modals/ConfirmationModal";
+import {ConfirmationModal} from "../cluetrainer/ui/widgets/modals/ConfirmationModal";
 import {direction, PathFinder} from "../lib/runescape/movement";
 import {GameMapControl} from "../lib/gamemap/GameMapControl";
-import TransportLayer from "../trainer/ui/map/TransportLayer";
+import TransportLayer from "../cluetrainer/ui/map/TransportLayer";
 import {TileArea} from "../lib/runescape/coordinates/TileArea";
 import {ChunkedData} from "../lib/util/ChunkedData";
 import {SelectTileInteraction} from "../lib/gamemap/interaction/SelectTileInteraction";
 import {InteractionGuard} from "../lib/gamemap/interaction/InteractionLayer";
-import InteractionTopControl from "../trainer/ui/map/InteractionTopControl";
-import {PathGraphics} from "../trainer/ui/path_graphics";
+import InteractionTopControl from "../cluetrainer/ui/map/InteractionTopControl";
+import {PathGraphics} from "../cluetrainer/ui/path_graphics";
 import getExpectedAngle = Compasses.getExpectedAngle;
 import greatestCommonDivisor = util.greatestCommonDivisor;
 import ANGLE_REFERENCE_VECTOR = Compasses.ANGLE_REFERENCE_VECTOR;
@@ -56,6 +55,9 @@ import profileAsync = util.profileAsync;
 import hgrid = C.hgrid;
 import index = util.index;
 import {HostedMapCollisionData, TileCollisionData} from "../lib/runescape/CollisionData";
+import {LeafletUtils} from "../lib/gamemap/LeafletUtils";
+import {LeafletPolygonConstructors} from "../lib/gamemap/LeafletPolygonConstructors";
+import {FakeLodash} from "../lib/coreutil/FakeLodash";
 
 type Fraction = Vector2
 
@@ -246,7 +248,7 @@ class SampleSetBuilder {
   }
 
   private sort() {
-    this.state.samples = lodash.sortBy(this.state.samples, s => CalibrationTool.shouldAngle(s.position))
+    this.state.samples = FakeLodash.sortBy(this.state.samples, s => CalibrationTool.shouldAngle(s.position))
   }
 
   record(offset: Vector2, state: CompassReader.Service.State.Normal) {
@@ -316,12 +318,11 @@ function indexOfMinBy<T>(data: T[], f: (_: T, i: number) => number) {
 class TravellingSalesmanProblem<T> {
   private _init: AsyncInitialization
 
-  private distance_map: number[][]
+  private distance_map: (number | undefined)[][]
   private start_distance: number[]
 
-  private come_from_solution: number[] = this.spots.map((_, i) => i)
-
   private start_position_index: number
+  private come_from_solution: number[]
 
   private spots_with_start: T[]
 
@@ -329,10 +330,11 @@ class TravellingSalesmanProblem<T> {
               private distance: TravellingSalesmanProblem.StatefulDistanceFunction<T>,
               private start_position: T
   ) {
+    this.come_from_solution = this.spots.map((_, i) => i)
     this.spots_with_start = [...spots, start_position]
     this.start_position_index = spots.length
 
-    this.distance_map = this.spots_with_start.map(_ => this.spots_with_start.map(_ => undefined))
+    this.distance_map = this.spots_with_start.map(_ => this.spots_with_start.map((_): undefined => undefined))
 
     this.distance_map.forEach((row, i) => row[i] = 0)
 
@@ -371,7 +373,7 @@ class TravellingSalesmanProblem<T> {
     if (this.spots.length == 0) return []
 
     // A solution is an array that maps spot indices to the index of the previous node in the path (come-from)
-    const come_from_map: number[] = this.spots.map(() => undefined)
+    const come_from_map: (number | undefined)[] = Array(this.spots.length).fill(undefined)
 
     let position = this.start_position_index
 
@@ -398,7 +400,7 @@ class TravellingSalesmanProblem<T> {
   }
 
   private _evaluateComeFrom(come_from_solution: number[]): number {
-    return lodash.sum(come_from_solution.map((come_from, pos) => this.getDistance(come_from, pos)))
+    return FakeLodash.sum(come_from_solution.map((come_from, pos) => this.getDistance(come_from, pos)))
   }
 
   private _optimize_by_pairwise_exchange() {
@@ -572,7 +574,7 @@ namespace TravellingSalesmanProblem {
         private readonly data: Node[][]
 
         constructor(public max: number) {
-          this.data = new Array(max + 1).fill(null).map(() => [])
+          this.data = new Array(max + 1).fill(null).map((): Node[] => [])
         }
 
         push(node: Node) {
@@ -686,7 +688,7 @@ function approximateFractionAsRationaleNumber(max_denominator: number,
 
       // if the denominator is too big, return the closest of lower or higher
       if (mediant.x > max_denominator) {
-        return lodash.minBy([lower, higher], frac => Math.abs(target_number - Fraction.value(frac)))
+        return FakeLodash.minBy([lower, higher], frac => Math.abs(target_number - Fraction.value(frac)))
       }
 
       // adjust the interval:
@@ -869,7 +871,7 @@ namespace CalibrationQueue {
 
       backlog.forEach(offsetSelection => self.queue.splice(self.queue.indexOf(offsetSelection), 1))
 
-      const sorted_by_should_angle = lodash.sortBy(self.queue, s => CalibrationTool.shouldAngle(s.offset))
+      const sorted_by_should_angle = FakeLodash.sortBy(self.queue, s => CalibrationTool.shouldAngle(s.offset))
 
       self.queue = await new TravellingSalesmanProblem(sorted_by_should_angle,
         //new TravellingSalesmanProblem.PathFindingDistanceFunction()
@@ -884,7 +886,7 @@ namespace CalibrationQueue {
         )
 
 
-      self.queue.push(...lodash.sortBy(backlog, s => CalibrationTool.shouldAngle(s.offset)))
+      self.queue.push(...FakeLodash.sortBy(backlog, s => CalibrationTool.shouldAngle(s.offset)))
     }
   }
 }
@@ -913,7 +915,7 @@ class CalibrationQueueView extends Widget {
 
     this.props.named("Type", head?.filler ? head.filler.name : "")
     this.props.named("Size", hgrid(head_size.toString(), new LightButton("Pop").setEnabled(!!this.queue.head()).slim().onClick(() => this.queue.pop())))
-    this.props.named("Backlog", hgrid((lodash.sumBy(this.queue._backlog, l => l.queue.length) - head_size).toString(), new LightButton("Clear").slim().onClick(() => this.queue.clear())))
+    this.props.named("Backlog", hgrid((FakeLodash.sumBy(this.queue._backlog, l => l.queue.length) - head_size).toString(), new LightButton("Clear").slim().onClick(() => this.queue.clear())))
   }
 }
 
@@ -976,7 +978,7 @@ export class CompassCalibrationTool extends NisModal {
       this.handler.remove()
     })
 
-    this.reader = new CompassReader.Service(null, {warn_antialiasing: true}, null, true).start()
+    this.reader = new CompassReader.Service(null, {warn_antialiasing: true}, false, null, true).start()
 
     this.sample_set.set_changed.on(() => {
       this.updateCurrentPlausibility()
@@ -1240,7 +1242,7 @@ export class CompassCalibrationTool extends NisModal {
     return;
   }
 
-  render() {
+  override render() {
     super.render();
 
     this.title.set("Compass Calibration")
@@ -1294,7 +1296,7 @@ export class CompassCalibrationTool extends NisModal {
         this.sample_set.set(await response.json())
       }),
       new LightButton("Load MSAA").onClick(() => {
-        this.sample_set.set(lodash.cloneDeep(CompassReader.msaa_samples))
+        this.sample_set.set(FakeLodash.cloneDeep(CompassReader.msaa_samples))
       }),
       new LightButton("Reset").onClick(() => {
         this.sample_set.set([])
@@ -1351,10 +1353,11 @@ export class CompassCalibrationTool extends NisModal {
 export namespace CalibrationTool {
   import gielinor_compass = clue_data.gielinor_compass;
   import arrow = PathGraphics.arrow;
+  import tilePolygon = LeafletPolygonConstructors.tilePolygon;
 
   export function cleanExport(samples: RawSample[]): string {
     return "[\n" +
-      lodash.sortBy(samples, s => Vector2.angle(ANGLE_REFERENCE_VECTOR, {x: -s.position.x, y: -s.position.y})).map(s => cleanedJSON(s, undefined)).join(",\n")
+      FakeLodash.sortBy(samples, s => Vector2.angle(ANGLE_REFERENCE_VECTOR, {x: -s.position.x, y: -s.position.y})).map(s => cleanedJSON(s, undefined)).join(",\n")
       + "\n]"
   }
 
@@ -1394,7 +1397,7 @@ export namespace CalibrationTool {
 
       const scale = (this.active ? 1 : 0.5) * (props.highlight ? 1.5 : 1)
 
-      const marker = leaflet.marker(Vector2.toLatLong(this.spot), {
+      const marker = leaflet.marker(LeafletUtils.latLongFromVector2(this.spot), {
         icon: levelIcon(this.spot.level, scale),
         opacity: opacity,
         interactive: true,
@@ -1458,7 +1461,7 @@ export namespace CalibrationTool {
       }
     }
 
-    eventClick(event: GameMapMouseEvent) {
+    override eventClick(event: GameMapMouseEvent) {
       event.onPost(() => {
         if (event.active_entity instanceof KnownMarker) {
           this.tool.reference.set(event.active_entity.spot)
@@ -1553,7 +1556,7 @@ export namespace CalibrationTool {
 
       if (!queue.filler.show_line) {
         leaflet.polyline(
-            queue.queue.map(s => Vector2.toLatLong(Vector2.add(this.tool.reference.value(), OffsetSelection.activeOffset(s))))
+            queue.queue.map(s => LeafletUtils.latLongFromVector2(Vector2.add(this.tool.reference.value(), OffsetSelection.activeOffset(s))))
           )
           .setStyle({color: "#ffff00", weight: 3})
           .addTo(this.queue_view)
@@ -1571,7 +1574,7 @@ export namespace CalibrationTool {
       }, c().css("padding", "2px"));
     }
 
-    eventHover(event: GameMapMouseEvent) {
+    override eventHover(event: GameMapMouseEvent) {
       function getcamerapos(coord: TileCoordinates): string {
         return `${coord.level},${~~(coord.x / 64)},${~~(coord.y / 64)},${coord.x % 64},${coord.y % 64}`
       }

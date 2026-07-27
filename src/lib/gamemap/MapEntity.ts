@@ -4,7 +4,7 @@ import Widget from "../ui/Widget";
 import {GameLayer} from "./GameLayer";
 import {FloorLevels, ZoomLevels} from "./ZoomLevels";
 import {GameMapContextMenuEvent} from "./MapEvents";
-import {Menu} from "../../trainer/ui/widgets/ContextMenu";
+import {Menu} from "../../cluetrainer/ui/widgets/ContextMenu";
 import {QuadTree} from "../QuadTree";
 import {Rectangle} from "../math";
 import {floor_t} from "../runescape/coordinates";
@@ -74,7 +74,7 @@ export abstract class MapEntity extends leaflet.FeatureGroup implements QuadTree
     return this.tooltip?.(this);
   }
 
-  remove(): this {
+  override remove(): this {
     if (this.parent) {
       this.parent.removeEntity(this)
     } else {

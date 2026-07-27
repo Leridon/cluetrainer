@@ -3,8 +3,12 @@ import {Alt1Color} from "../Alt1Color";
 import {ScreenRectangle} from "../ScreenRectangle";
 import {Circle} from "../../math/Circle";
 import lodash from "lodash";
+import {Log} from "../../util/Log";
+import {FakeLodash} from "../../coreutil/FakeLodash";
 
 export namespace Alt1OverlayDrawCalls {
+  import log = Log.log;
+
   export class Buffer {
     constructor(public primitives: Primitive[]
     ) { }
@@ -97,12 +101,28 @@ export namespace Alt1OverlayDrawCalls {
 
     rectangle(rect: ScreenRectangle,
               options: Alt1OverlayDrawCalls.StrokeOptions = Alt1OverlayDrawCalls.StrokeOptions.DEFAULT): this {
+      if (Number.isNaN(rect.origin.x) || Number.isNaN(rect.origin.y) || Number.isNaN(rect.size.x) || Number.isNaN(rect.size.y) || Number.isNaN(options.width)) {
+        log().log(`Invalid alt1 overlay line ${rect.size.x}x${rect.size.y}@${rect.origin.x}|${rect.origin.y} (stroke ${options.width})`)
+        log().log(Error().stack)
+
+        return this
+      }
+
       this.primitives.push({type: "rect", rect: ScreenRectangle.toRectangle(rect), options: options})
       return this
     }
 
-    line(from: Vector2, to: Vector2, options: Alt1OverlayDrawCalls.StrokeOptions = Alt1OverlayDrawCalls.StrokeOptions.DEFAULT) {
+    line(from: Vector2, to: Vector2, options: Alt1OverlayDrawCalls.StrokeOptions = Alt1OverlayDrawCalls.StrokeOptions.DEFAULT): this {
+
+      if (Number.isNaN(from.x) || Number.isNaN(from.y) || Number.isNaN(to.x) || Number.isNaN(to.y) || Number.isNaN(options.width)) {
+        log().log(`Invalid alt1 overlay line ${from.x}|${from.y} -> ${to.x}|${to.y} (stroke ${options.width})`)
+        log().log(Error().stack)
+
+        return this
+      }
+
       this.primitives.push({type: "line", from: from, to: to, options: options})
+
       return this
     }
 
@@ -156,14 +176,13 @@ export namespace Alt1OverlayDrawCalls {
       const start = Vector2.add(center, {x: -Math.floor(length / 2), y: 0},)
 
       const end = Vector2.add(start, {x: length, y: 0})
-      const mid = Vector2.snap(Vector2.add(start, {x: lodash.clamp(progress, 0, 1) * length, y: 0}))
+      const mid = Vector2.snap(Vector2.add(start, {x: FakeLodash.clamp(progress, 0, 1) * length, y: 0}))
 
       this.line(Vector2.add(start, {x: -contrast_border, y: 0}), Vector2.add(end, {x: contrast_border, y: 0}),
         {color: Alt1Color.black, width: thickness + 2 * contrast_border})
       this.line(start, mid, {color: done_color, width: thickness})
       this.line(mid, end, {color: remaining_color, width: thickness})
     }
-
 
     text(text: string, position: Vector2,
          options: Alt1OverlayDrawCalls.TextOptions = Alt1OverlayDrawCalls.TextOptions.DEFAULT): this {

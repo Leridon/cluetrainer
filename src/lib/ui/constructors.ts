@@ -77,6 +77,12 @@ export namespace C {
     return c().append(...content)
   }
 
+  export function par(
+    ...content: (Widget | string)[]
+  ) {
+    return c("<p>").append(...content)
+  }
+
   export function text_link(content: string, handler: () => any): Widget {
     return c("<span class='nisl-textlink'>").text(content).on("click", (e) => {
       e.preventDefault()

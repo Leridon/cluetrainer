@@ -4,9 +4,10 @@ import * as a1lib from "alt1";
 import {ImgRef, ImgRefBind, ImgRefData} from "alt1";
 import {LegacyOverlayGeometry} from "../LegacyOverlayGeometry";
 import {NeedleImage} from "./NeedleImage";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {Alt1Color} from "../Alt1Color";
 import {Alt1OverlayDrawCalls} from "../overlay/Alt1OverlayDrawCalls";
+import {FakeLodash} from "../../coreutil/FakeLodash";
 
 export class CapturedImage {
   private _name: string = undefined
@@ -123,7 +124,7 @@ export class CapturedImage {
   getScreenSection(absolute_area: ScreenRectangle): CapturedImage {
     return new CapturedImage(
       this.root().capture,
-      lodash.cloneDeep(absolute_area),
+      FakeLodash.cloneDeep(absolute_area),
       this.root()
     )
   }

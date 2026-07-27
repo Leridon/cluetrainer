@@ -1,11 +1,11 @@
-import * as leaflet from "leaflet";
-import {LatLng} from "leaflet";
 import {Transform} from "./Transform";
 import {Angles} from "./Angles";
 
 export type Vector2 = { x: number, y: number }
 
 export namespace Vector2 {
+  export const ZERO: Vector2 = {x: 0, y: 0}
+
   export function add(...a: Vector2[]): Vector2 {
     return {
       x: a.map(v => v.x).reduce((c, d) => c + d, 0),
@@ -101,20 +101,8 @@ export namespace Vector2 {
     return Math.min(Math.abs(a.x), Math.abs(a.y))
   }
 
-  export function toLatLong(point: Vector2): leaflet.LatLng {
-    return leaflet.latLng(point.y, point.x)
-  }
-
   export function asTuple(point: Vector2): [number, number] {
     return [point.x, point.y]
-  }
-
-  export function fromLatLong(point: LatLng): Vector2 {
-    return {x: point.lng, y: point.lat}
-  }
-
-  export function toPoint(c: Vector2): leaflet.Point {
-    return leaflet.point(c.x, c.y)
   }
 
   export function copy(c: Vector2): Vector2 {

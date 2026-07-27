@@ -1,7 +1,7 @@
 import Widget from "./Widget";
 import {Modal2} from "./Modal2";
 import {observe} from "../reactive";
-import {BigNisButton} from "../../trainer/ui/widgets/BigNisButton";
+import {BigNisButton} from "../../cluetrainer/ui/widgets/BigNisButton";
 import ButtonRow from "./ButtonRow";
 import {C} from "./constructors";
 import cls = C.cls;
@@ -14,7 +14,7 @@ export class NisModal extends Modal2 {
 
   title = observe("")
 
-  constructor(protected options: NisModal.Options = {}) {
+  constructor(protected override options: NisModal.Options = {}) {
     super(options);
 
     this.title.subscribe(title => {

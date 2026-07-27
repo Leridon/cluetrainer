@@ -6,10 +6,11 @@ import {MapEntity} from "./MapEntity";
 import * as tippy from "tippy.js";
 import {followCursor} from "tippy.js";
 import {QuadTree} from "../QuadTree";
-import {boxPolygon} from "../../trainer/ui/polygon_helpers";
 import {LifetimeManager} from "../lifetime/LifetimeManager";
 import {util} from "../util/util";
 import profile = util.profile;
+import {LeafletPolygonConstructors} from "./LeafletPolygonConstructors";
+import boxPolygon = LeafletPolygonConstructors.boxPolygon;
 
 function childLike(l: leaflet.Layer): l is GameLayer | MapEntity {
   return l instanceof GameLayer || l instanceof MapEntity
@@ -88,7 +89,7 @@ export class GameLayer extends leaflet.FeatureGroup {
     return this.map
   }
 
-  remove(): this {
+  override remove(): this {
     if (this.parent) this.parent.removeLayer(this)
     else super.remove()
 
@@ -101,7 +102,7 @@ export class GameLayer extends leaflet.FeatureGroup {
     return this
   }
 
-  addTo(layer: GameMap | LayerGroup | GameLayer): this {
+  override addTo(layer: GameMap | LayerGroup | GameLayer): this {
     if (layer instanceof GameMap) {
       layer.addGameLayer(this)
       return this
@@ -110,7 +111,7 @@ export class GameLayer extends leaflet.FeatureGroup {
     return super.addTo(layer)
   }
 
-  onAdd(map: GameMap): this {
+  override onAdd(map: GameMap): this {
     this.map = map
 
     this.eachEntity(e => {
@@ -122,7 +123,7 @@ export class GameLayer extends leaflet.FeatureGroup {
     return super.onAdd(map)
   }
 
-  onRemove(map: GameMap): this {
+  override onRemove(map: GameMap): this {
     this.map = null
 
     this.lifetime_manager.kill()

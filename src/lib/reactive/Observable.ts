@@ -1,7 +1,8 @@
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {ewent, Ewent} from "./Ewent";
 import {EwentHandler, observe} from "./index";
 import {LifetimeManager} from "../lifetime/LifetimeManager";
+import {FakeLodash} from "../coreutil/FakeLodash";
 
 export interface Observable<T> {
   changed: Ewent<{ value: T, old?: T }>
@@ -35,6 +36,10 @@ export namespace Observable {
       return this.changed.trigger({value: this._value, old: old_value})
     }
 
+    public observerCount(): number {
+      return this.changed.handlerCount()
+    }
+
     protected _set(v: T) {
       let old = this._value
       this._value = v
@@ -65,7 +70,7 @@ export namespace Observable {
     }
 
     update2(f: (v: T) => void): void {
-      let old = lodash.cloneDeep(this._value)
+      let old = FakeLodash.cloneDeep(this._value)
 
       f(this._value)
 
@@ -115,7 +120,7 @@ export namespace Observable {
       base.subscribe((v) => this._set(f(v)), true, h => lifetime_manager?.bind(h))
     }
 
-    set(v: T): void {
+    override set(v: T): void {
       throw new TypeError("Set not supported on derived observable")
     }
   }

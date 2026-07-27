@@ -1,14 +1,14 @@
 import {NisModal} from "../lib/ui/NisModal";
-import Properties from "../trainer/ui/widgets/Properties";
-import LightButton from "../trainer/ui/widgets/LightButton";
+import Properties from "../cluetrainer/ui/widgets/Properties";
+import LightButton from "../cluetrainer/ui/widgets/LightButton";
 import NumberSlider from "../lib/ui/controls/NumberSlider";
-import {Sliders} from "../lib/cluetheory/Sliders";
-import {RandomSolver} from "../lib/cluetheory/sliders/RandomSolver";
-import {PDBSolver} from "../lib/cluetheory/sliders/PDBSolver";
-import {RegionDistanceTable} from "../lib/cluetheory/sliders/RegionDistanceTable";
-import {PDBManager} from "../trainer/ui/neosolving/subbehaviours/SliderSolving";
-import {OptimizedSliderState} from "../lib/cluetheory/sliders/OptimizedSliderState";
-import * as lodash from "lodash";
+import {Sliders} from "../cluetrainer/cluetheory/Sliders";
+import {RandomSolver} from "../cluetrainer/cluetheory/sliders/RandomSolver";
+import {PDBSolver} from "../cluetrainer/cluetheory/sliders/PDBSolver";
+import {RegionDistanceTable} from "../cluetrainer/cluetheory/sliders/RegionDistanceTable";
+import {PDBManager} from "../cluetrainer/cluesolving/subbehaviours/SliderSolving";
+import {OptimizedSliderState} from "../cluetrainer/cluetheory/sliders/OptimizedSliderState";
+import lodash from "lodash";
 import {Process} from "../lib/Process";
 import {ewent} from "../lib/reactive";
 import {util} from "../lib/util/util";
@@ -16,10 +16,10 @@ import Widget from "../lib/ui/Widget";
 import {Checkbox} from "../lib/ui/controls/Checkbox";
 import {C} from "../lib/ui/constructors";
 import {async_lazy} from "../lib/Lazy";
-import {DropdownSelection} from "../trainer/ui/widgets/DropdownSelection";
-import {BigNisButton} from "../trainer/ui/widgets/BigNisButton";
-import {NislIcon} from "../trainer/ui/nisl";
-import AbstractEditWidget from "../trainer/ui/widgets/AbstractEditWidget";
+import {DropdownSelection} from "../cluetrainer/ui/widgets/DropdownSelection";
+import {BigNisButton} from "../cluetrainer/ui/widgets/BigNisButton";
+import {NislIcon} from "../cluetrainer/ui/nisl";
+import AbstractEditWidget from "../cluetrainer/ui/widgets/AbstractEditWidget";
 import SliderState = Sliders.SliderState;
 import MoveList = Sliders.MoveList;
 import avg = util.avg;
@@ -34,6 +34,7 @@ import copyUpdate = util.copyUpdate;
 import hboxl = C.hboxl;
 import space = C.space;
 import median = util.median;
+import {FakeLodash} from "../lib/coreutil/FakeLodash";
 
 export type SliderDataEntry = {
   id: number,
@@ -71,7 +72,7 @@ type SimulationResult = {
 function variance(list: number[]): number {
   const mean = avg(...list)
 
-  return lodash.sum(list.map(element => Math.pow(element - mean, 2))) / list.length
+  return FakeLodash.sum(list.map(element => Math.pow(element - mean, 2))) / list.length
 }
 
 export function stddev(list: number[]): number {
@@ -79,7 +80,7 @@ export function stddev(list: number[]): number {
 }
 
 function doStatistics(res: SimulationResult[number]["candidates"][number]): Statistics {
-  const sorted_lengths = lodash.sortBy(res.tests.filter(t => t.moves).map(t => t.moves.length))
+  const sorted_lengths = FakeLodash.sort(res.tests.filter(t => t.moves).map(t => t.moves.length))
 
   return {
     average: avg(...sorted_lengths),
@@ -114,7 +115,7 @@ export type SliderSet = {
 export class SliderSetEdit extends AbstractEditWidget<SliderSet> {
   constructor(private max_count: number) {super(vbox());}
 
-  protected render() {
+  protected override render() {
     super.render();
 
     this.empty()
@@ -392,7 +393,7 @@ class BenchmarkRunner extends NisModal {
   }
 
 
-  render() {
+  override render() {
     super.render();
 
     this.setTitle("Running Benchmarks")
@@ -576,13 +577,13 @@ export class SliderBenchmarkModal extends NisModal {
     this.title.set("Slider Solving Benchmark")
   }
 
-  render() {
+  override render() {
     super.render()
 
     this.configuration = new BenchmarkConfigurator().appendTo(this.body)
   }
 
-  getButtons(): BigNisButton[] {
+  override getButtons(): BigNisButton[] {
     return [
       new BigNisButton("Run", "confirm")
         .onClick(() => {

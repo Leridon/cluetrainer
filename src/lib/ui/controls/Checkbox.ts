@@ -1,4 +1,4 @@
-import AbstractEditWidget from "trainer/ui/widgets/AbstractEditWidget";
+import AbstractEditWidget from "cluetrainer/ui/widgets/AbstractEditWidget";
 import Widget from "../Widget";
 import {Observable, observe} from "../../reactive";
 import {C} from "../constructors";
@@ -42,7 +42,7 @@ export class Checkbox extends AbstractEditWidget<boolean> {
     })
   }
 
-  protected render() {
+  protected override render() {
     this.new_box.toggleClass("checked", this.get())
   }
 

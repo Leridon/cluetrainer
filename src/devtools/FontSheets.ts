@@ -2,18 +2,19 @@ import {Rectangle, Vector2} from "../lib/math";
 import lodash from "lodash";
 import {FontDefinition, GenerateFontMeta} from "alt1/ocr";
 import Widget from "../lib/ui/Widget";
-import Properties from "../trainer/ui/widgets/Properties";
-import LightButton from "../trainer/ui/widgets/LightButton";
+import Properties from "../cluetrainer/ui/widgets/Properties";
+import LightButton from "../cluetrainer/ui/widgets/LightButton";
 import {ImageDetect} from "alt1";
 import {observe} from "../lib/reactive";
 import TextArea from "../lib/ui/controls/TextArea";
 import {OCR} from "../lib/alt1/OCR";
 import {util} from "../lib/util/util";
 import {C} from "../lib/ui/constructors";
-import {IssueWidget} from "../trainer/pathedit/EditedPathOverview";
-import {ClueReader} from "../trainer/ui/neosolving/cluereader/ClueReader";
-import {SettingsLayout} from "../trainer/ui/settings/SettingsEdit";
+import {IssueWidget} from "../cluetrainer/pathedit/EditedPathOverview";
+import {ClueReader} from "../cluetrainer/cluesolving/cluereader/ClueReader";
+import {SettingsLayout} from "../cluetrainer/ui/settings/SettingsEdit";
 import {storage} from "../lib/util/storage";
+import {FakeLodash} from "../lib/coreutil/FakeLodash";
 
 export namespace FontSheets {
 
@@ -195,7 +196,7 @@ export namespace FontSheets {
     without_bearings: ImageData,
     after_fontscript: ImageData,
     font_meta: GenerateFontMeta,
-    font_definition: FontDefinition
+    font_definition: OCR.FontDefinition
   }
 
   export type GlyphPlacement = { bearing: number, padleft: number, padright: number }
@@ -247,7 +248,7 @@ export namespace FontSheets {
 
     const glyph_height = Math.max(...font.glyphs.map(c => c.sprite.size.y + c.placement.bearing))
 
-    const width = lodash.sum(font.glyphs.map(c => {
+    const width = FakeLodash.sum(font.glyphs.map(c => {
       const left = c.placement.padleft
       const right = c.placement.padright
 
@@ -322,7 +323,7 @@ export namespace FontSheets {
       without_bearings: without_bearings,
       after_fontscript: after_font_script,
       font_meta: font.meta,
-      font_definition: OCR.loadFontImage(after_font_script, font.meta)
+      font_definition: OCR.loadFontImage(after_font_script, font.meta) as FontDefinition
     }
   }
 

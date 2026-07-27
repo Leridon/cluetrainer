@@ -1,20 +1,15 @@
 import * as leaflet from "leaflet"
-import {Layer, LayerOptions} from "leaflet"
+import {Layer} from "leaflet"
 
 export class OpacityGroup extends leaflet.FeatureGroup {
-
-  options: LayerOptions & {
-    opacity: number
-  }
+  protected opacity: number = 1
 
   constructor() {
     super();
-
-    this.options.opacity = 1
   }
 
   setOpacity(opacity: number): this {
-    this.options.opacity = opacity
+    this.opacity = opacity
 
     this.getTooltip()?.setOpacity(opacity)
 
@@ -53,17 +48,21 @@ export class OpacityGroup extends leaflet.FeatureGroup {
     }
   }[] = []
 
-  addLayer(layer: Layer): this {
+  override addLayer(layer: Layer): this {
     super.addLayer(layer);
 
     function get(): {
       stroke: number,
       fill?: number
     } {
-      if (layer instanceof OpacityGroup
-        || layer instanceof leaflet.Marker
+      if (layer instanceof leaflet.Marker
         || layer instanceof leaflet.Tooltip
-      ) return {stroke: layer.options.opacity}
+      ) return {
+        stroke: layer.options.opacity
+      }
+      else if (layer instanceof OpacityGroup) return {
+        stroke: layer.opacity
+      }
       else if (layer instanceof leaflet.Polyline) return {
         stroke: layer.options.opacity,
         fill: layer.options.fillOpacity
@@ -80,7 +79,7 @@ export class OpacityGroup extends leaflet.FeatureGroup {
     return this
   }
 
-  removeLayer(layer: number | Layer): this {
+  override removeLayer(layer: number | Layer): this {
     super.removeLayer(layer)
 
     this.children.splice(this.children.findIndex(c => c.layer == layer))

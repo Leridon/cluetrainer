@@ -1,13 +1,13 @@
 import InteractionLayer from "./InteractionLayer";
 import * as leaflet from "leaflet";
-import {Observable, observe} from "lib/reactive";
+import {observe} from "lib/reactive";
 
 export class ValueInteraction<T> extends InteractionLayer {
   private _preview: leaflet.Layer = null
 
   private previewFunction: (_: T) => leaflet.Layer
 
-  value: Observable<{ value: T, committed: boolean }> = observe({value: null, committed: false})
+  value = observe<{ value: T, committed: boolean }>({value: null, committed: false})
 
   constructor(protected config: ValueInteraction.option_t<T> = {}) {
     super();
@@ -31,7 +31,7 @@ export class ValueInteraction<T> extends InteractionLayer {
     return this
   }
 
-  cancel() {
+  override cancel() {
     if (!this.value.value().committed) this.value.set({value: null, committed: true})
     super.cancel()
   }

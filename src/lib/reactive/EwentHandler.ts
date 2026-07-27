@@ -32,7 +32,7 @@ export class EwentHandler<T> implements LifetimeManaged {
 
 export namespace EventHandler {
   export class Once<T> extends EwentHandler<T> {
-    apply(v: T): void | Promise<void> {
+    override apply(v: T): void | Promise<void> {
       this.remove()
       return super.apply(v)
     }

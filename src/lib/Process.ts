@@ -3,7 +3,7 @@ import {util} from "./util/util";
 import delay = util.delay;
 
 export abstract class Process<Result = void> {
-  private finished_event = ewent<this>()
+  private finished_event = ewent<void>()
 
   private is_running: boolean = false
   protected should_stop: boolean = false
@@ -72,7 +72,7 @@ export abstract class Process<Result = void> {
     this.should_stop = false
     this.finished = true
 
-    this.finished_event.trigger(this)
+    this.finished_event.trigger(undefined)
 
     return result
   }
@@ -100,7 +100,7 @@ export abstract class Process<Result = void> {
   await(): Promise<this> {
     return new Promise(resolve => {
       if (this.finished) resolve(this)
-      else this.finished_event.on(resolve)
+      else this.finished_event.on(() => resolve(this))
     })
   }
 
@@ -119,7 +119,7 @@ export abstract class Process<Result = void> {
   }
 
   onFinished(f: (_: this) => void): this {
-    this.finished_event.on(f)
+    this.finished_event.on(() => f(this))
     return this
   }
 }

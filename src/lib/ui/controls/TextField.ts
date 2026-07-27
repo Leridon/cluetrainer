@@ -1,5 +1,5 @@
-import AbstractEditWidget from "trainer/ui/widgets/AbstractEditWidget";
-import * as jquery from "jquery";
+import AbstractEditWidget from "cluetrainer/ui/widgets/AbstractEditWidget";
+import jquery from "jquery";
 import {ewent, EwentHandler} from "../../reactive";
 
 export default class TextField extends AbstractEditWidget<string> {
@@ -42,7 +42,7 @@ export default class TextField extends AbstractEditWidget<string> {
     return this
   }
 
-  protected render() {
+  protected override render() {
     this.container.val(this.get())
   }
 }

@@ -6,7 +6,7 @@ export abstract class FormModal<T> extends NisModal {
     resolved: boolean
   } = null
 
-  protected constructor(protected options: NisModal.Options = {}) {
+  protected constructor(protected override options: NisModal.Options = {}) {
     super(options);
 
     this.hidden.on(() => this.cancel())

@@ -5,9 +5,9 @@ import {TileArea} from "./coordinates/TileArea";
 import {TileTransform} from "./coordinates/TileTransform";
 import {CursorType} from "./CursorType";
 import {EntityName} from "./EntityName";
-import {Settings} from "../../trainer/ui/settings/Settings";
-import {deps} from "../../trainer/dependencies";
-import {ProcessedCacheTypes} from "../../trainer/ui/devutilitylayer/cachetools/ProcessedCacheTypes";
+import {Settings} from "../../cluetrainer/ui/settings/Settings";
+import {deps} from "../../cluetrainer/dependencies";
+import {ProcessedCacheTypes} from "../../cluetrainer/ui/devutilitylayer/cachetools/ProcessedCacheTypes";
 
 export namespace Transportation {
 

@@ -1,7 +1,8 @@
 import * as leaflet from "leaflet"
 import {PolylineOptions} from "leaflet"
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {Vector2} from "../../math";
+import {FakeLodash} from "../../coreutil/FakeLodash";
 
 /**
  *  File: Graticule.ts
@@ -62,7 +63,7 @@ export default class Graticule extends leaflet.FeatureGroup {
     return this
   }
 
-  onRemove(map): this {
+  override onRemove(map): this {
     let self = this
 
     this._map.off('zoomend', self._hook)
@@ -73,7 +74,7 @@ export default class Graticule extends leaflet.FeatureGroup {
 
   redraw() {
     let bounds = this._map.getBounds()
-    let interval = lodash.minBy(this._options.intervals.filter((i) => this._map.getZoom() >= i.min_zoom), (i) => i.interval)
+    let interval = FakeLodash.minBy(this._options.intervals.filter((i) => this._map.getZoom() >= i.min_zoom), (i) => i.interval)
 
     if (!this.last_drawn || !this.last_drawn.bounds.contains(bounds) || this.last_drawn.interval != interval?.interval) {
       this.constructLines(this._map.getBounds().pad(0.5), interval?.interval)

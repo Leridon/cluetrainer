@@ -1,4 +1,4 @@
-import * as jquery from "jquery";
+import jquery from "jquery";
 import Widget from "./Widget";
 import {C} from "./constructors";
 import Appendable = C.Appendable;

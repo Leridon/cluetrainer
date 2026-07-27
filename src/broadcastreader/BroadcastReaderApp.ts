@@ -2,21 +2,21 @@ import Behaviour from "../lib/ui/Behaviour";
 import {CaptureInterval} from "../lib/alt1/capture";
 import {ChatReader} from "../lib/alt1/readers/ChatReader";
 import Widget from "../lib/ui/Widget";
-import * as jquery from "jquery";
+import jquery from "jquery";
 import TextField from "../lib/ui/controls/TextField";
-import Properties from "../trainer/ui/widgets/Properties";
+import Properties from "../cluetrainer/ui/widgets/Properties";
 import {observe} from "../lib/reactive";
-import {BigNisButton} from "../trainer/ui/widgets/BigNisButton";
-import {Notification, NotificationBar} from "../trainer/ui/NotificationBar";
+import {BigNisButton} from "../cluetrainer/ui/widgets/BigNisButton";
+import {Notification, NotificationBar} from "../cluetrainer/ui/NotificationBar";
 import KeyValueStore from "../lib/util/KeyValueStore";
 import {util} from "../lib/util/util";
 import {C} from "../lib/ui/constructors";
 import {storage} from "../lib/util/storage";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {List} from "../lib/ui/List";
 import {ClickToCopy} from "../lib/ui/ClickToCopy";
 import {MessageBuffer} from "../lib/alt1/readers/chatreader/ChatBuffer";
-import {ExpandIcon, NislIcon} from "../trainer/ui/nisl";
+import {ExpandIcon, NislIcon} from "../cluetrainer/ui/nisl";
 import {ExpansionBehaviour} from "../lib/ui/ExpansionBehaviour";
 import {Alt1} from "../lib/alt1/Alt1";
 import {LogViewer} from "../devtools/LogViewer";
@@ -33,6 +33,7 @@ import Message = MessageBuffer.Message;
 import renderTimespan = util.renderTimespan;
 import spacer = C.spacer;
 import log = Log.log;
+import {FakeLodash} from "../lib/coreutil/FakeLodash";
 
 const item_mapping: {
   item: string,
@@ -265,7 +266,7 @@ namespace EventBuffer {
     if (is_new) {
       buffer.detected.push(detection)
 
-      buffer.detected = lodash.sortBy(buffer.detected, e => -e.message_timestamp)
+      buffer.detected = FakeLodash.sortBy(buffer.detected, e => -e.message_timestamp)
     }
 
     return is_new

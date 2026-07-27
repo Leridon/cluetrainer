@@ -1,13 +1,12 @@
-import {Process} from "../../Process";
 import {CapturedImage} from "./CapturedImage";
-import {ScreenRectangle} from "../ScreenRectangle";
 import {ewent} from "../../reactive";
 import {Log} from "../../util/Log";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import {LifetimeManager} from "../../lifetime/LifetimeManager";
 import {LifetimeManaged} from "../../lifetime/LifetimeManaged";
 import TimedValue = AbstractCaptureService.TimedValue;
 import CaptureTime = AbstractCaptureService.CaptureTime;
+import {FakeLodash} from "../../coreutil/FakeLodash";
 
 export type InterestedToken<InterestOptionsT extends AbstractCaptureService.Options = AbstractCaptureService.Options, ValueT = any> = {
   token: AbstractCaptureService.InterestToken<InterestOptionsT, ValueT>,
@@ -34,7 +33,7 @@ export abstract class AbstractCaptureService<
           token.handle?.(value)
         }
 
-        isPaused(): boolean {
+        override isPaused(): boolean {
           return token.paused?.() ?? false
         }
 
@@ -42,7 +41,7 @@ export abstract class AbstractCaptureService<
           return token.options(time);
         }
 
-        isOneTime(): boolean {
+        override isOneTime(): boolean {
           if (token.isOneTime) return token.isOneTime()
           return false
         }
@@ -291,7 +290,7 @@ export abstract class DerivedCaptureService<
 
         return {
           ...compound_options,
-          interval: lodash.minBy([CaptureInterval.level(200), ...interested_in_this_tick.map(t => t.options.interval)], t => t.tick_modulo),
+          interval: FakeLodash.minBy([CaptureInterval.level(200), ...interested_in_this_tick.map(t => t.options.interval)], t => t.tick_modulo),
           original_interests: interested_in_this_tick
         }
       }
@@ -305,7 +304,7 @@ export abstract class DerivedCaptureService<
         return options(interested_in_this_tick)
       }*/
 
-      isPaused(): boolean {
+      override isPaused(): boolean {
         return self.interests.every(t => t.isPaused());
       }
     })

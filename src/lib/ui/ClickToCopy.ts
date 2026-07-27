@@ -1,5 +1,5 @@
 import Widget from "./Widget";
-import * as jquery from "jquery";
+import jquery from "jquery";
 
 export class ClickToCopy extends Widget {
   constructor(text: string, displayed_text_override: string = null) {

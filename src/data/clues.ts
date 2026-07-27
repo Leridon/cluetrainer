@@ -1,5 +1,5 @@
-import {Clues, ClueType} from "lib/runescape/clues"
-import {ClueIndex, ClueSpotIndex} from "../lib/runescape/clues/ClueIndex";
+import {Clues} from "../cluetrainer/model/Clues";
+import {ClueIndex, ClueSpotIndex} from "../cluetrainer/model/clues/ClueIndex";
 
 export namespace clue_data {
   export const gielinor_compass: Clues.Compass =
@@ -1015,7 +1015,7 @@ export namespace clue_data {
       "type": "simple",
       "tier": "easy",
       "text": ["Speak to Arhein in Catherby."],
-      "solution": {"type": "talkto", "npc": "Arhein", "spots": [{"range": {"origin": {"x": 2802, "y": 3425, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "in Catherby"}]}
+      "solution": {"type": "talkto", "npc": "Arhein", "spots": [{"range": {"origin": {"x": 2803, "y": 3426, "level": 0}}, "description": "in Catherby"}]}
     }, {
       "id": 107,
       "type": "simple",
@@ -1085,7 +1085,7 @@ export namespace clue_data {
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crates near the Lumbridge Market."],
-      "solution": {"type": "search", "entity": "Crates", "spot": {"level": 0, "topleft": {"x": 3192, "y": 3257}, "botright": {"x": 3192, "y": 3257}}}
+      "solution": {"type": "search", "entity": "Crates", "spot": {"level": 0, "topleft": {"x": 3191, "y": 3257}, "botright": {"x": 3192, "y": 3257}}}
     }, {
       "id": 121,
       "type": "simple",
@@ -1194,7 +1194,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Challenge Mistress Fara",
-        "spots": [{"range": {"origin": {"x": 2882, "y": 3532, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "in Burthorpe"}]
+        "spots": [{"range": {"origin": {"x": 2883, "y": 3533, "level": 0}}, "description": "in Burthorpe"}]
       }
     }, {
       "id": 94,
@@ -1262,7 +1262,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Gnome ball referee",
-        "spots": [{"range": {"origin": {"x": 2384, "y": 3487, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "at the gate of the Gnomeball Field"}]
+        "spots": [{"range": {"origin": {"x": 2385, "y": 3488, "level": 0}}, "description": "at the gate of the Gnomeball Field"}]
       }
     }, {
       "id": 128,
@@ -1297,7 +1297,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Foreman George",
-        "spots": [{"range": {"origin": {"x": 3154, "y": 3239, "level": 0}, "size": {"x": 3, "y": 3}, "data": "ugA="}, "description": "near the sandcastles"}]
+        "spots": [{"range": {"origin": {"x": 3155, "y": 3240, "level": 0}}, "description": "near the sandcastles"}]
       }
     },
     {
@@ -1308,7 +1308,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Sheldon",
-        "spots": [{"range": {"origin": {"x": 3168, "y": 3253, "level": 0}, "size": {"x": 3, "y": 3}, "data": "ugA="}, "description": "at the northern entrance"}]
+        "spots": [{"range": {"origin": {"x": 3169, "y": 3254, "level": 0}}, "description": "at the northern entrance"}]
       }
     },
     {
@@ -1319,7 +1319,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Wellington",
-        "spots": [{"range": {"origin": {"x": 3184, "y": 3231, "level": 0}, "size": {"x": 3, "y": 3}, "data": "ugA="}, "description": "at the fishing spots"}]
+        "spots": [{"range": {"origin": {"x": 3185, "y": 3232, "level": 0}}, "description": "at the fishing spots"}]
       }
     },
     {
@@ -1330,7 +1330,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Sarah",
-        "spots": [{"range": {"origin": {"x": 3169, "y": 3214, "level": 0}, "size": {"x": 3, "y": 3}, "data": "ugA="}, "description": "at the southern entrance"}]
+        "spots": [{"range": {"origin": {"x": 3170, "y": 3215, "level": 0}}, "description": "at the southern entrance"}]
       }
     },
     {
@@ -1341,7 +1341,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Flo",
-        "spots": [{"range": {"origin": {"x": 3163, "y": 3213, "level": 0}, "size": {"x": 3, "y": 3}, "data": "ugA="}, "description": "at the southern entrance"}]
+        "spots": [{"range": {"origin": {"x": 3164, "y": 3214, "level": 0}}, "description": "at the southern entrance"}]
       }
     },
     {
@@ -1352,7 +1352,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Lifeguard",
-        "spots": [{"range": {"origin": {"x": 3165, "y": 3255, "level": 0}, "size": {"x": 3, "y": 3}, "data": "ugA="}, "description": "at the northern entrance"}]
+        "spots": [{"range": {"origin": {"x": 3166, "y": 3256, "level": 0}}, "description": "at the northern entrance"}]
       }
     },
     {
@@ -1363,11 +1363,9 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Palmer",
-        "spots": [{"range": {"origin": {"x": 3142, "y": 3227, "level": 0}, "size": {"x": 3, "y": 3}, "data": "ugA="}, "description": "at the western entrance"}]
+        "spots": [{"range": {"origin": {"x": 3143, "y": 3228, "level": 0}}, "description": "at the western entrance"}]
       }
     },
-
-
     {
       "id": 179,
       "type": "cryptic",
@@ -1742,7 +1740,7 @@ export namespace clue_data {
         "type": "talkto",
         "spots": [{
           "id": "default",
-          "range": {"origin": {"x": 2185, "y": 3283, "level": 1}, "size": {"x": 3, "y": 3}},
+          "range": {"origin": {"x": 2186, "y": 3284, "level": 1}},
           "note": "After 'Plague's End'",
           "description": "in Prifddinas"
         }, {
@@ -1760,7 +1758,7 @@ export namespace clue_data {
       "text": ["I am head of the abbey with a cold breeze from the west.", "'A bag belt only?' he asked his balding brothers"],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 3055, "y": 3482, "level": 0}, "size": {"x": 5, "y": 6}}, "description": "at the Edgeville Monastery"}],
+        "spots": [{"range": {"origin": {"x": 3055, "y": 3482, "level": 0}, "size": {"x": 5, "y": 6}, "data": "73+MMQ=="}, "description": "at the Edgeville Monastery"}],
         "npc": "Abbot Langley"
       }
     }, {
@@ -1795,7 +1793,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "hard",
       "text": ["You will need to wash the old ash off of your spade when you dig here, but the only water nearby is stagnant."],
-      "solution": {"type": "dig", "spot": {"x": 2134, "y": 5162, "level": 0}, "description": "next to the puddle on top of the mountain on Braindeath Island"}
+      "solution": {"type": "dig", "spot": {"x": 2134, "y": 5163, "level": 0}, "description": "next to the puddle on top of the mountain on Braindeath Island"}
     }, {
       "id": 144,
       "type": "cryptic",
@@ -1966,7 +1964,7 @@ export namespace clue_data {
       "challenge": [{"type": "slider"}],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 2849, "y": 3492, "level": 1}, "size": {"x": 3, "y": 3}}, "description": "at the top of White Wolf Mountain"}],
+        "spots": [{"range": {"origin": {"x": 2850, "y": 3493, "level": 1}}, "description": "at the top of White Wolf Mountain"}],
         "npc": "Captain Bleemadge"
       }
     }, {
@@ -2028,7 +2026,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "hard",
       "text": ["Come to the evil ledge, Yew know yew want to. Try not to get stung.", "Come to the Try not to get stung."],
-      "solution": {"type": "dig", "spot": {"x": 3088, "y": 3468, "level": 0}, "description": "next to the yew tree"}
+      "solution": {"type": "dig", "spot": {"x": 3089, "y": 3468, "level": 0}, "description": "next to the yew tree"}
     }, {
       "id": 178,
       "type": "cryptic",
@@ -2058,7 +2056,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "hard",
       "text": ["And so on, and so on, and so on. Walking from the land of many unimportant things leads to a choice of paths."],
-      "solution": {"type": "dig", "spot": {"x": 2591, "y": 3879, "level": 0}, "description": "at the crossoads on Etceteria"}
+      "solution": {"type": "dig", "spot": {"x": 2592, "y": 3879, "level": 0}, "description": "at the crossoads on Etceteria"}
     }, {
       "id": 224,
       "type": "cryptic",
@@ -2722,7 +2720,7 @@ export namespace clue_data {
       "image_url": "/assets/Map_clue_Falador_statue_crossroads.png",
       "text": ["X marks the spot near a statue."],
       "ocr_data": [26, 77, 180, 26, 77, -4, 6, 8, 26, 77, -5, 8, 10, 25, 78, -4, 6, 7, 26, 80, -1, 5, 6, 25, 77, -2, 7, 8, 26, 77, -4, 7, 9, 26, 77, -5, 6, 8, 25, 80, -7, 7, 9, 25, 86, -6, 7, 8, 25, 82, -7, 6, 7, 26, 82, -5, 5, 6, 26, 82, -7, 4, 6, 25, 82, -6, 5, 7, 25, 85, -7, 6, 7, 26, 81, -8, 8, 10, 26, 78, -4, 7, 9, 25, 76, -8, 7, 9, 25, 79, -5, 5, 7, 26, 81, -2, 6, 8, 26, 77, 4, 21, 28, 27, 71, 14, 32, 44, 25, 78, -7, 6, 7, 24, 80, -8, 6, 8, 26, 76, 2, 24, 29, 27, 75, 21, 31, 38, 26, 83, -3, 6, 8, 27, 76, 10, 24, 28, 25, 79, -9, 6, 10, 25, 83, -10, 7, 8, 26, 80, -8, 6, 8, 25, 77, -6, 8, 10, 26, 78, -8, 6, 8, 26, 78, -7, 6, 10, 27, 74, 20, 44, 51, 26, 80, -7, 5, 6, 26, 79, -7, 5, 8, 26, 78, -2, 16, 21, 26, 80, -7, 6, 8, 25, 79, -8, 7, 9, 26, 75, 3, 19, 29, 26, 81, -4, 6, 7, 27, 69, 24, 48, 52, 26, 78, -4, 11, 15, 26, 80, -10, 6, 7, 26, 80, -9, 7, 8, 25, 78, -7, 5, 6, 25, 78, -7, 6, 8, 25, 77, -7, 4, 5, 26, 79, -3, 14, 18, 27, 81, -8, 6, 7, 26, 80, -8, 6, 8, 26, 75, 14, 49, 54, 27, 69, 25, 44, 51, 24, 79, -1, 15, 19, 25, 78, -3, 12, 16, 26, 78, -4, 7, 9, 26, 78, -2, 7, 9, 26, 80, -5, 6, 8, 25, 79, -9, 6, 8, 26, 79, -10, 5, 6, 25, 78, -4, 8, 10, 26, 78, -8, 6, 8, 25, 78, -9, 5, 6, 25, 80, -3, 18, 22, 28, 71, 20, 56, 60, 26, 80, -8, 6, 8, 26, 81, -11, 5, 7, 25, 48, 31, 77, 85, 25, 64, 10, 29, 35, 27, 70, 19, 51, 57, 25, 77, -5, 6, 9, 27, 79, -3, 7, 9, 25, 80, -5, 5, 6, 26, 81, -9, 6, 7, 26, 80, -12, 6, 7, 26, 77, -10, 5, 7, 25, 81, -8, 6, 7, 26, 78, -12, 6, 9, 26, 77, 17, 71, 86, 26, 74, 17, 75, 86, 26, 78, -8, 10, 16, 25, 80, -10, 7, 8, 21, 36, 35, 49, 58, 23, 38, 37, 42, 51, 25, 78, -7, 7, 8, 25, 78, -7, 11, 16, 26, 76, 0, 16, 21, 26, 78, 13, 52, 60, 26, 81, -8, 5, 11, 25, 80, -10, 6, 7, 26, 77, -10, 7, 9, 26, 78, -13, 7, 8, 25, 80, -10, 6, 8, 26, 77, -2, 18, 27, 26, 75, 14, 66, 73, 27, 75, 15, 69, 87, 26, 77, 3, 44, 57, 24, 51, 34, 135, 153, 25, 52, 34, 63, 80, 26, 75, 32, 85, 97, 26, 76, 23, 58, 67, 26, 79, 26, 71, 88, 26, 80, 21, 62, 73, 25, 80, -3, 20, 24, 26, 79, -11, 6, 7, 26, 79, -5, 6, 8, 26, 78, -13, 6, 7, 26, 78, -10, 6, 8, 27, 71, 17, 48, 53, 26, 77, -6, 12, 17, 27, 77, 6, 52, 63, 27, 79, 9, 46, 59, 26, 80, -7, 6, 14, 26, 72, 14, 94, 107, 26, 74, 25, 67, 86, 26, 78, 28, 77, 89, 26, 79, 13, 44, 52, 25, 83, -4, 6, 7, 26, 79, -10, 6, 7, 26, 81, -10, 6, 8, 26, 79, -3, 5, 6, 25, 80, -6, 6, 8, 26, 82, -9, 6, 8, 26, 80, 0, 19, 23, 28, 66, 33, 62, 69, 27, 76, -14, 6, 7, 27, 75, 10, 58, 66, 26, 81, -8, 7, 8, 25, 75, 3, 26, 27, 26, 78, 15, 51, 59, 25, 80, -4, 7, 10, 26, 80, -5, 5, 8, 26, 76, 3, 21, 24, 25, 79, -6, 5, 6, 26, 79, -11, 5, 6, 25, 81, -2, 7, 10, 25, 80, -4, 8, 10, 26, 81, -6, 6, 8, 26, 77, 14, 31, 37, 25, 78, 3, 21, 27, 28, 66, 32, 60, 65, 25, 79, 1, 17, 26, 26, 78, 16, 57, 64, 26, 78, 12, 51, 57, 26, 77, 7, 40, 49, 25, 77, -3, 10, 13, 26, 69, 2, 23, 29, 25, 72, 4, 27, 28, 26, 80, -9, 5, 7, 27, 77, -12, 5, 7, 26, 82, -2, 6, 8, 26, 82, -5, 7, 8, 25, 82, -3, 8, 10, 25, 77, 3, 22, 27, 26, 81, -3, 7, 8, 27, 72, 21, 44, 52, 25, 83, -3, 8, 10, 26, 81, 20, 59, 69, 26, 79, 11, 44, 53, 26, 78, -10, 5, 6, 26, 78, -11, 5, 6, 27, 73, -5, 16, 19, 26, 80, -8, 6, 8, 26, 79, -12, 6, 7, 27, 77, -14, 5, 7, 25, 84, 0, 9, 11, 24, 84, -2, 8, 10, 24, 85, -1, 9, 11, 25, 84, 1, 7, 9, 25, 84, 0, 7, 9, 25, 80, 9, 29, 41, 24, 84, -1, 8, 10, 25, 83, 11, 44, 53, 26, 80, -10, 6, 8, 26, 78, -11, 6, 8, 26, 77, -13, 6, 7, 27, 78, -13, 5, 6, 26, 80, -8, 6, 7, 26, 78, -12, 6, 8, 27, 76, -13, 6, 8],
-      "solution": {"type": "dig", "description": "two tiles south-east of the bench", "spot": {"x": 2971, "y": 3414, "level": 0}}
+      "solution": {"type": "dig", "description": "two tiles south-east of the bench", "spot": {"x": 2970, "y": 3414, "level": 0}}
     }, {
       "id": 56,
       "type": "map",
@@ -2886,7 +2884,7 @@ export namespace clue_data {
       "image_url": "/assets/Map_clue_small_volcanoes.png",
       "text": ["X marks the spot between three small volcanoes."],
       "ocr_data": [26, 78, 184, 26, 77, 0, 6, 8, 26, 77, -1, 8, 10, 25, 78, 0, 6, 7, 26, 79, 8, 24, 32, 26, 77, 4, 10, 20, 26, 77, 0, 7, 9, 26, 77, -1, 6, 8, 25, 80, -3, 7, 9, 25, 86, -2, 7, 8, 25, 82, -3, 6, 7, 26, 82, -1, 5, 6, 26, 82, -3, 4, 6, 25, 82, -2, 5, 7, 25, 85, -3, 6, 7, 26, 81, -4, 8, 10, 26, 78, 0, 7, 9, 25, 76, -4, 7, 9, 25, 79, -1, 5, 7, 26, 75, 19, 61, 68, 26, 78, 4, 18, 25, 26, 78, -3, 7, 8, 25, 78, -3, 6, 7, 24, 80, -4, 6, 8, 25, 80, -5, 5, 7, 26, 84, -1, 5, 6, 26, 83, 1, 6, 8, 26, 82, -3, 5, 6, 25, 79, -5, 5, 7, 25, 83, -6, 7, 8, 26, 80, -4, 6, 8, 25, 77, -2, 8, 10, 26, 78, -4, 6, 8, 26, 78, -3, 6, 7, 25, 82, 0, 5, 7, 26, 80, -3, 5, 6, 26, 79, -3, 5, 7, 26, 80, -4, 5, 6, 26, 80, -3, 6, 8, 25, 79, -4, 7, 8, 26, 79, -3, 5, 7, 26, 81, 0, 6, 7, 26, 79, -1, 5, 6, 26, 79, -3, 5, 7, 26, 80, -6, 6, 7, 26, 80, -5, 7, 8, 25, 78, -3, 5, 6, 25, 78, -3, 6, 8, 25, 77, -3, 4, 5, 26, 81, -3, 4, 6, 27, 81, -4, 6, 7, 26, 80, 0, 14, 19, 25, 84, -2, 12, 17, 25, 80, -7, 6, 8, 24, 80, -1, 7, 8, 25, 78, -2, 6, 8, 26, 78, 0, 7, 9, 26, 78, 2, 7, 9, 26, 80, -1, 6, 8, 25, 79, -5, 6, 8, 26, 79, -6, 5, 6, 25, 78, 0, 8, 10, 26, 78, -4, 6, 8, 25, 78, -5, 5, 6, 25, 80, -3, 6, 7, 26, 80, -3, 6, 7, 25, 58, 36, 42, 47, 25, 63, 27, 36, 41, 26, 77, -9, 5, 7, 25, 79, -3, 6, 8, 26, 77, -3, 11, 22, 25, 77, -1, 6, 8, 27, 79, 1, 8, 12, 26, 76, 19, 96, 103, 26, 81, -5, 6, 7, 26, 80, -8, 6, 7, 26, 77, -6, 5, 7, 25, 81, -4, 6, 7, 26, 78, -8, 6, 7, 26, 79, -5, 6, 8, 26, 77, -6, 6, 7, 26, 78, -7, 5, 6, 25, 80, -4, 14, 23, 25, 71, 61, 122, 141, 26, 63, 20, 42, 55, 24, 46, 101, 37, 51, 25, 76, 0, 13, 20, 27, 79, -2, 7, 9, 26, 77, 5, 20, 23, 26, 81, -5, 5, 6, 25, 80, -6, 6, 7, 26, 77, -6, 7, 9, 26, 78, -9, 7, 8, 25, 80, -6, 6, 8, 26, 78, -4, 7, 9, 26, 77, -4, 6, 8, 26, 76, -7, 7, 8, 26, 78, -8, 7, 13, 25, 75, 15, 38, 47, 25, 63, 22, 31, 41, 23, 47, 47, 22, 26, 26, 71, 13, 22, 27, 26, 82, 3, 7, 8, 25, 82, 1, 8, 9, 25, 80, -5, 5, 6, 26, 79, -7, 6, 7, 26, 79, -1, 6, 8, 26, 78, -9, 6, 7, 26, 78, -6, 6, 8, 25, 78, -2, 8, 9, 26, 78, -5, 6, 7, 27, 78, -8, 5, 7, 27, 81, -7, 6, 8, 26, 81, -4, 6, 7, 26, 81, 1, 7, 9, 26, 80, -1, 7, 9, 25, 82, 1, 6, 8, 26, 80, 2, 7, 9, 25, 83, 0, 6, 7, 26, 79, -6, 6, 7, 26, 81, -6, 6, 8, 26, 79, 1, 5, 6, 25, 80, -2, 6, 8, 26, 82, -5, 6, 8, 26, 82, 0, 9, 11, 26, 79, -5, 6, 8, 27, 76, -10, 6, 7, 27, 77, -8, 6, 11, 24, 53, 58, 59, 66, 25, 79, -1, 7, 13, 25, 80, -3, 5, 7, 25, 80, 0, 6, 7, 26, 80, -1, 4, 5, 26, 81, -1, 4, 6, 25, 79, -2, 5, 6, 26, 79, -7, 5, 6, 25, 81, 2, 7, 10, 25, 80, 0, 8, 10, 26, 81, -2, 6, 8, 25, 83, 1, 8, 10, 25, 80, 0, 6, 7, 26, 79, -2, 6, 7, 25, 80, -1, 7, 11, 25, 70, 11, 21, 25, 25, 78, -2, 7, 11, 26, 78, -3, 6, 7, 25, 79, -3, 5, 6, 26, 76, -8, 4, 5, 26, 79, -4, 4, 5, 26, 80, -5, 5, 7, 27, 77, -8, 5, 7, 26, 82, 2, 6, 8, 26, 82, -1, 7, 8, 25, 82, 1, 8, 10, 25, 80, 0, 7, 9, 26, 80, 5, 25, 33, 26, 77, 17, 76, 86, 25, 83, 1, 8, 10, 25, 83, 1, 7, 9, 26, 81, -3, 6, 7, 26, 78, -6, 5, 6, 26, 78, -7, 5, 6, 27, 77, -9, 5, 6, 26, 80, -4, 6, 8, 26, 79, -8, 6, 7, 27, 77, -10, 5, 7, 25, 84, 4, 9, 11, 24, 84, 2, 8, 10, 24, 85, 3, 9, 11, 25, 84, 5, 7, 9, 25, 84, 4, 7, 9, 25, 81, 8, 18, 24, 24, 84, 3, 8, 10, 25, 85, 1, 10, 12, 26, 80, -6, 6, 8, 26, 78, -7, 6, 8, 26, 77, -9, 6, 7, 27, 78, -9, 5, 6, 26, 80, -4, 6, 7, 26, 78, -8, 6, 8, 27, 76, -9, 6, 8],
-      "solution": {"type": "dig", "spot": {"x": 3021, "y": 3913, "level": 0}, "description": "two tiles west of the large geyser"}
+      "solution": {"type": "dig", "spot": {"x": 3021, "y": 3912, "level": 0}, "description": "two tiles west of the large geyser"}
     }]
 
   export const anagram: Clues.Anagram[] = [
@@ -2946,7 +2944,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Nails Newton",
-        "spots": [{"range": {"origin": {"x": 2880, "y": 3443, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "near Taverley Lodestone"}]
+        "spots": [{"range": {"origin": {"x": 2881, "y": 3444, "level": 0}}, "description": "near Taverley Lodestone"}]
       },
       "anagram": ["Winston Lane"]
     }, {
@@ -2958,7 +2956,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Valerio",
-        "spots": [{"range": {"origin": {"x": 3399, "y": 3148, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "outside of the abbey"}]
+        "spots": [{"range": {"origin": {"x": 3400, "y": 3149, "level": 0}}, "description": "outside of the abbey"}]
       },
       "anagram": ["Or A Vile"]
     }, {
@@ -3095,7 +3093,11 @@ export namespace clue_data {
         "question": "I have 16 kebabs, I eat one myself and share the rest equally between 3 friends. How many do they have each?",
         "answers": [{"answer": 5}]
       }],
-      "solution": {"type": "talkto", "npc": "Karim", "spots": [{"range": {"origin": {"x": 3269, "y": 3182, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "in Al Kharid"}]},
+      "solution": {
+        "type": "talkto",
+        "npc": "Karim",
+        "spots": [{"range": {"origin": {"x": 3269, "y": 3181, "level": 0}, "size": {"x": 3, "y": 4}, "data": "/g8="}, "description": "in Al Kharid"}]
+      },
       "anagram": ["R Ak Mi"]
     }, {
       "id": 336,
@@ -3137,10 +3139,12 @@ export namespace clue_data {
       "type": "anagram",
       "tier": "medium",
       "text": ["This anagram reveals who to speak to next: Iz A Ammo Load For Mrs Yakkers"],
-      "challenge": [{"type": "challengescroll", "question": "How many bottles are there on the stall to the east of Mr Ex?", "answers": [
-        {"answer": 5, "note": "Edgeville intact"},
-        {"answer": 3, "note": "Edgeville destroyed"},
-        ]}],
+      "challenge": [{
+        "type": "challengescroll", "question": "How many bottles are there on the stall to the east of Mr Ex?", "answers": [
+          {"answer": 5, "note": "Edgeville intact"},
+          {"answer": 3, "note": "Edgeville destroyed"},
+        ]
+      }],
       "solution": {
         "type": "talkto",
         "npc": "Moldark, Emissary of Zamorak",
@@ -3213,7 +3217,7 @@ export namespace clue_data {
       "challenge": [{"type": "slider"}],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 3420, "y": 2926, "level": 0}, "size": {"x": 11, "y": 5}}, "description": "in Nardah"}],
+        "spots": [{"range": {"origin": {"x": 3420, "y": 2925, "level": 0}, "size": {"x": 11, "y": 7}, "data": "8Jvf//3v///PDA=="}, "description": "in Nardah"}],
         "npc": "Shiratti the Custodian"
       },
       "anagram": ["I Eat Its Chart Hints Do U"]
@@ -3250,7 +3254,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Gnome Coach",
-        "spots": [{"range": {"origin": {"x": 2405, "y": 3497, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "north-east of the gnomeball field"}]
+        "spots": [{"range": {"origin": {"x": 2406, "y": 3498, "level": 0}}, "description": "north-east of the gnomeball field"}]
       },
       "anagram": ["C On Game Hoc"]
     }, {
@@ -3261,7 +3265,7 @@ export namespace clue_data {
       "challenge": [{"type": "slider"}],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 2903, "y": 10206, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "in eastern Keldagrim"}],
+        "spots": [{"range": {"origin": {"x": 2904, "y": 10207, "level": 0}}, "description": "in eastern Keldagrim"}],
         "npc": "Riki the sculptor's model"
       },
       "anagram": ["He Do Pose. It Is Cultrrl, Mk?"]
@@ -3273,7 +3277,10 @@ export namespace clue_data {
       "challenge": [{"type": "slider"}],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 3103, "y": 3146, "level": 0}, "size": {"x": 12, "y": 20}}, "description": "on the ground floor of Wizard's Tower"}],
+        "spots": [{
+          "range": {"origin": {"x": 3101, "y": 3148, "level": 0}, "size": {"x": 14, "y": 20}, "data": "/8f/8//9////////////////////////9//8B//Bf/AP/AE="},
+          "description": "on the ground floor of Wizard's Tower"
+        }],
         "npc": "Professor Onglewip"
       },
       "anagram": ["Profs Lose Wrong Pie"]
@@ -3286,7 +3293,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Cap'n Izzy No-Beard",
-        "spots": [{"range": {"origin": {"x": 2806, "y": 3190, "level": 0}, "size": {"x": 4, "y": 3}, "data": "7g8="}, "description": "at the Agility Arena"}]
+        "spots": [{"range": {"origin": {"x": 2807, "y": 3190, "level": 0}, "size": {"x": 1, "y": 2}}, "description": "at the Agility Arena"}]
       },
       "anagram": ["O Birdz A Zany En Pc"]
     }, {
@@ -3297,7 +3304,7 @@ export namespace clue_data {
       "challenge": [{"type": "slider"}],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 3032, "y": 3190, "level": 0}, "size": {"x": 3, "y": 2}}, "description": "in Port Sarim"}],
+        "spots": [{"range": {"origin": {"x": 3033, "y": 3190, "level": 0}}, "description": "in Port Sarim"}],
         "npc": "Trader Stan"
       },
       "anagram": ["Red Art Tans"]
@@ -3309,7 +3316,7 @@ export namespace clue_data {
       "challenge": [{"type": "slider"}],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 2587, "y": 9488, "level": 0}, "size": {"x": 3, "y": 2}}, "description": "in the basement of Wizard's Guild"}],
+        "spots": [{"range": {"origin": {"x": 2588, "y": 9489, "level": 0}}, "description": "in the basement of Wizard's Guild"}],
         "npc": "Wizard Frumscone"
       },
       "anagram": ["Or Zinc Fumes Ward"]
@@ -3322,7 +3329,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Bolkoy",
-        "spots": [{"range": {"origin": {"x": 2525, "y": 3160, "level": 1}, "size": {"x": 7, "y": 5}}, "description": "in Tree Gnome Village"}]
+        "spots": [{"range": {"origin": {"x": 2525, "y": 3158, "level": 1}, "size": {"x": 8, "y": 7}, "data": "wMD//x8fHw=="}, "description": "in Tree Gnome Village"}]
       },
       "anagram": ["By Look"]
     }, {
@@ -3349,7 +3356,7 @@ export namespace clue_data {
       "challenge": [{"type": "slider"}],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 2657, "y": 3291, "level": 0}, "size": {"x": 5, "y": 3}}, "description": "in her house south of Ardougne Market"}],
+        "spots": [{"range": {"origin": {"x": 2654, "y": 3291, "level": 0}, "size": {"x": 8, "y": 4}, "data": "wPz/Bg=="}, "description": "in her house south of Ardougne Market"}],
         "npc": "Zenesha"
       },
       "anagram": ["A Zen She"]
@@ -3361,7 +3368,7 @@ export namespace clue_data {
       "challenge": [{"type": "slider"}],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 2437, "y": 3047, "level": 0}, "size": {"x": 14, "y": 11}}, "description": "south of Castle Wars"}],
+        "spots": [{"range": {"origin": {"x": 2437, "y": 3044, "level": 0}, "size": {"x": 11, "y": 12}}, "description": "south of Castle Wars"}],
         "npc": "Uglug Nar"
       },
       "anagram": ["Gulag Run"]
@@ -3373,7 +3380,7 @@ export namespace clue_data {
       "challenge": [{"type": "slider"}],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 3358, "y": 3502, "level": 0}, "size": {"x": 7, "y": 9}}, "description": "at the limestone mine"}],
+        "spots": [{"range": {"origin": {"x": 3358, "y": 3500, "level": 0}, "size": {"x": 10, "y": 10}, "data": "4OP//////ffff//9Bw=="}, "description": "at the limestone mine"}],
         "npc": "Odd Old Man"
       },
       "anagram": ["Land Doomd"]
@@ -3396,7 +3403,7 @@ export namespace clue_data {
       "text": ["This anagram reveals who to speak to next: An exile that isn't wholly free WE IRK OVER NAMESAKE."],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 4644, "y": 5382, "level": 0}, "size": {"x": 5, "y": 5}}, "description": "at the bottom of Polypore Dungeon"}],
+        "spots": [{"range": {"origin": {"x": 4646, "y": 5384, "level": 0}}, "description": "at the bottom of Polypore Dungeon"}],
         "npc": "Ramokee Skinweaver"
       },
       "anagram": ["WE IRK OVER NAMESAKE"]
@@ -3411,7 +3418,7 @@ export namespace clue_data {
           "range": {"origin": {"x": 3679, "y": 2960, "level": 0}, "size": {"x": 5, "y": 5}},
           "description": "by the docks on Mos Le'Harmless",
           "note": "Mos Le'Harmless"
-        }, {"range": {"origin": {"x": 3783, "y": 2822, "level": 0}, "size": {"x": 8, "y": 8}}, "description": "on Harmony Island", "note": "Harmony"}],
+        }, {"range": {"origin": {"x": 3786, "y": 2823, "level": 0}, "size": {"x": 3, "y": 2}}, "description": "on Harmony Island", "note": "Harmony"}],
         "npc": "Brother Tranquility"
       },
       "anagram": ["QUIT THY BRINE RAT ROLL"]
@@ -3423,7 +3430,7 @@ export namespace clue_data {
       "challenge": [{"type": "towers"}],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 1784, "y": 11952, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "on Tuaei Leit"}],
+        "spots": [{"range": {"origin": {"x": 1785, "y": 11953, "level": 0}}, "description": "on Tuaei Leit"}],
         "npc": "Sensei Seaworth"
       },
       "anagram": ["O EASTERN WISHES"]
@@ -3438,12 +3445,12 @@ export namespace clue_data {
         "spots": [{
           "id": "outside",
           "description": "outside of the entrance to the empty throne room",
-          "range": {"origin": {"x": 3376, "y": 3403, "level": 0}, "size": {"x": 3, "y": 3}},
+          "range": {"origin": {"x": 3377, "y": 3404, "level": 0}},
           "note": "Outside the empty throne room"
         }, {
           "id": "inside",
           "description": "inside the empty throne room",
-          "range": {"origin": {"x": 2825, "y": 12630, "level": 2}, "size": {"x": 3, "y": 3}},
+          "range": {"origin": {"x": 2826, "y": 12631, "level": 2}},
           "note": "Inside the empty throne room"
         }],
         "npc": "Celia Diggory"
@@ -3460,8 +3467,8 @@ export namespace clue_data {
         "spots": [{
           "id": "armadyl-tower",
           "range": {"origin": {"x": 2997, "y": 3263, "level": 0}, "size": {"x": 8, "y": 11}},
-          "description": "by Armadyl's tower"
-        }, {"id": "city-of-um", "range": {"origin": {"x": 1034, "y": 1762, "level": 1}, "size": {"x": 3, "y": 3}}, "description": "at the Ritual Site"}],
+          "description": "south of Falador"
+        }, {"id": "city-of-um", "range": {"origin": {"x": 1035, "y": 1763, "level": 1}}, "description": "at the Ritual Site"}],
         "npc": "Malignus mortifer"
       },
       "anagram": ["REIGN US IF IMMORTAL"]
@@ -3471,7 +3478,7 @@ export namespace clue_data {
       "tier": "master",
       "text": ["This anagram reveals who to speak to next: If distracted from their work AH; WET ARM"],
       "challenge": [{"type": "lockbox"}],
-      "solution": {"type": "talkto", "spots": [{"range": {"origin": {"x": 2346, "y": 3163, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "in Lletya"}], "npc": "Amaethwr"},
+      "solution": {"type": "talkto", "spots": [{"range": {"origin": {"x": 2347, "y": 3164, "level": 0}}, "description": "in Lletya"}], "npc": "Amaethwr"},
       "anagram": ["AH; WET ARM"]
     }, {
       "id": 311, "type": "anagram", "tier": "master", "text": ["This anagram reveals who to speak to next: Young but stylish PIN HEIR ALL IN PLACE"], "solution": {
@@ -3525,7 +3532,7 @@ export namespace clue_data {
       "text": ["This anagram reveals who to speak to next: In his youth, this adventurer was a WINSOME LAD"],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 3087, "y": 3254, "level": 0}, "size": {"x": 3, "y": 2}}, "description": "in Draynor"}],
+        "spots": [{"range": {"origin": {"x": 3088, "y": 3255, "level": 0}}, "description": "in Draynor"}],
         "npc": "Wise Old Man"
       },
       "anagram": ["WINSOME LAD"]
@@ -3539,12 +3546,12 @@ export namespace clue_data {
         "spots": [{
           "id": "life-altar",
           "note": "After Gower Quest",
-          "range": {"origin": {"x": 1055, "y": 5549, "level": 1}, "size": {"x": 3, "y": 3}},
+          "range": {"origin": {"x": 1056, "y": 5550, "level": 1}},
           "description": "at the Life Altar"
         }, {
           "id": "farm",
           "note": "Before Gower Quest",
-          "range": {"origin": {"x": 3252, "y": 3353, "level": 0}, "size": {"x": 5, "y": 3}},
+          "range": {"origin": {"x": 3254, "y": 3354, "level": 0}},
           "description": "at the farm south of Varrock"
         }],
         "npc": "Paul Gower"
@@ -3557,7 +3564,7 @@ export namespace clue_data {
       "text": ["This anagram reveals who to speak to next: Age allows a new perspective in this vital place TABOO RISES SHYLY"],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 3197, "y": 6960, "level": 1}, "size": {"x": 3, "y": 3}}, "description": "at the entrance to Telos"}],
+        "spots": [{"range": {"origin": {"x": 3198, "y": 6961, "level": 1}}, "description": "at the entrance to Telos"}],
         "npc": "Soothsayer Sybil"
       },
       "anagram": ["TABOO RISES SHYLY"]
@@ -3568,7 +3575,7 @@ export namespace clue_data {
       "text": ["This anagram reveals who to speak to next: With her age, it's no surprise to HEAR A LADY RANT"],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 2220, "y": 3297, "level": 1}, "size": {"x": 3, "y": 3}}, "description": "at the seren stones"}],
+        "spots": [{"range": {"origin": {"x": 2221, "y": 3298, "level": 1}}, "description": "at the seren stones"}],
         "npc": "Lady Trahaearn"
       },
       "anagram": ["HEAR A LADY RANT"]
@@ -3579,7 +3586,7 @@ export namespace clue_data {
       "text": ["This anagram reveals who to speak to next: He claimed to be a human scholar but I SAW THE LIE"],
       "solution": {
         "type": "talkto",
-        "spots": [{"range": {"origin": {"x": 3416, "y": 2935, "level": 0}, "size": {"x": 6, "y": 6}}, "description": "in Nardaah"}],
+        "spots": [{"range": {"origin": {"x": 3416, "y": 2935, "level": 0}, "size": {"x": 9, "y": 6}, "data": "P/7////jBw=="}, "description": "in Nardaah"}],
         "npc": "Ali The Wise"
       },
       "anagram": ["I SAW THE LIE"]
@@ -3590,7 +3597,7 @@ export namespace clue_data {
       "text": ["This anagram reveals who to speak to next: His job leaves him kind of HATED"],
       "solution": {
         "type": "talkto",
-        "spots": [{"id": "office", "range": {"origin": {"x": 414, "y": 674, "level": 0}}, "description": "in Death's Office", "note": "Death's Office"}],
+        "spots": [{"id": "office", "range": {"origin": {"x": 414, "y": 680, "level": 0}}, "description": "in Death's Office", "note": "Death's Office"}],
         "npc": "Death"
       },
       "anagram": ["HATED"]
@@ -5167,7 +5174,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Ysondria",
-        "spots": [{"range": {"origin": {"x": 3219, "y": 3182, "level": 0}, "size": {"x": 3, "y": 3}}, "description": "at the Nexus"}]
+        "spots": [{"range": {"origin": {"x": 3220, "y": 3183, "level": 0}}, "description": "at the Nexus"}]
       },
       "anagram": ["Soy Drain"]
     }
@@ -5188,9 +5195,4 @@ export namespace clue_data {
   export const index = ClueIndex.simple(all)
 
   export const spot_index = ClueSpotIndex.simple(index)
-}
-
-
-export function byType(type: ClueType): Clues.Step[] {
-  return clue_data.all.filter((e) => e.type == type)
 }

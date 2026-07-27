@@ -1,5 +1,5 @@
-import AbstractEditWidget from "../../../trainer/ui/widgets/AbstractEditWidget";
-import * as jquery from "jquery";
+import AbstractEditWidget from "../../../cluetrainer/ui/widgets/AbstractEditWidget";
+import jquery from "jquery";
 
 export default class NumberInput extends AbstractEditWidget<number> {
 
@@ -13,7 +13,7 @@ export default class NumberInput extends AbstractEditWidget<number> {
       })
   }
 
-  protected render() {
+  protected override render() {
     this.container.val(this.get())
   }
 }

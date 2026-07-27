@@ -15,7 +15,7 @@ export class Alt1ScreenCaptureService extends AbstractCaptureService<
     const self = this
 
     this.ticker = new class extends Process.Interval {
-      start_time: number = undefined
+      override start_time: number = undefined
 
       async tick(): Promise<void> {
         if (!window.alt1?.rsLinked) return
@@ -46,7 +46,7 @@ export class Alt1ScreenCaptureService extends AbstractCaptureService<
     this.ticker.run()
   }
 
-  protected transformValueForNotification(options: { area: ScreenRectangle, interval: CaptureInterval }, raw_value: AbstractCaptureService.TimedValue<CapturedImage, {
+  protected override transformValueForNotification(options: { area: ScreenRectangle, interval: CaptureInterval }, raw_value: AbstractCaptureService.TimedValue<CapturedImage, {
     area: ScreenRectangle;
     interval: CaptureInterval
   }>): CapturedImage {

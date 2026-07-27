@@ -1,4 +1,4 @@
-import AbstractEditWidget from "../../../trainer/ui/widgets/AbstractEditWidget";
+import AbstractEditWidget from "../../../cluetrainer/ui/widgets/AbstractEditWidget";
 import Widget from "../Widget";
 import {observe} from "../../reactive";
 
@@ -60,7 +60,7 @@ export default class NumberSlider extends AbstractEditWidget<number> {
     this.preview_container.text(res)
   }
 
-  protected render() {
+  protected override render() {
     this.updatePreview()
     this.input.container.val(this.get())
   }
