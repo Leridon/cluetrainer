@@ -950,7 +950,7 @@ const raw_data: Transportation.TeleportGroup[] = [
     id: "spirittree",
     name: "Spirit Tree",
     img: {url: "spirittree.png"},
-    animation_ticks: 7,
+    animation_ticks: 3,
     spots: [
       {
         id: "village",
@@ -1022,7 +1022,7 @@ const raw_data: Transportation.TeleportGroup[] = [
         name: "Spirit tree re-rooter"
       },
       action_name: "Teleport",
-      menu_ticks: 2,
+      menu_ticks: 1,
     }]
   },
   {
@@ -2208,7 +2208,7 @@ name: "Guthix Memorial",
     type: "teleports",
     id: "luckofthedwarves",
     name: "Luck of the Dwarves",
-    menu_ticks: 1,
+    menu_ticks: 0,
     animation_ticks: 4,
     spots: [
       {
@@ -4237,7 +4237,7 @@ name: "Entrana",
     id: "dragontrinkets",
     name: "Dragon Trinkets",
     animation_ticks: 3,
-    menu_ticks: 2,
+    menu_ticks: 1,
     spots: [
       {
         id: "green",
@@ -4266,7 +4266,7 @@ name: "Entrana",
       {
         id: "black",
         target: {"origin": {"x": 1565, "y": 4356, "level": 0}},
-        name: "Black Dragons . Evil Chicken´s Lair",
+        name: "Black Dragons - Evil Chicken´s Lair",
         code: "5",
       },
       {
@@ -4459,8 +4459,8 @@ name: "Entrana",
     type: "teleports",
     id: "sandseed",
     name: "Mystical sand seed",
-    menu_ticks: 1,
-    animation_ticks: 7,
+    menu_ticks: 0,
+    animation_ticks: 3,
     spots: [{
       id: "garden",
       target: {"origin": {"x": 3320, "y": 3307, "level": 0}},
@@ -4777,7 +4777,24 @@ name: "Entrana",
       action_name: "Rub",
       can_be_in_pota: true
     }]
-  },
+  }, {
+    type: "teleports",
+    id: "stardust",
+    name: "Stardust",
+    animation_ticks: default_teleport_ticks,
+    spots: [{
+      id: "wizardstower",
+      name: "Wizard's Tower",
+      target: {"origin": {"x": 3102, "y": 3140, "level": 2}, "size": {"x": 4, "y": 5}, "data": "zL8B"}
+    }],
+    access: [{
+      type: "item",
+      id: "stardust",
+      name: {name: "Stardust", kind: "item"},
+      action_name: "Teleport",
+      img: {url: "Stardust_175.png"}
+    }]
+  }
 //TODO: Eagle transport system
 //TODO: Canoes
 //TODO: Orthen Teleport network
