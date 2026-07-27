@@ -53,21 +53,85 @@ export namespace FakeLodash {
     return sum(elements.map(f))
   }
 
-  export function cloneDeep<T>(value: T): any {
-    if (Array.isArray(value)) {
-      return value.map(cloneDeep) as T;
-    }
-
-    if (value && typeof value === "object") {
-      const result: Record<PropertyKey, unknown> = {};
-
-      for (const key of Reflect.ownKeys(value)) {
-        result[key] = cloneDeep((value as any)[key]);
+  export function cloneDeep<T>(value: T): T {
+    function helper<T>(value: T, seen = new Map<object, unknown>()): T {
+      if (value === null || typeof value !== "object") {
+        return value;
       }
 
-      return result as T;
+      const object = value as object;
+      const existing = seen.get(object);
+
+      if (existing !== undefined) {
+        return existing as T;
+      }
+
+      if (value instanceof Date) {
+        return new Date(value.getTime()) as T;
+      }
+
+      if (value instanceof RegExp) {
+        return new RegExp(value.source, value.flags) as T;
+      }
+
+      if (value instanceof Map) {
+        const clone = new Map();
+        seen.set(object, clone);
+
+        for (const [key, item] of value) {
+          clone.set(helper(key, seen), helper(item, seen));
+        }
+
+        return clone as T;
+      }
+
+      if (value instanceof Set) {
+        const clone = new Set();
+        seen.set(object, clone);
+
+        for (const item of value) {
+          clone.add(helper(item, seen));
+        }
+
+        return clone as T;
+      }
+
+      if (Array.isArray(value)) {
+        const clone: unknown[] = [];
+        seen.set(object, clone);
+
+        for (const item of value) {
+          clone.push(helper(item, seen));
+        }
+
+        return clone as T;
+      }
+
+      // Preserve class prototype without invoking its constructor.
+      const clone = Object.create(Object.getPrototypeOf(value)) as Record<
+        PropertyKey,
+        unknown
+      >;
+
+      seen.set(object, clone);
+
+      for (const key of Reflect.ownKeys(value)) {
+        const descriptor = Object.getOwnPropertyDescriptor(value, key);
+
+        if (!descriptor) {
+          continue;
+        }
+
+        if ("value" in descriptor) {
+          descriptor.value = helper(descriptor.value, seen);
+        }
+
+        Object.defineProperty(clone, key, descriptor);
+      }
+
+      return clone as T;
     }
 
-    return value;
+    return helper(value)
   }
 }
