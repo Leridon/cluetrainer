@@ -480,8 +480,9 @@ export namespace Changelog {
             )
         }
 
-        builder.wip(78, "WIP")
+        builder.release(78, "Hotfix 2", date(2026, 7, 27))
           .list(l => l
+            .item("Fixed a bug that could cause knot puzzles to not be detected.")
             .item("Fixed various teleport timings.")
             .item("Added stardust teleport to the Wizard's Tower.")
           )
