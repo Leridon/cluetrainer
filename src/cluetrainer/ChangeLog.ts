@@ -480,8 +480,9 @@ export namespace Changelog {
             )
         }
 
-        builder.wip(76, "TBD")
+        builder.release(76, "Slider Fix and Accuracy Fixes", date(2026, 7, 27))
           .list(l => l
+            .item("Updated slider puzzle detection following today's game update.")
             .item("Fixed precise dig spot location of four hard clues.")
             .item("Fixed broken zoom when a path contains an orientation step.")
             .item("Fixed an issue that caused the map to zoom unreasonably far out in certain edge conditions in scans.")
