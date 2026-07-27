@@ -416,7 +416,7 @@ export namespace Changelog {
         }
 
         if (cluetrainer_build_environment.build_type == "openglbeta") {
-          builder.wip(77, "Clue Trainer GL")
+          builder.wip(78, "Clue Trainer GL")
             .header("Patch 11")
             .list(l => l
               .item("Added cages for NPC roaming areas.")
@@ -480,7 +480,13 @@ export namespace Changelog {
             )
         }
 
+        builder.release(77, "Hotfix", date(2026, 7, 27))
+          .list(l => l
+            .item("Fixed a bug introduced in v76 that caused Clue Trainer to not load at all within Alt1 1.6.0.")
+          )
+
         builder.release(76, "Slider Fix and Accuracy Fixes", date(2026, 7, 27))
+          .notification("Slider issues have been resolved!")
           .list(l => l
             .item("Updated slider puzzle detection following today's game update.")
             .item("Fixed precise dig spot location of four hard clues.")
