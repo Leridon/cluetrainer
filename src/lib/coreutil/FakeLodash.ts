@@ -11,10 +11,13 @@ export namespace FakeLodash {
   }
 
   export function minBy<T>(collection: T[], f: (_: T) => number): T {
-    let min_score = Infinity
-    let min_obj = undefined
+    if (collection.length == 0) return undefined
 
-    for (let obj of collection) {
+    let min_score = f(collection[0])
+    let min_obj = collection[0]
+
+    for (let i = 1; i < collection.length; i++) {
+      const obj = collection[i]
       let score = f(obj)
 
       if (score < min_score) {
