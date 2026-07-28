@@ -1,3 +1,5 @@
+import lodash from "lodash";
+
 /**
  * Contains common utilities from lodash without actually depending on lodash.
  */
@@ -54,84 +56,6 @@ export namespace FakeLodash {
   }
 
   export function cloneDeep<T>(value: T): T {
-    function helper<T>(value: T, seen = new Map<object, unknown>()): T {
-      if (value === null || typeof value !== "object") {
-        return value;
-      }
-
-      const object = value as object;
-      const existing = seen.get(object);
-
-      if (existing !== undefined) {
-        return existing as T;
-      }
-
-      if (value instanceof Date) {
-        return new Date(value.getTime()) as T;
-      }
-
-      if (value instanceof RegExp) {
-        return new RegExp(value.source, value.flags) as T;
-      }
-
-      if (value instanceof Map) {
-        const clone = new Map();
-        seen.set(object, clone);
-
-        for (const [key, item] of value) {
-          clone.set(helper(key, seen), helper(item, seen));
-        }
-
-        return clone as T;
-      }
-
-      if (value instanceof Set) {
-        const clone = new Set();
-        seen.set(object, clone);
-
-        for (const item of value) {
-          clone.add(helper(item, seen));
-        }
-
-        return clone as T;
-      }
-
-      if (Array.isArray(value)) {
-        const clone: unknown[] = [];
-        seen.set(object, clone);
-
-        for (const item of value) {
-          clone.push(helper(item, seen));
-        }
-
-        return clone as T;
-      }
-
-      // Preserve class prototype without invoking its constructor.
-      const clone = Object.create(Object.getPrototypeOf(value)) as Record<
-        PropertyKey,
-        unknown
-      >;
-
-      seen.set(object, clone);
-
-      for (const key of Reflect.ownKeys(value)) {
-        const descriptor = Object.getOwnPropertyDescriptor(value, key);
-
-        if (!descriptor) {
-          continue;
-        }
-
-        if ("value" in descriptor) {
-          descriptor.value = helper(descriptor.value, seen);
-        }
-
-        Object.defineProperty(clone, key, descriptor);
-      }
-
-      return clone as T;
-    }
-
-    return helper(value)
+    return lodash.cloneDeep(value)
   }
 }
