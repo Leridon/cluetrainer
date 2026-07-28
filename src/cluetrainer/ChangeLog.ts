@@ -480,7 +480,7 @@ export namespace Changelog {
             )
         }
 
-        builder.release(79, "Tetracompass Bufix", date(2026, 7, 29))
+        builder.release(79, "Tetracompass Bugfix", date(2026, 7, 29))
           .list(l => l
             .item("Fixed a bug that caused the Tetracompass solver to use the set of elite compass spots.")
           )
