@@ -416,7 +416,7 @@ export namespace Changelog {
         }
 
         if (cluetrainer_build_environment.build_type == "openglbeta") {
-          builder.wip(79, "Clue Trainer GL")
+          builder.wip(80, "Clue Trainer GL")
             .header("Patch 11")
             .list(l => l
               .item("Added cages for NPC roaming areas.")
@@ -479,6 +479,11 @@ export namespace Changelog {
               .item("Better caching for tile height data.")
             )
         }
+
+        builder.release(79, "Tetracompass Bufix", date(2026, 7, 29))
+          .list(l => l
+            .item("Fixed a bug that caused the Tetracompass solver to use the set of elite compass spots.")
+          )
 
         builder.release(78, "Hotfix 2", date(2026, 7, 27))
           .list(l => l

@@ -5,7 +5,7 @@ import Widget from "../../lib/ui/Widget";
 import {AbstractDropdownSelection} from "../ui/widgets/AbstractDropdownSelection";
 import {Clues} from "../model/Clues";
 import {TileCoordinates, TileRectangle} from "../../lib/runescape/coordinates";
-import lodash, {capitalize} from "lodash";
+import {capitalize} from "lodash";
 import {Path} from "../../lib/runescape/pathing";
 import {MethodPackManager} from "../MethodPackManager";
 import {SolvingMethods} from "../model/SolvingMethods";
@@ -43,6 +43,7 @@ import {Alt1} from "../../lib/alt1/Alt1";
 import {drawTileArea} from "../overlay3d/PathRender";
 import {Mesh} from "../overlay3d/meshes/Mesh";
 import {SimpleGLOverlay} from "../overlay3d/SimpleGLOverlay";
+import {FakeLodash} from "../../lib/coreutil/FakeLodash";
 import span = C.span;
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import interactionMarker = RenderingUtility.interactionMarker;
@@ -61,7 +62,6 @@ import ClueSpot = Clues.ClueSpot;
 import log = Log.log;
 import default_interactive_area = Transportation.EntityTransportation.default_interactive_area;
 import digSpotArea = Clues.digSpotArea;
-import {FakeLodash} from "../../lib/coreutil/FakeLodash";
 
 /**
  * ClueSolvingBehaviour is the central coordinator for clue solving.
@@ -80,7 +80,7 @@ export default class ClueSolvingBehaviour extends Behaviour {
   active_behaviour: SingleBehaviour<ClueSolvingSubBehaviour> = this.withSub(new SingleBehaviour<ClueSolvingSubBehaviour>())
 
   // Clue Reader that reads the game screen with Alt1 to detect clues
-  clue_reader: ClueReadingBehaviour = this.withSub(new ClueReadingBehaviour(this))
+  clue_reader: ClueReadingBehaviour
 
   // Controller for path display on the map, including an ui component
   public path_control = this.withSub(new PathControl(this))
@@ -95,6 +95,9 @@ export default class ClueSolvingBehaviour extends Behaviour {
 
   constructor(public app: ClueTrainer, public tetracompass_only: boolean) {
     super();
+
+    // Initialize here because the subbehaviour requires this.tetracompass_only to be set
+    this.clue_reader = this.withSub(new ClueReadingBehaviour(this))
 
     this.path_control.section_selected.on(p => {
       if (this.active_method?.method?.type != "scantree") this.map_layer.fit(Path.bounds(p))
