@@ -4,7 +4,7 @@
     "resolvePackageJsonExports": true,
     "module": "ESNext",
     "experimentalDecorators": true,
-    "target": "ESNext",
+    "target": "es2020",
 
     "strict": true,
     "noImplicitOverride": true,
