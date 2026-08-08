@@ -54,6 +54,7 @@ import notification = Notification.notification;
 import log = Log.log;
 import div = C.div;
 import {FakeLodash} from "../lib/coreutil/FakeLodash";
+import {GoldenGnomeAdvert2026} from "./startup_messages/GoldenGnomeAdvert";
 
 declare global {
   var cluetrainer_build_environment: ClueTrainer.BuildEnvironment
@@ -388,6 +389,8 @@ export class ClueTrainer extends Behaviour {
     if (this.version.build_info?.build_type != "openglbeta") {
       Alt1.instance().disableGLApi()
     }
+
+    await GoldenGnomeAdvert2026.maybeShow()
 
     if (this.version.build_info?.build_type == "openglbeta" || (Alt1.exists() && Alt1.instance().featureGL())) {
       (new class extends NisModal {
