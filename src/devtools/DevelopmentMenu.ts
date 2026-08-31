@@ -26,12 +26,14 @@ import {ChatboxFinder} from "../lib/alt1/readers/chatreader/ChatboxFinder";
 import {ChatReader} from "../lib/alt1/readers/ChatReader";
 import {MessageBuffer} from "../lib/alt1/readers/chatreader/ChatBuffer";
 import {MinimapReader} from "../lib/alt1/readers/MinimapReader";
+import teleport_data from "../data/teleport_data";
+import {LuaUtils} from "./lua_utils";
+import {clue_data} from "../data/clues";
 import notification = Notification.notification;
 import cleanedJSON = util.cleanedJSON;
 import FontScript = FontSheets.FontScript;
 import log = Log.log;
 import CapturedMinimap = MinimapReader.CapturedMinimap;
-
 
 export class DevelopmentModal extends NisModal {
   constructor() {
@@ -232,6 +234,28 @@ export class DevelopmentModal extends NisModal {
             }).appendTo(this.body)
           }
         }).show()
+      })
+    )
+
+    layout.header("Lua")
+
+    layout.row(new LightButton("Get Lua Teleports")
+      .onClick(() => {
+        ExportStringModal.do(
+          LuaUtils.asTypedFile(teleport_data, "teleports", "TeleportGroup[]"),
+          null,
+          "teleports.lua")
+
+      })
+    )
+
+    layout.row(new LightButton("Get Lua Clues")
+      .onClick(() => {
+        ExportStringModal.do(
+          LuaUtils.asTypedFile(clue_data.all, "clues", "Step[]"),
+          null,
+          "clues.lua")
+
       })
     )
   }

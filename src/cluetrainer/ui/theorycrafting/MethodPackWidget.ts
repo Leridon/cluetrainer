@@ -12,16 +12,17 @@ import {util} from "../../../lib/util/util";
 import {Notification} from "../NotificationBar";
 import {MethodNormalization} from "./MethodNormalization";
 import lodash from "lodash"
+import {AugmentedMethod, MethodPack} from "../../model/MethodPack";
+import {Path} from "../../../lib/runescape/pathing";
+import {ScanTree} from "../../cluetheory/scans/ScanTree";
+import {SolvingMethods} from "../../model/SolvingMethods";
+import {LuaUtils} from "../../../devtools/lua_utils";
 import exp = ExportImport.exp;
 import cleanedJSON = util.cleanedJSON;
 import notification = Notification.notification;
 import hboxl = C.hboxl;
 import span = C.span;
 import spacer = C.spacer;
-import {AugmentedMethod, MethodPack} from "../../model/MethodPack";
-import {Path} from "../../../lib/runescape/pathing";
-import {ScanTree} from "../../cluetheory/scans/ScanTree";
-import {SolvingMethods} from "../../model/SolvingMethods";
 import Method = SolvingMethods.Method;
 
 export default class MethodPackWidget extends Widget {
@@ -106,6 +107,18 @@ export default class MethodPackWidget extends Widget {
         text: "Enable Editing",
         icon: "/assets/icons/copy.png",
         handler: () => MethodPackManager.instance().create(pack, true)
+      })
+
+      menu.children.push({
+        type: "basic",
+        text: "Export Lua",
+        icon: "/assets/icons/copy.png",
+        handler: () => {
+          ExportStringModal.do(
+            LuaUtils.asTypedFile(pack, "pack", "MethodPack"),
+            null, `pack.lua`
+          )
+        }
       })
     } else {
       menu.children.push({
