@@ -480,10 +480,13 @@ export namespace Changelog {
             )
         }
 
-        builder.release(80, "Bug Fixes", date(2026, 9, 7))
+        builder.release(80, "Bug Fixes and New Medium Methods", date(2026, 9, 7))
           .list(l => l
             .item("Fixed that sliders were not detected after today's engine update.")
             .item("Fixed that some scans would have noticeable lag spikes when opened.")
+            .item("Significantly revised methods for medium clues (by @Ngis).",
+              new List().item("This overhaul includes 45 updated and 11 completely new paths."))
+            .item("Fixed many small inaccuracies in the clue data set, including emote areas, npc and container positions, and tetracompass dig spots.")
           )
 
         builder.release(79, "Tetracompass Bugfix", date(2026, 7, 29))

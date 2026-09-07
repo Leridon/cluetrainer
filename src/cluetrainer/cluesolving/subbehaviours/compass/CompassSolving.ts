@@ -6,7 +6,7 @@ import {GieliCoordinates, TileCoordinates, TileRectangle} from "../../../../lib/
 import {C} from "../../../../lib/ui/constructors";
 import {Rectangle, Vector2} from "../../../../lib/math";
 import {Compasses} from "../../../cluetheory/Compasses";
-import lodash, {identity, isArray} from "lodash";
+import {identity, isArray} from "lodash";
 import {CompassReader} from "../../cluereader/CompassReader";
 import {Transportation} from "../../../../lib/runescape/transportation";
 import {TransportData} from "../../../../data/transports";
@@ -34,6 +34,7 @@ import {drawTileArea} from "../../../overlay3d/PathRender";
 import {MutableMesh} from "../../../overlay3d/meshes/MutableMesh";
 import {SingleBehaviour} from "../../../../lib/ui/Behaviour";
 import {SimpleGLOverlay} from "../../../overlay3d/SimpleGLOverlay";
+import {FakeLodash} from "../../../../lib/coreutil/FakeLodash";
 import cls = C.cls;
 import TeleportGroup = Transportation.TeleportGroup;
 import findBestMatch = util.findBestMatch;
@@ -46,7 +47,6 @@ import vbox = C.vbox;
 import log = Log.log;
 import UncertainAngle = Angles.UncertainAngle;
 import degreesToRadians = Angles.degreesToRadians;
-import {FakeLodash} from "../../../../lib/coreutil/FakeLodash";
 
 const DEBUG_ANGLE_OVERRIDE: UncertainAngle = null // degreesToRadians(206.87152474371157)
 const DEBUG_LAST_SOLUTION_OVERRIDE: TileArea = null // {origin: {x: 3214, y: 3376, level: 0}}
@@ -508,13 +508,15 @@ export class CompassSolving extends ClueSolvingSubBehaviour {
 
     this.layer.rendering.unlock()
 
-    {
+    if (Alt1.instance().featureGL()) {
       const builder = new MutableMesh()
 
       if (possible.length < 10) {
         for (let spot of possible) {
+          const area = this.clue.single_tile_target ? TileArea.fromTiles([spot.spot.spot]) : digSpotArea(spot.spot.spot)
+
           builder.add(
-            (await drawTileArea(digSpotArea(spot.spot.spot))).recolor([100, 100, 100, 255])
+            (await drawTileArea(area)).recolor([100, 100, 100, 255])
           )
         }
       }
