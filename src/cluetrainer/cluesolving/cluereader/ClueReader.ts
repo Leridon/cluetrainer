@@ -317,7 +317,7 @@ export class ClueReader {
               )
             })
 
-            notification(`Found theme ${res.theme}`).show()
+            notification(`Found theme ${res.theme}, ${res.match_score}`).show()
           }
 
           if (res.match_score >= SlideReader.DETECTION_THRESHOLD_SCORE) {

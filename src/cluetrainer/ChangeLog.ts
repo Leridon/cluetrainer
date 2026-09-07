@@ -416,7 +416,7 @@ export namespace Changelog {
         }
 
         if (cluetrainer_build_environment.build_type == "openglbeta") {
-          builder.wip(80, "Clue Trainer GL")
+          builder.wip(81, "Clue Trainer GL")
             .header("Patch 11")
             .list(l => l
               .item("Added cages for NPC roaming areas.")
@@ -479,6 +479,15 @@ export namespace Changelog {
               .item("Better caching for tile height data.")
             )
         }
+
+        builder.release(80, "Bug Fixes and New Medium Methods", date(2026, 9, 7))
+          .list(l => l
+            .item("Fixed that sliders were not detected after today's engine update.")
+            .item("Fixed that some scans would have noticeable lag spikes when opened.")
+            .item("Significantly revised methods for medium clues (by @Ngis).",
+              new List().item("This overhaul includes 45 updated and 11 completely new paths."))
+            .item("Fixed many small inaccuracies in the clue data set, including emote areas, npc and container positions, and tetracompass dig spots.")
+          )
 
         builder.release(79, "Tetracompass Bugfix", date(2026, 7, 29))
           .list(l => l

@@ -4,7 +4,7 @@ import {Clues} from "../../../model/Clues";
 import BoundsBuilder from "../../../../lib/gamemap/BoundsBuilder";
 import {Path} from "../../../../lib/runescape/pathing";
 import {floor_t, TileCoordinates, TileRectangle} from "../../../../lib/runescape/coordinates";
-import {Rectangle} from "../../../../lib/math";
+import {Rectangle, Vector2} from "../../../../lib/math";
 import {TileArea} from "../../../../lib/runescape/coordinates/TileArea";
 import {ScanRegionPolygon} from "../../ScanLayer";
 import {PathStepEntity} from "../../../ui/map/entities/PathStepEntity";
@@ -35,6 +35,8 @@ import {SingleBehaviour} from "../../../../lib/ui/Behaviour";
 import {SimpleGLOverlay} from "../../../overlay3d/SimpleGLOverlay";
 import {MutableMesh} from "../../../overlay3d/meshes/MutableMesh";
 import {Mesh} from "../../../overlay3d/meshes/Mesh";
+import {PathOverlay3d} from "../../../overlay3d/PathOverlay3D";
+import {Alt1} from "../../../../lib/alt1/Alt1";
 import ScanTreeMethod = SolvingMethods.ScanTreeMethod;
 import AugmentedScanTree = ScanTree.Augmentation.AugmentedScanTree;
 import cls = C.cls;
@@ -45,7 +47,6 @@ import digSpotArea = Clues.digSpotArea;
 import hbox = C.hbox;
 import spacer = C.spacer;
 import inlineimg = C.inlineimg;
-import {PathOverlay3d} from "../../../overlay3d/PathOverlay3D";
 
 function findTripleNode(tree: AugmentedScanTreeNode, spot: TileCoordinates): AugmentedScanTreeNode {
   function searchDown(node: AugmentedScanTreeNode): AugmentedScanTreeNode {
@@ -345,41 +346,43 @@ export class ScanTreeSolving extends ClueSolvingSubBehaviour {
     // This in turn triggers fitting the map, so we do not need to do that here explicitly.
     this.parent.path_control.reset().setPath(node.raw?.path ?? [], {method: this.method, node})
 
-    const is_triple_disambiguation = node.children.every(c => c.key.pulse == 3)
+    if (Alt1.instance().featureGL()) {
+      const is_triple_disambiguation = node.children.every(c => c.key.pulse == 3)
 
-    {
-      const region = ScanTree.getTargetRegion(node);
+      {
+        const region = ScanTree.getTargetRegion(node);
 
-      (async (): Promise<Mesh> => {
-        const builder = new MutableMesh()
+        (async (): Promise<Mesh> => {
+          const builder = new MutableMesh()
 
-        if (region && !is_triple_disambiguation) {
-          builder.add(
-            (await drawTileArea(region.area)).recolor([0, 255, 0, 50])
-          )
-        }
+          if (region && !is_triple_disambiguation && Vector2.max_axis(TileArea.size(region.area)) < 20) {
+            builder.add(
+              (await drawTileArea(region.area)).recolor([0, 255, 0, 50])
+            )
+          }
 
-        for (let remainingCandidate of node.remaining_candidates) {
-          builder.add((await drawTileArea(digSpotArea(remainingCandidate))).recolor([100, 100, 100, 255]))
-        }
+          for (let remainingCandidate of node.remaining_candidates) {
+            builder.add((await drawTileArea(digSpotArea(remainingCandidate))).recolor([100, 100, 100, 255]))
+          }
 
-        return builder.finalize()
-      })().then(mesh => {
-        this.region_overlay.set(new SimpleGLOverlay(mesh))
-      })
+          return builder.finalize()
+        })().then(mesh => {
+          this.region_overlay.set(new SimpleGLOverlay(mesh))
+        })
+      }
+
+      const overlay_relevant_nodes = [
+        node,
+        //...ScanTree.Augmentation.AugmentedScanTree.collect_parents(node),
+        ...node.children.map(c => c.value)//.filter(n => is_triple_disambiguation || n.parent.key.pulse != 3)
+      ]
+
+      PathOverlay3d.forPaths(overlay_relevant_nodes.map(n => n.raw.path)).then(overlay => {
+        if (this.node != node) return // Check that the node is still active to prevent races
+
+        this.overlay.set(overlay)
+      });
     }
-
-    const overlay_relevant_nodes = [
-      node,
-      //...ScanTree.Augmentation.AugmentedScanTree.collect_parents(node),
-      ...node.children.map(c => c.value)//.filter(n => is_triple_disambiguation || n.parent.key.pulse != 3)
-    ]
-
-    PathOverlay3d.forPaths(overlay_relevant_nodes.map(n => n.raw.path)).then(overlay => {
-      if (this.node != node) return // Check that the node is still active to prevent races
-
-      this.overlay.set(overlay)
-    });
   }
 
   private handling_layer: GameLayer = null

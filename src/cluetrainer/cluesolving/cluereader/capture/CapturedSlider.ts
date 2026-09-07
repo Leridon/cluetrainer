@@ -3,12 +3,11 @@ import {CapturedImage, NeedleImage} from "../../../../lib/alt1/capture";
 import {Vector2} from "../../../../lib/math";
 import {ScreenRectangle} from "../../../../lib/alt1/ScreenRectangle";
 import {util} from "../../../../lib/util/util";
-import lodash from "lodash";
 import {SliderReader} from "../SliderReader";
 import {Sliders} from "../../../cluetheory/Sliders";
+import {FakeLodash} from "../../../../lib/coreutil/FakeLodash";
 import rgbSimilarity = util.rgbSimilarity;
 import SliderPuzzle = Sliders.SliderPuzzle;
-import {FakeLodash} from "../../../../lib/coreutil/FakeLodash";
 
 export class CapturedSliderInterface {
   public readonly body: CapturedImage
@@ -89,25 +88,25 @@ export namespace CapturedSliderInterface {
 
       return new class implements Finder {
         find(img: CapturedImage, include_inverted_arrow_checkmark: boolean, reader: SliderReader): CapturedSliderInterface {
-            const positions = img.findNeedle(anchor)
+          const positions = img.findNeedle(anchor)
 
-            if (positions.length > 0) {
-              const body_rect: ScreenRectangle = {
-                origin: Vector2.add(positions[0].relativeRectangle().origin, CapturedSliderInterface.TL_TILE_FROM_X_OFFSET),
-                size: {...CapturedSliderInterface.PUZZLE_SIZE}
-              }
-
-              if (include_inverted_arrow_checkmark) {
-                body_rect.origin.x += CapturedSliderInterface.INVERTED_CHECKBOX_OFFSET_FROM_TL.x
-                body_rect.size.x += -CapturedSliderInterface.INVERTED_CHECKBOX_OFFSET_FROM_TL.x
-              }
-
-              return new CapturedSliderInterface(
-                positions[0].parent.getSubSection(body_rect),
-                include_inverted_arrow_checkmark,
-                reader
-              )
+          if (positions.length > 0) {
+            const body_rect: ScreenRectangle = {
+              origin: Vector2.add(positions[0].relativeRectangle().origin, CapturedSliderInterface.TL_TILE_FROM_X_OFFSET),
+              size: {...CapturedSliderInterface.PUZZLE_SIZE}
             }
+
+            if (include_inverted_arrow_checkmark) {
+              body_rect.origin.x += CapturedSliderInterface.INVERTED_CHECKBOX_OFFSET_FROM_TL.x
+              body_rect.size.x += -CapturedSliderInterface.INVERTED_CHECKBOX_OFFSET_FROM_TL.x
+            }
+
+            return new CapturedSliderInterface(
+              positions[0].parent.getSubSection(body_rect),
+              include_inverted_arrow_checkmark,
+              reader
+            )
+          }
 
           return null
         }

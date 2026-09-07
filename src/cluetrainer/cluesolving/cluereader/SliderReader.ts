@@ -210,7 +210,7 @@ export namespace SlideReader {
     return _instance.get()
   }
 
-  export const DETECTION_THRESHOLD_SCORE = 0.9
+  export const DETECTION_THRESHOLD_SCORE = 0.6
 
   export const DEBUG_SLIDE_READER = false
 
