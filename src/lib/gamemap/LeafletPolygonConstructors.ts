@@ -1,4 +1,4 @@
-import { LeafletUtils } from "./LeafletUtils"
+import {LeafletUtils} from "./LeafletUtils"
 import {Rectangle, Vector2} from "../math";
 import leaflet, {LatLngExpression} from "leaflet";
 import {Raster} from "../util/raster";
@@ -132,6 +132,8 @@ export namespace LeafletPolygonConstructors {
   }
 
   export function areaPolygon(area: TileArea): leaflet.Polygon {
+    if (!area.data) return boxPolygon(TileArea.toRect(area))
+
     const polygons = TileArea.activate(area).asMultipolygon()
 
     return leaflet.polygon(polygons.map(p => [p.outer, ...p.cutouts].map(l => l.map(LeafletUtils.latLongFromVector2))))

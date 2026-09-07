@@ -2202,7 +2202,7 @@ export namespace clue_data {
       "tier": "easy",
       "text": ["Yawn in Varrock Palace library. Equip a holy symbol, leather vambraces and an iron warhammer."],
       "area": {"origin": {"x": 3207, "y": 3490, "level": 0}, "size": {"x": 8, "y": 8}},
-      "items": ["Holy symbol", "Leather vamraces", "Iron warhammer"],
+      "items": ["Holy symbol", "Leather vambraces", "Iron warhammer"],
       "emotes": ["Yawn"],
       "double_agent": false,
       "hidey_hole": {"name": "Crate (hidey-hole)", "location": {"topleft": {"x": 3217, "y": 3494}, "botright": {"x": 3217, "y": 3494}, "level": 0}}
