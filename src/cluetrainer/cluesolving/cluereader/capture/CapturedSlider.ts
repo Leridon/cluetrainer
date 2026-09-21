@@ -82,13 +82,18 @@ export namespace CapturedSliderInterface {
     find(img: CapturedImage, include_inverted_arrow_checkmark: boolean, reader: SliderReader): CapturedSliderInterface
   }
 
+
   export namespace Finder {
+    const SLIDER_FINDER_DEBUG: boolean = false
+
     export const instance = async_lazy(async () => {
       const anchor: NeedleImage = (await CapturedSliderInterface.anchors.get()).eoc_x
 
       return new class implements Finder {
         find(img: CapturedImage, include_inverted_arrow_checkmark: boolean, reader: SliderReader): CapturedSliderInterface {
           const positions = img.findNeedle(anchor)
+
+          if (SLIDER_FINDER_DEBUG) console.log(`Slider anchor positions: ${positions.length}`)
 
           if (positions.length > 0) {
             const body_rect: ScreenRectangle = {
@@ -115,7 +120,7 @@ export namespace CapturedSliderInterface {
     })
   }
 
-  export const TL_TILE_FROM_X_OFFSET = {x: -297, y: 15}
+  export const TL_TILE_FROM_X_OFFSET = {x: -298, y: 14}
   export const INVERTED_CHECKBOX_OFFSET_FROM_TL = {x: -169, y: 225}
   export const PUZZLE_SIZE = {x: 273, y: 273}
 
