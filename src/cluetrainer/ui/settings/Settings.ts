@@ -62,7 +62,7 @@ export namespace Settings {
         }],
         active_preset: 0,
         preset_bindings: {
-          easy: null, elite: null, hard: null, master: null, medium: null, tetracompass: null, sandy: null
+          easy: null, elite: null, hard: null, master: null, medium: null, tetracompass: null
         },
         preset_bindings_active: false
       }
@@ -257,7 +257,6 @@ export namespace Settings {
           "elite": -4,
           "master": -5,
           "tetracompass": null,
-          "sandy": null
         },
         "preset_bindings_active": true
       }
@@ -279,7 +278,6 @@ export namespace Settings {
         elite: null,
         master: null,
         tetracompass: null,
-        sandy: null,
         ...(settings.preset_bindings ?? {})
       }
 

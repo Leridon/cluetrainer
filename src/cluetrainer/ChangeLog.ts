@@ -416,7 +416,7 @@ export namespace Changelog {
         }
 
         if (cluetrainer_build_environment.build_type == "openglbeta") {
-          builder.wip(82, "Clue Trainer GL")
+          builder.wip(83, "Clue Trainer GL")
             .header("Patch 11")
             .list(l => l
               .item("Added cages for NPC roaming areas.")
@@ -480,9 +480,15 @@ export namespace Changelog {
             )
         }
 
+        builder.wip(82, "TBD")
+          .list(l => l
+            .item("Removed sandy clues.")
+            .item("Fixed coordinates of a medium map clue.")
+          )
+
         builder.release(81, "UI Update Fixes", date(2026, 9, 21))
           .list(l => l
-            .item("Fixed clue detection following today's game update..")
+            .item("Fixed clue detection following today's game update.")
           )
 
       builder.release(80, "Bug Fixes and New Medium Methods", date(2026, 9, 7))
