@@ -109,8 +109,6 @@ export class ClueReader {
                   type: "textclue", possible_titles: [
                     "mysterious clue",
                     "mysterious clue scroll",
-                    "sandy clue scro",
-                    "sandy clue scroll"
                   ]
                 }, {
                 type: "towers", possible_titles: [

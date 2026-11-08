@@ -416,7 +416,7 @@ export namespace Changelog {
         }
 
         if (cluetrainer_build_environment.build_type == "openglbeta") {
-          builder.wip(82, "Clue Trainer GL")
+          builder.wip(83, "Clue Trainer GL")
             .header("Patch 11")
             .list(l => l
               .item("Added cages for NPC roaming areas.")
@@ -480,12 +480,23 @@ export namespace Changelog {
             )
         }
 
-        builder.release(81, "UI Update Fixes", date(2026, 9, 21))
+        builder.release(82, "Method Updates and Clue Accuracy fixes", date(2026, 11, 8))
           .list(l => l
-            .item("Fixed clue detection following today's game update..")
+            .item("Updated Hard Clue Method pack.", new List()
+              .item("21 alternative paths including alternative teleports or powerbursts of acceleration.")
+              .item("Tweaked several steps with on-screen markers ")
+            )
+            .item("Removed sandy clues.")
+            .item("Fixed coordinates of a medium map clue.")
+            .item("Fixed exact names of several Clue NPCs.")
           )
 
-      builder.release(80, "Bug Fixes and New Medium Methods", date(2026, 9, 7))
+        builder.release(81, "UI Update Fixes", date(2026, 9, 21))
+          .list(l => l
+            .item("Fixed clue detection following today's game update.")
+          )
+
+        builder.release(80, "Bug Fixes and New Medium Methods", date(2026, 9, 7))
           .list(l => l
             .item("Fixed that sliders were not detected after today's engine update.")
             .item("Fixed that some scans would have noticeable lag spikes when opened.")

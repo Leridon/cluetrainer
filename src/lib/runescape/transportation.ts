@@ -67,6 +67,7 @@ export namespace Transportation {
     animation_ticks?: number
     code?: string,
     hidden?: boolean  // This is true when the respective spot should not be shown by default. Useful for legacy teleports that no longer exist
+    cache_data?: { sprite?: string, obj?: string }
   }
 
   export type TeleportSpot = {

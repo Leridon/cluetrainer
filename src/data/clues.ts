@@ -1290,83 +1290,6 @@ export namespace clue_data {
 
   export const cryptic: Clues.Cryptic[] = [
     {
-      "id": 472,
-      "type": "cryptic",
-      "tier": "sandy",
-      "text": ["He's got a rebuildathon going on, and an endless stream of important visitors."],
-      "solution": {
-        "type": "talkto",
-        "npc": "Foreman George",
-        "spots": [{"range": {"origin": {"x": 3155, "y": 3240, "level": 0}}, "description": "near the sandcastles"}]
-      }
-    },
-    {
-      "id": 473,
-      "type": "cryptic",
-      "tier": "sandy",
-      "text": ["He's got one hat, two hat, three hat, many hats!"],
-      "solution": {
-        "type": "talkto",
-        "npc": "Sheldon",
-        "spots": [{"range": {"origin": {"x": 3169, "y": 3254, "level": 0}}, "description": "at the northern entrance"}]
-      }
-    },
-    {
-      "id": 474,
-      "type": "cryptic",
-      "tier": "sandy",
-      "text": ["He's named after a boot, and carrying nets on his shoulder."],
-      "solution": {
-        "type": "talkto",
-        "npc": "Wellington",
-        "spots": [{"range": {"origin": {"x": 3185, "y": 3232, "level": 0}}, "description": "at the fishing spots"}]
-      }
-    },
-    {
-      "id": 475,
-      "type": "cryptic",
-      "tier": "sandy",
-      "text": ["She can be trusted, she isn't shy and she likes ducks."],
-      "solution": {
-        "type": "talkto",
-        "npc": "Sarah",
-        "spots": [{"range": {"origin": {"x": 3170, "y": 3215, "level": 0}}, "description": "at the southern entrance"}]
-      }
-    },
-    {
-      "id": 476,
-      "type": "cryptic",
-      "tier": "sandy",
-      "text": ["She doesn't sell sea shells, but does share common ground with the feather of fletching."],
-      "solution": {
-        "type": "talkto",
-        "npc": "Flo",
-        "spots": [{"range": {"origin": {"x": 3164, "y": 3214, "level": 0}}, "description": "at the southern entrance"}]
-      }
-    },
-    {
-      "id": 477,
-      "type": "cryptic",
-      "tier": "sandy",
-      "text": ["Some say he guards their life, others say he sits around watching beach balls roll around."],
-      "solution": {
-        "type": "talkto",
-        "npc": "Lifeguard",
-        "spots": [{"range": {"origin": {"x": 3166, "y": 3256, "level": 0}}, "description": "at the northern entrance"}]
-      }
-    },
-    {
-      "id": 478,
-      "type": "cryptic",
-      "tier": "sandy",
-      "text": ["Some say he's got the beach in the palm of his hand. Others think he's just excited about coconuts."],
-      "solution": {
-        "type": "talkto",
-        "npc": "Palmer",
-        "spots": [{"range": {"origin": {"x": 3143, "y": 3228, "level": 0}}, "description": "at the western entrance"}]
-      }
-    },
-    {
       "id": 179,
       "type": "cryptic",
       "tier": "easy",
@@ -1379,7 +1302,7 @@ export namespace clue_data {
       "text": ["One of the sailors in Port Sarim is your next destination."],
       "solution": {
         "type": "talkto",
-        "npc": "Captain Tobias.",
+        "npc": "Captain Tobias",
         "spots": [{"range": {"origin": {"x": 3027, "y": 3216, "level": 0}, "size": {"x": 2, "y": 3}}, "description": "at Port Sarim"}]
       }
     }, {
@@ -2800,7 +2723,7 @@ export namespace clue_data {
       "image_url": "/assets/Map_clue_Hobgoblin_peninsula.png",
       "text": ["X marks the spot near a rock on a peninsula."],
       "ocr_data": [26, 78, 177, 26, 77, -7, 6, 8, 26, 77, -8, 8, 10, 25, 78, -7, 6, 7, 26, 80, -4, 5, 6, 25, 77, -5, 7, 8, 26, 73, 14, 37, 43, 26, 77, -8, 6, 9, 25, 80, -10, 7, 9, 25, 86, -9, 7, 8, 25, 82, -10, 6, 7, 26, 82, -8, 5, 6, 26, 82, -10, 4, 6, 25, 82, -9, 5, 7, 25, 85, -10, 6, 7, 26, 81, -11, 8, 10, 26, 78, -7, 7, 9, 25, 76, -11, 7, 9, 25, 79, -8, 5, 7, 26, 81, -5, 6, 8, 26, 79, -6, 7, 10, 26, 73, 14, 24, 31, 26, 72, 23, 45, 56, 26, 72, 18, 49, 60, 29, 69, 29, 67, 78, 26, 78, 4, 18, 23, 26, 72, 19, 26, 30, 26, 82, -10, 5, 7, 25, 79, -12, 5, 7, 25, 83, -13, 7, 8, 26, 80, -11, 6, 8, 25, 77, -9, 8, 10, 26, 78, -11, 6, 8, 26, 78, -10, 6, 7, 26, 82, -2, 27, 31, 26, 79, -2, 39, 45, 26, 79, -10, 8, 11, 26, 71, 32, 46, 56, 26, 75, 11, 32, 42, 26, 73, 8, 40, 45, 26, 79, -10, 5, 7, 26, 75, 7, 22, 25, 26, 70, 16, 24, 28, 26, 79, -10, 5, 7, 26, 80, -13, 6, 7, 26, 80, -12, 7, 8, 25, 78, -10, 5, 6, 25, 78, -10, 6, 8, 25, 77, -10, 4, 5, 26, 81, -10, 4, 6, 27, 81, -11, 6, 7, 26, 80, -11, 6, 8, 25, 84, -10, 11, 18, 26, 69, 38, 43, 54, 24, 80, -8, 7, 8, 27, 71, 18, 52, 58, 29, 69, 26, 60, 67, 26, 78, -5, 7, 9, 26, 80, -8, 6, 8, 25, 79, -12, 6, 8, 26, 79, -13, 5, 6, 25, 78, -7, 8, 10, 26, 78, -11, 6, 8, 25, 78, -12, 5, 6, 25, 80, -10, 6, 7, 26, 80, -9, 10, 14, 26, 80, -11, 6, 9, 26, 78, 19, 40, 49, 27, 69, 45, 60, 76, 26, 74, 23, 52, 62, 27, 75, 0, 25, 31, 26, 72, 12, 30, 43, 28, 73, 12, 29, 37, 26, 79, -4, 12, 15, 26, 81, -12, 6, 7, 26, 80, -15, 6, 7, 26, 77, -13, 5, 7, 25, 81, -11, 6, 7, 26, 78, -15, 6, 7, 26, 79, -7, 24, 28, 26, 77, -5, 32, 40, 26, 77, 6, 27, 33, 26, 78, 13, 42, 50, 26, 74, 30, 57, 68, 27, 73, 24, 39, 49, 26, 74, 27, 51, 61, 25, 78, -10, 13, 18, 29, 70, 26, 58, 69, 26, 80, -9, 5, 6, 26, 81, -12, 5, 6, 25, 80, -13, 6, 7, 26, 77, -13, 7, 9, 26, 78, -16, 7, 8, 25, 80, -13, 6, 8, 26, 78, -11, 7, 9, 26, 77, -11, 6, 8, 26, 74, 23, 24, 36, 26, 77, 8, 43, 68, 25, 74, 33, 102, 122, 27, 74, 38, 59, 68, 26, 74, 37, 49, 63, 26, 78, 2, 20, 27, 26, 81, -3, 9, 12, 25, 82, -6, 8, 9, 25, 80, -12, 5, 6, 26, 79, -14, 6, 7, 26, 79, -8, 6, 8, 26, 78, -16, 6, 7, 26, 78, -13, 6, 8, 25, 78, -9, 8, 9, 26, 78, -12, 6, 7, 27, 77, 13, 24, 36, 27, 79, 8, 40, 54, 26, 76, 9, 38, 49, 26, 76, 22, 39, 45, 26, 71, 38, 38, 45, 25, 77, 16, 33, 40, 26, 80, -5, 7, 9, 25, 83, -7, 6, 7, 26, 79, -13, 6, 7, 26, 81, -13, 6, 8, 26, 79, -6, 5, 6, 25, 80, -9, 6, 8, 26, 82, -12, 6, 8, 26, 82, -7, 9, 11, 26, 79, -12, 6, 8, 27, 76, -16, 7, 10, 27, 75, 33, 63, 74, 26, 69, 18, 25, 35, 26, 72, 32, 43, 50, 26, 76, 19, 33, 46, 26, 77, 22, 44, 54, 26, 80, -8, 4, 5, 26, 81, -8, 4, 6, 25, 79, -9, 5, 6, 26, 79, -14, 5, 6, 25, 81, -5, 7, 10, 25, 80, -7, 8, 10, 26, 81, -9, 6, 8, 25, 83, -5, 12, 22, 25, 80, 1, 30, 42, 26, 79, -2, 36, 43, 25, 80, -2, 17, 23, 27, 79, 27, 58, 65, 25, 79, -6, 12, 19, 27, 69, 44, 59, 70, 26, 72, 27, 38, 52, 27, 71, 32, 52, 63, 26, 79, -9, 7, 13, 26, 80, -12, 5, 7, 27, 77, -15, 5, 7, 26, 82, -5, 6, 8, 26, 82, -8, 7, 8, 25, 82, -6, 8, 10, 26, 80, -2, 16, 24, 26, 81, -6, 7, 10, 25, 81, -6, 6, 14, 25, 83, -6, 8, 10, 26, 75, 39, 54, 60, 26, 81, -10, 6, 7, 26, 77, -2, 23, 31, 27, 68, 33, 46, 56, 27, 77, -13, 8, 14, 26, 80, -11, 6, 8, 26, 79, -15, 6, 7, 27, 77, -17, 5, 7, 25, 84, -3, 9, 11, 24, 84, -5, 8, 10, 24, 85, -4, 9, 11, 25, 84, -2, 7, 9, 25, 84, -3, 7, 9, 25, 83, -4, 10, 12, 24, 84, -4, 8, 10, 25, 80, 17, 26, 37, 26, 80, -9, 13, 20, 26, 78, -14, 6, 8, 26, 72, 11, 41, 46, 27, 78, -16, 5, 6, 26, 80, -11, 6, 7, 26, 78, -15, 6, 8, 27, 76, -16, 6, 8],
-      "solution": {"type": "dig", "spot": {"x": 2906, "y": 3294, "level": 0}, "description": "west of the snape grass at the tip of the hobgoblin peninsula."}
+      "solution": {"type": "dig", "spot": {"x": 2906, "y": 3292, "level": 0}, "description": "at the tip of the hobgoblin peninsula."}
     }, {
       "id": 60,
       "type": "map",
@@ -3466,7 +3389,7 @@ export namespace clue_data {
           "range": {"origin": {"x": 2997, "y": 3263, "level": 0}, "size": {"x": 8, "y": 11}},
           "description": "south of Falador"
         }, {"id": "city-of-um", "range": {"origin": {"x": 1035, "y": 1763, "level": 1}}, "description": "at the Ritual Site"}],
-        "npc": "Malignus mortifer"
+        "npc": "Malignius Mortifer"
       },
       "anagram": ["REIGN US IF IMMORTAL"]
     }, {
@@ -3480,7 +3403,7 @@ export namespace clue_data {
     }, {
       "id": 311, "type": "anagram", "tier": "master", "text": ["This anagram reveals who to speak to next: Young but stylish PIN HEIR ALL IN PLACE"], "solution": {
         "type": "talkto",
-        "npc": "Philippe Carnillean",
+        "npc": "Philipe Carnillean",
         "spots": [{
           "id": "before",
           "description": "at Carnillean Mansion",
@@ -4843,60 +4766,6 @@ export namespace clue_data {
   ]
 
   export const skilling: Clues.Skilling[] = [
-    {
-      "type": "skilling",
-      "text": ["Pick some coconuts that are oh so close to the stage."],
-      "tier": "sandy",
-      "id": 479,
-      "areas": [{"origin": {"x": 3185, "y": 3239, "level": 0}, "size": {"x": 3, "y": 2}}],
-      "answer": "Attempt to pick coconuts from the palm tree south of the main stage at the Lumbridge Crater, or read the palm if it's depleted.",
-      "cursor": "generic"
-    },
-    {
-      "type": "skilling",
-      "text": ["Investigate a large hole that leads... Well, we don't know where it leads."],
-      "tier": "sandy",
-      "id": 480,
-      "areas": [{"origin": {"x": 3167, "y": 3242, "level": 0}, "size": {"x": 5, "y": 6}, "data": "////CQ=="}],
-      "answer": "Attempt to dungeoneer in the Dungeoneering hole at the Lumbridge Crater.",
-      "cursor": "generic"
-    },/*
-    {
-      "type": "skilling",
-      "text": ["Investigate a magical portal that will take you to a Fort near the Wilderness."],
-      "tier": "sandy",
-      "id": 481,
-      "areas": [null],
-      "answer": "Attempt to enter the Fort Forinthry Storyline portal at the Lumbridge Crater.",
-      "cursor": null
-    },*/
-    {
-      "type": "skilling",
-      "text": ["Investigate a magical portal that will take you to random encounters within a dangerous land."],
-      "tier": "sandy",
-      "id": 482,
-      "areas": [{"origin": {"x": 3150, "y": 3222, "level": 0}, "size": {"x": 3, "y": 3}}],
-      "answer": "Attempt to enter the Wilderness Flash Events portal at the Lumbridge Crater.",
-      "cursor": "generic"
-    },
-    {
-      "type": "skilling",
-      "text": ["Something smells fishy behind a dwarf on holiday."],
-      "tier": "sandy",
-      "id": 483,
-      "areas": [{"origin": {"x": 3180, "y": 3251, "level": 0}, "size": {"x": 3, "y": 4}}],
-      "answer": "Click on the table behind Nigel at the Lumbridge Crater.",
-      "cursor": "generic"
-    },
-    {
-      "type": "skilling",
-      "text": ["Somewhere a dwarf looks after a pile of coconuts. Search the pile!"],
-      "tier": "sandy",
-      "id": 484,
-      "areas": [{"origin": {"x": 3171, "y": 3214, "level": 0}, "size": {"x": 3, "y": 3}, "data": "ugA="}],
-      "answer": "Attempt to deposit coconuts on the pile of coconuts next to the coconut shy at the Lumbridge Crater.",
-      "cursor": "generic"
-    },
     {
       "type": "skilling",
       "text": ["Crossing the desert I met a crocodile. She gave me a dazzling smile but she had something in her teeth."],
