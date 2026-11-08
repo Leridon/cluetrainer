@@ -1302,7 +1302,7 @@ export namespace clue_data {
       "text": ["One of the sailors in Port Sarim is your next destination."],
       "solution": {
         "type": "talkto",
-        "npc": "Captain Tobias.",
+        "npc": "Captain Tobias",
         "spots": [{"range": {"origin": {"x": 3027, "y": 3216, "level": 0}, "size": {"x": 2, "y": 3}}, "description": "at Port Sarim"}]
       }
     }, {
@@ -3389,7 +3389,7 @@ export namespace clue_data {
           "range": {"origin": {"x": 2997, "y": 3263, "level": 0}, "size": {"x": 8, "y": 11}},
           "description": "south of Falador"
         }, {"id": "city-of-um", "range": {"origin": {"x": 1035, "y": 1763, "level": 1}}, "description": "at the Ritual Site"}],
-        "npc": "Malignus mortifer"
+        "npc": "Malignius Mortifer"
       },
       "anagram": ["REIGN US IF IMMORTAL"]
     }, {
@@ -3403,7 +3403,7 @@ export namespace clue_data {
     }, {
       "id": 311, "type": "anagram", "tier": "master", "text": ["This anagram reveals who to speak to next: Young but stylish PIN HEIR ALL IN PLACE"], "solution": {
         "type": "talkto",
-        "npc": "Philippe Carnillean",
+        "npc": "Philipe Carnillean",
         "spots": [{
           "id": "before",
           "description": "at Carnillean Mansion",
