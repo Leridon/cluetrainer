@@ -5052,7 +5052,7 @@ export namespace clue_data {
       ],
       "answer": "Craft a blood rune.",
       "cursor": "runecraft",
-      "ingredients": [{"name": "Pure or exalted essence", "configs": [{"id": 7936, "name": "BLANKRUNE_HIGH"}, {"id": 63938}]}],
+      "ingredients": [{"name": "Pure or exalted essence", "configs": [{"id": 7936, "name": "BLANKRUNE_HIGH"}, {"id": 63935, "name": "EXALTED_ESSENCE"}]}],
       "target": "Blood altar", "entity_configs": [{"id": 30624, "name": "BLOOD_ALTAR"}]
     }, {
       "type": "skilling",
