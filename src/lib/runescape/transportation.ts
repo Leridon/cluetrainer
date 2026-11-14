@@ -12,11 +12,7 @@ import {ProcessedCacheTypes} from "../../cluetrainer/ui/devutilitylayer/cachetoo
 export namespace Transportation {
 
   import PrototypeID = ProcessedCacheTypes.PrototypeID;
-  export type transportation_base = {
-    type: string,
-    source_loc?: PrototypeID,
-    source_loc_config_name?: string // Config name of the source_loc object, such as "WILDINLEVER"
-  }
+  export type transportation_base = { type: string, source_loc?: PrototypeID }
 
   export type ImageUrl = { url: string, width?: number, height?: number }
 

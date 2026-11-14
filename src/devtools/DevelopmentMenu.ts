@@ -27,8 +27,8 @@ import {ChatReader} from "../lib/alt1/readers/ChatReader";
 import {MessageBuffer} from "../lib/alt1/readers/chatreader/ChatBuffer";
 import {MinimapReader} from "../lib/alt1/readers/MinimapReader";
 import teleport_data from "../data/teleport_data";
-import {PluginLuaExport} from "./PluginLuaExport";
 import {clue_data} from "../data/clues";
+import {LuaUtils} from "./lua_utils";
 import notification = Notification.notification;
 import cleanedJSON = util.cleanedJSON;
 import FontScript = FontSheets.FontScript;
@@ -242,7 +242,7 @@ export class DevelopmentModal extends NisModal {
     layout.row(new LightButton("Get Lua Teleports")
       .onClick(() => {
         ExportStringModal.do(
-          PluginLuaExport.teleports(teleport_data),
+          LuaUtils.asTypedFile(teleport_data, "teleports", "TeleportGroup[]"),
           null,
           "teleports.lua")
 
@@ -252,19 +252,9 @@ export class DevelopmentModal extends NisModal {
     layout.row(new LightButton("Get Lua Clues")
       .onClick(() => {
         ExportStringModal.do(
-          PluginLuaExport.clues(clue_data.all),
+          LuaUtils.asTypedFile(clue_data.all, "clues", "Step[]"),
           null,
           "clues.lua")
-
-      })
-    )
-
-    layout.row(new LightButton("Get Lua Clue Target Ids")
-      .onClick(() => {
-        ExportStringModal.do(
-          PluginLuaExport.clueTargetIds(clue_data.all),
-          null,
-          "clue_target_ids.lua")
 
       })
     )

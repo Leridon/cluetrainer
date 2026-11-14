@@ -68,18 +68,12 @@ export namespace Clues {
     export type ChallengeScroll = { type: "challengescroll", question: string, answers: { answer: number, note?: string }[] }
   }
 
-  /** A game config: its numeric id and its config name, such as 4493 and "GENERAL_BENTNOZE_RED". */
-  export type Config = {
-    id: number,
-    name?: string // Left out while the name is not known
-  }
+  type ConfigIdDomain = "npc" | "obj" | "loc"
 
-  /**
-   * A game config of an NPC or object (loc). An NPC or object lists every config it can have; objects that can be
-   * opened also list their opened state.
-   */
-  export type EntityConfig = Config & {
-    parent?: boolean // A parent config of multi NPCs and multi objects, matched against parentConfigID
+  /** A game config: its numeric id and its config name, such as 4493 and "GENERAL_BENTNOZE_RED". */
+  export type ConfigId<T extends ConfigIdDomain = ConfigIdDomain> = {
+    domain: T,
+    name: string
   }
 
   export type Solution = Solution.TalkTo | Solution.Dig | Solution.Search
@@ -88,7 +82,7 @@ export namespace Clues {
     export type TalkTo = {
       type: "talkto",
       npc: string
-      npc_configs?: EntityConfig[] // So clients can find the NPC by config instead of by name
+      npc_configs?: ConfigId<"npc">[] // So clients can find the NPC by config instead of by name
       spots: {
         id?: string,
         range: TileArea, // Should cover exactly the roaming range
@@ -105,7 +99,7 @@ export namespace Clues {
       type: "search",
       spot: TileRectangle,
       entity: string,
-      entity_configs?: EntityConfig[], // Loc configs, so clients can find the object by config instead of by name
+      entity_configs?: ConfigId<"loc">[], // Loc configs, so clients can find the object by config instead of by name
       key?: {
         instructions: string,
         answer: string,
@@ -144,15 +138,14 @@ export namespace Clues {
     answer: string,
     cursor: CursorType,
     target?: string, // Name of the object or NPC to use, such as "Anvil"
-    entity_configs?: EntityConfig[], // Loc configs of the object to use, so clients can find it by config
-    npc_configs?: EntityConfig[], // NPC configs of the NPC to use, so clients can find it by config
+    relevant_configs?: ConfigId<"npc" | "loc">[], // Loc configs of the object to use, so clients can find it by config
     ingredients?: Skilling.Ingredient[] // Items the task uses up, to show with the answer; tools are left out
   }
 
   export namespace Skilling {
     export type Ingredient = {
       name: string,
-      configs: Config[], // Obj configs; any of them counts, such as raw shark, raw rocktail or raw sailfish
+      configs: ConfigId<"obj">[], // Obj configs; any of them counts, such as raw shark, raw rocktail or raw sailfish
       amount?: number // Default 1
     }
   }
