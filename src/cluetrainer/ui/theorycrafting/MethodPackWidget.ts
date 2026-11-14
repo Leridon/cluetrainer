@@ -16,7 +16,7 @@ import {AugmentedMethod, MethodPack} from "../../model/MethodPack";
 import {Path} from "../../../lib/runescape/pathing";
 import {ScanTree} from "../../cluetheory/scans/ScanTree";
 import {SolvingMethods} from "../../model/SolvingMethods";
-import {LuaUtils} from "../../../devtools/lua_utils";
+import {PluginLuaExport} from "../../../devtools/PluginLuaExport";
 import exp = ExportImport.exp;
 import cleanedJSON = util.cleanedJSON;
 import notification = Notification.notification;
@@ -115,8 +115,8 @@ export default class MethodPackWidget extends Widget {
         icon: "/assets/icons/copy.png",
         handler: () => {
           ExportStringModal.do(
-            LuaUtils.asTypedFile(pack, "pack", "MethodPack"),
-            null, `pack.lua`
+            PluginLuaExport.methodPack(pack),
+            null, PluginLuaExport.methodPackFileName(pack)
           )
         }
       })

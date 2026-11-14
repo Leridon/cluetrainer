@@ -68,12 +68,27 @@ export namespace Clues {
     export type ChallengeScroll = { type: "challengescroll", question: string, answers: { answer: number, note?: string }[] }
   }
 
+  /** A game config: its numeric id and its config name, such as 4493 and "GENERAL_BENTNOZE_RED". */
+  export type Config = {
+    id: number,
+    name?: string // Left out while the name is not known
+  }
+
+  /**
+   * A game config of an NPC or object (loc). An NPC or object lists every config it can have; objects that can be
+   * opened also list their opened state.
+   */
+  export type EntityConfig = Config & {
+    parent?: boolean // A parent config of multi NPCs and multi objects, matched against parentConfigID
+  }
+
   export type Solution = Solution.TalkTo | Solution.Dig | Solution.Search
 
   export namespace Solution {
     export type TalkTo = {
       type: "talkto",
       npc: string
+      npc_configs?: EntityConfig[] // So clients can find the NPC by config instead of by name
       spots: {
         id?: string,
         range: TileArea, // Should cover exactly the roaming range
@@ -90,6 +105,7 @@ export namespace Clues {
       type: "search",
       spot: TileRectangle,
       entity: string,
+      entity_configs?: EntityConfig[], // Loc configs, so clients can find the object by config instead of by name
       key?: {
         instructions: string,
         answer: string,
@@ -126,7 +142,19 @@ export namespace Clues {
     type: "skilling",
     areas: TileArea[],
     answer: string,
-    cursor: CursorType
+    cursor: CursorType,
+    target?: string, // Name of the object or NPC to use, such as "Anvil"
+    entity_configs?: EntityConfig[], // Loc configs of the object to use, so clients can find it by config
+    npc_configs?: EntityConfig[], // NPC configs of the NPC to use, so clients can find it by config
+    ingredients?: Skilling.Ingredient[] // Items the task uses up, to show with the answer; tools are left out
+  }
+
+  export namespace Skilling {
+    export type Ingredient = {
+      name: string,
+      configs: Config[], // Obj configs; any of them counts, such as raw shark, raw rocktail or raw sailfish
+      amount?: number // Default 1
+    }
   }
 
   export type Step = Anagram | Compass | Coordinate | Cryptic | Emote | Map | Scan | Simple | Skilling

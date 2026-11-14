@@ -785,31 +785,31 @@ export namespace clue_data {
       "type": "simple",
       "tier": "easy",
       "text": ["Search the drawers of Hild and Penda's house in Burthorpe."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 0, "topleft": {"x": 2914, "y": 3521}, "botright": {"x": 2914, "y": 3521}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 67304, "name": "OMGE_BURTHORPE_HOUSE_DRAWERS_CLOSED"}, {"id": 67305, "name": "OMGE_BURTHORPE_HOUSE_DRAWERS_OPEN"}], "spot": {"level": 0, "topleft": {"x": 2914, "y": 3521}, "botright": {"x": 2914, "y": 3521}}}
     }, {
       "id": 2,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the drawers found upstairs in the Westernmost Inn of East Ardougne."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 1, "topleft": {"x": 2575, "y": 3326}, "botright": {"x": 2575, "y": 3326}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 34482, "name": "AREA_ARDOUGNE_BASIC_DRAWERS"}, {"id": 34483, "name": "AREA_ARDOUGNE_BASIC_DRAWERS_OPEN"}], "spot": {"level": 1, "topleft": {"x": 2575, "y": 3326}, "botright": {"x": 2575, "y": 3326}}}
     }, {
       "id": 65,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crates outside the bank in the north of east-ardougne"],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 2620, "y": 3336}, "botright": {"x": 2620, "y": 3336}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 34586, "name": "AREA_ARDOUGNE_OUTDOOR_CRATE_STACKED"}], "spot": {"level": 0, "topleft": {"x": 2620, "y": 3336}, "botright": {"x": 2620, "y": 3336}}}
     }, {
       "id": 66,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the drawers in a house in Catherby."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 0, "topleft": {"x": 2830, "y": 3448}, "botright": {"x": 2830, "y": 3448}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 25034, "name": "FAI_FALADOR_DRAWERS"}, {"id": 25035, "name": "FAI_FALADOR_DRAWERS_OPEN"}], "spot": {"level": 0, "topleft": {"x": 2830, "y": 3448}, "botright": {"x": 2830, "y": 3448}}}
     }, {
       "id": 67,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crates in the chicken coop in the farm north of Port Sarim."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 3018, "y": 3287}, "botright": {"x": 3018, "y": 3287}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 85101, "name": "FARMING_CRATE_INACTIVE_VAR2"}], "spot": {"level": 0, "topleft": {"x": 3018, "y": 3287}, "botright": {"x": 3018, "y": 3287}}}
     }, {
       "id": 68,
       "type": "simple",
@@ -818,110 +818,111 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3202, "y": 3205, "level": 0}, "size": {"x": 21, "y": 28}}, "description": "at Lumbridge Castle"}],
-        "npc": "Hans"
+        "npc": "Hans",
+        "npc_configs": [{"id": 0, "name": "HANS"}]
       }
     }, {
       "id": 69,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the drawers above the shops in Varrock."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 1, "topleft": {"x": 3206, "y": 3419}, "botright": {"x": 3206, "y": 3419}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 24294, "name": "FAI_VARROCK_DRAWERS"}, {"id": 24295, "name": "FAI_VARROCK_DRAWERS_OPEN"}], "spot": {"level": 1, "topleft": {"x": 3206, "y": 3419}, "botright": {"x": 3206, "y": 3419}}}
     }, {
       "id": 71,
       "type": "simple",
       "tier": "easy",
       "text": ["Search chests found in the upstairs of shops in Port Sarim."],
-      "solution": {"type": "search", "entity": "Chest", "spot": {"level": 1, "topleft": {"x": 3016, "y": 3205}, "botright": {"x": 3016, "y": 3205}}}
+      "solution": {"type": "search", "entity": "Chest", "entity_configs": [{"id": 40093, "name": "FAI_PORTSARIM_CHEST_CLOSED"}, {"id": 40092, "name": "FAI_PORTSARIM_CHEST_OPEN"}], "spot": {"level": 1, "topleft": {"x": 3016, "y": 3205}, "botright": {"x": 3016, "y": 3205}}}
     }, {
       "id": 72,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the drawers on the first floor of a building overlooking Ardougne market."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 1, "topleft": {"x": 2655, "y": 3323}, "botright": {"x": 2655, "y": 3323}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 34482, "name": "AREA_ARDOUGNE_BASIC_DRAWERS"}, {"id": 34483, "name": "AREA_ARDOUGNE_BASIC_DRAWERS_OPEN"}], "spot": {"level": 1, "topleft": {"x": 2655, "y": 3323}, "botright": {"x": 2655, "y": 3323}}}
     }, {
       "id": 73,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the drawers in Ivy's house in Taverley."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 0, "topleft": {"x": 2914, "y": 3448}, "botright": {"x": 2914, "y": 3448}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 66624, "name": "OMGE_TAVERLEY_DRAWERS"}], "spot": {"level": 0, "topleft": {"x": 2914, "y": 3448}, "botright": {"x": 2914, "y": 3448}}}
     }, {
       "id": 74,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crates in Canifis."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 3509, "y": 3497}, "botright": {"x": 3509, "y": 3497}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 24911, "name": "CANAFIS_CRATE"}], "spot": {"level": 0, "topleft": {"x": 3509, "y": 3497}, "botright": {"x": 3509, "y": 3497}}}
     }, {
       "id": 75,
       "type": "simple",
       "tier": "easy",
       "text": ["Search for a crate on the ground floor of a house in Seers' Village."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 2699, "y": 3470}, "botright": {"x": 2699, "y": 3470}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 25775, "name": "KR_CRATE"}], "spot": {"level": 0, "topleft": {"x": 2699, "y": 3470}, "botright": {"x": 2699, "y": 3470}}}
     }, {
       "id": 76,
       "type": "simple",
       "tier": "easy",
       "text": ["Search through chests found in the upstairs of houses in eastern Falador."],
-      "solution": {"type": "search", "entity": "Closed Chest", "spot": {"level": 1, "topleft": {"x": 3041, "y": 3364}, "botright": {"x": 3041, "y": 3364}}}
+      "solution": {"type": "search", "entity": "Closed Chest", "entity_configs": [{"id": 99819, "name": "FALADOR2015_CHEST_CLOSED"}, {"id": 99820, "name": "FALADOR2015_CHEST_OPEN"}], "spot": {"level": 1, "topleft": {"x": 3041, "y": 3364}, "botright": {"x": 3041, "y": 3364}}}
     }, {
       "id": 78,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the chests in the Dwarven Mine."],
-      "solution": {"type": "search", "entity": "Chest", "spot": {"level": 0, "topleft": {"x": 3000, "y": 9798}, "botright": {"x": 3000, "y": 9798}}}
+      "solution": {"type": "search", "entity": "Chest", "entity_configs": [{"id": 30928, "name": "ICEMT_MINE_CHEST_CLOSED"}, {"id": 30927, "name": "ICEMT_MINE_CHEST_OPEN"}], "spot": {"level": 0, "topleft": {"x": 3000, "y": 9798}, "botright": {"x": 3000, "y": 9798}}}
     }, {
       "id": 79,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the drawers in a house in Draynor Village."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 0, "topleft": {"x": 3097, "y": 3277}, "botright": {"x": 3097, "y": 3277}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 2631, "name": "BUILD_IMP_DRAYNOR_DRAWERS1_CLOSED"}, {"id": 2651, "name": "BUILD_IMP_DRAYNOR_DRAWERS1_OPEN"}], "spot": {"level": 0, "topleft": {"x": 3097, "y": 3277}, "botright": {"x": 3097, "y": 3277}}}
     }, {
       "id": 80,
       "type": "simple",
       "tier": "easy",
       "text": ["Search for a crate in Varrock Palace."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 3224, "y": 3492}, "botright": {"x": 3224, "y": 3492}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 46266, "name": "FAI_VARROCK_ACTIVE_RED_CRATE"}], "spot": {"level": 0, "topleft": {"x": 3224, "y": 3492}, "botright": {"x": 3224, "y": 3492}}}
     }, {
       "id": 81,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the boxes in the house in Al Kharid with racks of silk."],
-      "solution": {"type": "search", "entity": "Boxes", "spot": {"level": 0, "topleft": {"x": 3289, "y": 3202}, "botright": {"x": 3289, "y": 3202}}}
+      "solution": {"type": "search", "entity": "Boxes", "entity_configs": [{"id": 76811, "name": "DESERT2012_PROP_CRATE_ACTIVE"}], "spot": {"level": 0, "topleft": {"x": 3289, "y": 3202}, "botright": {"x": 3289, "y": 3202}}}
     }, {
       "id": 82,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the boxes in the house near the south entrance of Varrock."],
-      "solution": {"type": "search", "entity": "Boxes", "spot": {"level": 0, "topleft": {"x": 3203, "y": 3384}, "botright": {"x": 3203, "y": 3384}}}
+      "solution": {"type": "search", "entity": "Boxes", "entity_configs": [{"id": 46236, "name": "FAI_VARROCK_ACTIVE_BOXES"}], "spot": {"level": 0, "topleft": {"x": 3203, "y": 3384}, "botright": {"x": 3203, "y": 3384}}}
     }, {
       "id": 83,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crates near a cart in Varrock."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 3226, "y": 3452}, "botright": {"x": 3226, "y": 3452}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 46269, "name": "FAI_VARROCK_ACTIVE_LARGE_CRATE"}], "spot": {"level": 0, "topleft": {"x": 3226, "y": 3452}, "botright": {"x": 3226, "y": 3452}}}
     }, {
       "id": 84,
       "type": "simple",
       "tier": "easy",
       "text": ["Look in the ground floor crates of houses in Falador."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 3029, "y": 3355}, "botright": {"x": 3029, "y": 3355}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 11745, "name": "FAI_FALADOR_SMALL_CRATES"}], "spot": {"level": 0, "topleft": {"x": 3029, "y": 3355}, "botright": {"x": 3029, "y": 3355}}}
     }, {
       "id": 85,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crates in Draynor Manor."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 2, "topleft": {"x": 3106, "y": 3369}, "botright": {"x": 3106, "y": 3369}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 47560, "name": "FAI_DRAYNOR_ACTIVE_CRATE"}], "spot": {"level": 2, "topleft": {"x": 3106, "y": 3369}, "botright": {"x": 3106, "y": 3369}}}
     }, {
       "id": 86,
       "type": "simple",
       "tier": "easy",
       "text": ["Search for a crate in a building in Hemenster."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 2636, "y": 3453}, "botright": {"x": 2636, "y": 3453}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 48998, "name": "AREA_FISHING_GUILD_CRATE_SEARCHABLE"}], "spot": {"level": 0, "topleft": {"x": 2636, "y": 3453}, "botright": {"x": 2636, "y": 3453}}}
     }, {
       "id": 87,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crates in yard of Citharede Abbey."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 3415, "y": 3158}, "botright": {"x": 3415, "y": 3158}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 63760, "name": "OPN_PROP_CRATE_OFFSET"}], "spot": {"level": 0, "topleft": {"x": 3415, "y": 3158}, "botright": {"x": 3415, "y": 3158}}}
     }, {
       "id": 88,
       "type": "simple",
@@ -930,50 +931,51 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 2736, "y": 3574, "level": 0}, "size": {"x": 2, "y": 7}}, "description": "in Sinclair Mansion"}],
-        "npc": "Louisa"
+        "npc": "Louisa",
+        "npc_configs": [{"id": 809, "name": "LOUISA_THE_COOK"}]
       }
     }, {
       "id": 89,
       "type": "simple",
       "tier": "easy",
       "text": ["Search in the south-east corner of the Artisan Dwarves' workshop in Falador."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 3060, "y": 3334}, "botright": {"x": 3060, "y": 3334}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 11745, "name": "FAI_FALADOR_SMALL_CRATES"}], "spot": {"level": 0, "topleft": {"x": 3060, "y": 3334}, "botright": {"x": 3060, "y": 3334}}}
     }, {
       "id": 90,
       "type": "simple",
       "tier": "easy",
       "text": ["Search through some drawers in the upstairs of a house in Rimmington."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 1, "topleft": {"x": 2970, "y": 3214}, "botright": {"x": 2970, "y": 3214}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 71943, "name": "RIMM_IMP_DRAYNOR_DRAWERS1_CLOSED"}, {"id": 71944, "name": "RIMM_IMP_DRAYNOR_DRAWERS1_OPEN"}], "spot": {"level": 1, "topleft": {"x": 2970, "y": 3214}, "botright": {"x": 2970, "y": 3214}}}
     }, {
       "id": 91,
       "type": "simple",
       "tier": "easy",
       "text": ["Search upstairs in the houses of Seers' Village for some drawers."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 1, "topleft": {"x": 2716, "y": 3471}, "botright": {"x": 2716, "y": 3471}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 25766, "name": "KR_SEERS_VILLAGE_DRAWERS1"}, {"id": 25767, "name": "KR_SEERS_VILLAGE_DRAWERS1OPEN"}], "spot": {"level": 1, "topleft": {"x": 2716, "y": 3471}, "botright": {"x": 2716, "y": 3471}}}
     }, {
       "id": 92,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crates in a house in Yanille that has a piano."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 2598, "y": 3105}, "botright": {"x": 2598, "y": 3105}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 24202, "name": "ACTIVE_CRATE2_OLD"}], "spot": {"level": 0, "topleft": {"x": 2598, "y": 3105}, "botright": {"x": 2598, "y": 3105}}}
     }, {
       "id": 93,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the drawers in the ground floor of a shop in Yanille."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 0, "topleft": {"x": 2570, "y": 3085}, "botright": {"x": 2570, "y": 3085}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 350, "name": "DRAWERS2"}, {"id": 351, "name": "DRAWERS2OPEN"}], "spot": {"level": 0, "topleft": {"x": 2570, "y": 3085}, "botright": {"x": 2570, "y": 3085}}}
     }, {
       "id": 95,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the boxes in one of the tents in Al Kharid."],
-      "solution": {"type": "search", "entity": "Boxes", "spot": {"level": 0, "topleft": {"x": 3308, "y": 3206}, "botright": {"x": 3308, "y": 3206}}}
+      "solution": {"type": "search", "entity": "Boxes", "entity_configs": [{"id": 76811, "name": "DESERT2012_PROP_CRATE_ACTIVE"}], "spot": {"level": 0, "topleft": {"x": 3308, "y": 3206}, "botright": {"x": 3308, "y": 3206}}}
     }, {
       "id": 96,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crate near a cart in Port Khazard."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 2660, "y": 3149}, "botright": {"x": 2660, "y": 3149}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 46270, "name": "ACTIVE_CRATE"}], "spot": {"level": 0, "topleft": {"x": 2660, "y": 3149}, "botright": {"x": 2660, "y": 3149}}}
     }, {
       "id": 99,
       "type": "simple",
@@ -985,37 +987,37 @@ export namespace clue_data {
       "type": "simple",
       "tier": "easy",
       "text": ["Search a barrel outside the Pick and Lute inn, in Taverley."],
-      "solution": {"type": "search", "entity": "Barrel", "spot": {"level": 0, "topleft": {"x": 2886, "y": 3449}, "botright": {"x": 2886, "y": 3449}}}
+      "solution": {"type": "search", "entity": "Barrel", "entity_configs": [{"id": 66875, "name": "OMGE_SKILL_MINING_BARREL"}], "spot": {"level": 0, "topleft": {"x": 2886, "y": 3449}, "botright": {"x": 2886, "y": 3449}}}
     }, {
       "id": 101,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crates in the house at the north end of the East Ardougne Market."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 2658, "y": 3323}, "botright": {"x": 2658, "y": 3323}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 34585, "name": "AREA_ARDOUGNE_OUTDOOR_CRATE"}], "spot": {"level": 0, "topleft": {"x": 2658, "y": 3323}, "botright": {"x": 2658, "y": 3323}}}
     }, {
       "id": 102,
       "type": "simple",
       "tier": "easy",
       "text": ["Search a barrel outside the mill, in Taverley."],
-      "solution": {"type": "search", "entity": "Barrel", "spot": {"level": 0, "topleft": {"x": 2894, "y": 3418}, "botright": {"x": 2894, "y": 3418}}}
+      "solution": {"type": "search", "entity": "Barrel", "entity_configs": [{"id": 66875, "name": "OMGE_SKILL_MINING_BARREL"}], "spot": {"level": 0, "topleft": {"x": 2894, "y": 3418}, "botright": {"x": 2894, "y": 3418}}}
     }, {
       "id": 103,
       "type": "simple",
       "tier": "easy",
       "text": ["Speak to Gaius in Burthorpe."],
-      "solution": {"type": "talkto", "npc": "Gaius", "spots": [{"range": {"origin": {"x": 2926, "y": 3546, "level": 0}, "size": {"x": 6, "y": 7}}, "description": "in Burthorpe"}]}
+      "solution": {"type": "talkto", "npc": "Gaius", "npc_configs": [{"id": 586, "name": "GAIUS"}], "spots": [{"range": {"origin": {"x": 2926, "y": 3546, "level": 0}, "size": {"x": 6, "y": 7}}, "description": "in Burthorpe"}]}
     }, {
       "id": 105,
       "type": "simple",
       "tier": "easy",
       "text": ["Search a barrel east of Challenge Mistress Fara, in Burthorpe."],
-      "solution": {"type": "search", "entity": "Barrel", "spot": {"level": 0, "topleft": {"x": 2912, "y": 3530}, "botright": {"x": 2912, "y": 3530}}}
+      "solution": {"type": "search", "entity": "Barrel", "entity_configs": [{"id": 66875, "name": "OMGE_SKILL_MINING_BARREL"}], "spot": {"level": 0, "topleft": {"x": 2912, "y": 3530}, "botright": {"x": 2912, "y": 3530}}}
     }, {
       "id": 106,
       "type": "simple",
       "tier": "easy",
       "text": ["Speak to Arhein in Catherby."],
-      "solution": {"type": "talkto", "npc": "Arhein", "spots": [{"range": {"origin": {"x": 2803, "y": 3426, "level": 0}}, "description": "in Catherby"}]}
+      "solution": {"type": "talkto", "npc": "Arhein", "npc_configs": [{"id": 563, "name": "ARHEIN"}], "spots": [{"range": {"origin": {"x": 2803, "y": 3426, "level": 0}}, "description": "in Catherby"}]}
     }, {
       "id": 107,
       "type": "simple",
@@ -1024,6 +1026,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Bartender",
+        "npc_configs": [{"id": 11706, "name": "RUSTYANCHOR_BLAHMAN"}, {"id": 11707, "name": "RUSTYANCHOR_BARMAN"}, {"id": 734, "name": "RUSTYANCHOR_BARTENDER", "parent": true}],
         "spots": [{"range": {"origin": {"x": 3044, "y": 3255, "level": 0}, "size": {"x": 3, "y": 4}}, "description": "in Port Sarim"}]
       }
     }, {
@@ -1031,61 +1034,61 @@ export namespace clue_data {
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crates in Horvik's armoury."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 3228, "y": 3433}, "botright": {"x": 3228, "y": 3433}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 46269, "name": "FAI_VARROCK_ACTIVE_LARGE_CRATE"}], "spot": {"level": 0, "topleft": {"x": 3228, "y": 3433}, "botright": {"x": 3228, "y": 3433}}}
     }, {
       "id": 110,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the boxes in the Goblin house near Lumbridge."],
-      "solution": {"type": "search", "entity": "Boxes", "spot": {"level": 0, "topleft": {"x": 3247, "y": 3244}, "botright": {"x": 3247, "y": 3244}}}
+      "solution": {"type": "search", "entity": "Boxes", "entity_configs": [{"id": 46237, "name": "FAI_LUMBRIDGE_ACTIVE_BOXES"}], "spot": {"level": 0, "topleft": {"x": 3247, "y": 3244}, "botright": {"x": 3247, "y": 3244}}}
     }, {
       "id": 111,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the drawers in Falador's chainmail shop."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 0, "topleft": {"x": 2969, "y": 3311}, "botright": {"x": 2969, "y": 3311}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 25034, "name": "FAI_FALADOR_DRAWERS"}, {"id": 25035, "name": "FAI_FALADOR_DRAWERS_OPEN"}], "spot": {"level": 0, "topleft": {"x": 2969, "y": 3311}, "botright": {"x": 2969, "y": 3311}}}
     }, {
       "id": 112,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the chests in Al Kharid palace."],
-      "solution": {"type": "search", "entity": "Ornate chest", "spot": {"level": 0, "topleft": {"x": 3301, "y": 3164}, "botright": {"x": 3301, "y": 3164}}}
+      "solution": {"type": "search", "entity": "Ornate chest", "entity_configs": [{"id": 76216, "name": "DESERT2012_CHEST"}, {"id": 76217, "name": "DESERT2012_CHEST_OPEN"}], "spot": {"level": 0, "topleft": {"x": 3301, "y": 3164}, "botright": {"x": 3301, "y": 3164}}}
     }, {
       "id": 113,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crates just outside the armour shop in East Ardougne."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 2654, "y": 3299}, "botright": {"x": 2654, "y": 3299}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 34586, "name": "AREA_ARDOUGNE_OUTDOOR_CRATE_STACKED"}], "spot": {"level": 0, "topleft": {"x": 2654, "y": 3299}, "botright": {"x": 2654, "y": 3299}}}
     }, {
       "id": 115,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crates in East Ardougne's general store."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 2615, "y": 3291}, "botright": {"x": 2615, "y": 3291}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 34585, "name": "AREA_ARDOUGNE_OUTDOOR_CRATE"}], "spot": {"level": 0, "topleft": {"x": 2615, "y": 3291}, "botright": {"x": 2615, "y": 3291}}}
     }, {
       "id": 116,
       "type": "simple",
       "tier": "easy",
       "text": ["Speak to Ellis in Al Kharid."],
-      "solution": {"type": "talkto", "npc": "Ellis", "spots": [{"range": {"origin": {"x": 3270, "y": 3193, "level": 0}, "size": {"x": 7, "y": 6}}, "description": "in Al Kharid"}]}
+      "solution": {"type": "talkto", "npc": "Ellis", "npc_configs": [{"id": 2824, "name": "ELLIS_TANNER"}], "spots": [{"range": {"origin": {"x": 3270, "y": 3193, "level": 0}, "size": {"x": 7, "y": 6}}, "description": "in Al Kharid"}]}
     }, {
       "id": 117,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the chest in the left-hand tower of Camelot Castle."],
-      "solution": {"type": "search", "entity": "Closed Chest", "spot": {"level": 2, "topleft": {"x": 2748, "y": 3495}, "botright": {"x": 2748, "y": 3495}}}
+      "solution": {"type": "search", "entity": "Closed Chest", "entity_configs": [{"id": 25592, "name": "KR_CAMELOT_CHESTCLOSED"}, {"id": 25593, "name": "KR_CAMELOT_CHESTOPEN"}], "spot": {"level": 2, "topleft": {"x": 2748, "y": 3495}, "botright": {"x": 2748, "y": 3495}}}
     }, {
       "id": 118,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the chest in the Duke of Lumbridge's bedroom."],
-      "solution": {"type": "search", "entity": "Closed Chest", "spot": {"level": 1, "topleft": {"x": 3209, "y": 3218}, "botright": {"x": 3209, "y": 3218}}}
+      "solution": {"type": "search", "entity": "Closed Chest", "entity_configs": [{"id": 135601, "name": "FAI_LUMBRIDGE_CHEST_CLOSED2"}, {"id": 135602, "name": "FAI_LUMBRIDGE_CHEST_OPEN2"}], "spot": {"level": 1, "topleft": {"x": 3209, "y": 3218}, "botright": {"x": 3209, "y": 3218}}}
     }, {
       "id": 119,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crates near the Lumbridge Market."],
-      "solution": {"type": "search", "entity": "Crates", "spot": {"level": 0, "topleft": {"x": 3191, "y": 3257}, "botright": {"x": 3192, "y": 3257}}}
+      "solution": {"type": "search", "entity": "Crates", "entity_configs": [{"id": 79065, "name": "COMBAT_ACAD_STACKED_CRATES_VAR1"}], "spot": {"level": 0, "topleft": {"x": 3191, "y": 3257}, "botright": {"x": 3192, "y": 3257}}}
     }, {
       "id": 121,
       "type": "simple",
@@ -1094,6 +1097,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Doric",
+        "npc_configs": [{"id": 284, "name": "DORIC"}],
         "spots": [{"range": {"origin": {"x": 2955, "y": 3435, "level": 0}, "size": {"x": 9, "y": 9}}, "description": "north of Falador"}]
       }
     }, {
@@ -1101,13 +1105,13 @@ export namespace clue_data {
       "type": "simple",
       "tier": "easy",
       "text": ["Search the drawers upstairs in the bank to the East of Varrock."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 1, "topleft": {"x": 3250, "y": 3420}, "botright": {"x": 3250, "y": 3420}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 24294, "name": "FAI_VARROCK_DRAWERS"}, {"id": 24295, "name": "FAI_VARROCK_DRAWERS_OPEN"}], "spot": {"level": 1, "topleft": {"x": 3250, "y": 3420}, "botright": {"x": 3250, "y": 3420}}}
     }, {
       "id": 124,
       "type": "simple",
       "tier": "easy",
       "text": ["Talk to Zeke in Al Kharid."],
-      "solution": {"type": "talkto", "npc": "Zeke", "spots": [{"range": {"origin": {"x": 3284, "y": 3186, "level": 0}, "size": {"x": 6, "y": 7}}, "description": "in Al Kharid"}]}
+      "solution": {"type": "talkto", "npc": "Zeke", "npc_configs": [{"id": 541, "name": "ZEKE"}], "spots": [{"range": {"origin": {"x": 3284, "y": 3186, "level": 0}, "size": {"x": 6, "y": 7}}, "description": "in Al Kharid"}]}
     }, {
       "id": 125,
       "type": "simple",
@@ -1116,6 +1120,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Bartender",
+        "npc_configs": [{"id": 733, "name": "BLUEMOON_BARTENDER"}],
         "spots": [{"range": {"origin": {"x": 3223, "y": 3396, "level": 0}, "size": {"x": 4, "y": 7}}, "description": "in the Blue Moon Inn"}]
       }
     }, {
@@ -1123,25 +1128,25 @@ export namespace clue_data {
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crate in the southern tower at the entrance to Lumbridge Castle."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 1, "topleft": {"x": 3228, "y": 3212}, "botright": {"x": 3228, "y": 3212}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 21806, "name": "FAI_LUMBRIDGE_ACTIVE_CRATE_STACKED"}], "spot": {"level": 1, "topleft": {"x": 3228, "y": 3212}, "botright": {"x": 3228, "y": 3212}}}
     }, {
       "id": 127,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the drawers in one of Gertrude's bedrooms."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 0, "topleft": {"x": 3156, "y": 3406}, "botright": {"x": 3156, "y": 3406}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 24294, "name": "FAI_VARROCK_DRAWERS"}, {"id": 24295, "name": "FAI_VARROCK_DRAWERS_OPEN"}], "spot": {"level": 0, "topleft": {"x": 3156, "y": 3406}, "botright": {"x": 3156, "y": 3406}}}
     }, {
       "id": 130,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the drawers in Catherby's Archery Shop."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 0, "topleft": {"x": 2828, "y": 3457}, "botright": {"x": 2828, "y": 3457}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 25034, "name": "FAI_FALADOR_DRAWERS"}, {"id": 25035, "name": "FAI_FALADOR_DRAWERS_OPEN"}], "spot": {"level": 0, "topleft": {"x": 2828, "y": 3457}, "botright": {"x": 2828, "y": 3457}}}
     }, {
       "id": 131,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the drawers upstairs in Falador's shield shop."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 1, "topleft": {"x": 2971, "y": 3386}, "botright": {"x": 2971, "y": 3386}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 25034, "name": "FAI_FALADOR_DRAWERS"}, {"id": 25035, "name": "FAI_FALADOR_DRAWERS_OPEN"}], "spot": {"level": 1, "topleft": {"x": 2971, "y": 3386}, "botright": {"x": 2971, "y": 3386}}}
     }, {
       "id": 132,
       "type": "simple",
@@ -1150,6 +1155,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Squire Asrol",
+        "npc_configs": [{"id": 606, "name": "SQUIRE"}],
         "spots": [{"range": {"origin": {"x": 2970, "y": 3339, "level": 0}, "size": {"x": 8, "y": 8}}, "description": "in the couryard of the White Knight's castle"}]
       }
     }, {
@@ -1157,19 +1163,19 @@ export namespace clue_data {
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crates of Falador's general store."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 2955, "y": 3390}, "botright": {"x": 2955, "y": 3390}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 11745, "name": "FAI_FALADOR_SMALL_CRATES"}], "spot": {"level": 0, "topleft": {"x": 2955, "y": 3390}, "botright": {"x": 2955, "y": 3390}}}
     }, {
       "id": 134,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crates in the Barbarian Village helmet shop."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 3073, "y": 3430}, "botright": {"x": 3073, "y": 3430}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 11600, "name": "FAI_BARBARIAN_SMALL_CRATES"}], "spot": {"level": 0, "topleft": {"x": 3073, "y": 3430}, "botright": {"x": 3073, "y": 3430}}}
     }, {
       "id": 135,
       "type": "simple",
       "tier": "easy",
       "text": ["Search the crates in the Port Sarim fishing shop."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 3012, "y": 3222}, "botright": {"x": 3012, "y": 3222}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 40021, "name": "FAI_PORTSARIM_CRATE2"}], "spot": {"level": 0, "topleft": {"x": 3012, "y": 3222}, "botright": {"x": 3012, "y": 3222}}}
     }, {
       "id": 136,
       "type": "simple",
@@ -1178,6 +1184,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Sir Kay",
+        "npc_configs": [{"id": 241, "name": "SIR_KAY"}],
         "spots": [{"range": {"origin": {"x": 2752, "y": 3493, "level": 0}, "size": {"x": 13, "y": 11}}, "description": "in the courtyard of Camelot Castle"}]
       }
     }, {
@@ -1185,7 +1192,7 @@ export namespace clue_data {
       "type": "simple",
       "tier": "easy",
       "text": ["Speak to Ned in Draynor Village."],
-      "solution": {"type": "talkto", "npc": "Ned", "spots": [{"range": {"origin": {"x": 3097, "y": 3255, "level": 0}, "size": {"x": 6, "y": 6}}, "description": "in Draynor"}]}
+      "solution": {"type": "talkto", "npc": "Ned", "npc_configs": [{"id": 918, "name": "NED"}], "spots": [{"range": {"origin": {"x": 3097, "y": 3255, "level": 0}, "size": {"x": 6, "y": 6}}, "description": "in Draynor"}]}
     }, {
       "id": 138,
       "type": "simple",
@@ -1194,6 +1201,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Challenge Mistress Fara",
+        "npc_configs": [{"id": 15780, "name": "CHALLENGE_MASTER"}],
         "spots": [{"range": {"origin": {"x": 2883, "y": 3533, "level": 0}}, "description": "in Burthorpe"}]
       }
     }, {
@@ -1204,7 +1212,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 2740, "y": 3577, "level": 1}, "size": {"x": 5, "y": 6}}, "description": "at Sinclair Mansion"}],
-        "npc": "Donovan the Family Handyman"
+        "npc": "Donovan the Family Handyman",
+        "npc_configs": [{"id": 806, "name": "DONOVAN_THE_FAMILY_HANDYMAN"}]
       }
     }, {
       "id": 97,
@@ -1215,7 +1224,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 2405, "y": 9815, "level": 0}, "size": {"x": 9, "y": 8}}, "description": "in Brimstail's cave"}],
-        "npc": "Brimstail"
+        "npc": "Brimstail",
+        "npc_configs": [{"id": 171, "name": "GNOME_BRIMSTAIL"}]
       }
     }, {
       "id": 98,
@@ -1225,6 +1235,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Roavar",
+        "npc_configs": [{"id": 1042, "name": "WEREWOLFINNKEEPER"}],
         "spots": [{"range": {"origin": {"x": 3489, "y": 3471, "level": 0}, "size": {"x": 7, "y": 5}}, "description": "in Canifis' bar"}]
       }
     }, {
@@ -1235,6 +1246,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Ulizius",
+        "npc_configs": [{"id": 1054, "name": "MORT_MYRE_GATE_GUARD"}],
         "spots": [{"range": {"origin": {"x": 3440, "y": 3458, "level": 0}, "size": {"x": 7, "y": 7}}, "description": "near the Swamp Gate"}]
       }
     }, {
@@ -1242,7 +1254,7 @@ export namespace clue_data {
       "type": "simple",
       "tier": "medium",
       "text": ["Speak to Hajedy."],
-      "solution": {"type": "talkto", "npc": "Hajedy", "spots": [{"range": {"origin": {"x": 2779, "y": 3210, "level": 0}, "size": {"x": 4, "y": 4}}, "description": "in Brimhaven"}]}
+      "solution": {"type": "talkto", "npc": "Hajedy", "npc_configs": [{"id": 510, "name": "BRIMHAVENCARTDRIVER"}], "spots": [{"range": {"origin": {"x": 2779, "y": 3210, "level": 0}, "size": {"x": 4, "y": 4}}, "description": "in Brimhaven"}]}
     }, {
       "id": 120,
       "type": "simple",
@@ -1251,6 +1263,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Kangai Mau",
+        "npc_configs": [{"id": 846, "name": "KANGAI_MAU"}],
         "spots": [{"range": {"origin": {"x": 2790, "y": 3181, "level": 0}, "size": {"x": 6, "y": 5}}, "description": "in Brimhaven"}]
       }
     }, {
@@ -1262,6 +1275,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Gnome ball referee",
+        "npc_configs": [{"id": 635, "name": "GNOMEREFEREE"}],
         "spots": [{"range": {"origin": {"x": 2385, "y": 3488, "level": 0}}, "description": "at the gate of the Gnomeball Field"}]
       }
     }, {
@@ -1273,6 +1287,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Hazelmere",
+        "npc_configs": [{"id": 669, "name": "GRANDTREE_HAZELMERE"}],
         "spots": [{"range": {"origin": {"x": 2675, "y": 3085, "level": 1}, "size": {"x": 5, "y": 5}}, "description": "east of Yanille"}]
       }
     }, {
@@ -1283,6 +1298,7 @@ export namespace clue_data {
       "solution": {
         "type": "search",
         "entity": "Barrel",
+        "entity_configs": [{"id": 136481, "name": "WENDLE_BARREL_POOR_LARGE"}],
         "spot": {"topleft": {"x": 3531, "y": 1483}, "botright": {"x": 3532, "y": 1483}, "level": 1}
       }
     }
@@ -1294,7 +1310,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "easy",
       "text": ["A crate found in the tower of a church is your next location.", "A crate in the tower of a church is your next location."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 1, "topleft": {"x": 2612, "y": 3306}, "botright": {"x": 2612, "y": 3306}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 34585, "name": "AREA_ARDOUGNE_OUTDOOR_CRATE"}], "spot": {"level": 1, "topleft": {"x": 2612, "y": 3306}, "botright": {"x": 2612, "y": 3306}}}
     }, {
       "id": 180,
       "type": "cryptic",
@@ -1303,6 +1319,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Captain Tobias",
+        "npc_configs": [{"id": 376, "name": "CAPTAIN_TOBIAS"}],
         "spots": [{"range": {"origin": {"x": 3027, "y": 3216, "level": 0}, "size": {"x": 2, "y": 3}}, "description": "at Port Sarim"}]
       }
     }, {
@@ -1313,7 +1330,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3371, "y": 3271, "level": 0}, "size": {"x": 8, "y": 8}}, "description": "north of Het's Oasis"}],
-        "npc": "Jeed"
+        "npc": "Jeed",
+        "npc_configs": [{"id": 969, "name": "DUEL_CROWDFEMALE3"}]
       }
     }, {
       "id": 181,
@@ -1324,6 +1342,7 @@ export namespace clue_data {
         "type": "search",
         "spot": {"level": 0, "topleft": {"x": 3256, "y": 3487}, "botright": {"x": 3256, "y": 3487}},
         "entity": "Closed Chest",
+        "entity_configs": [{"id": 24203, "name": "FAI_VARROCK_CHEST_CLOSED"}, {"id": 24204, "name": "FAI_VARROCK_CHEST_OPEN"}],
         "key": {
           "instructions": "The chest is locked! An inscription on the chest says: Property of Clock Tower Monastery.",
           "answer": "Kill a monk in the Kandarin Monastery.",
@@ -1338,6 +1357,7 @@ export namespace clue_data {
       "solution": {
         "type": "search",
         "entity": "Drawers",
+        "entity_configs": [{"id": 30823, "name": "ICEMT_MONASTERY_DRAWERS1"}, {"id": 30824, "name": "ICEMT_MONASTERY_DRAWERS1OPEN"}],
         "spot": {"level": 0, "topleft": {"x": 3056, "y": 3497}, "botright": {"x": 3056, "y": 3497}},
         "key": {
           "instructions": "The chest has a crude note on top. It reads 'You'll never get these drawers open now! - Zamorak Monk.'",
@@ -1353,6 +1373,7 @@ export namespace clue_data {
       "solution": {
         "type": "search",
         "entity": "Cupboard",
+        "entity_configs": [{"id": 79400, "name": "WIZTOWER2012_CUPBOARD_VAR2"}],
         "spot": {"level": 2, "topleft": {"x": 3113, "y": 3153}, "botright": {"x": 3113, "y": 3153}},
         "key": {
           "instructions": "This cupboard is locked! One of the Spellwisps might have stolen the key. ",
@@ -1365,13 +1386,13 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "medium",
       "text": ["In a village made of bamboo, look for some crates under one of the houses."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 2800, "y": 3074}, "botright": {"x": 2800, "y": 3074}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 46333, "name": "ACTIVE_CRATE_OLD"}], "spot": {"level": 0, "topleft": {"x": 2800, "y": 3074}, "botright": {"x": 2800, "y": 3074}}}
     }, {
       "id": 186,
       "type": "cryptic",
       "tier": "medium",
       "text": ["The owner of this crate has a hunch that he put more than fish inside."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 2770, "y": 3172}, "botright": {"x": 2770, "y": 3172}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 46270, "name": "ACTIVE_CRATE"}], "spot": {"level": 0, "topleft": {"x": 2770, "y": 3172}, "botright": {"x": 2770, "y": 3172}}}
     }, {
       "id": 187,
       "type": "cryptic",
@@ -1381,6 +1402,7 @@ export namespace clue_data {
         "type": "search",
         "spot": {"level": 1, "topleft": {"x": 2575, "y": 3326}, "botright": {"x": 2575, "y": 3326}},
         "entity": "Drawers",
+        "entity_configs": [{"id": 34482, "name": "AREA_ARDOUGNE_BASIC_DRAWERS"}, {"id": 34483, "name": "AREA_ARDOUGNE_BASIC_DRAWERS_OPEN"}],
         "key": {
           "instructions": "The drawers are locked! A note left on the drawers reads: Beware of dog!",
           "answer": "Kill a guard dog.",
@@ -1392,37 +1414,37 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "medium",
       "text": ["Try not to step on any aquatic nasties while searching this crate."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 2764, "y": 3273}, "botright": {"x": 2764, "y": 3273}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 18502, "name": "SLUG2_CRATE_SINGLE"}], "spot": {"level": 0, "topleft": {"x": 2764, "y": 3273}, "botright": {"x": 2764, "y": 3273}}}
     }, {
       "id": 189,
       "type": "cryptic",
       "tier": "medium",
       "text": ["After a hard day of spraying back the vegetation, you mite want to pop to the nearby forge and search the crates."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 2399, "y": 4471}, "botright": {"x": 2399, "y": 4471}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 52556, "name": "FAIRYKIT_CRATES"}], "spot": {"level": 0, "topleft": {"x": 2399, "y": 4471}, "botright": {"x": 2399, "y": 4471}}}
     }, {
       "id": 190,
       "type": "cryptic",
       "tier": "medium",
       "text": ["For any aspiring mage, I'm sure searching this bookcase will be a rewarding experience."],
-      "solution": {"type": "search", "entity": "Bookcase", "spot": {"level": 1, "topleft": {"x": 3366, "y": 3319}, "botright": {"x": 3366, "y": 3319}}}
+      "solution": {"type": "search", "entity": "Old Bookshelf", "entity_configs": [{"id": 10723, "name": "MAGICTRAINING_BOOKSHELF_OLD_TALL_DOUBLE2"}], "spot": {"level": 1, "topleft": {"x": 3366, "y": 3319}, "botright": {"x": 3366, "y": 3319}}}
     }, {
       "id": 191,
       "type": "cryptic",
       "tier": "medium",
       "text": ["A town with a different sort of night-life is your destination. Search for some crates in one of the houses."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 3498, "y": 3507}, "botright": {"x": 3498, "y": 3507}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 24911, "name": "CANAFIS_CRATE"}], "spot": {"level": 0, "topleft": {"x": 3498, "y": 3507}, "botright": {"x": 3498, "y": 3507}}}
     }, {
       "id": 192,
       "type": "cryptic",
       "tier": "medium",
       "text": ["Hay! Stop for a bit and admire the scenery, just like the tourism promoter says."],
-      "solution": {"type": "search", "entity": "Hay bales", "spot": {"level": 0, "topleft": {"x": 2524, "y": 3438}, "botright": {"x": 2524, "y": 3438}}}
+      "solution": {"type": "search", "entity": "Hay bales", "entity_configs": [{"id": 299, "name": "HAYSTACK2"}], "spot": {"level": 0, "topleft": {"x": 2524, "y": 3438}, "botright": {"x": 2524, "y": 3438}}}
     }, {
       "id": 193,
       "type": "cryptic",
       "tier": "medium",
       "text": ["North of the best monkey restaurant on Karamja, look for the centre of the triangle of boats and search there."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 2905, "y": 3189}, "botright": {"x": 2905, "y": 3189}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 10159, "name": "DEAL_CRATE2"}], "spot": {"level": 0, "topleft": {"x": 2905, "y": 3189}, "botright": {"x": 2905, "y": 3189}}}
     }, {
       "id": 194,
       "type": "cryptic",
@@ -1432,6 +1454,7 @@ export namespace clue_data {
         "type": "search",
         "spot": {"level": 0, "topleft": {"x": 2928, "y": 3552}, "botright": {"x": 2928, "y": 3552}},
         "entity": "Drawers",
+        "entity_configs": [{"id": 67304, "name": "OMGE_BURTHORPE_HOUSE_DRAWERS_CLOSED"}, {"id": 67305, "name": "OMGE_BURTHORPE_HOUSE_DRAWERS_OPEN"}],
         "key": {
           "instructions": "The drawers are locked! A note on the top of the drawer reads: Wait till I get my hands on Penda; he's nicked the key again!",
           "answer": "Pickpocket Penda in the house north of Heroes's Guild.",
@@ -1446,6 +1469,7 @@ export namespace clue_data {
       "solution": {
         "type": "search",
         "entity": "Drawers",
+        "entity_configs": [{"id": 25766, "name": "KR_SEERS_VILLAGE_DRAWERS1"}, {"id": 25767, "name": "KR_SEERS_VILLAGE_DRAWERS1OPEN"}],
         "spot": {"level": 0, "topleft": {"x": 2709, "y": 3478}, "botright": {"x": 2709, "y": 3478}},
         "key": {
           "instructions": "Don't forget to feed the chickens",
@@ -1458,7 +1482,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "medium",
       "text": ["Being this far north has meant that these crates have escaped being battled over."],
-      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2519, "y": 3259}, "botright": {"x": 2519, "y": 3259}}, "entity": "Crates"}
+      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2519, "y": 3259}, "botright": {"x": 2519, "y": 3259}}, "entity": "Crates", "entity_configs": [{"id": 40495, "name": "LUC2_BF_CRATE"}]}
     }, {
       "id": 197,
       "type": "cryptic",
@@ -1470,7 +1494,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "medium",
       "text": ["Sophind yourself some treasure by searching these boxes."],
-      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 3280, "y": 2787}, "botright": {"x": 3280, "y": 2787}}, "entity": "Crate"}
+      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 3280, "y": 2787}, "botright": {"x": 3280, "y": 2787}}, "entity": "Crate", "entity_configs": [{"id": 109470, "name": "MENAPHOS_WORKER_CRATE_01_CLUE"}]}
     }, {
       "id": 199,
       "type": "cryptic",
@@ -1482,13 +1506,13 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "medium",
       "text": ["You'll need to have Doug Deep into the distant past to get to these sacks"],
-      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 3155, "y": 5727}, "botright": {"x": 3155, "y": 5727}}, "entity": "Sacks"}
+      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 3155, "y": 5727}, "botright": {"x": 3155, "y": 5727}}, "entity": "Sacks", "entity_configs": [{"id": 32049, "name": "DI2_SACKS"}]}
     }, {
       "id": 201,
       "type": "cryptic",
       "tier": "medium",
       "text": ["This crate holds a better reward than a broken arrow."],
-      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2671, "y": 3437}, "botright": {"x": 2671, "y": 3437}}, "entity": "Crate"}
+      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2671, "y": 3437}, "botright": {"x": 2671, "y": 3437}}, "entity": "Crate", "entity_configs": [{"id": 46333, "name": "ACTIVE_CRATE_OLD"}]}
     }, {
       "id": 202,
       "type": "cryptic",
@@ -1504,6 +1528,7 @@ export namespace clue_data {
         "type": "search",
         "spot": {"level": 1, "topleft": {"x": 2809, "y": 3165}, "botright": {"x": 2809, "y": 3165}},
         "entity": "Drawers",
+        "entity_configs": [{"id": 348, "name": "DRAWERS1"}, {"id": 349, "name": "DRAWERS1OPEN"}],
         "key": {"instructions": "Shiver me timbers!", "answer": "Kill a pirate in Brimhaven", "area": {"origin": {"x": 2766, "y": 3167, "level": 0}, "size": {"x": 45, "y": 35}}}
       }
     }, {
@@ -1517,7 +1542,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "medium",
       "text": ["This crate is mine, all mine, even if it is in the middle of the desert."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 3289, "y": 3022}, "botright": {"x": 3289, "y": 3022}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 18889, "name": "TOURTRAP_QIP_CRATE_SINGLE"}], "spot": {"level": 0, "topleft": {"x": 3289, "y": 3022}, "botright": {"x": 3289, "y": 3022}}}
     }, {
       "id": 206,
       "type": "cryptic",
@@ -1535,7 +1560,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "medium",
       "text": ["This cupboard has treasure, pirate pots and corsair cutlery!"],
-      "solution": {"type": "search", "entity": "Cupboard", "spot": {"level": 0, "topleft": {"x": 2811, "y": 3160}, "botright": {"x": 2811, "y": 3160}}}
+      "solution": {"type": "search", "entity": "Cupboard", "entity_configs": [{"id": 37034, "name": "CUPBOARD_GLOFFSET"}, {"id": 37038, "name": "CUPBOARDOPEN_GLOFFSET"}], "spot": {"level": 0, "topleft": {"x": 2811, "y": 3160}, "botright": {"x": 2811, "y": 3160}}}
     }, {
       "id": 209,
       "type": "cryptic",
@@ -1545,6 +1570,7 @@ export namespace clue_data {
         "type": "search",
         "spot": {"level": 0, "topleft": {"x": 3354, "y": 3349}, "botright": {"x": 3354, "y": 3349}},
         "entity": "Closed chest",
+        "entity_configs": [{"id": 375, "name": "CHESTCLOSED"}, {"id": 378, "name": "CHESTOPEN"}],
         "key": {
           "instructions": "The chest is locked!  Crude graffiti on the chest reads: 'Barbarians rule, okay!'",
           "answer": "Kill a Barbarian in Barbarian Village.",
@@ -1556,7 +1582,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "medium",
       "text": ["This crate clearly marks the end of the line for coal."],
-      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2691, "y": 3508}, "botright": {"x": 2691, "y": 3508}}, "entity": "Crate"}
+      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2691, "y": 3508}, "botright": {"x": 2691, "y": 3508}}, "entity": "Crate", "entity_configs": [{"id": 24202, "name": "ACTIVE_CRATE2_OLD"}]}
     }, {
       "id": 211,
       "type": "cryptic",
@@ -1566,6 +1592,7 @@ export namespace clue_data {
         "type": "search",
         "spot": {"level": 1, "topleft": {"x": 2512, "y": 3641}, "botright": {"x": 2512, "y": 3641}},
         "entity": "Drawers",
+        "entity_configs": [{"id": 350, "name": "DRAWERS2"}, {"id": 351, "name": "DRAWERS2OPEN"}],
         "key": {
           "instructions": "The drawers are locked! A note on the top says 'I'm guarding the key at the market'.",
           "answer": "Kill a Fremennik market guard in Relekka.",
@@ -1577,7 +1604,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "medium",
       "text": ["Find a crate close to the monks that like to paaarty!"],
-      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2614, "y": 3204}, "botright": {"x": 2614, "y": 3204}}, "entity": "Crate"}
+      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2614, "y": 3204}, "botright": {"x": 2614, "y": 3204}}, "entity": "Crate", "entity_configs": [{"id": 46331, "name": "ACTIVE_CRATE2"}]}
     }, {
       "id": 213,
       "type": "cryptic",
@@ -1586,6 +1613,7 @@ export namespace clue_data {
       "solution": {
         "type": "search",
         "entity": "Closed chest",
+        "entity_configs": [{"id": 375, "name": "CHESTCLOSED"}, {"id": 378, "name": "CHESTOPEN"}],
         "spot": {"level": 1, "topleft": {"x": 2593, "y": 3108}, "botright": {"x": 2593, "y": 3108}},
         "key": {"instructions": "Stand by your man.", "answer": "Kill the man downstairs.", "area": {"origin": {"x": 2590, "y": 3103, "level": 0}, "size": {"x": 9, "y": 6}}}
       }
@@ -1594,13 +1622,13 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "medium",
       "text": ["This temple is rather sluggish. The chest just inside the entrance, however, is filled with goodies."],
-      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2698, "y": 9684}, "botright": {"x": 2698, "y": 9684}}, "entity": "Chest"}
+      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2698, "y": 9684}, "botright": {"x": 2698, "y": 9684}}, "entity": "Chest", "entity_configs": [{"id": 18304, "name": "SLUG2_CHEST"}, {"id": 18321, "name": "SLUG2_CHEST_OPEN"}]}
     }, {
       "id": 215,
       "type": "cryptic",
       "tier": "medium",
       "text": ["The gnomes' nearby cart must have collapsed under the weight of all the treasure in these boxes!"],
-      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2397, "y": 3355}, "botright": {"x": 2397, "y": 3355}}, "entity": "Gnome crates"}
+      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2397, "y": 3355}, "botright": {"x": 2397, "y": 3355}}, "entity": "Gnome crates", "entity_configs": [{"id": 84019, "name": "ACTIVE_ALUFT_GNOME_CRATES"}]}
     }, {
       "id": 217,
       "type": "cryptic",
@@ -1612,7 +1640,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "medium",
       "text": ["Observe: In the crate just North of the stairs leading down, you will find the answer."],
-      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2438, "y": 3165}, "botright": {"x": 2438, "y": 3165}}, "entity": "Crate"}
+      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2438, "y": 3165}, "botright": {"x": 2438, "y": 3165}}, "entity": "Crate", "entity_configs": [{"id": 28625, "name": "WOLF_DRUID_LARGE_CRATE"}]}
     }, {
       "id": 220,
       "type": "cryptic",
@@ -1622,6 +1650,7 @@ export namespace clue_data {
         "type": "search",
         "spot": {"level": 1, "topleft": {"x": 2610, "y": 3324}, "botright": {"x": 2610, "y": 3324}},
         "entity": "Drawers",
+        "entity_configs": [{"id": 34482, "name": "AREA_ARDOUGNE_BASIC_DRAWERS"}, {"id": 34483, "name": "AREA_ARDOUGNE_BASIC_DRAWERS_OPEN"}],
         "key": {"instructions": "It's a guard's life", "answer": "Kill an ardougne guard."}
       }
     }, {
@@ -1644,6 +1673,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "General Bentnoze",
+        "npc_configs": [{"id": 4493, "name": "GENERAL_BENTNOZE_RED"}],
         "spots": [{"range": {"origin": {"x": 2954, "y": 3512, "level": 0}, "size": {"x": 7, "y": 4}}, "description": "in Goblin Village"}]
       },
       "challenge": [{"type": "slider"}]
@@ -1652,7 +1682,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "hard",
       "text": ["If you look closely enough, it seems that the archers have lost more than their needles."],
-      "solution": {"type": "search", "entity": "Haystack", "spot": {"level": 0, "topleft": {"x": 2671, "y": 3416}, "botright": {"x": 2671, "y": 3416}}}
+      "solution": {"type": "search", "entity": "Haystack", "entity_configs": [{"id": 300, "name": "HAYSTACK3"}], "spot": {"level": 0, "topleft": {"x": 2671, "y": 3416}, "botright": {"x": 2671, "y": 3416}}}
     }, {
       "id": 39,
       "type": "cryptic",
@@ -1672,7 +1702,8 @@ export namespace clue_data {
           "note": "Before 'Plague's End'",
           "description": "at Iorwerth Camp"
         }],
-        "npc": "Lord Iorwerth"
+        "npc": "Lord Iorwerth",
+        "npc_configs": [{"id": 19647, "name": "LORD_IORWERTH_VIS"}, {"id": 19873, "name": "ELFCITY_LORD_IORWERTH"}, {"id": 1182, "name": "LORD_IORWERTH", "parent": true}]
       }
     }, {
       "id": 139,
@@ -1682,7 +1713,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3055, "y": 3482, "level": 0}, "size": {"x": 5, "y": 6}, "data": "73+MMQ=="}, "description": "at the Edgeville Monastery"}],
-        "npc": "Abbot Langley"
+        "npc": "Abbot Langley",
+        "npc_configs": [{"id": 801, "name": "ABBOT_LANGLEY"}]
       }
     }, {
       "id": 140,
@@ -1692,7 +1724,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3011, "y": 3223, "level": 0}, "size": {"x": 7, "y": 7}}, "description": "in the fishing shop in Port Sarim"}],
-        "npc": "Gerrant"
+        "npc": "Gerrant",
+        "npc_configs": [{"id": 11699, "name": "VKQ2_GERRANT_SICK"}, {"id": 12261, "name": "GERRANT_NPC"}, {"id": 558, "name": "GERRANT", "parent": true}]
       }
     }, {
       "id": 141,
@@ -1703,6 +1736,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Examiner",
+        "npc_configs": [{"id": 4566, "name": "QIP_DIGSITE_EXAMINER_02"}, {"id": 4567, "name": "QIP_DIGSITE_EXAMINER_03"}],
         "spots": [{"range": {"origin": {"x": 3351, "y": 3342, "level": 0}, "size": {"x": 9, "y": 8}}, "description": "in the Exam Centre"}]
       }
     }, {
@@ -1710,7 +1744,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "hard",
       "text": ["A great view: watch the rapidly drying hides get splashed. Check the box you are sitting on."],
-      "solution": {"type": "search", "spot": {"level": 1, "topleft": {"x": 2523, "y": 3493}, "botright": {"x": 2523, "y": 3493}}, "entity": "Boxes"}
+      "solution": {"type": "search", "spot": {"level": 1, "topleft": {"x": 2523, "y": 3493}, "botright": {"x": 2523, "y": 3493}}, "entity": "Boxes", "entity_configs": [{"id": 46334, "name": "ACTIVE_BOXES"}]}
     }, {
       "id": 143,
       "type": "cryptic",
@@ -1726,7 +1760,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3131, "y": 2800, "level": 0}, "size": {"x": 5, "y": 5}}, "description": "on the beach in Menaphos Worker District"}],
-        "npc": "Hamid"
+        "npc": "Hamid",
+        "npc_configs": [{"id": 1008, "name": "DUEL_MONK"}]
       }
     }, {
       "id": 145,
@@ -1743,26 +1778,27 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 2467, "y": 3426, "level": 0}, "size": {"x": 11, "y": 15}}, "description": "at the Gnome Agility Course"}],
-        "npc": "Gnome trainer"
+        "npc": "Gnome trainer",
+        "npc_configs": [{"id": 162, "name": "GNOMETRAINER"}]
       }
     }, {
       "id": 147,
       "type": "cryptic",
       "tier": "hard",
       "text": ["It seems to have reached the end of the line, and it's still empty."],
-      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 3041, "y": 9820}, "botright": {"x": 3041, "y": 9820}}, "entity": "Mine Cart"}
+      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 3041, "y": 9820}, "botright": {"x": 3041, "y": 9820}}, "entity": "Mine Cart", "entity_configs": [{"id": 6045, "name": "DWARFROCK_BOOK_CART"}]}
     }, {
       "id": 148,
       "type": "cryptic",
       "tier": "hard",
       "text": ["Read 'How to Breed Scorpions' By O.W. Thathurt."],
-      "solution": {"type": "search", "spot": {"level": 1, "topleft": {"x": 2702, "y": 3409}, "botright": {"x": 2702, "y": 3409}}, "entity": "Bookcase"}
+      "solution": {"type": "search", "spot": {"level": 1, "topleft": {"x": 2702, "y": 3409}, "botright": {"x": 2702, "y": 3409}}, "entity": "Bookcase", "entity_configs": [{"id": 37047, "name": "BOOKCASE_OFFSET"}]}
     }, {
       "id": 149,
       "type": "cryptic",
       "tier": "hard",
       "text": ["Probably filled with books on magic."],
-      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 3094, "y": 3153}, "botright": {"x": 3095, "y": 3152}}, "entity": "Bookcase"}
+      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 3094, "y": 3153}, "botright": {"x": 3095, "y": 3152}}, "entity": "Bookcase", "entity_configs": [{"id": 79424, "name": "WIZTOWER2012_LIBRARY_BOOKCASE"}]}
     }, {
       "id": 150,
       "type": "cryptic",
@@ -1775,14 +1811,15 @@ export namespace clue_data {
           "range": {"origin": {"x": 2487, "y": 3487, "level": 1}, "size": {"x": 7, "y": 3}},
           "description": "in the south-east corner on the first floor of the Grand Tree"
         }],
-        "npc": "Heckel Funch"
+        "npc": "Heckel Funch",
+        "npc_configs": [{"id": 603, "name": "GNOME_HECKELFUNCH"}]
       }
     }, {
       "id": 151,
       "type": "cryptic",
       "tier": "hard",
       "text": ["I'm sure they will let ya buy some things here, as long as you are in good 'ealth."],
-      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2340, "y": 3187}, "botright": {"x": 2340, "y": 3187}}, "entity": "Crate"}
+      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2340, "y": 3187}, "botright": {"x": 2340, "y": 3187}}, "entity": "Crate", "entity_configs": [{"id": 46331, "name": "ACTIVE_CRATE2"}]}
     }, {
       "id": 152,
       "type": "cryptic",
@@ -1794,7 +1831,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "hard",
       "text": ["His head might be hollow, but the crates nearby are filled with surprises."],
-      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 3478, "y": 3091}, "botright": {"x": 3478, "y": 3091}}, "entity": "Crate"}
+      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 3478, "y": 3091}, "botright": {"x": 3478, "y": 3091}}, "entity": "Crate", "entity_configs": [{"id": 46331, "name": "ACTIVE_CRATE2"}]}
     }, {
       "id": 154,
       "type": "cryptic",
@@ -1824,43 +1861,43 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "hard",
       "text": ["When you get tired of fighting, go deep, deep down until you need an antidote."],
-      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2576, "y": 9583}, "botright": {"x": 2576, "y": 9583}}, "entity": "Crate"}
+      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2576, "y": 9583}, "botright": {"x": 2576, "y": 9583}}, "entity": "Crate", "entity_configs": [{"id": 24202, "name": "ACTIVE_CRATE2_OLD"}]}
     }, {
       "id": 159,
       "type": "cryptic",
       "tier": "hard",
       "text": ["'Throat mage seeks companionship. Seek answers inside my furniture if interested.'"],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 1, "topleft": {"x": 2666, "y": 3238}, "botright": {"x": 2666, "y": 3238}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 126971, "name": "UNDERWORLD_SURFACE_NECROMANCERS_TOWER_FURNITURE_DRAWERS"}], "spot": {"level": 1, "topleft": {"x": 2666, "y": 3238}, "botright": {"x": 2666, "y": 3238}}}
     }, {
       "id": 160,
       "type": "cryptic",
       "tier": "hard",
       "text": ["Must be full of railings"],
-      "solution": {"type": "search", "entity": "Boxes", "spot": {"level": 0, "topleft": {"x": 2576, "y": 3464}, "botright": {"x": 2576, "y": 3464}}}
+      "solution": {"type": "search", "entity": "Boxes", "entity_configs": [{"id": 6176, "name": "DWARF_KELDAGRIM_WOODEN_BOXES"}], "spot": {"level": 0, "topleft": {"x": 2576, "y": 3464}, "botright": {"x": 2576, "y": 3464}}}
     }, {
       "id": 161,
       "type": "cryptic",
       "tier": "hard",
       "text": ["You will need to under-cook to solve this one."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 3219, "y": 9617}, "botright": {"x": 3219, "y": 9617}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 24202, "name": "ACTIVE_CRATE2_OLD"}], "spot": {"level": 0, "topleft": {"x": 3219, "y": 9617}, "botright": {"x": 3219, "y": 9617}}}
     }, {
       "id": 162,
       "type": "cryptic",
       "tier": "hard",
       "text": ["The cheapest water for miles around, but they react badly to religious icons."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 3178, "y": 2987}, "botright": {"x": 3178, "y": 2987}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 46331, "name": "ACTIVE_CRATE2"}], "spot": {"level": 0, "topleft": {"x": 3178, "y": 2987}, "botright": {"x": 3178, "y": 2987}}}
     }, {
       "id": 163,
       "type": "cryptic",
       "tier": "hard",
       "text": ["You have all of the elements available to solve this clue. Fortunately you do not have to go as far as to stand in a draft."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 2723, "y": 9891}, "botright": {"x": 2723, "y": 9891}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 18506, "name": "ELEM_CRATE_1"}], "spot": {"level": 0, "topleft": {"x": 2723, "y": 9891}, "botright": {"x": 2723, "y": 9891}}}
     }, {
       "id": 164,
       "type": "cryptic",
       "tier": "hard",
       "text": ["Try not to let yourself be dazzled when you search these drawers."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 0, "topleft": {"x": 2561, "y": 3323}, "botright": {"x": 2561, "y": 3323}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 34530, "name": "AREA_ARDOUGNE_POSH_DRAWERS2"}, {"id": 34531, "name": "AREA_ARDOUGNE_POSH_DRAWERS2_OPEN"}], "spot": {"level": 0, "topleft": {"x": 2561, "y": 3323}, "botright": {"x": 2561, "y": 3323}}}
     }, {
       "id": 165,
       "type": "cryptic",
@@ -1878,7 +1915,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "hard",
       "text": ["Navigating to this crate will be a trial."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 2648, "y": 3662}, "botright": {"x": 2648, "y": 3662}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 46332, "name": "ACTIVE_CRATE3"}], "spot": {"level": 0, "topleft": {"x": 2648, "y": 3662}, "botright": {"x": 2648, "y": 3662}}}
     }, {
       "id": 168,
       "type": "cryptic",
@@ -1888,7 +1925,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 2850, "y": 3493, "level": 1}}, "description": "at the top of White Wolf Mountain"}],
-        "npc": "Captain Bleemadge"
+        "npc": "Captain Bleemadge",
+        "npc_configs": [{"id": 3810, "name": "PILOT_WHITE_WOLF"}]
       }
     }, {
       "id": 169,
@@ -1898,14 +1936,15 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3202, "y": 3205, "level": 0}, "size": {"x": 21, "y": 28}}, "description": "at Lumbridge Castle"}],
-        "npc": "Hans"
+        "npc": "Hans",
+        "npc_configs": [{"id": 0, "name": "HANS"}]
       }
     }, {
       "id": 170,
       "type": "cryptic",
       "tier": "hard",
       "text": ["My home is grey, and made of stone, A castle with a search for a meal. Hidden in some drawers I am, across from a wooden wheel."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 1, "topleft": {"x": 3213, "y": 3216}, "botright": {"x": 3213, "y": 3216}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 88873, "name": "FAI_LUMBRIDGE_CASTLE_DRAWERS_CLOSED"}, {"id": 88874, "name": "FAI_LUMBRIDGE_CASTLE_DRAWERS_OPEN"}], "spot": {"level": 1, "topleft": {"x": 3213, "y": 3216}, "botright": {"x": 3213, "y": 3216}}}
     }, {
       "id": 171,
       "type": "cryptic",
@@ -1914,14 +1953,15 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3202, "y": 3470, "level": 0}, "size": {"x": 5, "y": 5}}, "description": "in Varrock Castle"}],
-        "npc": "Sir Prysin"
+        "npc": "Sir Prysin",
+        "npc_configs": [{"id": 883, "name": "SIR_PRYSIN"}, {"id": 9359, "name": "SIR_PRYSIN_MULTI", "parent": true}]
       }
     }, {
       "id": 173,
       "type": "cryptic",
       "tier": "hard",
       "text": ["Four blades I have, yet draw no blood, Still I turn my prey to powder. If you are brave, come search my roof, It is there my blades are louder."],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 2, "topleft": {"x": 3166, "y": 3309}, "botright": {"x": 3166, "y": 3309}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 21806, "name": "FAI_LUMBRIDGE_ACTIVE_CRATE_STACKED"}], "spot": {"level": 2, "topleft": {"x": 3166, "y": 3309}, "botright": {"x": 3166, "y": 3309}}}
     }, {
       "id": 174,
       "type": "cryptic",
@@ -1931,7 +1971,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3219, "y": 3434, "level": 0}, "size": {"x": 6, "y": 5}}, "description": "near Varrock's fountain"}],
-        "npc": "Wilough"
+        "npc": "Wilough",
+        "npc_configs": [{"id": 783, "name": "WILOUGH"}]
       }
     }, {
       "id": 175,
@@ -1942,7 +1983,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3066, "y": 3514, "level": 0}, "size": {"x": 5, "y": 5}}, "description": "in Edgeville"}],
-        "npc": "Oziach"
+        "npc": "Oziach",
+        "npc_configs": [{"id": 747, "name": "OZIACH"}]
       }
     }, {
       "id": 176,
@@ -1955,7 +1997,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "hard",
       "text": ["When no weapons are at hand, then is the time to reflect. In Saradomin's name, redemption draws closer."],
-      "solution": {"type": "search", "entity": "Drawers", "spot": {"level": 0, "topleft": {"x": 2818, "y": 3351}, "botright": {"x": 2818, "y": 3351}}}
+      "solution": {"type": "search", "entity": "Drawers", "entity_configs": [{"id": 127765, "name": "ENTRANA_DRAWERS_MEDIUMCLUE"}, {"id": 127766, "name": "ENTRANA_DRAWERS_MEDIUMCLUE_OPEN"}], "spot": {"level": 0, "topleft": {"x": 2818, "y": 3351}, "botright": {"x": 2818, "y": 3351}}}
     }, {
       "id": 216,
       "type": "cryptic",
@@ -1985,7 +2027,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "hard",
       "text": ["This village has a problem with cartloads of the undead. Try checking the bookcase to find the answer."],
-      "solution": {"type": "search", "entity": "Bookcase", "spot": {"level": 0, "topleft": {"x": 2833, "y": 2992}, "botright": {"x": 2833, "y": 2992}}}
+      "solution": {"type": "search", "entity": "Bookcase", "entity_configs": [{"id": 394, "name": "SHELVES_BAMBOO"}], "spot": {"level": 0, "topleft": {"x": 2833, "y": 2992}, "botright": {"x": 2833, "y": 2992}}}
     }]
 
   export const emote: Clues.Emote[] = [
@@ -2667,7 +2709,7 @@ export namespace clue_data {
       "image_url": "/assets/Map_clue_Clock_Tower.png",
       "text": ["A crate near a bridge over a river."],
       "ocr_data": [26, 78, 174, 26, 77, -10, 6, 8, 26, 77, -11, 8, 10, 25, 78, -10, 6, 7, 26, 80, -7, 5, 6, 25, 77, -8, 7, 8, 26, 77, -10, 7, 9, 26, 77, -9, 10, 15, 25, 76, 11, 21, 24, 26, 76, 29, 24, 34, 26, 79, 2, 18, 23, 26, 82, -11, 5, 6, 26, 82, -13, 4, 6, 25, 82, -12, 5, 7, 25, 85, -13, 6, 7, 26, 81, -14, 8, 10, 26, 78, -10, 7, 9, 25, 76, -14, 7, 9, 25, 79, -11, 5, 7, 26, 81, -8, 6, 8, 26, 79, -9, 7, 8, 26, 76, -3, 17, 22, 27, 69, 41, 63, 74, 25, 76, 18, 74, 92, 25, 78, -2, 29, 55, 26, 76, 29, 55, 63, 26, 74, 33, 50, 60, 26, 74, 26, 23, 33, 26, 71, 26, 23, 34, 26, 82, -10, 18, 23, 26, 80, -14, 6, 8, 25, 77, -12, 8, 10, 26, 78, -14, 6, 8, 26, 78, -13, 6, 7, 25, 82, -10, 5, 7, 27, 77, 14, 42, 51, 27, 71, 36, 52, 64, 26, 79, -7, 13, 28, 26, 70, 33, 48, 59, 26, 70, 39, 54, 70, 26, 76, 5, 33, 41, 26, 80, -1, 49, 55, 26, 78, 1, 27, 48, 26, 73, 17, 40, 66, 26, 79, -9, 15, 19, 26, 80, -15, 7, 8, 25, 78, -13, 5, 6, 25, 78, -13, 6, 8, 25, 77, -13, 4, 5, 26, 77, 4, 21, 25, 27, 72, 46, 79, 102, 27, 79, 6, 45, 51, 26, 81, 5, 36, 42, 26, 72, 17, 24, 29, 24, 80, -11, 7, 12, 26, 69, 36, 52, 60, 27, 70, 38, 60, 67, 27, 68, 40, 70, 81, 26, 72, 26, 29, 35, 25, 78, -12, 10, 13, 26, 79, -16, 5, 6, 25, 78, -10, 8, 10, 26, 78, -14, 6, 8, 25, 78, -15, 5, 8, 26, 72, 37, 58, 70, 27, 78, 8, 36, 55, 27, 74, 18, 51, 58, 27, 69, 41, 65, 75, 26, 75, -6, 17, 21, 26, 76, 24, 76, 94, 27, 75, 24, 85, 107, 25, 76, 5, 45, 55, 27, 79, -9, 7, 9, 25, 80, -11, 5, 6, 26, 81, -15, 6, 7, 26, 80, -18, 6, 7, 26, 77, -16, 5, 7, 25, 81, -14, 6, 7, 26, 75, 5, 39, 45, 26, 75, 11, 38, 44, 26, 73, 13, 44, 57, 26, 75, 4, 45, 54, 25, 80, -15, 7, 11, 26, 78, -1, 44, 52, 26, 76, -10, 14, 24, 26, 77, -8, 16, 25, 26, 76, 24, 85, 104, 27, 79, -12, 7, 9, 26, 80, -12, 5, 6, 26, 81, -15, 5, 6, 25, 80, -16, 6, 7, 26, 77, -16, 7, 9, 26, 78, -19, 7, 8, 25, 80, -16, 6, 8, 26, 78, -14, 7, 9, 27, 67, 43, 61, 72, 26, 76, -15, 11, 16, 28, 64, 25, 36, 42, 27, 71, 26, 70, 80, 26, 78, -13, 7, 9, 25, 81, -10, 8, 10, 26, 77, 16, 60, 70, 26, 82, -7, 7, 8, 25, 82, -9, 8, 9, 25, 80, -15, 5, 6, 26, 79, -17, 6, 7, 26, 79, -11, 6, 8, 26, 78, -19, 6, 7, 26, 78, -16, 6, 8, 26, 71, 22, 49, 60, 26, 73, 11, 24, 30, 27, 77, -17, 7, 18, 31, 55, 80, 41, 58, 28, 71, 47, 75, 84, 26, 79, 12, 53, 58, 26, 78, 8, 43, 48, 26, 79, 17, 56, 66, 26, 80, -8, 7, 15, 25, 83, -10, 6, 7, 26, 79, -16, 6, 7, 26, 81, -16, 6, 8, 26, 79, -9, 5, 6, 25, 80, -12, 6, 8, 26, 79, -3, 25, 32, 26, 69, 38, 48, 58, 26, 79, -15, 6, 8, 27, 76, -20, 6, 7, 27, 75, 4, 53, 60, 26, 79, 8, 47, 55, 26, 78, 10, 44, 51, 26, 78, 7, 43, 48, 26, 78, 11, 48, 57, 26, 78, 13, 50, 64, 26, 81, -11, 4, 6, 25, 79, -12, 5, 6, 26, 79, -17, 5, 6, 25, 81, -8, 7, 10, 25, 80, -10, 8, 10, 26, 79, -5, 15, 20, 25, 82, -6, 13, 16, 25, 80, -10, 6, 7, 26, 79, -12, 6, 7, 26, 78, 8, 44, 50, 26, 79, -8, 20, 27, 26, 76, 26, 89, 99, 26, 78, -13, 6, 7, 26, 77, 7, 43, 49, 26, 75, 3, 44, 49, 26, 79, -14, 4, 5, 26, 80, -15, 5, 7, 27, 77, -18, 5, 7, 26, 82, -8, 6, 8, 26, 82, -11, 7, 8, 25, 82, -9, 8, 10, 25, 80, -10, 7, 9, 26, 81, -9, 7, 8, 25, 81, -11, 6, 8, 26, 81, 10, 44, 49, 26, 81, 14, 53, 60, 26, 79, 6, 44, 49, 26, 77, 8, 54, 62, 27, 76, 4, 48, 57, 27, 75, 6, 63, 69, 26, 80, -14, 6, 8, 26, 79, -18, 6, 7, 27, 77, -20, 5, 7, 25, 84, -6, 9, 11, 24, 84, -8, 8, 10, 24, 85, -7, 9, 11, 25, 84, -5, 7, 9, 25, 84, -6, 7, 9, 25, 83, -7, 10, 12, 24, 84, -7, 8, 10, 25, 84, -5, 23, 27, 26, 80, -16, 6, 8, 26, 78, -13, 20, 24, 26, 77, -12, 29, 33, 27, 78, -19, 5, 6, 26, 80, -14, 6, 7, 26, 78, -18, 6, 8, 27, 76, -19, 6, 8],
-      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2565, "y": 3248}, "botright": {"x": 2565, "y": 3248}}, "entity": "Crate"}
+      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2565, "y": 3248}, "botright": {"x": 2565, "y": 3248}}, "entity": "Crate", "entity_configs": [{"id": 46331, "name": "ACTIVE_CRATE2"}]}
     }, {
       "id": 45,
       "type": "map",
@@ -2675,7 +2717,7 @@ export namespace clue_data {
       "image_url": "/assets/Map_clue_McGrubors_Wood.png",
       "text": ["A crate in the woods directly next to a building."],
       "ocr_data": [26, 78, 180, 26, 77, -4, 6, 8, 26, 77, -5, 8, 10, 25, 78, -4, 6, 7, 26, 80, -1, 5, 6, 25, 77, -2, 7, 8, 26, 77, -1, 18, 23, 26, 76, -2, 13, 17, 25, 80, -6, 10, 14, 25, 85, -3, 11, 15, 25, 82, -7, 6, 7, 26, 82, -5, 5, 6, 26, 82, -5, 10, 15, 25, 82, -6, 5, 7, 25, 85, -7, 6, 7, 26, 81, -8, 8, 10, 26, 78, -4, 7, 9, 25, 76, -8, 7, 9, 25, 79, -5, 5, 7, 26, 81, -2, 6, 8, 26, 79, -3, 7, 8, 26, 79, 7, 49, 56, 28, 68, 31, 57, 67, 25, 77, 7, 24, 37, 26, 77, 2, 21, 27, 27, 77, 14, 42, 50, 26, 82, 7, 37, 46, 28, 77, 20, 52, 65, 25, 79, -9, 5, 7, 25, 83, -10, 7, 8, 26, 80, -8, 6, 8, 25, 77, -6, 8, 10, 26, 78, -8, 6, 8, 26, 78, -7, 6, 7, 26, 80, 2, 15, 22, 27, 76, 5, 24, 30, 28, 74, 21, 58, 66, 26, 80, 4, 40, 49, 26, 79, -3, 11, 18, 25, 78, -5, 14, 18, 27, 73, 23, 57, 66, 26, 81, 4, 32, 40, 26, 76, 5, 24, 34, 26, 77, -1, 17, 21, 26, 80, -10, 6, 7, 26, 80, -9, 7, 8, 25, 78, -7, 5, 6, 25, 78, -7, 6, 8, 25, 77, -7, 4, 5, 26, 81, -7, 4, 7, 27, 81, -7, 8, 10, 26, 78, -2, 21, 24, 27, 81, 20, 56, 65, 26, 79, -3, 19, 24, 24, 80, -5, 7, 8, 26, 80, 7, 37, 41, 27, 74, 13, 28, 33, 27, 77, 3, 17, 21, 27, 74, 16, 42, 46, 25, 79, -9, 6, 8, 26, 79, -10, 5, 6, 25, 78, -4, 8, 10, 26, 78, -8, 6, 8, 26, 77, -6, 13, 17, 27, 74, 18, 41, 50, 27, 76, 8, 28, 33, 26, 80, -8, 6, 8, 26, 80, 8, 45, 56, 26, 77, -12, 6, 12, 25, 79, -7, 6, 8, 27, 77, 16, 52, 59, 25, 75, -1, 13, 20, 27, 79, -3, 7, 10, 25, 80, -5, 5, 6, 26, 81, -9, 6, 7, 26, 80, -12, 6, 7, 26, 77, -10, 5, 7, 25, 81, -8, 6, 7, 26, 78, -12, 6, 7, 26, 78, -6, 13, 18, 26, 75, -3, 21, 27, 27, 75, 4, 28, 34, 26, 82, 12, 54, 62, 26, 80, 3, 32, 48, 27, 78, 6, 48, 63, 27, 77, 26, 82, 94, 26, 74, 6, 24, 33, 28, 74, 12, 27, 33, 26, 80, -6, 5, 7, 26, 81, -9, 5, 6, 25, 80, -10, 6, 7, 26, 77, -10, 7, 9, 26, 78, -13, 7, 8, 25, 80, -10, 6, 8, 27, 73, 8, 30, 41, 26, 76, -4, 14, 17, 27, 74, -3, 21, 28, 26, 80, 0, 39, 46, 25, 77, -9, 8, 11, 26, 79, 7, 55, 61, 26, 83, 22, 51, 62, 26, 77, 4, 25, 32, 26, 79, 8, 25, 34, 25, 82, -2, 8, 9, 25, 80, -9, 5, 6, 26, 79, -11, 6, 7, 26, 79, -5, 6, 8, 26, 78, -13, 6, 7, 26, 77, -9, 9, 13, 27, 74, 10, 32, 37, 27, 74, 7, 31, 37, 27, 74, 2, 31, 37, 27, 82, 1, 44, 51, 26, 81, -2, 23, 31, 26, 81, 2, 21, 31, 26, 81, 7, 48, 55, 26, 76, 15, 36, 42, 26, 80, -2, 7, 9, 26, 81, 1, 14, 18, 26, 79, -10, 6, 7, 26, 81, -10, 6, 8, 26, 79, -3, 5, 6, 25, 80, -6, 6, 8, 26, 82, -9, 6, 8, 26, 81, -1, 15, 19, 26, 78, -5, 20, 23, 27, 76, -11, 14, 18, 28, 72, 10, 35, 41, 26, 82, 2, 33, 39, 28, 71, 41, 70, 80, 28, 73, 31, 47, 54, 26, 77, 8, 20, 25, 26, 80, -5, 5, 8, 27, 76, 10, 28, 34, 25, 79, -6, 5, 6, 26, 79, -11, 5, 6, 25, 81, -2, 7, 10, 25, 80, -4, 8, 10, 26, 81, -6, 6, 9, 26, 77, 15, 43, 48, 25, 80, -1, 14, 17, 28, 73, 16, 35, 41, 26, 76, 8, 33, 40, 27, 76, 7, 26, 35, 29, 69, 45, 56, 64, 29, 76, 37, 44, 52, 26, 74, 9, 32, 36, 28, 71, 12, 39, 43, 26, 79, -8, 4, 5, 26, 80, -9, 5, 7, 27, 77, -12, 5, 7, 26, 82, -2, 6, 8, 26, 82, -5, 7, 8, 25, 82, -3, 8, 10, 26, 78, 3, 17, 28, 27, 77, 11, 27, 34, 26, 80, -1, 13, 16, 26, 82, 0, 14, 19, 27, 77, 14, 29, 38, 26, 79, 0, 14, 22, 28, 74, 9, 27, 33, 27, 77, -7, 13, 17, 27, 75, -6, 22, 25, 26, 80, -8, 6, 8, 26, 79, -12, 6, 7, 27, 77, -14, 5, 7, 25, 84, 0, 9, 11, 24, 84, -2, 8, 10, 24, 85, -1, 9, 11, 25, 84, 1, 7, 9, 25, 84, 0, 7, 9, 25, 83, -1, 10, 12, 24, 84, -1, 8, 10, 25, 83, 1, 18, 26, 26, 80, -10, 6, 8, 26, 76, -5, 22, 27, 26, 77, -13, 6, 7, 27, 78, -13, 5, 6, 26, 80, -8, 6, 7, 26, 78, -12, 6, 8, 27, 76, -13, 6, 8],
-      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2658, "y": 3488}, "botright": {"x": 2658, "y": 3488}}, "entity": "Crate"}
+      "solution": {"type": "search", "spot": {"level": 0, "topleft": {"x": 2658, "y": 3488}, "botright": {"x": 2658, "y": 3488}}, "entity": "Crate", "entity_configs": [{"id": 24202, "name": "ACTIVE_CRATE2_OLD"}]}
     }, {
       "id": 48,
       "type": "map",
@@ -2755,7 +2797,7 @@ export namespace clue_data {
       "text": ["A crate at a group of three buildings."],
       "image_url": "/assets/Map_clue_Observatory.png",
       "ocr_data": [26, 77, 185, 26, 77, 1, 6, 8, 26, 77, 0, 8, 10, 25, 78, 1, 6, 7, 26, 80, 4, 5, 6, 25, 77, 3, 7, 8, 26, 76, 5, 14, 20, 26, 73, 14, 19, 23, 25, 80, -2, 7, 9, 25, 86, -1, 7, 8, 25, 82, -2, 6, 7, 26, 82, 0, 5, 6, 26, 82, -2, 4, 6, 25, 82, 1, 13, 18, 25, 85, -2, 6, 7, 26, 81, -3, 8, 10, 26, 78, 1, 7, 9, 25, 76, -3, 7, 9, 25, 79, 0, 5, 7, 26, 81, 3, 6, 8, 27, 74, 18, 22, 27, 27, 74, 12, 24, 31, 27, 69, 25, 37, 53, 24, 80, -3, 6, 8, 25, 80, -4, 5, 7, 26, 84, 0, 5, 6, 26, 83, 2, 6, 8, 26, 81, 6, 18, 27, 26, 77, 12, 44, 55, 25, 83, -5, 7, 8, 26, 80, -3, 6, 8, 25, 77, -1, 8, 10, 26, 78, -3, 6, 8, 26, 78, -2, 6, 7, 25, 82, 1, 5, 7, 27, 71, 23, 40, 55, 27, 76, 6, 14, 25, 26, 76, 9, 17, 22, 28, 69, 35, 47, 61, 26, 75, 9, 26, 30, 26, 77, 20, 45, 51, 26, 76, 34, 59, 65, 26, 76, 21, 42, 47, 26, 79, -2, 5, 7, 26, 80, -5, 6, 7, 26, 80, -4, 7, 8, 25, 78, -2, 5, 6, 25, 78, -2, 6, 8, 25, 77, -2, 4, 5, 26, 81, -2, 4, 16, 29, 65, 50, 64, 76, 26, 79, 0, 15, 19, 26, 77, 17, 33, 38, 26, 72, 17, 34, 53, 25, 75, 33, 61, 73, 26, 76, 23, 46, 51, 26, 76, 21, 43, 49, 26, 75, 23, 43, 48, 26, 80, 0, 6, 8, 25, 79, -4, 6, 8, 26, 79, -5, 5, 6, 25, 78, 1, 8, 10, 26, 78, -3, 6, 8, 25, 78, -4, 5, 6, 25, 80, 1, 12, 34, 27, 75, 30, 47, 58, 27, 76, 25, 43, 49, 26, 78, 16, 38, 44, 26, 77, -8, 5, 7, 26, 75, 33, 60, 66, 26, 76, 13, 35, 39, 26, 73, 33, 65, 69, 27, 76, 22, 42, 49, 25, 80, 0, 5, 7, 26, 81, -4, 6, 7, 26, 80, -7, 6, 7, 26, 77, -5, 5, 7, 25, 81, -3, 6, 7, 26, 78, -7, 6, 7, 26, 76, 19, 60, 68, 26, 74, 18, 46, 55, 26, 78, -6, 5, 6, 26, 77, 20, 48, 54, 26, 78, 0, 15, 18, 26, 76, -4, 7, 8, 25, 78, -2, 7, 8, 25, 78, -3, 7, 9, 27, 78, 3, 12, 17, 26, 78, 16, 58, 63, 26, 81, -4, 5, 6, 25, 80, -5, 6, 7, 26, 77, -5, 7, 9, 26, 78, -8, 7, 8, 25, 80, -5, 6, 8, 27, 74, 25, 67, 78, 29, 62, 62, 86, 108, 29, 54, 71, 50, 60, 28, 67, 52, 65, 73, 26, 74, 21, 48, 54, 26, 78, -2, 7, 9, 25, 81, 1, 8, 10, 26, 79, 2, 8, 10, 26, 82, 4, 7, 8, 25, 82, 2, 8, 9, 25, 80, -4, 5, 6, 26, 79, -6, 6, 7, 26, 79, 0, 6, 8, 26, 78, -8, 6, 7, 26, 78, -5, 6, 8, 25, 78, 3, 14, 23, 27, 71, 45, 91, 106, 29, 57, 85, 72, 82, 28, 70, 52, 53, 61, 26, 79, 9, 28, 35, 26, 81, 2, 7, 9, 26, 79, 4, 20, 28, 26, 78, 29, 49, 54, 26, 78, 22, 37, 43, 25, 83, 1, 6, 7, 26, 79, -5, 6, 7, 26, 81, -5, 6, 8, 26, 79, 2, 5, 6, 25, 80, -1, 6, 8, 26, 82, -4, 6, 8, 26, 82, 1, 9, 11, 26, 77, 14, 42, 51, 27, 75, -1, 6, 29, 27, 76, 0, 6, 30, 26, 81, 0, 7, 18, 25, 80, -1, 6, 7, 26, 74, 47, 57, 83, 26, 77, 25, 43, 48, 26, 77, 21, 42, 47, 26, 81, 0, 4, 6, 25, 79, -1, 5, 6, 26, 79, -6, 5, 6, 25, 81, 3, 7, 10, 25, 80, 1, 8, 10, 26, 81, -1, 6, 8, 25, 83, 2, 8, 10, 25, 80, 1, 6, 7, 26, 79, -1, 6, 7, 25, 80, 0, 7, 8, 26, 79, -2, 5, 7, 25, 79, -2, 6, 7, 26, 76, 12, 24, 41, 25, 79, -2, 5, 6, 26, 74, 15, 43, 48, 26, 79, -3, 4, 5, 26, 80, -4, 5, 7, 27, 77, -7, 5, 7, 26, 82, 3, 6, 8, 26, 82, 0, 7, 8, 25, 82, 2, 8, 10, 25, 80, 1, 7, 9, 26, 81, 2, 7, 8, 25, 81, 1, 7, 12, 28, 70, 40, 53, 60, 25, 83, 2, 7, 9, 26, 81, -2, 6, 7, 27, 75, 24, 40, 51, 27, 75, 23, 43, 49, 27, 76, 4, 25, 30, 26, 80, -3, 6, 8, 26, 79, -7, 6, 7, 27, 77, -9, 5, 7, 25, 84, 5, 9, 11, 24, 84, 3, 8, 10, 24, 85, 4, 9, 11, 25, 84, 6, 7, 9, 25, 84, 5, 7, 9, 25, 83, 4, 10, 12, 24, 79, 16, 33, 38, 25, 85, 2, 10, 12, 26, 80, -5, 6, 8, 26, 78, -6, 6, 8, 26, 77, -8, 6, 7, 27, 78, -8, 5, 6, 26, 80, -3, 6, 7, 26, 78, -7, 6, 8, 27, 76, -8, 6, 8],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 2457, "y": 3182}, "botright": {"x": 2457, "y": 3182}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 18506, "name": "ELEM_CRATE_1"}], "spot": {"level": 0, "topleft": {"x": 2457, "y": 3182}, "botright": {"x": 2457, "y": 3182}}}
     }, {
       "id": 41,
       "type": "map",
@@ -2791,7 +2833,7 @@ export namespace clue_data {
       "image_url": "/assets/Map_clue_Dark_Warriors_Fortress.png",
       "text": ["A crate in the courtyard of a castle."],
       "ocr_data": [26, 77, 170, 26, 77, -14, 6, 8, 26, 77, -15, 8, 10, 25, 78, -14, 6, 7, 26, 80, -11, 5, 6, 25, 77, -12, 7, 8, 26, 77, -14, 7, 9, 26, 77, -15, 10, 13, 25, 80, -17, 9, 11, 25, 86, -16, 7, 8, 25, 82, -17, 6, 7, 26, 82, -15, 5, 10, 26, 82, -16, 6, 10, 25, 82, -16, 5, 7, 25, 85, -17, 6, 7, 26, 81, -18, 8, 10, 26, 78, -14, 7, 9, 25, 76, -18, 7, 9, 25, 79, -15, 5, 7, 26, 75, 14, 31, 39, 27, 67, 37, 58, 66, 26, 67, 28, 35, 49, 26, 68, 27, 57, 69, 25, 72, 22, 56, 69, 26, 71, 27, 55, 66, 26, 73, 21, 23, 32, 27, 69, 43, 58, 68, 27, 67, 42, 58, 68, 26, 77, -11, 14, 18, 25, 83, -20, 7, 8, 26, 80, -18, 6, 8, 25, 77, -16, 8, 10, 26, 78, -18, 6, 8, 26, 78, -17, 6, 7, 27, 69, 38, 58, 66, 27, 78, 2, 37, 43, 27, 75, 17, 60, 74, 26, 76, 16, 55, 72, 26, 77, 1, 30, 37, 26, 77, -5, 20, 36, 26, 74, 22, 63, 78, 26, 78, 12, 45, 50, 26, 74, 13, 38, 50, 26, 74, 6, 20, 24, 26, 80, -20, 6, 7, 26, 80, -19, 7, 8, 25, 78, -17, 5, 6, 25, 78, -17, 6, 8, 25, 77, -17, 4, 5, 27, 69, 32, 48, 55, 27, 79, 8, 44, 49, 26, 80, -18, 6, 8, 26, 80, 16, 56, 64, 26, 78, 3, 45, 51, 25, 78, 7, 42, 48, 26, 75, 14, 46, 53, 26, 77, -2, 25, 28, 27, 69, 33, 52, 63, 26, 77, -1, 19, 22, 25, 79, -19, 6, 8, 26, 79, -20, 5, 6, 25, 78, -14, 8, 10, 26, 78, -18, 6, 8, 25, 78, -19, 5, 6, 26, 71, 27, 32, 49, 27, 76, 13, 52, 66, 27, 76, 11, 49, 57, 27, 76, 22, 67, 77, 26, 75, 1, 44, 50, 26, 77, 6, 42, 48, 27, 73, 24, 67, 83, 26, 74, 19, 54, 60, 27, 70, 30, 51, 60, 26, 77, 1, 20, 24, 26, 81, -19, 6, 7, 26, 80, -22, 6, 7, 26, 77, -20, 5, 7, 25, 81, -18, 6, 7, 26, 78, -17, 17, 21, 27, 71, 25, 47, 56, 26, 76, -9, 24, 33, 26, 76, 3, 44, 50, 26, 78, 3, 44, 50, 26, 79, -21, 7, 8, 26, 76, -19, 7, 8, 26, 76, 6, 44, 62, 26, 76, 5, 26, 39, 27, 72, 15, 37, 42, 26, 76, 0, 18, 21, 26, 81, -19, 5, 6, 25, 80, -20, 6, 7, 26, 77, -20, 7, 9, 26, 78, -23, 7, 8, 25, 79, -15, 17, 21, 27, 68, 39, 60, 74, 26, 76, -12, 15, 23, 26, 74, 3, 47, 53, 29, 58, 46, 57, 65, 28, 66, 32, 47, 52, 26, 78, -17, 7, 9, 25, 78, 9, 45, 67, 26, 77, 10, 27, 37, 26, 77, 7, 33, 40, 26, 73, 17, 21, 24, 25, 80, -19, 5, 6, 26, 79, -21, 6, 7, 26, 79, -15, 6, 8, 26, 78, -23, 6, 7, 26, 78, -20, 6, 8, 26, 67, 34, 54, 66, 26, 75, 8, 51, 57, 27, 75, 9, 50, 58, 29, 60, 52, 60, 69, 28, 70, 37, 50, 58, 26, 78, 9, 42, 48, 27, 75, 26, 66, 77, 26, 78, 16, 43, 53, 26, 78, 7, 29, 56, 26, 70, 32, 27, 41, 26, 79, -20, 6, 7, 26, 81, -20, 6, 8, 26, 79, -13, 5, 6, 25, 80, -16, 6, 8, 26, 82, -19, 6, 8, 26, 71, 33, 49, 56, 26, 76, 6, 45, 51, 27, 76, -24, 6, 7, 27, 74, 13, 51, 64, 26, 78, 5, 32, 49, 26, 77, 7, 31, 48, 26, 76, 13, 45, 53, 25, 80, -14, 6, 7, 26, 77, 9, 31, 48, 26, 69, 36, 55, 61, 25, 79, -16, 5, 6, 26, 79, -21, 5, 6, 25, 81, -12, 7, 10, 25, 80, -14, 8, 10, 26, 81, -16, 6, 8, 26, 71, 33, 53, 60, 26, 78, 3, 34, 40, 26, 77, 8, 43, 49, 26, 78, 5, 42, 56, 26, 79, -17, 5, 7, 25, 79, -17, 6, 15, 26, 77, 5, 40, 46, 26, 76, 6, 41, 47, 26, 74, -8, 26, 40, 26, 67, 38, 56, 65, 26, 80, -19, 5, 7, 27, 77, -22, 5, 7, 26, 82, -12, 6, 8, 26, 82, -15, 7, 8, 25, 82, -13, 8, 10, 26, 74, 10, 25, 32, 27, 70, 33, 52, 59, 26, 72, 29, 53, 60, 26, 70, 39, 42, 58, 26, 70, 39, 56, 70, 27, 69, 35, 42, 68, 27, 67, 32, 56, 64, 27, 68, 28, 57, 64, 27, 70, 18, 37, 48, 26, 78, -10, 14, 19, 26, 79, -22, 6, 7, 27, 77, -24, 5, 7, 25, 84, -10, 9, 11, 24, 84, -12, 8, 10, 24, 85, -11, 9, 11, 25, 84, -9, 7, 9, 25, 84, -10, 7, 9, 25, 83, -11, 10, 12, 24, 84, -11, 8, 10, 25, 84, -8, 21, 32, 26, 80, -13, 25, 35, 26, 78, -21, 6, 11, 26, 77, -23, 6, 7, 27, 78, -23, 5, 6, 26, 80, -18, 6, 7, 26, 78, -22, 6, 8, 27, 76, -23, 6, 8],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 3026, "y": 3629}, "botright": {"x": 3026, "y": 3629}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 46331, "name": "ACTIVE_CRATE2"}], "spot": {"level": 0, "topleft": {"x": 3026, "y": 3629}, "botright": {"x": 3026, "y": 3629}}}
     }, {
       "id": 47,
       "type": "map",
@@ -2799,7 +2841,7 @@ export namespace clue_data {
       "image_url": "/assets/Map_clue_Fort_Forinthry.png",
       "text": ["A crate outside of some fort's walls."],
       "ocr_data": [26, 77, 176, 26, 77, -7, 6, 8, 26, 77, -9, 8, 10, 25, 78, -8, 6, 7, 26, 80, -5, 5, 6, 25, 77, -6, 7, 8, 26, 77, -8, 7, 9, 26, 77, -9, 6, 8, 25, 80, -11, 7, 9, 25, 86, -10, 7, 8, 25, 83, -11, 6, 7, 26, 81, -9, 5, 7, 26, 82, -11, 5, 6, 25, 82, -10, 5, 7, 25, 85, -11, 6, 7, 26, 81, -12, 8, 10, 26, 78, 0, 35, 41, 26, 75, 12, 89, 102, 25, 79, -8, 6, 11, 26, 81, -6, 6, 8, 26, 79, -7, 7, 8, 26, 77, -10, 7, 8, 26, 78, -11, 6, 7, 24, 80, -11, 6, 8, 25, 80, -14, 5, 7, 26, 84, -9, 5, 6, 26, 83, -7, 6, 7, 26, 82, -11, 5, 6, 26, 79, -3, 33, 42, 26, 82, 3, 64, 77, 26, 81, -9, 15, 21, 25, 77, -9, 8, 10, 26, 78, -2, 39, 49, 27, 78, 15, 75, 88, 26, 81, 17, 68, 77, 27, 80, 14, 68, 76, 27, 78, 13, 69, 77, 26, 80, -2, 33, 37, 26, 80, -11, 6, 8, 26, 79, 5, 55, 62, 26, 78, 22, 87, 102, 27, 80, 23, 85, 97, 27, 79, 18, 68, 77, 27, 79, 14, 72, 85, 26, 67, 11, 51, 64, 26, 69, 2, 24, 27, 25, 78, -11, 5, 6, 25, 78, -11, 6, 8, 26, 77, -11, 4, 6, 26, 81, -11, 5, 6, 27, 81, -12, 6, 7, 26, 80, -12, 7, 8, 25, 84, -12, 7, 8, 25, 81, -15, 6, 8, 25, 63, 14, 32, 39, 25, 67, 39, 95, 108, 26, 75, 18, 71, 86, 26, 78, -3, 13, 18, 32, 75, 41, 44, 51, 28, 73, 17, 44, 52, 26, 79, -14, 5, 6, 25, 78, -8, 8, 9, 26, 78, -12, 6, 8, 25, 78, -12, 5, 6, 25, 80, -12, 6, 7, 26, 80, -11, 6, 7, 26, 80, -12, 6, 8, 26, 81, -15, 5, 7, 26, 77, -17, 5, 7, 25, 79, -11, 6, 12, 27, 34, 39, 19, 23, 25, 55, 19, 18, 21, 27, 79, -1, 17, 24, 31, 74, 44, 40, 48, 28, 78, 14, 37, 42, 26, 80, -15, 6, 7, 26, 77, -13, 5, 7, 25, 81, -12, 6, 7, 26, 78, -16, 6, 7, 26, 79, -13, 6, 8, 26, 77, -13, 6, 8, 26, 78, -15, 5, 6, 26, 80, 0, 25, 37, 26, 78, -4, 27, 36, 26, 76, -12, 10, 16, 28, 21, 56, 7, 11, 27, 35, 38, 17, 20, 27, 79, -10, 7, 9, 26, 81, 2, 22, 28, 28, 81, 12, 42, 49, 27, 80, 4, 30, 35, 26, 77, -14, 7, 8, 26, 78, -16, 7, 8, 25, 80, -14, 6, 8, 26, 78, -13, 7, 9, 26, 77, -12, 6, 8, 26, 72, -8, 15, 19, 27, 76, 6, 40, 53, 26, 76, 10, 49, 55, 26, 78, -11, 7, 9, 26, 54, 15, 17, 20, 27, 70, 12, 32, 38, 26, 82, 5, 22, 28, 25, 82, -6, 7, 10, 32, 73, 50, 42, 53, 31, 73, 41, 45, 53, 26, 77, 8, 53, 58, 27, 76, 3, 31, 50, 26, 77, 4, 25, 40, 26, 77, 0, 25, 31, 27, 78, 3, 23, 31, 27, 71, 16, 34, 54, 28, 78, 23, 67, 80, 27, 78, 11, 46, 54, 26, 67, 9, 29, 33, 25, 80, -8, 10, 17, 33, 73, 49, 29, 36, 33, 70, 53, 28, 36, 25, 83, -3, 10, 17, 26, 80, 2, 32, 37, 27, 82, 0, 30, 40, 27, 78, 16, 46, 53, 26, 78, 11, 48, 57, 27, 78, 15, 48, 65, 27, 78, 26, 48, 72, 27, 78, 10, 24, 43, 27, 76, -11, 16, 27, 27, 77, -16, 6, 8, 26, 78, 12, 48, 54, 25, 68, 5, 15, 18, 26, 55, 16, 18, 21, 28, 78, 31, 46, 51, 30, 78, 34, 52, 58, 26, 81, -8, 5, 6, 25, 79, -10, 5, 6, 26, 79, -15, 5, 6, 25, 81, -6, 8, 10, 25, 80, -8, 9, 11, 26, 81, -10, 6, 8, 25, 83, -8, 8, 11, 25, 80, -1, 10, 25, 26, 78, 7, 25, 35, 26, 76, 19, 54, 65, 26, 77, 13, 45, 51, 26, 60, 11, 17, 20, 26, 43, 28, 15, 19, 26, 79, -4, 16, 23, 26, 77, -6, 19, 23, 26, 79, -12, 4, 5, 26, 80, -13, 5, 7, 27, 77, -16, 5, 7, 26, 82, -6, 6, 8, 26, 81, -9, 7, 8, 25, 82, -7, 8, 10, 25, 80, -8, 7, 9, 26, 81, -7, 7, 8, 25, 81, -8, 6, 8, 26, 80, 20, 43, 50, 26, 80, 16, 44, 49, 26, 81, -11, 6, 7, 26, 79, -14, 5, 6, 26, 78, -14, 5, 6, 27, 77, -17, 5, 6, 26, 79, -12, 6, 7, 26, 79, -16, 6, 7, 27, 77, -18, 6, 7, 25, 84, -4, 8, 10, 25, 84, -6, 9, 11, 24, 84, -5, 10, 12, 25, 83, -4, 7, 8, 25, 84, -5, 6, 8, 25, 83, -5, 10, 12, 25, 81, 20, 44, 50, 26, 83, 19, 40, 46, 26, 81, -14, 6, 8, 26, 78, -16, 6, 8, 26, 77, -17, 6, 7, 27, 78, -17, 5, 6, 26, 79, -12, 6, 7, 26, 78, -16, 6, 8, 27, 76, -17, 6, 8],
-      "solution": {"type": "search", "entity": "Crate", "spot": {"level": 0, "topleft": {"x": 3312, "y": 3528}, "botright": {"x": 3312, "y": 3528}}}
+      "solution": {"type": "search", "entity": "Crate", "entity_configs": [{"id": 124881, "name": "HUMAN_STORAGE_CRATE_REGULAR_SQUARE_SEARCHABLE"}], "spot": {"level": 0, "topleft": {"x": 3312, "y": 3528}, "botright": {"x": 3312, "y": 3528}}}
     }, {
       "id": 59,
       "type": "map",
@@ -2824,6 +2866,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Zookeeper",
+        "npc_configs": [{"id": 28, "name": "ZOO_KEEPER"}, {"id": 7570, "name": "ZOO_KEEPER2"}, {"id": 7571, "name": "ZOO_KEEPER3"}],
         "spots": [{"range": {"origin": {"x": 2607, "y": 3268, "level": 0}, "size": {"x": 14, "y": 14}}, "description": "in Ardougne Zoo"}]
       },
       "anagram": ["Eek Zero Op"]
@@ -2839,8 +2882,14 @@ export namespace clue_data {
           "description": "in his cave near Burthorpe",
           "range": {"origin": {"x": 2267, "y": 4752, "level": 0}, "size": {"x": 5, "y": 9}},
           "note": "Before 'Death Plateu'"
+        }, {
+          "id": "after-death-plateau",
+          "description": "in the tunnel to Death Plateau",
+          "range": {"origin": {"x": 3401, "y": 4282, "level": 2}, "size": {"x": 5, "y": 5}},
+          "note": "After 'Death Plateau'"
         }],
-        "npc": "Sabbot"
+        "npc": "Sabbot",
+        "npc_configs": [{"id": 15096, "name": "DEATH_SABBOT"}, {"id": 15098, "name": "DEATH_SABBOT_MINING"}, {"id": 15095, "name": "DEATH_SABBOT_CAVE_MULTI", "parent": true}, {"id": 15097, "name": "DEATH_SABBOT_TUNNEL_MULTI", "parent": true}]
       },
       "anagram": ["Stab Ob", "Boast B"]
     }, {
@@ -2852,6 +2901,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Edmond",
+        "npc_configs": [{"id": 714, "name": "EDMOND"}, {"id": 3213, "name": "EDMOND_TOP", "parent": true}],
         "spots": [{"range": {"origin": {"x": 2564, "y": 3330, "level": 0}, "size": {"x": 7, "y": 7}}, "description": "north of Ardougne castle"}]
       },
       "anagram": ["Nod med"]
@@ -2864,6 +2914,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Nails Newton",
+        "npc_configs": [{"id": 15085, "name": "LTEP_NAILS"}],
         "spots": [{"range": {"origin": {"x": 2881, "y": 3444, "level": 0}}, "description": "near Taverley Lodestone"}]
       },
       "anagram": ["Winston Lane"]
@@ -2876,6 +2927,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Valerio",
+        "npc_configs": [{"id": 15939, "name": "OPN_VALERIO_OUTSIDE_DURINGQUEST_APPEARANCE"}, {"id": 15940, "name": "OPN_VALERIO_OUTSIDE_POSTQUEST_APPEARANCE"}, {"id": 14640, "name": "OPN_VALERIO_OUTSIDE", "parent": true}],
         "spots": [{"range": {"origin": {"x": 3400, "y": 3149, "level": 0}}, "description": "outside of the abbey"}]
       },
       "anagram": ["Or A Vile"]
@@ -2887,6 +2939,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Fycie",
+        "npc_configs": [{"id": 1011, "name": "FYCIE"}],
         "spots": [{"range": {"origin": {"x": 2646, "y": 9390, "level": 0}, "size": {"x": 8, "y": 9}}, "description": "in Rantz's cave"}]
       },
       "anagram": ["Icy Fe"]
@@ -2898,6 +2951,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Jaraah",
+        "npc_configs": [{"id": 962, "name": "DUEL_JARAAH"}],
         "spots": [{"range": {"origin": {"x": 3290, "y": 3215, "level": 0}, "size": {"x": 8, "y": 5}}, "description": "at the northern end of Al Kharid"}]
       },
       "anagram": ["Aha Jar"]
@@ -2909,7 +2963,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 2405, "y": 9815, "level": 0}, "size": {"x": 9, "y": 8}}, "description": "in his cave at Tree Gnome Stronghold"}],
-        "npc": "Brimstail"
+        "npc": "Brimstail",
+        "npc_configs": [{"id": 171, "name": "GNOME_BRIMSTAIL"}]
       },
       "anagram": ["Bail Trims"]
     }, {
@@ -2921,6 +2976,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Cook",
+        "npc_configs": [{"id": 278, "name": "COOK"}],
         "spots": [{"range": {"origin": {"x": 3208, "y": 3215, "level": 0}, "size": {"x": 3, "y": 1}}, "description": "in Lumbridge Castle's kitchen"}]
       },
       "anagram": ["Ok Co"]
@@ -2933,6 +2989,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Oracle",
+        "npc_configs": [{"id": 746, "name": "ORACLE"}],
         "spots": [{"range": {"origin": {"x": 3008, "y": 3498, "level": 0}, "size": {"x": 12, "y": 6}}, "description": "on the peak of Ice Mountain"}]
       },
       "anagram": ["Are Col"]
@@ -2949,6 +3006,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Caroline",
+        "npc_configs": [{"id": 696, "name": "CAROLINE"}, {"id": 7163, "name": "CAROLINE_MULTI", "parent": true}, {"id": 7181, "name": "KEN_CAROLINE_INSIDEHOUSE", "parent": true}],
         "spots": [{
           "id": "default",
           "description": "in Witchhaven",
@@ -2965,7 +3023,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 2540, "y": 3167, "level": 0}, "size": {"x": 3, "y": 5}}, "description": "in Tree Gnome Village"}],
-        "npc": "King Bolren"
+        "npc": "King Bolren",
+        "npc_configs": [{"id": 469, "name": "KING_BOLREN"}]
       },
       "anagram": ["Goblin Kern"]
     }, {
@@ -2977,6 +3036,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Father Urhney",
+        "npc_configs": [{"id": 458, "name": "FATHER_URHNEY"}],
         "spots": [{"range": {"origin": {"x": 3203, "y": 3147, "level": 0}, "size": {"x": 8, "y": 5}}, "description": "in the Lumbridge swamp"}]
       },
       "anagram": ["HE ANY FURTHER"]
@@ -2989,6 +3049,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Brundt the Chieftain",
+        "npc_configs": [{"id": 1294, "name": "VIKING_BRUNDT"}],
         "spots": [{"range": {"origin": {"x": 2657, "y": 3666, "level": 0}, "size": {"x": 4, "y": 5}}, "description": "in Relekka Longhall"}]
       },
       "anagram": ["Dt Run B"]
@@ -3000,7 +3061,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 2457, "y": 3380, "level": 0}, "size": {"x": 5, "y": 3}}, "description": "at gates of Tree Gnome Stronghold"}],
-        "npc": "Femi"
+        "npc": "Femi",
+        "npc_configs": [{"id": 676, "name": "GRANDTREE_FEMI"}]
       },
       "anagram": ["Me if"]
     }, {
@@ -3016,6 +3078,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Karim",
+        "npc_configs": [{"id": 543, "name": "KEBAB_SELLER"}],
         "spots": [{"range": {"origin": {"x": 3269, "y": 3181, "level": 0}, "size": {"x": 3, "y": 4}, "data": "/g8="}, "description": "in Al Kharid"}]
       },
       "anagram": ["R Ak Mi"]
@@ -3028,6 +3091,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Gabooty",
+        "npc_configs": [{"id": 2520, "name": "TBWCU_GABOOTY"}, {"id": 2521, "name": "TBWCU_GABOOTY_NOSTICKS"}, {"id": 2519, "name": "TBWCU_GABOOTY_MULTINPC", "parent": true}],
         "spots": [{"range": {"origin": {"x": 2786, "y": 3063, "level": 0}, "size": {"x": 16, "y": 8}}, "description": "in Tai Bwo Wannai Village"}]
       },
       "anagram": ["Got A Boy"]
@@ -3039,7 +3103,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 2935, "y": 3152, "level": 0}, "size": {"x": 7, "y": 5}}, "description": "at Musa Point"}],
-        "npc": "Luthas"
+        "npc": "Luthas",
+        "npc_configs": [{"id": 379, "name": "LUTHAS"}]
       },
       "anagram": ["Halt Us"]
     }, {
@@ -3051,6 +3116,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Recruiter",
+        "npc_configs": [{"id": 720, "name": "RECRUITER"}],
         "spots": [{"range": {"origin": {"x": 2539, "y": 3302, "level": 0}, "size": {"x": 6, "y": 7}}, "description": "in West Ardougne"}]
       },
       "anagram": ["Err Cure It"]
@@ -3068,6 +3134,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Moldark, Emissary of Zamorak",
+        "npc_configs": [{"id": 17135, "name": "GODEM_ZAMORAK_EMISSARY"}],
         "spots": [{"range": {"origin": {"x": 3104, "y": 3508, "level": 0}, "size": {"x": 2, "y": 3}}, "description": "in Edgeville"}]
       },
       "anagram": ["Iz A Ammo Load For Mrs Yakkers"]
@@ -3080,6 +3147,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Rommik",
+        "npc_configs": [{"id": 585, "name": "ROMMIK"}],
         "spots": [{"range": {"origin": {"x": 2945, "y": 3193, "level": 0}, "size": {"x": 6, "y": 7}}, "description": "in Rimmington"}]
       },
       "anagram": ["Im Krom"]
@@ -3091,7 +3159,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3230, "y": 3420, "level": 0}, "size": {"x": 7, "y": 3}}, "description": "in Varrock's Archery Store"}],
-        "npc": "Lowe"
+        "npc": "Lowe",
+        "npc_configs": [{"id": 550, "name": "LOWE"}]
       },
       "anagram": ["El Ow"]
     }, {
@@ -3102,7 +3171,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3048, "y": 3372, "level": 0}, "size": {"x": 7, "y": 7}}, "description": "in the Party Room"}],
-        "npc": "Party Pete"
+        "npc": "Party Pete",
+        "npc_configs": [{"id": 659, "name": "PARTYROOM_PETE"}]
       },
       "anagram": ["Peaty Pert"]
     }, {
@@ -3114,6 +3184,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "King Roald",
+        "npc_configs": [{"id": 648, "name": "KING_ROALD"}],
         "spots": [{"range": {"origin": {"x": 3217, "y": 3471, "level": 0}, "size": {"x": 8, "y": 8}}, "description": "in Varrock Castle"}]
       },
       "anagram": ["Lark In Dog"]
@@ -3126,7 +3197,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3284, "y": 3234, "level": 0}, "size": {"x": 11, "y": 8}}, "description": "north of Al Kharid"}],
-        "npc": "Cam the Camel"
+        "npc": "Cam the Camel",
+        "npc_configs": [{"id": 2812, "name": "CAM_THE_CAMEL"}]
       },
       "anagram": ["Me Am The Calc", "Ace Match Elm", "The Cal Came"]
     }, {
@@ -3138,7 +3210,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3420, "y": 2925, "level": 0}, "size": {"x": 11, "y": 7}, "data": "8Jvf//3v///PDA=="}, "description": "in Nardah"}],
-        "npc": "Shiratti the Custodian"
+        "npc": "Shiratti the Custodian",
+        "npc_configs": [{"id": 3044, "name": "ELID_SHIRATTI"}]
       },
       "anagram": ["I Eat Its Chart Hints Do U"]
     }, {
@@ -3150,7 +3223,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 2869, "y": 9877, "level": 0}}, "description": "in the Dwarven Tunnel under the White Wolf Mountain"}],
-        "npc": "Captain Ninto"
+        "npc": "Captain Ninto",
+        "npc_configs": [{"id": 4594, "name": "ALUFT_PILOT_NINTO"}]
       },
       "anagram": ["An Paint Tonic"]
     }, {
@@ -3162,7 +3236,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 2338, "y": 3673, "level": 0}, "size": {"x": 9, "y": 6}}, "description": "at the Piscatoris Fishing Colony"}],
-        "npc": "Ramara du Croissant"
+        "npc": "Ramara du Croissant",
+        "npc_configs": [{"id": 3827, "name": "SWAN_COLONIST_3"}]
       },
       "anagram": ["Arr! So I am a crust, and?"]
     }, {
@@ -3174,6 +3249,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Gnome Coach",
+        "npc_configs": [{"id": 2802, "name": "GNOME_BALL_COACH"}],
         "spots": [{"range": {"origin": {"x": 2406, "y": 3498, "level": 0}}, "description": "north-east of the gnomeball field"}]
       },
       "anagram": ["C On Game Hoc"]
@@ -3186,7 +3262,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 2904, "y": 10207, "level": 0}}, "description": "in eastern Keldagrim"}],
-        "npc": "Riki the sculptor's model"
+        "npc": "Riki the sculptor's model",
+        "npc_configs": [{"id": 2143, "name": "DWARF_CITY_SHOP_SCULPTURE_MODEL"}, {"id": 2144, "name": "DWARF_CITY_SHOP_SCULPTURE_MODEL_BOOTS"}, {"id": 2145, "name": "DWARF_CITY_SHOP_SCULPTURE_MODEL_TORSO"}, {"id": 2146, "name": "DWARF_CITY_SHOP_SCULPTURE_MODEL_AXE"}, {"id": 2147, "name": "DWARF_CITY_SHOP_SCULPTURE_MODEL_BOOTS_AND_TORSO"}, {"id": 2148, "name": "DWARF_CITY_SHOP_SCULPTURE_MODEL_BOOTS_AND_AXE"}, {"id": 2149, "name": "DWARF_CITY_SHOP_SCULPTURE_MODEL_TORSO_AND_AXE"}, {"id": 2150, "name": "DWARF_CITY_SHOP_SCULPTURE_MODEL_FINISHED"}, {"id": 2142, "name": "DWARF_CITY_SHOP_SCULPTURE_MODEL_MULTI", "parent": true}]
       },
       "anagram": ["He Do Pose. It Is Cultrrl, Mk?"]
     }, {
@@ -3201,7 +3278,8 @@ export namespace clue_data {
           "range": {"origin": {"x": 3101, "y": 3148, "level": 0}, "size": {"x": 14, "y": 20}, "data": "/8f/8//9////////////////////////9//8B//Bf/AP/AE="},
           "description": "on the ground floor of Wizard's Tower"
         }],
-        "npc": "Professor Onglewip"
+        "npc": "Professor Onglewip",
+        "npc_configs": [{"id": 4585, "name": "ALUFT_GNOME_MAGE"}]
       },
       "anagram": ["Profs Lose Wrong Pie"]
     }, {
@@ -3213,6 +3291,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Cap'n Izzy No-Beard",
+        "npc_configs": [{"id": 437, "name": "AGILITYARENA_CLERK"}],
         "spots": [{"range": {"origin": {"x": 2807, "y": 3190, "level": 0}, "size": {"x": 1, "y": 2}}, "description": "at the Agility Arena"}]
       },
       "anagram": ["O Birdz A Zany En Pc"]
@@ -3225,7 +3304,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3033, "y": 3190, "level": 0}}, "description": "in Port Sarim"}],
-        "npc": "Trader Stan"
+        "npc": "Trader Stan",
+        "npc_configs": [{"id": 4650, "name": "SAILING_TRANSPORT_TRADER_STAN"}]
       },
       "anagram": ["Red Art Tans"]
     }, {
@@ -3237,7 +3317,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 2588, "y": 9489, "level": 0}}, "description": "in the basement of Wizard's Guild"}],
-        "npc": "Wizard Frumscone"
+        "npc": "Wizard Frumscone",
+        "npc_configs": [{"id": 460, "name": "WIZARD_FRUMSCONE"}]
       },
       "anagram": ["Or Zinc Fumes Ward"]
     }, {
@@ -3249,6 +3330,7 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "npc": "Bolkoy",
+        "npc_configs": [{"id": 471, "name": "TREEVILLAGE_SHOPKEEPER1"}],
         "spots": [{"range": {"origin": {"x": 2525, "y": 3158, "level": 1}, "size": {"x": 8, "y": 7}, "data": "wMD//x8fHw=="}, "description": "in Tree Gnome Village"}]
       },
       "anagram": ["By Look"]
@@ -3265,7 +3347,8 @@ export namespace clue_data {
           "note": "After 'Blood Runs Deep'",
           "description": "in Miscellania's Throneroom"
         }, {"range": {"origin": {"x": 2612, "y": 3871, "level": 1}, "size": {"x": 6, "y": 9}}, "note": "Before 'Blood Runs Deep'", "description": "in Etceteria Castle"}],
-        "npc": "Queen Sigrid"
+        "npc": "Queen Sigrid",
+        "npc_configs": [{"id": 9088, "name": "MISC_QUEEN_SIGRID_MULTICHILD"}, {"id": 1359, "name": "MISC_QUEEN_SIGRID", "parent": true}, {"id": 9349, "name": "EVQ_QUEEN_SIGRID", "parent": true}]
       },
       "anagram": ["Sequin Dirge"]
     }, {
@@ -3277,7 +3360,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 2654, "y": 3291, "level": 0}, "size": {"x": 8, "y": 4}, "data": "wPz/Bg=="}, "description": "in her house south of Ardougne Market"}],
-        "npc": "Zenesha"
+        "npc": "Zenesha",
+        "npc_configs": [{"id": 589, "name": "ZENESHA"}]
       },
       "anagram": ["A Zen She"]
     }, {
@@ -3289,7 +3373,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 2437, "y": 3044, "level": 0}, "size": {"x": 11, "y": 12}}, "description": "south of Castle Wars"}],
-        "npc": "Uglug Nar"
+        "npc": "Uglug Nar",
+        "npc_configs": [{"id": 2039, "name": "ZOGRE_UGLUG_NAR"}]
       },
       "anagram": ["Gulag Run"]
     }, {
@@ -3301,7 +3386,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3358, "y": 3500, "level": 0}, "size": {"x": 10, "y": 10}, "data": "4OP//////ffff//9Bw=="}, "description": "at the limestone mine"}],
-        "npc": "Odd Old Man"
+        "npc": "Odd Old Man",
+        "npc_configs": [{"id": 9173, "name": "RAG2_ODD_OLD_MAN"}, {"id": 9174, "name": "RAG2_ODD_OLD_MAN_FURS"}, {"id": 9175, "name": "RAG2_ODD_OLD_MAN_MULTI", "parent": true}]
       },
       "anagram": ["Land Doomd"]
     }, {
@@ -3313,7 +3399,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 2384, "y": 4466, "level": 0}, "size": {"x": 7, "y": 6}}, "description": "north of the bank in Zanaris"}],
-        "npc": "Fairy Nuff"
+        "npc": "Fairy Nuff",
+        "npc_configs": [{"id": 4434, "name": "FAIRY_NUFF2"}, {"id": 3303, "name": "FAIRY_NUFF"}, {"id": 4431, "name": "FAIRY_NUFF_MULTI", "parent": true}]
       },
       "anagram": ["I Faffy Run"]
     }, {
@@ -3324,7 +3411,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 4646, "y": 5384, "level": 0}}, "description": "at the bottom of Polypore Dungeon"}],
-        "npc": "Ramokee Skinweaver"
+        "npc": "Ramokee Skinweaver",
+        "npc_configs": [{"id": 14681, "name": "POLYPORE_SKINWEAVER"}]
       },
       "anagram": ["WE IRK OVER NAMESAKE"]
     }, {
@@ -3339,7 +3427,8 @@ export namespace clue_data {
           "description": "by the docks on Mos Le'Harmless",
           "note": "Mos Le'Harmless"
         }, {"range": {"origin": {"x": 3786, "y": 2823, "level": 0}, "size": {"x": 3, "y": 2}}, "description": "on Harmony Island", "note": "Harmony"}],
-        "npc": "Brother Tranquility"
+        "npc": "Brother Tranquillity",
+        "npc_configs": [{"id": 5616, "name": "BRAIN_BROTHER_TRANQUILITY_ZOMBIE"}, {"id": 5617, "name": "BRAIN_BROTHER_TRANQUILITY_HUMAN"}, {"id": 5667, "name": "BRAIN_TRANQUILITY", "parent": true}, {"id": 5668, "name": "BRAIN_ISLAND_TRANQUILITY", "parent": true}]
       },
       "anagram": ["QUIT THY BRINE RAT ROLL"]
     }, {
@@ -3351,7 +3440,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 1785, "y": 11953, "level": 0}}, "description": "on Tuaei Leit"}],
-        "npc": "Sensei Seaworth"
+        "npc": "Sensei Seaworth",
+        "npc_configs": [{"id": 23446, "name": "ELR2_IMPLING_EXPERT"}]
       },
       "anagram": ["O EASTERN WISHES"]
     }, {
@@ -3373,7 +3463,8 @@ export namespace clue_data {
           "range": {"origin": {"x": 2826, "y": 12631, "level": 2}},
           "note": "Inside the empty throne room"
         }],
-        "npc": "Celia Diggory"
+        "npc": "Celia Diggory",
+        "npc_configs": [{"id": 23572, "name": "FOTG2_DIGSITE_GUIDE"}]
       },
       "anagram": ["ERGO I DIG CLAY"]
     }, {
@@ -3389,7 +3480,8 @@ export namespace clue_data {
           "range": {"origin": {"x": 2997, "y": 3263, "level": 0}, "size": {"x": 8, "y": 11}},
           "description": "south of Falador"
         }, {"id": "city-of-um", "range": {"origin": {"x": 1035, "y": 1763, "level": 1}}, "description": "at the Ritual Site"}],
-        "npc": "Malignius Mortifer"
+        "npc": "Malignius Mortifer",
+        "npc_configs": [{"id": 2713, "name": "ELEMENTAL_WIZARD_BOSS"}, {"id": 30258, "name": "QUEST_NECROMANCY_TUTORIAL_MALIGNIUS"}, {"id": 30289, "name": "NECRO_HUB_MALIGNIUS"}]
       },
       "anagram": ["REIGN US IF IMMORTAL"]
     }, {
@@ -3398,12 +3490,13 @@ export namespace clue_data {
       "tier": "master",
       "text": ["This anagram reveals who to speak to next: If distracted from their work AH; WET ARM"],
       "challenge": [{"type": "lockbox"}],
-      "solution": {"type": "talkto", "spots": [{"range": {"origin": {"x": 2347, "y": 3164, "level": 0}}, "description": "in Lletya"}], "npc": "Amaethwr"},
+      "solution": {"type": "talkto", "spots": [{"range": {"origin": {"x": 2347, "y": 3164, "level": 0}}, "description": "in Lletya"}], "npc": "Amaethwr", "npc_configs": [{"id": 2860, "name": "PAWYA_ELF_GARDENER"}]},
       "anagram": ["AH; WET ARM"]
     }, {
       "id": 311, "type": "anagram", "tier": "master", "text": ["This anagram reveals who to speak to next: Young but stylish PIN HEIR ALL IN PLACE"], "solution": {
         "type": "talkto",
         "npc": "Philipe Carnillean",
+        "npc_configs": [{"id": 15612, "name": "CARNI_PHILIPE_HAZEELCULTQUEST"}, {"id": 15613, "name": "CARNI_PHILIPE_FOLLOWER"}, {"id": 15615, "name": "CARNI_PHILIPE_PICKPOCKET"}, {"id": 15618, "name": "CARNI_PHILIPE_FIGHTING"}, {"id": 888, "name": "PHILIPE_CARNILLEAN", "parent": true}, {"id": 3334, "name": "CARNI_PHILIPE_POSTQUEST_9", "parent": true}, {"id": 15619, "name": "CARNI_PHILIPE_POSTQUEST_1", "parent": true}, {"id": 15620, "name": "CARNI_PHILIPE_POSTQUEST_2", "parent": true}, {"id": 15621, "name": "CARNI_PHILIPE_POSTQUEST_3", "parent": true}, {"id": 15622, "name": "CARNI_PHILIPE_POSTQUEST_4", "parent": true}, {"id": 15623, "name": "CARNI_PHILIPE_POSTQUEST_5", "parent": true}, {"id": 15624, "name": "CARNI_PHILIPE_POSTQUEST_6", "parent": true}, {"id": 15625, "name": "CARNI_PHILIPE_POSTQUEST_7", "parent": true}, {"id": 15626, "name": "CARNI_PHILIPE_POSTQUEST_8", "parent": true}],
         "spots": [{
           "id": "before",
           "description": "at Carnillean Mansion",
@@ -3453,7 +3546,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3088, "y": 3255, "level": 0}}, "description": "in Draynor"}],
-        "npc": "Wise Old Man"
+        "npc": "Wise Old Man",
+        "npc_configs": [{"id": 2253, "name": "WISE_OLD_MAN"}, {"id": 11569, "name": "WOM_CUTSCENE_4"}, {"id": 3820, "name": "WOM_MULTI", "parent": true}]
       },
       "anagram": ["WINSOME LAD"]
     }, {
@@ -3474,7 +3568,8 @@ export namespace clue_data {
           "range": {"origin": {"x": 3256, "y": 3355, "level": 0}},
           "description": "at the farm south of Varrock"
         }],
-        "npc": "Paul Gower"
+        "npc": "Paul Gower",
+        "npc_configs": [{"id": 22794, "name": "GOWER_PAUL"}, {"id": 22792, "name": "GOWER_PAUL_MULTI", "parent": true}, {"id": 22793, "name": "GOWER_PAUL_ALTAR_MULTI", "parent": true}]
       },
       "anagram": ["A PURE GLOW"]
     }, {
@@ -3485,7 +3580,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3198, "y": 6961, "level": 1}}, "description": "at the entrance to Telos"}],
-        "npc": "Soothsayer Sybil"
+        "npc": "Soothsayer Sybil",
+        "npc_configs": [{"id": 22890, "name": "GWD2_SOLO_SOOTHSAYER"}]
       },
       "anagram": ["TABOO RISES SHYLY"]
     }, {
@@ -3496,7 +3592,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 2221, "y": 3298, "level": 1}}, "description": "at the seren stones"}],
-        "npc": "Lady Trahaearn"
+        "npc": "Lady Trahaearn",
+        "npc_configs": [{"id": 19927, "name": "ELFCITY_LADY_TRAHAEARN"}]
       },
       "anagram": ["HEAR A LADY RANT"]
     }, {
@@ -3507,7 +3604,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3416, "y": 2935, "level": 0}, "size": {"x": 9, "y": 6}, "data": "P/7////jBw=="}, "description": "in Nardaah"}],
-        "npc": "Ali The Wise"
+        "npc": "Ali The Wise",
+        "npc_configs": [{"id": 7447, "name": "MAH1_ALI_THE_WISE"}, {"id": 7469, "name": "MAH3_ALI_THE_WISE"}, {"id": 14251, "name": "MAH5_WAVE_ALI_THE_WISE"}, {"id": 14330, "name": "MAH5_ALI_THE_WISE"}, {"id": 27916, "name": "MINIQUEST_EGWD_PRERELEASE_WAHISIETEL_PRESENT"}, {"id": 7406, "name": "MAH1_ALI_THE_WISE_MULTI", "parent": true}, {"id": 7468, "name": "MAH3_ALI_THE_WISE_MULTI", "parent": true}, {"id": 14329, "name": "MAH5_ALI_THE_WISE_MULTI", "parent": true}, {"id": 27915, "name": "MINIQUEST_EGWD_PRERELEASE_WAHISIETEL", "parent": true}]
       },
       "anagram": ["I SAW THE LIE"]
     }, {
@@ -3518,7 +3616,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"id": "office", "range": {"origin": {"x": 414, "y": 680, "level": 0}}, "description": "in Death's Office", "note": "Death's Office"}],
-        "npc": "Death"
+        "npc": "Death",
+        "npc_configs": [{"id": 8867, "name": "ADVISOR_GRIM_REAPER"}, {"id": 27299, "name": "DEATH_OFFICE_MULTI", "parent": true}]
       },
       "anagram": ["HATED"]
     }, {
@@ -3529,7 +3628,8 @@ export namespace clue_data {
       "solution": {
         "type": "talkto",
         "spots": [{"range": {"origin": {"x": 3491, "y": 1506, "level": 0}, "size": {"x": 2, "y": 3}}, "description": "in Wendlewick"}],
-        "npc": "Miriam"
+        "npc": "Miriam",
+        "npc_configs": [{"id": 32548, "name": "WENDLE_MUSICIAN"}]
       },
       "anagram": ["MR MIAI"]
     }]
@@ -4785,7 +4885,8 @@ export namespace clue_data {
         {"origin": {"x": 2666, "y": 3301, "level": 0}, "size": {"x": 4, "y": 5}}
       ],
       "answer": "Steal from the Ardougne Gem Stall.",
-      "cursor": "thieve"
+      "cursor": "thieve",
+      "target": "Gem stall", "entity_configs": [{"id": 34385, "name": "AREA_ARDOUGNE_GEMTHIEFSTALL"}]
     }, {
       "type": "skilling",
       "text": ["A view of the city from high above. I can hear their prayers below."],
@@ -4805,6 +4906,8 @@ export namespace clue_data {
         {"origin": {"x": 3017, "y": 9242, "level": 0}, "size": {"x": 4, "y": 4}}
       ],
       "cursor": "burn",
+      "ingredients": [{"name": "Curly root", "configs": [{"id": 21350, "name": "JARO_ROOT_CURLY"}]}],
+      "target": "Dry patch", "entity_configs": [{"id": 12284, "name": "JARO_FIREPIT"}],
       "answer": "Start a firepit with a Curly Root in the Jadinko Lair."
     }, {
       "type": "skilling",
@@ -4815,7 +4918,8 @@ export namespace clue_data {
         {"origin": {"x": 2269, "y": 3386, "level": 1}, "size": {"x": 5, "y": 5}}
       ],
       "answer": "Cut some elder logs from an elder tree.",
-      "cursor": "chop"
+      "cursor": "chop",
+      "target": "Elder tree", "entity_configs": [{"id": 93367, "name": "FARMING_ELDER_TREE_PATCH_1", "parent": true}]
     }, {
       "type": "skilling",
       "text": ["Rowdy Unruly Boisterous I am pie."],
@@ -4823,6 +4927,8 @@ export namespace clue_data {
       "id": 377,
       "answer": "Cook a wild pie. The 'Bake Pie' spell works.",
       "cursor": "cook",
+      "ingredients": [{"name": "Raw wild pie", "configs": [{"id": 7206, "name": "UNCOOKED_WILD_PIE"}]}],
+      "target": "Range", "entity_configs": [{"id": 2728, "name": "RANGE"}],
       "areas": [{"origin": {"x": 2633, "y": 3164, "level": 0}, "size": {"x": 2, "y": 2}}]
     }, {
       "type": "skilling",
@@ -4833,6 +4939,7 @@ export namespace clue_data {
         {"origin": {"x": 2698, "y": 5186, "level": 2}, "size": {"x": 50, "y": 61}}
       ],
       "cursor": "agility",
+      "target": "Turgall", "npc_configs": [{"id": 5779, "name": "DORGESH_MALE_ENGINEER"}],
       "answer": "Help Turgall at the Dorgesh-Kaan Agility Course."
     }, {
       "type": "skilling",
@@ -4861,6 +4968,8 @@ export namespace clue_data {
       "id": 381,
       "answer": "Light some magic logs.",
       "cursor": "burn",
+      "ingredients": [{"name": "Magic logs or corrupted magic logs", "configs": [{"id": 1513, "name": "MAGIC_LOGS"}, {"id": 40338, "name": "MENAPHOS_CORRUPTED_LOGS"}]}],
+      "target": "Fire", "entity_configs": [{"id": 110279, "name": "RAID1_PERM_BONFIRE_BURN"}, {"id": 110280, "name": "RAID1_PERM_BONFIRE_COOK"}, {"id": 98296, "name": "RAID1_PERM_BONFIRE", "parent": true}],
       "areas": [{"origin": {"x": 4310, "y": 823, "level": 0}, "size": {"x": 3, "y": 2}, "data": "Og=="}]
     }, {
       "type": "skilling",
@@ -4887,6 +4996,7 @@ export namespace clue_data {
       "id": 384,
       "answer": "Craft a black dragonhide body.",
       "cursor": "craft",
+      "ingredients": [{"name": "Black dragon leather", "configs": [{"id": 2509, "name": "DRAGON_LEATHER_BLACK"}], "amount": 3}, {"name": "Thread", "configs": [{"id": 1734, "name": "THREAD"}]}],
       "areas": [
         {"origin": {"x": 2274, "y": 3311, "level": 1}, "size": {"x": 5, "y": 3}}
       ]
@@ -4897,6 +5007,7 @@ export namespace clue_data {
       "id": 385,
       "answer": "Add a fire rune to a decorated cooking urn (nr).",
       "cursor": "craft",
+      "ingredients": [{"name": "Decorated cooking urn (no rune)", "configs": [{"id": 20374, "name": "URNS_COOKING5_NORUNE"}]}, {"name": "Fire rune", "configs": [{"id": 554, "name": "FIRERUNE"}]}],
       "areas": [
         {"origin": {"x": 2274, "y": 3311, "level": 1}, "size": {"x": 5, "y": 3}}
       ]
@@ -4907,6 +5018,8 @@ export namespace clue_data {
       "id": 386,
       "answer": "Cook a raw shark, raw rocktail or raw sailfish.",
       "cursor": "cook",
+      "ingredients": [{"name": "Raw shark, raw rocktail or raw sailfish", "configs": [{"id": 383, "name": "RAW_SHARK"}, {"id": 15270, "name": "LRC_ROCKTAIL_RAW"}, {"id": 42249, "name": "DSF_RAW_SAILFISH"}]}],
+      "target": "Fire", "entity_configs": [{"id": 110279, "name": "RAID1_PERM_BONFIRE_BURN"}, {"id": 110280, "name": "RAID1_PERM_BONFIRE_COOK"}, {"id": 98296, "name": "RAID1_PERM_BONFIRE", "parent": true}],
       "areas": [
         {"origin": {"x": 4310, "y": 823, "level": 0}, "size": {"x": 3, "y": 3}}
       ]
@@ -4917,6 +5030,8 @@ export namespace clue_data {
       "id": 387,
       "answer": "Smelt a Bane bar at a furnace.",
       "cursor": "smith",
+      "ingredients": [{"name": "Banite ore", "configs": [{"id": 21778, "name": "MAH5_BANE_ORE"}], "amount": 2}],
+      "target": "Furnace", "entity_configs": [{"id": 113261, "name": "SMITHING_HUMAN_FURNACE"}],
       "areas": [
         {"origin": {"x": 3225, "y": 3255, "level": 0}, "size": {"x": 5, "y": 3}}
       ]
@@ -4929,7 +5044,9 @@ export namespace clue_data {
         {"origin": {"x": 2203, "y": 4834, "level": 0}, "size": {"x": 5, "y": 5}}
       ],
       "answer": "Craft a death rune.",
-      "cursor": "runecraft"
+      "cursor": "runecraft",
+      "ingredients": [{"name": "Pure essence", "configs": [{"id": 7936, "name": "BLANKRUNE_HIGH"}]}],
+      "target": "Death altar", "entity_configs": [{"id": 2488, "name": "DEATH_ALTAR"}]
     }, {
       "type": "skilling",
       "text": ["There is a temple where there are rivers of red. Bind the magic to get ahead."],
@@ -4939,7 +5056,9 @@ export namespace clue_data {
         {"origin": {"x": 2460, "y": 4893, "level": 1}, "size": {"x": 6, "y": 6}}
       ],
       "answer": "Craft a blood rune.",
-      "cursor": "runecraft"
+      "cursor": "runecraft",
+      "ingredients": [{"name": "Pure or exalted essence", "configs": [{"id": 7936, "name": "BLANKRUNE_HIGH"}, {"id": 63935, "name": "EXALTED_ESSENCE"}]}],
+      "target": "Blood altar", "entity_configs": [{"id": 30624, "name": "BLOOD_ALTAR"}]
     }, {
       "type": "skilling",
       "text": ["Corruption seeps from this stone but there are those who work to cleanse it. Lend your voice."],
@@ -4949,7 +5068,9 @@ export namespace clue_data {
         {"origin": {"x": 2188, "y": 3446, "level": 1}, "size": {"x": 5, "y": 5}}
       ],
       "answer": "Completely use up a cleansing crystal on the Corrupted Seren Stone.",
-      "cursor": "pray"
+      "cursor": "pray",
+      "ingredients": [{"name": "Cleansing crystal", "configs": [{"id": 32615, "name": "ELFCITY_HEFIN_CLEANSING_CRYSTAL"}]}],
+      "target": "Corrupted Seren Stone", "entity_configs": [{"id": 94048, "name": "ELFCITY_HEFIN_SEREN_STONE"}]
     }, {
       "type": "skilling",
       "text": ["Charm me and I shall unlock. But be brave in the darkness."],
@@ -4959,7 +5080,8 @@ export namespace clue_data {
         {"origin": {"x": 3365, "y": 3730, "level": 0}, "size": {"x": 21, "y": 21}}
       ],
       "answer": "Catch a charming moth in the Wilderness.",
-      "cursor": "hunt"
+      "cursor": "hunt",
+      "target": "Charming moth", "npc_configs": [{"id": 23139, "name": "WILDERNESS_BUTTERFLY"}]
     }, {
       "type": "skilling",
       "text": ["I once met an ancient warrior who told me tales of his adventures. His eyes lit up as he spoke."],
@@ -4967,6 +5089,8 @@ export namespace clue_data {
       "id": 392,
       "answer": "Burn some elder logs.",
       "cursor": "herblore",
+      "ingredients": [{"name": "Elder logs", "configs": [{"id": 29556, "name": "ELDER_LOGS"}]}],
+      "target": "Fire", "entity_configs": [{"id": 110279, "name": "RAID1_PERM_BONFIRE_BURN"}, {"id": 110280, "name": "RAID1_PERM_BONFIRE_COOK"}, {"id": 98296, "name": "RAID1_PERM_BONFIRE", "parent": true}],
       "areas": [{"origin": {"x": 4310, "y": 823, "level": 0}, "size": {"x": 3, "y": 2}, "data": "Og=="}]
     }, {
       "type": "skilling",
@@ -4975,6 +5099,7 @@ export namespace clue_data {
       "id": 393,
       "answer": "Mine a concentrated gold deposit in the Living Rock Caverns.",
       "cursor": "mine",
+      "target": "Concentrated gold deposit", "entity_configs": [{"id": 113010, "name": "MINING_CONCENTRATED_GOLD"}],
       "areas": [
         {"origin": {"x": 3646, "y": 5141, "level": 0}, "size": {"x": 3, "y": 5}}
       ]
@@ -4995,6 +5120,7 @@ export namespace clue_data {
       "id": 395,
       "answer": "Create a Saradomin brew.",
       "cursor": "herblore",
+      "ingredients": [{"name": "Toadflax potion (unfinished)", "configs": [{"id": 3002, "name": "TOADFLAXVIAL"}]}, {"name": "Crushed nest", "configs": [{"id": 6693, "name": "CRUSHED_BIRD_NEST"}]}],
       "areas": [
         {"origin": {"x": 2274, "y": 3311, "level": 1}, "size": {"x": 5, "y": 3}}
       ]
@@ -5005,6 +5131,8 @@ export namespace clue_data {
       "id": 396,
       "answer": "Smith a rune med helm or rune full helm.",
       "cursor": "smith",
+      "ingredients": [{"name": "Rune bar", "configs": [{"id": 2363, "name": "RUNITE_BAR"}], "amount": 2}],
+      "target": "Anvil", "entity_configs": [{"id": 113258, "name": "SMITHING_HUMAN_ANVIL"}],
       "areas": [
         {"origin": {"x": 3228, "y": 3253, "level": 0}, "size": {"x": 2, "y": 3}}
       ]
@@ -5015,6 +5143,7 @@ export namespace clue_data {
       "id": 397,
       "answer": "Create a Zamorak brew.",
       "cursor": "herblore",
+      "ingredients": [{"name": "Torstol potion (unfinished)", "configs": [{"id": 111, "name": "TORSTOLVIAL"}]}, {"name": "Jangerberries", "configs": [{"id": 247, "name": "JANGERBERRIES"}]}],
       "areas": [
         {"origin": {"x": 2274, "y": 3311, "level": 1}, "size": {"x": 5, "y": 3}}
       ]
