@@ -1426,7 +1426,7 @@ export namespace clue_data {
       "type": "cryptic",
       "tier": "medium",
       "text": ["For any aspiring mage, I'm sure searching this bookcase will be a rewarding experience."],
-      "solution": {"type": "search", "entity": "Bookcase", "entity_configs": [{"id": 10723, "name": "MAGICTRAINING_BOOKSHELF_OLD_TALL_DOUBLE2"}], "spot": {"level": 1, "topleft": {"x": 3366, "y": 3319}, "botright": {"x": 3366, "y": 3319}}}
+      "solution": {"type": "search", "entity": "Old Bookshelf", "entity_configs": [{"id": 10723, "name": "MAGICTRAINING_BOOKSHELF_OLD_TALL_DOUBLE2"}], "spot": {"level": 1, "topleft": {"x": 3366, "y": 3319}, "botright": {"x": 3366, "y": 3319}}}
     }, {
       "id": 191,
       "type": "cryptic",
@@ -2882,6 +2882,11 @@ export namespace clue_data {
           "description": "in his cave near Burthorpe",
           "range": {"origin": {"x": 2267, "y": 4752, "level": 0}, "size": {"x": 5, "y": 9}},
           "note": "Before 'Death Plateu'"
+        }, {
+          "id": "after-death-plateau",
+          "description": "in the tunnel to Death Plateau",
+          "range": {"origin": {"x": 3401, "y": 4282, "level": 2}, "size": {"x": 5, "y": 5}},
+          "note": "After 'Death Plateau'"
         }],
         "npc": "Sabbot",
         "npc_configs": [{"id": 15096, "name": "DEATH_SABBOT"}, {"id": 15098, "name": "DEATH_SABBOT_MINING"}, {"id": 15095, "name": "DEATH_SABBOT_CAVE_MULTI", "parent": true}, {"id": 15097, "name": "DEATH_SABBOT_TUNNEL_MULTI", "parent": true}]
@@ -3422,7 +3427,7 @@ export namespace clue_data {
           "description": "by the docks on Mos Le'Harmless",
           "note": "Mos Le'Harmless"
         }, {"range": {"origin": {"x": 3786, "y": 2823, "level": 0}, "size": {"x": 3, "y": 2}}, "description": "on Harmony Island", "note": "Harmony"}],
-        "npc": "Brother Tranquility",
+        "npc": "Brother Tranquillity",
         "npc_configs": [{"id": 5616, "name": "BRAIN_BROTHER_TRANQUILITY_ZOMBIE"}, {"id": 5617, "name": "BRAIN_BROTHER_TRANQUILITY_HUMAN"}, {"id": 5667, "name": "BRAIN_TRANQUILITY", "parent": true}, {"id": 5668, "name": "BRAIN_ISLAND_TRANQUILITY", "parent": true}]
       },
       "anagram": ["QUIT THY BRINE RAT ROLL"]
